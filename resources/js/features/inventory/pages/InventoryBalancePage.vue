@@ -1,0 +1,216 @@
+<template>
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-xl font-semibold text-gray-900">
+          Saldo Stok
+        </h1>
+        <p class="mt-2 text-sm text-gray-700">
+          Informasi ketersediaan stok produk di semua lokasi.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 flex flex-col sm:flex-row justify-between gap-4">
+      <div class="w-full sm:max-w-xs">
+        <input
+          id="search"
+          v-model="searchQuery"
+          type="text"
+          class="block w-full rounded-md border-gray-300 pl-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          placeholder="Cari SKU atau Nama Produk..."
+        >
+      </div>
+      <div class="flex gap-2 flex-wrap sm:flex-nowrap">
+        <select
+          v-model="sortBy"
+          class="block rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+        >
+          <option value="id">
+            Terbaru
+          </option>
+          <option value="quantity">
+            Kuantitas
+          </option>
+        </select>
+        <select
+          v-model="sortOrder"
+          class="block rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+        >
+          <option value="desc">
+            Menurun (Desc)
+          </option>
+          <option value="asc">
+            Menaik (Asc)
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div
+      v-if="inventoryStore.error"
+      class="mt-4 rounded-md bg-red-50 p-4"
+    >
+      <p class="text-sm font-medium text-red-800">
+        {{ inventoryStore.error }}
+      </p>
+    </div>
+
+    <div class="mt-8 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+      <table class="min-w-full divide-y divide-gray-300">
+        <thead class="bg-gray-50">
+          <tr>
+            <th
+              scope="col"
+              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+            >
+              SKU & Barcode
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+            >
+              Produk
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+            >
+              Lokasi
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+            >
+              Saldo Stok
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 bg-white">
+          <tr v-if="inventoryStore.loading && inventoryStore.balances.data.length === 0">
+            <td
+              colspan="4"
+              class="py-10 text-center text-sm text-gray-500"
+            >
+              Memuat data...
+            </td>
+          </tr>
+          <tr v-else-if="inventoryStore.balances.data.length === 0">
+            <td
+              colspan="4"
+              class="py-10 text-center text-sm text-gray-500"
+            >
+              Tidak ada data saldo stok.
+            </td>
+          </tr>
+          <tr
+            v-for="item in inventoryStore.balances.data"
+            :key="item.id"
+          >
+            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+              <div class="font-mono font-medium text-gray-900">
+                {{ item.product?.sku }}
+              </div>
+              <div
+                v-if="item.product?.barcode"
+                class="text-xs text-gray-500"
+              >
+                {{ item.product.barcode }}
+              </div>
+            </td>
+            <td class="px-3 py-4 text-sm text-gray-900">
+              <div class="font-medium text-gray-900">
+                {{ item.product?.name }}
+              </div>
+            </td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+              {{ item.location?.name }}
+            </td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono font-medium">
+              {{ Number(item.quantity).toFixed(4) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      v-if="inventoryStore.balances.meta && inventoryStore.balances.meta.total > 0"
+      class="mt-4 flex items-center justify-between"
+    >
+      <p class="text-sm text-gray-700">
+        Menampilkan
+        <span class="font-medium">{{ (inventoryStore.balances.meta.current_page - 1) * inventoryStore.balances.meta.per_page + 1 }}</span>
+        sampai
+        <span class="font-medium">{{ Math.min(inventoryStore.balances.meta.current_page * inventoryStore.balances.meta.per_page, inventoryStore.balances.meta.total) }}</span>
+        dari
+        <span class="font-medium">{{ inventoryStore.balances.meta.total }}</span>
+        data
+      </p>
+      <div class="flex gap-2">
+        <button
+          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+          :disabled="inventoryStore.balances.meta.current_page === 1"
+          @click="changePage(inventoryStore.balances.meta.current_page - 1)"
+        >
+          &laquo;
+        </button>
+        <button
+          v-for="page in inventoryStore.balances.meta.last_page"
+          :key="page"
+          class="px-3 py-1 text-sm rounded border"
+          :class="page === inventoryStore.balances.meta.current_page ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+        <button
+          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+          :disabled="inventoryStore.balances.meta.current_page === inventoryStore.balances.meta.last_page"
+          @click="changePage(inventoryStore.balances.meta.current_page + 1)"
+        >
+          &raquo;
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { onMounted, ref, watch } from 'vue';
+import { useInventoryStore } from '../stores/useInventoryStore';
+
+const inventoryStore = useInventoryStore();
+
+const searchQuery = ref('');
+const sortBy = ref('id');
+const sortOrder = ref('desc');
+
+let debounceTimer = null;
+const debouncedSearch = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => fetchData(1), 400);
+};
+
+watch(searchQuery, debouncedSearch);
+watch([sortBy, sortOrder], () => fetchData(1));
+
+const fetchData = (page = 1) => {
+    inventoryStore.fetchBalances({
+        page,
+        search: searchQuery.value,
+        sort_by: sortBy.value,
+        sort_order: sortOrder.value,
+    });
+};
+
+const changePage = (page) => {
+    if (page >= 1 && page <= inventoryStore.balances.meta.last_page) {
+        fetchData(page);
+    }
+};
+
+onMounted(() => {
+    fetchData();
+});
+</script>
