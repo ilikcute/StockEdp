@@ -22,6 +22,7 @@ use App\Features\Inventory\Models\StockTransfer;
 use App\Features\Inventory\Models\StockTransferItem;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
+use App\Features\Reporting\Helpers\DecimalQuantity;
 use App\Features\Supplier\Models\Supplier;
 use App\Features\Unit\Models\Unit;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -350,15 +351,15 @@ class ReportingPhase8A2Test extends TestCase
 
     public function test_decimal_quantity_helper_strict_type_and_normalization_rules()
     {
-        $this->assertSame('0.0000', \App\Features\Reporting\Helpers\DecimalQuantity::normalize(null));
-        $this->assertSame('0.0000', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('0'));
-        $this->assertSame('0.0000', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('-0.0000'));
-        $this->assertSame('0.0001', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('0.0001'));
-        $this->assertSame('-0.0001', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('-0.0001'));
-        $this->assertSame('-9.9999', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('-9.9999'));
-        $this->assertSame('9999999999.9999', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('9999999999.9999'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize(null));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('0'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('-0.0000'));
+        $this->assertSame('0.0001', DecimalQuantity::normalize('0.0001'));
+        $this->assertSame('-0.0001', DecimalQuantity::normalize('-0.0001'));
+        $this->assertSame('-9.9999', DecimalQuantity::normalize('-9.9999'));
+        $this->assertSame('9999999999.9999', DecimalQuantity::normalize('9999999999.9999'));
 
         $this->expectException(\InvalidArgumentException::class);
-        \App\Features\Reporting\Helpers\DecimalQuantity::normalize('invalid_val');
+        DecimalQuantity::normalize('invalid_val');
     }
 }

@@ -13,21 +13,24 @@ class DecimalQuantity
      */
     public static function normalize(?string $value, int $scale = 4): string
     {
-        if ($value === null) {
-            return '0.' . str_repeat('0', $scale);
+        if ($value === null || $value === '') {
+            return str_repeat('0', $scale > 0 ? 1 : 0).'.'.str_repeat('0', $scale);
         }
 
-        $decimal = trim($value);
+        $value = trim($value);
 
-        if (! preg_match('/^-?\d+(?:\.\d+)?$/', $decimal)) {
-            throw new InvalidArgumentException("Invalid decimal quantity value: [{$decimal}]");
+        if ($value === '') {
+            return str_repeat('0', $scale > 0 ? 1 : 0).'.'.str_repeat('0', $scale);
         }
 
-        $result = bcadd($decimal, '0', $scale);
+        if (! preg_match('/^-?\d+(\.\d+)?$/', $value)) {
+            throw new InvalidArgumentException("Invalid decimal quantity value: [{$value}]");
+        }
 
-        // Normalize negative zero e.g. "-0.0000" to "0.0000"
-        if (bccomp($result, '0', $scale) === 0) {
-            return '0.' . str_repeat('0', $scale);
+        $result = bcadd($value, '0', $scale);
+
+        if ($result === '-0.'.str_repeat('0', $scale) || $result === '-0') {
+            return str_repeat('0', $scale > 0 ? 1 : 0).'.'.str_repeat('0', $scale);
         }
 
         return $result;

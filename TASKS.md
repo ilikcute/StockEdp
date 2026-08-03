@@ -294,19 +294,19 @@ dan alur transaksi sudah diputuskan.
 
 ## Fase 8 — Saldo, Kartu Stok, dan Laporan
 
-- [ ] Buat endpoint saldo stok per produk dan lokasi.
-- [ ] Buat endpoint kartu stok dengan pagination.
-- [ ] Buat filter periode, produk, kategori, lokasi, dan jenis movement.
-- [ ] Buat laporan produk di bawah stok minimum.
-- [ ] Buat laporan penerimaan dan pengeluaran.
-- [ ] Buat laporan transfer.
-- [ ] Buat laporan adjustment.
-- [ ] Buat laporan hasil stock opname.
+- [x] Buat endpoint saldo stok per produk dan lokasi.
+- [x] Buat endpoint kartu stok dengan pagination.
+- [x] Buat filter periode, produk, kategori, lokasi, dan jenis movement.
+- [x] Buat laporan produk di bawah stok minimum.
+- [x] Buat laporan penerimaan dan pengeluaran.
+- [x] Buat laporan transfer.
+- [x] Buat laporan adjustment.
+- [x] Buat laporan hasil stock opname.
 - [ ] Implementasikan ekspor sesuai format yang telah disetujui.
 - [ ] Buat halaman saldo stok.
 - [ ] Buat halaman kartu stok.
 - [ ] Buat halaman laporan dan filter.
-- [ ] Pastikan query laporan menggunakan index yang sesuai.
+- [x] Pastikan query laporan menggunakan index yang sesuai.
 - [ ] Tambahkan test filter, pagination, authorization, dan ekspor.
 - [ ] Jalankan seluruh test dan lint.
 

@@ -7,6 +7,7 @@ use App\Features\Inventory\DTOs\StockChangeDTO;
 use App\Features\Inventory\Enums\IssueStatus;
 use App\Features\Inventory\Enums\MovementType;
 use App\Features\Inventory\Models\StockIssue;
+use App\Features\Inventory\Services\InventoryFreezeService;
 use App\Features\Inventory\Services\StockMovementService;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
@@ -27,7 +28,7 @@ class PostStockIssueAction
                 ->pluck('location_id')
                 ->toArray();
             if (! empty($rawLocationIds)) {
-                app(\App\Features\Inventory\Services\InventoryFreezeService::class)->lockAndValidateLocations($rawLocationIds);
+                app(InventoryFreezeService::class)->lockAndValidateLocations($rawLocationIds);
             }
 
             // Lock document to prevent concurrent posting

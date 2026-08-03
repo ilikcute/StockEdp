@@ -27,6 +27,32 @@ Keputusan terbaru harus diletakkan paling atas.
 **Tinjau kembali jika:**  
 [Jelaskan kondisi yang menyebabkan keputusan perlu dievaluasi ulang.]
 
+## 2026-08-03 — Keputusan Desain Laporan Transaksi Backend & Lock Order (Fase 8A2)
+
+**Keputusan:**
+
+### 1. Endpoint Canonical & Permission Laporan Transaksi
+1. Canonical endpoints laporan transaksi persediaan:
+   - `GET /api/v1/reports/stock-receipts` (`reports.stock_receipts.view`)
+   - `GET /api/v1/reports/stock-issues` (`reports.stock_issues.view`)
+   - `GET /api/v1/reports/stock-transfers` (`reports.stock_transfers.view`)
+   - `GET /api/v1/reports/stock-adjustments` (`reports.stock_adjustments.view`)
+   - `GET /api/v1/reports/stock-opnames` (`reports.stock_opnames.view`)
+2. Seluruh endpoint bersifat **Read-Only** (`GET`), terotorisasi via PermissionCode granular, dan menerapkan lokasi scoping eksplisit via `$allowedLocationIds`.
+
+### 2. Lock Ordering Global & Penanganan Deadlock Transient
+3. Urutan lock transaksional mutasi persediaan ditegakkan secara atomik:
+   $$\text{Step 1: Lock Location Locks} \rightarrow \text{Step 2: Lock Document Header} \rightarrow \text{Step 3: Lock Balances} \rightarrow \text{Step 4: Record Movement}$$
+4. Penguncian lokasi (`inventory_location_locks`) dieksekusi secara deterministic `location_id ASC` di dalam transaksi aktif.
+5. Transaksi posting dokumen membungkus operasi dengan `DB::transaction(..., 5)` untuk menangani potensi MySQL deadlock (error 1213 / 40001) secara otomatis.
+
+### 3. Kontrak Strict Decimal Quantity
+6. Class helper shared `App\Features\Reporting\Helpers\DecimalQuantity` menggunakan kontrak strict `normalize(?string $value, int $scale = 4): string`.
+7. PHP `float` dilarang digunakan untuk perhitungan persediaan persetujuan domain.
+8. Nilai `null`, `""`, `"-0.0000"` dinormalisasi menjadi `"0.0000"`.
+
+---
+
 ## 2026-08-03 — Keputusan Desain Reporting & Stock Card (Fase 8A1)
 
 **Keputusan:**

@@ -7,6 +7,7 @@ use App\Features\Inventory\DTOs\StockChangeDTO;
 use App\Features\Inventory\Enums\MovementType;
 use App\Features\Inventory\Enums\ReceiptStatus;
 use App\Features\Inventory\Models\StockReceipt;
+use App\Features\Inventory\Services\InventoryFreezeService;
 use App\Features\Inventory\Services\StockMovementService;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
@@ -30,7 +31,7 @@ class PostStockReceiptAction
                 ->toArray();
 
             if (! empty($rawLocationIds)) {
-                app(\App\Features\Inventory\Services\InventoryFreezeService::class)->lockAndValidateLocations($rawLocationIds);
+                app(InventoryFreezeService::class)->lockAndValidateLocations($rawLocationIds);
             }
 
             $lockedReceipt = StockReceipt::where('id', $receipt->id)->lockForUpdate()->first();
