@@ -116,6 +116,63 @@
               Supplier
             </router-link>
 
+            <!-- Laporan Dropdown -->
+            <div
+              v-if="authStore.hasPermission('reports.inventory_balance.view') || authStore.hasPermission('reports.low_stock.view') || authStore.hasPermission('reports.stock_card.view')"
+              class="relative"
+            >
+              <button
+                class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+                :class="{ 'text-blue-600 bg-blue-50/50': isReportOpen }"
+                @click="isReportOpen = !isReportOpen"
+              >
+                Laporan
+                <svg
+                  class="ml-1 h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              
+              <div
+                v-if="isReportOpen"
+                class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1"
+              >
+                <router-link
+                  v-if="authStore.hasPermission('reports.inventory_balance.view')"
+                  to="/reports/inventory-balances"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                >
+                  Saldo Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('reports.low_stock.view')"
+                  to="/reports/low-stock"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                >
+                  Stok Minimum
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('reports.stock_card.view')"
+                  to="/reports/stock-card"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                >
+                  Kartu Stok
+                </router-link>
+              </div>
+            </div>
+
             <template
               v-for="item in navigation"
               :key="item.to"
@@ -166,9 +223,12 @@
 <script setup>
 import { useAuthStore } from '../../features/auth/stores/use_auth_store.js';
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
+
+const isReportOpen = ref(false);
 
 async function handleLogout() {
     await authStore.logout();

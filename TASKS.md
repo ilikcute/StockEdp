@@ -371,15 +371,4 @@ Sebuah tugas hanya boleh ditandai selesai jika:
 
 ## Sedang Dikerjakan
 
-Belum ada tugas yang sedang dikerjakan.
-
-- Fase 1 — Fondasi Proyek selesai pada 2026-07-30.
-- Fase 2 — Autentikasi dan Hak Akses selesai pada 2026-07-30.
-- Fase 3A — Master Data Category (Vertical Slice) selesai pada 2026-07-31.
-- Fase 3B — Master Data Unit selesai pada 2026-07-31.
-
-Ketika mulai fase berikutnya, pindahkan atau tuliskan satu tugas di bagian ini:
-
-```text
-[-] TASK-ID — Deskripsi tugas
-```
+- [-] Fase 8B1 — Frontend Reporting Foundation, Inventory Balance, Low Stock, dan Stock Card (Status: READY FOR FRONTEND AUDIT)

@@ -127,7 +127,7 @@
               {{ item.location?.name }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono font-medium">
-              {{ Number(item.quantity).toFixed(4) }}
+              {{ item.quantity }}
             </td>
           </tr>
         </tbody>

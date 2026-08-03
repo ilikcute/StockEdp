@@ -203,7 +203,7 @@
                     class="text-sm font-mono"
                     :class="item.available_stock < item.quantity ? 'text-red-600' : 'text-gray-900'"
                   >
-                    {{ item.available_stock !== null ? Number(item.available_stock).toFixed(4) : '-' }}
+                    {{ item.available_stock !== null ? item.available_stock : '-' }}
                   </span>
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap">

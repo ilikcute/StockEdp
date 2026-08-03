@@ -312,13 +312,13 @@
                   <td
                     class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right font-semibold"
                     :class="{
-                      'text-green-700': Number(item.variance_quantity) > 0,
-                      'text-red-700': Number(item.variance_quantity) < 0,
-                      'text-gray-500': Number(item.variance_quantity) === 0,
+                      'text-green-700': item.variance_quantity && !item.variance_quantity.startsWith('-') && item.variance_quantity !== '0.0000',
+                      'text-red-700': item.variance_quantity && item.variance_quantity.startsWith('-'),
+                      'text-gray-500': !item.variance_quantity || item.variance_quantity === '0.0000',
                     }"
                   >
                     {{ item.variance_quantity !== null && item.variance_quantity !== undefined
-                      ? (Number(item.variance_quantity) > 0 ? '+' : '') + item.variance_quantity
+                      ? (item.variance_quantity && !item.variance_quantity.startsWith('-') && item.variance_quantity !== '0.0000' ? '+' : '') + item.variance_quantity
                       : '-' }}
                   </td>
                 </template>

@@ -7,8 +7,8 @@ import { supplierRoutes } from '../features/supplier/router/supplier_routes.js';
 import { locationRoutes } from '../features/location/router/location_routes.js';
 import { productRoutes } from '../features/product/router/product_routes.js';
 import { inventoryRoutes } from '../features/inventory/routes/index.js';
+import { reportingRoutes } from '../features/reporting/routes/index.js';
 import { useAuthStore } from '../features/auth/stores/use_auth_store.js';
-
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -20,6 +20,12 @@ const router = createRouter({
         ...locationRoutes,
         ...productRoutes,
         ...inventoryRoutes,
+        ...reportingRoutes,
+
+        {
+            path: '/inventory/balances',
+            redirect: '/reports/inventory-balances',
+        },
 
         // Fallback default redirect / ke /profile
         {

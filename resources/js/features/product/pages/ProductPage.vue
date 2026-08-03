@@ -206,7 +206,7 @@
               </div>
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              {{ formatNumber(product.minimum_stock) }} {{ product.unit_abbreviation }}
+              {{ product.minimum_stock }} {{ product.unit_abbreviation }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm">
               <span
@@ -320,9 +320,7 @@ const units = ref([]);
 
 const hasPermission = (p) => authStore.hasPermission(p);
 
-const formatNumber = (num) => {
-    return Number(num).toLocaleString('id-ID', { maximumFractionDigits: 2 });
-};
+
 
 let debounceTimer = null;
 const debouncedSearch = () => {

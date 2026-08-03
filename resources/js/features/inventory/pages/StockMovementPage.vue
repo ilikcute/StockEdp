@@ -138,10 +138,10 @@
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
               <div class="font-mono text-gray-900">
-                Mutasi: {{ Number(item.quantity).toFixed(4) }}
+                Mutasi: {{ item.quantity }}
               </div>
               <div class="font-mono text-xs">
-                Akhir: {{ Number(item.quantity_after).toFixed(4) }}
+                Akhir: {{ item.quantity_after }}
               </div>
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

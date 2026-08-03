@@ -179,7 +179,7 @@
                   {{ item.location?.name }}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 text-right font-mono font-medium">
-                  {{ Number(item.quantity).toFixed(4) }} {{ item.product?.unit?.symbol }}
+                  {{ item.quantity }} {{ item.product?.unit?.symbol }}
                 </td>
               </tr>
             </tbody>
