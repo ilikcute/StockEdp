@@ -46,10 +46,11 @@ Keputusan terbaru harus diletakkan paling atas.
 4. Penguncian lokasi (`inventory_location_locks`) dieksekusi secara deterministic `location_id ASC` di dalam transaksi aktif.
 5. Transaksi posting dokumen membungkus operasi dengan `DB::transaction(..., 5)` untuk menangani potensi MySQL deadlock (error 1213 / 40001) secara otomatis.
 
-### 3. Kontrak Strict Decimal Quantity
-6. Class helper shared `App\Features\Reporting\Helpers\DecimalQuantity` menggunakan kontrak strict `normalize(?string $value, int $scale = 4): string`.
-7. PHP `float` dilarang digunakan untuk perhitungan persediaan persetujuan domain.
-8. Nilai `null`, `""`, `"-0.0000"` dinormalisasi menjadi `"0.0000"`.
+### 3. Kontrak Strict Decimal Quantity & Penolakan Float Runtime
+6. Class helper shared `App\Features\Reporting\Helpers\DecimalQuantity` menggunakan signature runtime guard `normalize(mixed $value): string`.
+7. PHP `float`, `int`, `bool`, `array`, `object`, string kosong `""`, dan whitespace-only string dilarang keras dan ditolak secara runtime (melempar `TypeError` atau `InvalidArgumentException`).
+8. Hanya `null` dan decimal string valid yang diterima. `null`, `"-0"`, `"-0.0000"` dinormalisasi secara presisi menjadi `"0.0000"`.
+9. Status administratif Fase 8A2 berada pada `HOLD` menunggu Final Decimal Re-audit.
 
 ---
 

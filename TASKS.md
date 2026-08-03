@@ -292,7 +292,7 @@ dan alur transaksi sudah diputuskan.
 
 ---
 
-## Fase 8 — Saldo, Kartu Stok, dan Laporan
+## Fase 8 — Saldo, Kartu Stok, dan Laporan (Status: HOLD - Ready for Final Decimal Re-Audit)
 
 - [x] Buat endpoint saldo stok per produk dan lokasi.
 - [x] Buat endpoint kartu stok dengan pagination.

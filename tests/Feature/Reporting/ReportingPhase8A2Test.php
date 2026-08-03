@@ -28,6 +28,7 @@ use App\Features\Unit\Models\Unit;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 class ReportingPhase8A2Test extends TestCase
@@ -353,13 +354,70 @@ class ReportingPhase8A2Test extends TestCase
     {
         $this->assertSame('0.0000', DecimalQuantity::normalize(null));
         $this->assertSame('0.0000', DecimalQuantity::normalize('0'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('0.0'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('0.0000'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('-0'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('-0.0'));
         $this->assertSame('0.0000', DecimalQuantity::normalize('-0.0000'));
         $this->assertSame('0.0001', DecimalQuantity::normalize('0.0001'));
         $this->assertSame('-0.0001', DecimalQuantity::normalize('-0.0001'));
         $this->assertSame('-9.9999', DecimalQuantity::normalize('-9.9999'));
         $this->assertSame('9999999999.9999', DecimalQuantity::normalize('9999999999.9999'));
+    }
 
-        $this->expectException(\InvalidArgumentException::class);
-        DecimalQuantity::normalize('invalid_val');
+    public function test_decimal_quantity_helper_rejects_empty_and_invalid_strings()
+    {
+        $invalidInputs = ['', ' ', '   ', 'abc', '1,25', '1.2.3', '--1', '+-1', 'NaN', 'INF', '1e4'];
+
+        foreach ($invalidInputs as $invalid) {
+            try {
+                DecimalQuantity::normalize($invalid);
+                $this->fail("Expected InvalidArgumentException for input [{$invalid}]");
+            } catch (\InvalidArgumentException $e) {
+                $this->assertTrue(true);
+            }
+        }
+    }
+
+    public function test_decimal_quantity_helper_rejects_float_and_non_string_types()
+    {
+        $invalidTypes = [0, 1, 0.1, true, false, [], new \stdClass];
+
+        foreach ($invalidTypes as $invalid) {
+            try {
+                DecimalQuantity::normalize($invalid);
+                $this->fail('Expected TypeError for non-string input of type '.gettype($invalid));
+            } catch (\TypeError $e) {
+                $this->assertTrue(true);
+            }
+        }
+    }
+
+    public function test_decimal_quantity_helper_rejects_float_from_non_strict_caller_subprocess()
+    {
+        $process = new Process([
+            PHP_BINARY,
+            '-r',
+            "require 'vendor/autoload.php'; try { \App\Features\Reporting\Helpers\DecimalQuantity::normalize(0.1); echo 'FAIL_ACCEPTED_FLOAT'; } catch (TypeError \$e) { echo 'PASS_TYPE_ERROR'; } catch (Throwable \$e) { echo 'OTHER_ERR:' . \$e->getMessage(); }",
+        ], base_path());
+
+        $process->run();
+
+        $this->assertSame(0, $process->getExitCode());
+        $this->assertSame('PASS_TYPE_ERROR', $process->getOutput());
+    }
+
+    public function test_decimal_quantity_helper_rejects_int_from_non_strict_caller_subprocess()
+    {
+        $process = new Process([
+            PHP_BINARY,
+            '-r',
+            "require 'vendor/autoload.php'; try { \App\Features\Reporting\Helpers\DecimalQuantity::normalize(1); echo 'FAIL_ACCEPTED_INT'; } catch (TypeError \$e) { echo 'PASS_TYPE_ERROR'; } catch (Throwable \$e) { echo 'OTHER_ERR:' . \$e->getMessage(); }",
+        ], base_path());
+
+        $process->run();
+
+        $this->assertSame(0, $process->getExitCode());
+        $this->assertSame('PASS_TYPE_ERROR', $process->getOutput());
     }
 }
