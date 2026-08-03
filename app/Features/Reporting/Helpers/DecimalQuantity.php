@@ -7,23 +7,29 @@ use InvalidArgumentException;
 class DecimalQuantity
 {
     /**
-     * Normalize a numeric/decimal value to a fixed decimal precision string using BCMath.
-     *
+     * Normalize a numeric/decimal string value to a fixed decimal precision string using BCMath.
      *
      * @throws InvalidArgumentException
      */
-    public static function normalize(string|int|float|null $value, int $scale = 4): string
+    public static function normalize(?string $value, int $scale = 4): string
     {
         if ($value === null) {
-            return sprintf('%.*f', $scale, 0); // '0.0000'
+            return '0.' . str_repeat('0', $scale);
         }
 
-        $decimal = (string) $value;
+        $decimal = trim($value);
 
         if (! preg_match('/^-?\d+(?:\.\d+)?$/', $decimal)) {
             throw new InvalidArgumentException("Invalid decimal quantity value: [{$decimal}]");
         }
 
-        return bcadd($decimal, '0', $scale);
+        $result = bcadd($decimal, '0', $scale);
+
+        // Normalize negative zero e.g. "-0.0000" to "0.0000"
+        if (bccomp($result, '0', $scale) === 0) {
+            return '0.' . str_repeat('0', $scale);
+        }
+
+        return $result;
     }
 }

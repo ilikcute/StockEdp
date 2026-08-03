@@ -22,6 +22,14 @@ class PostStockIssueAction
     public function execute(StockIssue $issue, int $userId): StockIssue
     {
         return DB::transaction(function () use ($issue, $userId) {
+            $rawLocationIds = DB::table('stock_issue_items')
+                ->where('stock_issue_id', $issue->id)
+                ->pluck('location_id')
+                ->toArray();
+            if (! empty($rawLocationIds)) {
+                app(\App\Features\Inventory\Services\InventoryFreezeService::class)->lockAndValidateLocations($rawLocationIds);
+            }
+
             // Lock document to prevent concurrent posting
             $lockedIssue = StockIssue::where('id', $issue->id)->lockForUpdate()->first();
 
@@ -69,6 +77,6 @@ class PostStockIssueAction
             $this->movementService->recordMultipleMovements($dtos);
 
             return $lockedIssue;
-        });
+        }, 5);
     }
 }

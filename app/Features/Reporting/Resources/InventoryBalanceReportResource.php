@@ -10,8 +10,9 @@ class InventoryBalanceReportResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $minStockFormatted = DecimalQuantity::normalize($this->product?->minimum_stock ?? 0);
-        $onHand = DecimalQuantity::normalize($this->quantity);
+        $minStockRaw = $this->product?->minimum_stock !== null ? (string) $this->product->minimum_stock : '0';
+        $minStockFormatted = DecimalQuantity::normalize($minStockRaw);
+        $onHand = DecimalQuantity::normalize($this->quantity !== null ? (string) $this->quantity : null);
         $isBelowMin = bccomp($minStockFormatted, '0.0000', 4) > 0 && bccomp($onHand, $minStockFormatted, 4) < 0;
 
         return [

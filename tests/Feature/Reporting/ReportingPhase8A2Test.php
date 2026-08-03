@@ -347,4 +347,18 @@ class ReportingPhase8A2Test extends TestCase
         $this->assertEquals('-9.9999', $opnameResponse->json('data.0.signed_variance'));
         $this->assertEquals('0.0001', $opnameResponse->json('data.0.counted_quantity'));
     }
+
+    public function test_decimal_quantity_helper_strict_type_and_normalization_rules()
+    {
+        $this->assertSame('0.0000', \App\Features\Reporting\Helpers\DecimalQuantity::normalize(null));
+        $this->assertSame('0.0000', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('0'));
+        $this->assertSame('0.0000', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('-0.0000'));
+        $this->assertSame('0.0001', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('0.0001'));
+        $this->assertSame('-0.0001', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('-0.0001'));
+        $this->assertSame('-9.9999', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('-9.9999'));
+        $this->assertSame('9999999999.9999', \App\Features\Reporting\Helpers\DecimalQuantity::normalize('9999999999.9999'));
+
+        $this->expectException(\InvalidArgumentException::class);
+        \App\Features\Reporting\Helpers\DecimalQuantity::normalize('invalid_val');
+    }
 }

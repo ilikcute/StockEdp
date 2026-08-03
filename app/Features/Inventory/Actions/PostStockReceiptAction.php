@@ -23,6 +23,16 @@ class PostStockReceiptAction
     public function execute(StockReceipt $receipt, ?int $userId = null): StockReceipt
     {
         return DB::transaction(function () use ($receipt, $userId) {
+            // Pre-fetch items location IDs to enforce global lock order (Lock Location Locks FIRST)
+            $rawLocationIds = DB::table('stock_receipt_items')
+                ->where('stock_receipt_id', $receipt->id)
+                ->pluck('location_id')
+                ->toArray();
+
+            if (! empty($rawLocationIds)) {
+                app(\App\Features\Inventory\Services\InventoryFreezeService::class)->lockAndValidateLocations($rawLocationIds);
+            }
+
             $lockedReceipt = StockReceipt::where('id', $receipt->id)->lockForUpdate()->first();
 
             if ($lockedReceipt->isPosted()) {
@@ -86,6 +96,6 @@ class PostStockReceiptAction
             ]);
 
             return $lockedReceipt;
-        });
+        }, 5);
     }
 }

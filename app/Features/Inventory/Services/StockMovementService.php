@@ -84,9 +84,8 @@ class StockMovementService
             return;
         }
 
-        // Extract all location IDs and lock/validate them ascending (Global Lock Order Step 2 & 3)
+        // Extract all location IDs
         $locationIds = array_column($dtos, 'locationId');
-        $this->freezeService->lockAndValidateLocations($locationIds, $allowedOpnameId);
 
         // Sort DTOs by product_id and location_id ascending before balance locking
         usort($dtos, function (StockChangeDTO $a, StockChangeDTO $b) {
@@ -97,9 +96,12 @@ class StockMovementService
             return $a->productId <=> $b->productId;
         });
 
-        DB::transaction(function () use ($dtos) {
+        DB::transaction(function () use ($dtos, $locationIds, $allowedOpnameId) {
+            // Lock and validate locations within the active transaction
+            $this->freezeService->lockAndValidateLocations($locationIds, $allowedOpnameId);
+
             foreach ($dtos as $dto) {
-                // Record individual movement (freeze already validated above)
+                // Record individual movement
                 $this->recordSingleMovementInternal($dto);
             }
         });

@@ -77,8 +77,8 @@ class ConcurrencyTest extends TestCase
         $process1->wait();
         $process2->wait();
 
-        $this->assertEquals(0, $process1->getExitCode(), $process1->getErrorOutput());
-        $this->assertEquals(0, $process2->getExitCode(), $process2->getErrorOutput());
+        $this->assertEquals(0, $process1->getExitCode(), "Process 1 failed. STDOUT: {$process1->getOutput()} | STDERR: {$process1->getErrorOutput()}");
+        $this->assertEquals(0, $process2->getExitCode(), "Process 2 failed. STDOUT: {$process2->getOutput()} | STDERR: {$process2->getErrorOutput()}");
 
         $balance = InventoryBalance::where('product_id', $product->id)
             ->where('location_id', $location->id)

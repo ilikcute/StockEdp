@@ -56,22 +56,29 @@ class InventoryFreezeService
 
         $this->ensureLockRowsExist($uniqueIds);
 
-        $locks = DB::table('inventory_location_locks')
-            ->whereIn('location_id', $uniqueIds)
-            ->orderBy('location_id', 'asc')
-            ->lockForUpdate()
-            ->get();
+        $executeLock = function () use ($uniqueIds, $allowedOpnameId) {
+            $locks = DB::table('inventory_location_locks')
+                ->whereIn('location_id', $uniqueIds)
+                ->orderBy('location_id', 'asc')
+                ->lockForUpdate()
+                ->get();
 
-        foreach ($locks as $lock) {
-            if ((bool) $lock->is_frozen) {
-                if ($allowedOpnameId === null || (int) $lock->frozen_by_opname_id !== (int) $allowedOpnameId) {
-                    throw new DomainException(
-                        'Lokasi persediaan sedang dibekukan karena Stock Opname sedang berlangsung.',
-                        409,
-                        ['code' => 'LOCATION_FROZEN']
-                    );
+            foreach ($locks as $lock) {
+                if ($lock->is_frozen) {
+                    if ($allowedOpnameId === null || (int) $lock->frozen_by_opname_id !== $allowedOpnameId) {
+                        throw new DomainException('Location is frozen for stock opname.', 409, [
+                            'code' => 'LOCATION_FROZEN',
+                            'location_id' => $lock->location_id,
+                        ]);
+                    }
                 }
             }
+        };
+
+        if (DB::transactionLevel() > 0) {
+            $executeLock();
+        } else {
+            DB::transaction($executeLock);
         }
     }
 
