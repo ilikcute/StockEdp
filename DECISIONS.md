@@ -49,8 +49,8 @@ Keputusan terbaru harus diletakkan paling atas.
 ### 3. Kontrak Strict Decimal Quantity & Penolakan Float Runtime
 6. Class helper shared `App\Features\Reporting\Helpers\DecimalQuantity` menggunakan signature runtime guard `normalize(mixed $value): string`.
 7. PHP `float`, `int`, `bool`, `array`, `object`, string kosong `""`, dan whitespace-only string dilarang keras dan ditolak secara runtime (melempar `TypeError` atau `InvalidArgumentException`).
-8. Hanya `null` dan decimal string valid yang diterima. `null`, `"-0"`, `"-0.0000"` dinormalisasi secara presisi menjadi `"0.0000"`.
-9. Status administratif Fase 8A2 berada pada `HOLD` menunggu Final Decimal Re-audit.
+8. Hanya `null` dan decimal string valid yang diterima. Normalisasi menggunakan BCMath (`bcadd($value, '0', 4)` dan `bccomp($normalized, '0', 4) === 0`). `null`, `"-0"`, `"-0.0000"`, `"-000.0000"` dinormalisasi secara presisi menjadi `"0.0000"`.
+9. Status administratif Fase 8A2 secara resmi dinyatakan **PASS WITH CLEAN AUDIT**.
 
 ---
 

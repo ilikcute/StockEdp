@@ -18,6 +18,7 @@ use TypeError;
 final class DecimalQuantity
 {
     private const SCALE = 4;
+
     public static function normalize(mixed $value): string
     {
         // Explicitly reject null-unlike types at runtime, even from non-strict callers
@@ -53,38 +54,12 @@ final class DecimalQuantity
             );
         }
 
-        // Split into integer and fractional parts
-        $parts = explode('.', $value, 2);
-        $integerPart = $parts[0];
-        $fractionalPart = $parts[1] ?? '';
+        $normalized = bcadd($value, '0', self::SCALE);
 
-        // Pad or truncate fractional part to exactly SCALE digits
-        $fractionalPart = str_pad($fractionalPart, self::SCALE, '0', STR_PAD_RIGHT);
-
-        if (strlen($fractionalPart) > self::SCALE) {
-            $fractionalPart = substr($fractionalPart, 0, self::SCALE);
+        if (bccomp($normalized, '0', self::SCALE) === 0) {
+            return '0.0000';
         }
 
-        // Handle negative zero: if integer part is -0 or 0 and all fractional digits are 0
-        $normalizedInteger = ltrim($integerPart, '-');
-        if ($normalizedInteger === '0' || $normalizedInteger === '') {
-            $allZeros = true;
-            for ($i = 0; $i < strlen($fractionalPart); $i++) {
-                if ($fractionalPart[$i] !== '0') {
-                    $allZeros = false;
-                    break;
-                }
-            }
-
-            if ($allZeros) {
-                return '0.'.str_repeat('0', self::SCALE);
-            }
-        }
-
-        // Reconstruct the normalized value
-        $sign = str_starts_with($integerPart, '-') ? '-' : '';
-        $cleanInteger = ltrim($normalizedInteger, '0') ?: '0';
-
-        return $sign.$cleanInteger.'.'.$fractionalPart;
+        return $normalized;
     }
 }

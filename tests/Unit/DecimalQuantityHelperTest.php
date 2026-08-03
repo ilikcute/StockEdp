@@ -33,6 +33,8 @@ class DecimalQuantityHelperTest extends TestCase
         $this->assertSame('0.0000', DecimalQuantity::normalize('-0.0'));
         $this->assertSame('0.0000', DecimalQuantity::normalize('-0.0000'));
         $this->assertSame('0.0000', DecimalQuantity::normalize('-0.00'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('-000.0000'));
+        $this->assertSame('0.0000', DecimalQuantity::normalize('-0000'));
     }
 
     public function test_normalize_rejects_empty_string(): void
