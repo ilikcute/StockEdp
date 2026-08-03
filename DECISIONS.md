@@ -632,3 +632,25 @@ tersebut belum diperlukan untuk menjalankan transaksi inventory dengan benar.
 Beberapa terminal harus melihat perubahan stok secara langsung, dashboard
 membutuhkan pembaruan otomatis, atau notifikasi transaksi harus diterima tanpa
 refresh.
+
+---
+
+## 2026-08-03 — Keputusan Desain Reporting & Stock Card v1 (Posting Ledger Basis)
+
+**Keputusan:**
+
+1. **Stock Card Sebagai Posting Ledger**:
+   - Stock Card pada v1 berfokus sebagai posting ledger authoritative (waktu mutasi saldo dilakukan), bukan historical effective-date ledger.
+   - Urutan pergerakan stok: `created_at ASC, id ASC`.
+   - Filter periode laporan: berbasis tanggal posting (`created_at`). Parameter request `start_date` dan `end_date` memfilter mutasi yang diposting dalam periode tersebut (`[start 00:00:00, (end + 1 day) 00:00:00)`).
+   - Metadata response menyajikan `date_basis: "POSTED_AT"`.
+2. **Representasi Tanggal**:
+   - `occurred_at`: Disajikan sebagai `document_date` / `occurred_at` (tanggal dokumen transaksi).
+   - `created_at`: Disajikan sebagai `posted_at` (timestamp saat mutasi diposting).
+   - `movement_sequence`: Berasal dari `id` mutasi.
+3. **Penyajian Balance Chain**:
+   - Menggunakan urutan `created_at ASC, id ASC`, setiap baris mutasi persediaan selalu memenuhi invariant `row[n].quantity_after == row[n+1].quantity_before`.
+   - Transaksi backdated (tanggal dokumen di masa lalu) diposting pada saat ini, sehingga tampil sesuai urutan posting (`created_at`) dan tidak memutus kontiguitas saldo mutasi.
+4. **Indeks Database**:
+   - Menambahkan indeks aditif `idx_stock_card_posted` (`product_id`, `location_id`, `created_at`, `id`) pada `stock_movements`.
+   - Indeks `idx_stock_card` (`product_id`, `location_id`, `occurred_at`, `id`) tetap dipertahankan untuk kebutuhan query tanggal dokumen/operational.

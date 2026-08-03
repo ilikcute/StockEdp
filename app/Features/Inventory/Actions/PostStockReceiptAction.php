@@ -71,7 +71,7 @@ class PostStockReceiptAction
                     locationId: $item->location_id,
                     quantity: (string) $item->quantity,
                     movementType: MovementType::RECEIPT,
-                    referenceType: 'App\\Features\\Inventory\\Models\\StockReceipt',
+                    referenceType: StockReceipt::class,
                     referenceId: $lockedReceipt->id,
                     referenceNumber: $lockedReceipt->receipt_number,
                     userId: $userId ?? $lockedReceipt->created_by,

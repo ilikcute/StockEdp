@@ -313,6 +313,7 @@ class ReportingPhase8A1Test extends TestCase
             'reference_id' => 1,
             'reference_number' => 'REC-001',
             'occurred_at' => '2026-07-25 10:00:00',
+            'created_at' => '2026-07-25 10:00:00',
             'created_by' => $this->admin->id,
         ]);
 
@@ -329,6 +330,7 @@ class ReportingPhase8A1Test extends TestCase
             'reference_id' => 2,
             'reference_number' => 'REC-002',
             'occurred_at' => '2026-08-01 09:00:00',
+            'created_at' => '2026-08-01 09:00:00',
             'created_by' => $this->admin->id,
         ]);
 
@@ -345,6 +347,7 @@ class ReportingPhase8A1Test extends TestCase
             'reference_id' => 1,
             'reference_number' => 'ISS-001',
             'occurred_at' => '2026-08-02 14:00:00',
+            'created_at' => '2026-08-02 14:00:00',
             'created_by' => $this->admin->id,
         ]);
 
@@ -353,6 +356,7 @@ class ReportingPhase8A1Test extends TestCase
         );
 
         $response->assertStatus(200)
+            ->assertJsonPath('data.meta.date_basis', 'POSTED_AT')
             ->assertJsonPath('data.meta.opening_balance', '50.0000')
             ->assertJsonPath('data.meta.closing_balance', '55.0000')
             ->assertJsonPath('data.meta.total_quantity_in', '20.0000')
@@ -375,6 +379,7 @@ class ReportingPhase8A1Test extends TestCase
             'reference_id' => 99,
             'reference_number' => 'REC-REV-01',
             'occurred_at' => '2026-08-01 11:00:00',
+            'created_at' => '2026-08-01 11:00:00',
             'created_by' => $this->admin->id,
         ]);
 
@@ -390,7 +395,7 @@ class ReportingPhase8A1Test extends TestCase
 
     public function test_stock_card_backdated_movement_ledger_ordering_is_deterministic(): void
     {
-        // Movement A: executed first, occurred_at = 2026-08-01 10:00:00
+        // Movement A: executed first (posted 2026-08-01 10:00:00)
         $movA = StockMovement::create([
             'movement_id' => Str::uuid()->toString(),
             'product_id' => $this->prod1->id,
@@ -403,10 +408,11 @@ class ReportingPhase8A1Test extends TestCase
             'reference_id' => 10,
             'reference_number' => 'REC-010',
             'occurred_at' => '2026-08-01 10:00:00',
+            'created_at' => '2026-08-01 10:00:00',
             'created_by' => $this->admin->id,
         ]);
 
-        // Movement B: executed second, but occurred_at backdated to 2026-07-31 08:00:00
+        // Movement B: executed second (posted 2026-08-02 10:00:00), but occurred_at backdated to 2026-07-25 08:00:00
         $movB = StockMovement::create([
             'movement_id' => Str::uuid()->toString(),
             'product_id' => $this->prod1->id,
@@ -418,23 +424,32 @@ class ReportingPhase8A1Test extends TestCase
             'reference_type' => 'App\Features\Inventory\Models\StockAdjustment',
             'reference_id' => 11,
             'reference_number' => 'ADJ-011',
-            'occurred_at' => '2026-07-31 08:00:00',
+            'occurred_at' => '2026-07-25 08:00:00',
+            'created_at' => '2026-08-02 10:00:00',
             'created_by' => $this->admin->id,
         ]);
 
         $response = $this->actingAs($this->admin)->getJson(
-            '/api/v1/reports/stock-card?product_id='.$this->prod1->id.'&location_id='.$this->loc1->id.'&start_date=2026-07-01&end_date=2026-08-05'
+            '/api/v1/reports/stock-card?product_id='.$this->prod1->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05'
         );
 
         $response->assertStatus(200);
         $data = $response->json('data.data');
 
-        // Order is occurred_at ASC, id ASC
+        // Order is created_at ASC, id ASC -> movA (posted 1 Aug) then movB (posted 2 Aug)
         $this->assertCount(2, $data);
-        $this->assertEquals($movB->id, $data[0]['id']);
-        $this->assertEquals('90.0000', $data[0]['quantity_after']);
-        $this->assertEquals($movA->id, $data[1]['id']);
-        $this->assertEquals('100.0000', $data[1]['quantity_after']);
+        $this->assertEquals($movA->id, $data[0]['id']);
+        $this->assertEquals('100.0000', $data[0]['quantity_after']);
+
+        $this->assertEquals($movB->id, $data[1]['id']);
+        $this->assertEquals('90.0000', $data[1]['quantity_after']);
+
+        // Balance chain invariant check: row[0].quantity_after == row[1].quantity_before
+        $this->assertEquals($data[0]['quantity_after'], $data[1]['quantity_before']);
+
+        // Backdated document date is preserved in document_date / occurred_at
+        $this->assertEquals('2026-07-25 08:00:00', $data[1]['document_date']);
+        $this->assertEquals('2026-08-02 10:00:00', $data[1]['posted_at']);
     }
 
     public function test_reporting_endpoints_are_strictly_read_only(): void

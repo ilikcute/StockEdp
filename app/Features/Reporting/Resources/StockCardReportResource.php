@@ -29,9 +29,12 @@ class StockCardReportResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'movement_sequence' => $this->id,
             'movement_id' => $this->movement_id,
             'occurred_at' => $this->occurred_at,
+            'document_date' => $this->occurred_at,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'posted_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'movement_type' => $this->movement_type,
             'direction' => $direction,
             'reference_type' => $this->reference_type,

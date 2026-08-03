@@ -43,4 +43,54 @@ interface ReportingRepositoryInterface
         string $endNextDayDateTime,
         string $openingBalance
     ): array;
+
+    public function getPaginatedStockReceiptReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator;
+
+    public function getStockReceiptReportSummary(array $allowedLocationIds, array $filters): array;
+
+    public function getPaginatedStockIssueReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator;
+
+    public function getStockIssueReportSummary(array $allowedLocationIds, array $filters): array;
+
+    public function getPaginatedStockTransferReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'sent_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator;
+
+    public function getStockTransferReportSummary(array $allowedLocationIds, array $filters): array;
+
+    public function getPaginatedStockAdjustmentReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator;
+
+    public function getStockAdjustmentReportSummary(array $allowedLocationIds, array $filters): array;
+
+    public function getPaginatedStockOpnameReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator;
+
+    public function getStockOpnameReportSummary(array $allowedLocationIds, array $filters): array;
 }

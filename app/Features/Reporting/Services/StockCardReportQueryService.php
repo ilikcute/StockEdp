@@ -72,6 +72,7 @@ class StockCardReportQueryService
                 ],
                 'start_date' => $filters['start_date'],
                 'end_date' => $filters['end_date'],
+                'date_basis' => 'POSTED_AT',
                 'opening_balance' => $summary['opening_balance'],
                 'closing_balance' => $summary['closing_balance'],
                 'total_quantity_in' => $summary['total_quantity_in'],

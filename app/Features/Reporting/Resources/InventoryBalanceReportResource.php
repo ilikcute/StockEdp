@@ -2,6 +2,7 @@
 
 namespace App\Features\Reporting\Resources;
 
+use App\Features\Reporting\Helpers\DecimalQuantity;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,8 +10,8 @@ class InventoryBalanceReportResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $minStockFormatted = number_format((float) ($this->product?->minimum_stock ?? 0), 4, '.', '');
-        $onHand = (string) $this->quantity;
+        $minStockFormatted = DecimalQuantity::normalize($this->product?->minimum_stock ?? 0);
+        $onHand = DecimalQuantity::normalize($this->quantity);
         $isBelowMin = bccomp($minStockFormatted, '0.0000', 4) > 0 && bccomp($onHand, $minStockFormatted, 4) < 0;
 
         return [

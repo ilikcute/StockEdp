@@ -54,6 +54,16 @@ class StockTransfer extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'sent_by');
+    }
+
+    public function receiver()
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
+
     public function isDraft(): bool
     {
         return $this->status === TransferStatus::DRAFT;

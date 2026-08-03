@@ -3,8 +3,16 @@
 namespace App\Features\Reporting\Repositories\Eloquent;
 
 use App\Features\Inventory\Models\InventoryBalance;
+use App\Features\Inventory\Models\StockAdjustmentItem;
+use App\Features\Inventory\Models\StockIssue;
+use App\Features\Inventory\Models\StockIssueItem;
 use App\Features\Inventory\Models\StockMovement;
+use App\Features\Inventory\Models\StockOpnameItem;
+use App\Features\Inventory\Models\StockReceipt;
+use App\Features\Inventory\Models\StockReceiptItem;
+use App\Features\Inventory\Models\StockTransferItem;
 use App\Features\Product\Models\Product;
+use App\Features\Reporting\Helpers\DecimalQuantity;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as ConcretePaginator;
@@ -162,8 +170,8 @@ class ReportingRepository implements ReportingRepositoryInterface
     ): string {
         $movement = StockMovement::where('product_id', $productId)
             ->where('location_id', $locationId)
-            ->where('occurred_at', '<', $startDateTime)
-            ->orderBy('occurred_at', 'desc')
+            ->where('created_at', '<', $startDateTime)
+            ->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
             ->first();
 
@@ -180,9 +188,9 @@ class ReportingRepository implements ReportingRepositoryInterface
         return StockMovement::with(['product.unit', 'location', 'creator'])
             ->where('product_id', $productId)
             ->where('location_id', $locationId)
-            ->where('occurred_at', '>=', $startDateTime)
-            ->where('occurred_at', '<', $endNextDayDateTime)
-            ->orderBy('occurred_at', 'asc')
+            ->where('created_at', '>=', $startDateTime)
+            ->where('created_at', '<', $endNextDayDateTime)
+            ->orderBy('created_at', 'asc')
             ->orderBy('id', 'asc')
             ->paginate($perPage);
     }
@@ -196,9 +204,9 @@ class ReportingRepository implements ReportingRepositoryInterface
     ): array {
         $movements = StockMovement::where('product_id', $productId)
             ->where('location_id', $locationId)
-            ->where('occurred_at', '>=', $startDateTime)
-            ->where('occurred_at', '<', $endNextDayDateTime)
-            ->orderBy('occurred_at', 'asc')
+            ->where('created_at', '>=', $startDateTime)
+            ->where('created_at', '<', $endNextDayDateTime)
+            ->orderBy('created_at', 'asc')
             ->orderBy('id', 'asc')
             ->get();
 
@@ -226,5 +234,655 @@ class ReportingRepository implements ReportingRepositoryInterface
             'total_quantity_out' => $totalOut,
             'movement_count' => $movements->count(),
         ];
+    }
+
+    // ==========================================
+    // 1. STOCK RECEIPT REPORT
+    // ==========================================
+    public function getPaginatedStockReceiptReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator {
+        if (empty($allowedLocationIds)) {
+            return new LengthAwarePaginator([], 0, $perPage);
+        }
+
+        $query = StockReceiptItem::query()
+            ->select('stock_receipt_items.*', 'stock_movements.created_at as movement_posted_at')
+            ->join('stock_receipts', 'stock_receipts.id', '=', 'stock_receipt_items.stock_receipt_id')
+            ->join('products', 'products.id', '=', 'stock_receipt_items.product_id')
+            ->leftJoin('suppliers', 'suppliers.id', '=', 'stock_receipts.supplier_id')
+            ->leftJoin('stock_movements', function ($join) {
+                $join->on('stock_movements.reference_id', '=', 'stock_receipts.id')
+                    ->where('stock_movements.reference_type', '=', StockReceipt::class)
+                    ->on('stock_movements.product_id', '=', 'stock_receipt_items.product_id')
+                    ->on('stock_movements.location_id', '=', 'stock_receipt_items.location_id')
+                    ->where('stock_movements.movement_type', '=', 'RECEIPT');
+            })
+            ->where('stock_receipts.status', 'POSTED')
+            ->whereIn('stock_receipt_items.location_id', $allowedLocationIds);
+
+        $this->applyReceiptFilters($query, $filters);
+
+        $query->orderBy('stock_movements.created_at', 'desc')
+            ->orderBy('stock_movements.id', 'desc')
+            ->orderBy('stock_receipt_items.id', 'desc');
+
+        return $query->with(['receipt.supplier', 'receipt.creator', 'product.unit', 'product.category', 'location'])
+            ->paginate($perPage);
+    }
+
+    public function getStockReceiptReportSummary(array $allowedLocationIds, array $filters): array
+    {
+        if (empty($allowedLocationIds)) {
+            return [
+                'total_rows' => 0,
+                'total_documents' => 0,
+                'quantity_by_unit' => [],
+            ];
+        }
+
+        $baseQuery = StockReceiptItem::query()
+            ->join('stock_receipts', 'stock_receipts.id', '=', 'stock_receipt_items.stock_receipt_id')
+            ->join('products', 'products.id', '=', 'stock_receipt_items.product_id')
+            ->leftJoin('suppliers', 'suppliers.id', '=', 'stock_receipts.supplier_id')
+            ->leftJoin('stock_movements', function ($join) {
+                $join->on('stock_movements.reference_id', '=', 'stock_receipts.id')
+                    ->where('stock_movements.reference_type', '=', StockReceipt::class)
+                    ->on('stock_movements.product_id', '=', 'stock_receipt_items.product_id')
+                    ->on('stock_movements.location_id', '=', 'stock_receipt_items.location_id')
+                    ->where('stock_movements.movement_type', '=', 'RECEIPT');
+            })
+            ->where('stock_receipts.status', 'POSTED')
+            ->whereIn('stock_receipt_items.location_id', $allowedLocationIds);
+
+        $this->applyReceiptFilters($baseQuery, $filters);
+
+        $totalRows = (clone $baseQuery)->count();
+        $totalDocuments = (clone $baseQuery)->distinct()->count('stock_receipts.id');
+
+        $quantityByUnit = (clone $baseQuery)
+            ->join('units', 'units.id', '=', 'products.unit_id')
+            ->select(
+                'units.id as unit_id',
+                'units.code as unit_code',
+                'units.name as unit_name',
+                DB::raw('SUM(stock_receipt_items.quantity) as total_quantity')
+            )
+            ->groupBy('units.id', 'units.code', 'units.name')
+            ->get()
+            ->map(fn ($r) => [
+                'unit_id' => $r->unit_id,
+                'unit_code' => $r->unit_code,
+                'unit_name' => $r->unit_name,
+                'total_quantity' => DecimalQuantity::normalize($r->total_quantity),
+            ])->toArray();
+
+        return [
+            'total_rows' => $totalRows,
+            'total_documents' => $totalDocuments,
+            'quantity_by_unit' => $quantityByUnit,
+        ];
+    }
+
+    private function applyReceiptFilters($query, array $filters): void
+    {
+        if (! empty($filters['supplier_id'])) {
+            $query->where('stock_receipts.supplier_id', $filters['supplier_id']);
+        }
+        if (! empty($filters['location_id'])) {
+            $query->where('stock_receipt_items.location_id', $filters['location_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $query->where('stock_receipt_items.product_id', $filters['product_id']);
+        }
+        if (! empty($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
+        }
+        if (! empty($filters['unit_id'])) {
+            $query->where('products.unit_id', $filters['unit_id']);
+        }
+        if (! empty($filters['start_date'])) {
+            $start = CarbonImmutable::parse($filters['start_date'], 'Asia/Jakarta')->startOfDay()->format('Y-m-d H:i:s');
+            $query->where('stock_movements.created_at', '>=', $start);
+        }
+        if (! empty($filters['end_date'])) {
+            $endNext = CarbonImmutable::parse($filters['end_date'], 'Asia/Jakarta')->startOfDay()->addDay()->format('Y-m-d H:i:s');
+            $query->where('stock_movements.created_at', '<', $endNext);
+        }
+        if (! empty($filters['search'])) {
+            $search = addcslashes($filters['search'], '%_');
+            $query->where(function ($q) use ($search) {
+                $q->where('stock_receipts.receipt_number', 'like', "%{$search}%")
+                    ->orWhere('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%")
+                    ->orWhere('suppliers.name', 'like', "%{$search}%");
+            });
+        }
+    }
+
+    // ==========================================
+    // 2. STOCK ISSUE REPORT
+    // ==========================================
+    public function getPaginatedStockIssueReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator {
+        if (empty($allowedLocationIds)) {
+            return new LengthAwarePaginator([], 0, $perPage);
+        }
+
+        $query = StockIssueItem::query()
+            ->select('stock_issue_items.*', 'stock_movements.created_at as movement_posted_at')
+            ->join('stock_issues', 'stock_issues.id', '=', 'stock_issue_items.stock_issue_id')
+            ->join('products', 'products.id', '=', 'stock_issue_items.product_id')
+            ->leftJoin('stock_movements', function ($join) {
+                $join->on('stock_movements.reference_id', '=', 'stock_issues.id')
+                    ->where('stock_movements.reference_type', '=', StockIssue::class)
+                    ->on('stock_movements.product_id', '=', 'stock_issue_items.product_id')
+                    ->on('stock_movements.location_id', '=', 'stock_issue_items.location_id')
+                    ->where('stock_movements.movement_type', '=', 'ISSUE');
+            })
+            ->where('stock_issues.status', 'POSTED')
+            ->whereIn('stock_issue_items.location_id', $allowedLocationIds);
+
+        $this->applyIssueFilters($query, $filters);
+
+        $query->orderBy('stock_movements.created_at', 'desc')
+            ->orderBy('stock_movements.id', 'desc')
+            ->orderBy('stock_issue_items.id', 'desc');
+
+        return $query->with(['issue.creator', 'product.unit', 'product.category', 'location'])
+            ->paginate($perPage);
+    }
+
+    public function getStockIssueReportSummary(array $allowedLocationIds, array $filters): array
+    {
+        if (empty($allowedLocationIds)) {
+            return [
+                'total_rows' => 0,
+                'total_documents' => 0,
+                'quantity_by_unit' => [],
+            ];
+        }
+
+        $baseQuery = StockIssueItem::query()
+            ->join('stock_issues', 'stock_issues.id', '=', 'stock_issue_items.stock_issue_id')
+            ->join('products', 'products.id', '=', 'stock_issue_items.product_id')
+            ->leftJoin('stock_movements', function ($join) {
+                $join->on('stock_movements.reference_id', '=', 'stock_issues.id')
+                    ->where('stock_movements.reference_type', '=', StockIssue::class)
+                    ->on('stock_movements.product_id', '=', 'stock_issue_items.product_id')
+                    ->on('stock_movements.location_id', '=', 'stock_issue_items.location_id')
+                    ->where('stock_movements.movement_type', '=', 'ISSUE');
+            })
+            ->where('stock_issues.status', 'POSTED')
+            ->whereIn('stock_issue_items.location_id', $allowedLocationIds);
+
+        $this->applyIssueFilters($baseQuery, $filters);
+
+        $totalRows = (clone $baseQuery)->count();
+        $totalDocuments = (clone $baseQuery)->distinct()->count('stock_issues.id');
+
+        $quantityByUnit = (clone $baseQuery)
+            ->join('units', 'units.id', '=', 'products.unit_id')
+            ->select(
+                'units.id as unit_id',
+                'units.code as unit_code',
+                'units.name as unit_name',
+                DB::raw('SUM(stock_issue_items.quantity) as total_quantity')
+            )
+            ->groupBy('units.id', 'units.code', 'units.name')
+            ->get()
+            ->map(fn ($r) => [
+                'unit_id' => $r->unit_id,
+                'unit_code' => $r->unit_code,
+                'unit_name' => $r->unit_name,
+                'total_quantity' => DecimalQuantity::normalize($r->total_quantity),
+            ])->toArray();
+
+        return [
+            'total_rows' => $totalRows,
+            'total_documents' => $totalDocuments,
+            'quantity_by_unit' => $quantityByUnit,
+        ];
+    }
+
+    private function applyIssueFilters($query, array $filters): void
+    {
+        if (! empty($filters['location_id'])) {
+            $query->where('stock_issue_items.location_id', $filters['location_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $query->where('stock_issue_items.product_id', $filters['product_id']);
+        }
+        if (! empty($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
+        }
+        if (! empty($filters['unit_id'])) {
+            $query->where('products.unit_id', $filters['unit_id']);
+        }
+        if (! empty($filters['start_date'])) {
+            $start = CarbonImmutable::parse($filters['start_date'], 'Asia/Jakarta')->startOfDay()->format('Y-m-d H:i:s');
+            $query->where('stock_movements.created_at', '>=', $start);
+        }
+        if (! empty($filters['end_date'])) {
+            $endNext = CarbonImmutable::parse($filters['end_date'], 'Asia/Jakarta')->startOfDay()->addDay()->format('Y-m-d H:i:s');
+            $query->where('stock_movements.created_at', '<', $endNext);
+        }
+        if (! empty($filters['search'])) {
+            $search = addcslashes($filters['search'], '%_');
+            $query->where(function ($q) use ($search) {
+                $q->where('stock_issues.issue_number', 'like', "%{$search}%")
+                    ->orWhere('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%")
+                    ->orWhere('stock_issues.purpose', 'like', "%{$search}%")
+                    ->orWhere('stock_issues.notes', 'like', "%{$search}%");
+            });
+        }
+    }
+
+    // ==========================================
+    // 3. STOCK TRANSFER REPORT
+    // ==========================================
+    public function getPaginatedStockTransferReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'sent_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator {
+        if (empty($allowedLocationIds)) {
+            return new LengthAwarePaginator([], 0, $perPage);
+        }
+
+        $dateBasis = strtoupper($filters['date_basis'] ?? 'SENT_AT');
+        $dateColumn = ($dateBasis === 'RECEIVED_AT') ? 'stock_transfers.received_at' : 'stock_transfers.sent_at';
+
+        $query = StockTransferItem::query()
+            ->select('stock_transfer_items.*')
+            ->join('stock_transfers', 'stock_transfers.id', '=', 'stock_transfer_items.stock_transfer_id')
+            ->join('products', 'products.id', '=', 'stock_transfer_items.product_id')
+            ->where(function ($q) use ($allowedLocationIds) {
+                $q->whereIn('stock_transfers.origin_location_id', $allowedLocationIds)
+                    ->orWhereIn('stock_transfers.destination_location_id', $allowedLocationIds);
+            });
+
+        if ($dateBasis === 'RECEIVED_AT') {
+            $query->where('stock_transfers.status', 'RECEIVED');
+        } else {
+            $query->whereIn('stock_transfers.status', ['SENT', 'RECEIVED']);
+        }
+
+        $this->applyTransferFilters($query, $filters, $dateColumn);
+
+        $query->orderBy($dateColumn, 'desc')
+            ->orderBy('stock_transfers.id', 'desc')
+            ->orderBy('stock_transfer_items.id', 'desc');
+
+        return $query->with(['transfer.originLocation', 'transfer.destinationLocation', 'transfer.sender', 'transfer.receiver', 'product.unit', 'product.category'])
+            ->paginate($perPage);
+    }
+
+    public function getStockTransferReportSummary(array $allowedLocationIds, array $filters): array
+    {
+        if (empty($allowedLocationIds)) {
+            return [
+                'total_rows' => 0,
+                'total_documents' => 0,
+                'status_counts' => ['SENT' => 0, 'RECEIVED' => 0],
+                'in_transit_document_count' => 0,
+                'in_transit_item_count' => 0,
+                'quantity_by_unit' => [],
+            ];
+        }
+
+        $dateBasis = strtoupper($filters['date_basis'] ?? 'SENT_AT');
+        $dateColumn = ($dateBasis === 'RECEIVED_AT') ? 'stock_transfers.received_at' : 'stock_transfers.sent_at';
+
+        $baseQuery = StockTransferItem::query()
+            ->join('stock_transfers', 'stock_transfers.id', '=', 'stock_transfer_items.stock_transfer_id')
+            ->join('products', 'products.id', '=', 'stock_transfer_items.product_id')
+            ->where(function ($q) use ($allowedLocationIds) {
+                $q->whereIn('stock_transfers.origin_location_id', $allowedLocationIds)
+                    ->orWhereIn('stock_transfers.destination_location_id', $allowedLocationIds);
+            });
+
+        if ($dateBasis === 'RECEIVED_AT') {
+            $baseQuery->where('stock_transfers.status', 'RECEIVED');
+        } else {
+            $baseQuery->whereIn('stock_transfers.status', ['SENT', 'RECEIVED']);
+        }
+
+        $this->applyTransferFilters($baseQuery, $filters, $dateColumn);
+
+        $totalRows = (clone $baseQuery)->count();
+        $totalDocuments = (clone $baseQuery)->distinct()->count('stock_transfers.id');
+
+        $sentCount = (clone $baseQuery)->where('stock_transfers.status', 'SENT')->count();
+        $receivedCount = (clone $baseQuery)->where('stock_transfers.status', 'RECEIVED')->count();
+
+        $inTransitItemCount = (clone $baseQuery)->where('stock_transfers.status', 'SENT')->count();
+        $inTransitDocCount = (clone $baseQuery)->where('stock_transfers.status', 'SENT')->distinct()->count('stock_transfers.id');
+
+        $quantityByUnit = (clone $baseQuery)
+            ->join('units', 'units.id', '=', 'products.unit_id')
+            ->select(
+                'units.id as unit_id',
+                'units.code as unit_code',
+                'units.name as unit_name',
+                DB::raw('SUM(stock_transfer_items.quantity) as total_quantity')
+            )
+            ->groupBy('units.id', 'units.code', 'units.name')
+            ->get()
+            ->map(fn ($r) => [
+                'unit_id' => $r->unit_id,
+                'unit_code' => $r->unit_code,
+                'unit_name' => $r->unit_name,
+                'total_quantity' => DecimalQuantity::normalize($r->total_quantity),
+            ])->toArray();
+
+        return [
+            'total_rows' => $totalRows,
+            'total_documents' => $totalDocuments,
+            'status_counts' => [
+                'SENT' => $sentCount,
+                'RECEIVED' => $receivedCount,
+            ],
+            'in_transit_document_count' => $inTransitDocCount,
+            'in_transit_item_count' => $inTransitItemCount,
+            'quantity_by_unit' => $quantityByUnit,
+        ];
+    }
+
+    private function applyTransferFilters($query, array $filters, string $dateColumn): void
+    {
+        if (! empty($filters['status'])) {
+            $query->where('stock_transfers.status', $filters['status']);
+        }
+        if (! empty($filters['origin_location_id'])) {
+            $query->where('stock_transfers.origin_location_id', $filters['origin_location_id']);
+        }
+        if (! empty($filters['destination_location_id'])) {
+            $query->where('stock_transfers.destination_location_id', $filters['destination_location_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $query->where('stock_transfer_items.product_id', $filters['product_id']);
+        }
+        if (! empty($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
+        }
+        if (! empty($filters['unit_id'])) {
+            $query->where('products.unit_id', $filters['unit_id']);
+        }
+        if (! empty($filters['start_date'])) {
+            $start = CarbonImmutable::parse($filters['start_date'], 'Asia/Jakarta')->startOfDay()->format('Y-m-d H:i:s');
+            $query->where($dateColumn, '>=', $start);
+        }
+        if (! empty($filters['end_date'])) {
+            $endNext = CarbonImmutable::parse($filters['end_date'], 'Asia/Jakarta')->startOfDay()->addDay()->format('Y-m-d H:i:s');
+            $query->where($dateColumn, '<', $endNext);
+        }
+        if (! empty($filters['search'])) {
+            $search = addcslashes($filters['search'], '%_');
+            $query->where(function ($q) use ($search) {
+                $q->where('stock_transfers.transfer_number', 'like', "%{$search}%")
+                    ->orWhere('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%");
+            });
+        }
+    }
+
+    // ==========================================
+    // 4. STOCK ADJUSTMENT REPORT
+    // ==========================================
+    public function getPaginatedStockAdjustmentReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator {
+        if (empty($allowedLocationIds)) {
+            return new LengthAwarePaginator([], 0, $perPage);
+        }
+
+        $query = StockAdjustmentItem::query()
+            ->select('stock_adjustment_items.*')
+            ->join('stock_adjustments', 'stock_adjustments.id', '=', 'stock_adjustment_items.stock_adjustment_id')
+            ->join('products', 'products.id', '=', 'stock_adjustment_items.product_id')
+            ->where('stock_adjustments.status', 'POSTED')
+            ->whereIn('stock_adjustments.location_id', $allowedLocationIds);
+
+        $this->applyAdjustmentFilters($query, $filters);
+
+        $query->orderBy('stock_adjustments.posted_at', 'desc')
+            ->orderBy('stock_adjustments.id', 'desc')
+            ->orderBy('stock_adjustment_items.id', 'desc');
+
+        return $query->with(['adjustment.location', 'adjustment.creator', 'adjustment.poster', 'product.unit', 'product.category'])
+            ->paginate($perPage);
+    }
+
+    public function getStockAdjustmentReportSummary(array $allowedLocationIds, array $filters): array
+    {
+        if (empty($allowedLocationIds)) {
+            return [
+                'total_rows' => 0,
+                'total_documents' => 0,
+                'quantity_by_unit' => [],
+            ];
+        }
+
+        $baseQuery = StockAdjustmentItem::query()
+            ->join('stock_adjustments', 'stock_adjustments.id', '=', 'stock_adjustment_items.stock_adjustment_id')
+            ->join('products', 'products.id', '=', 'stock_adjustment_items.product_id')
+            ->where('stock_adjustments.status', 'POSTED')
+            ->whereIn('stock_adjustments.location_id', $allowedLocationIds);
+
+        $this->applyAdjustmentFilters($baseQuery, $filters);
+
+        $totalRows = (clone $baseQuery)->count();
+        $totalDocuments = (clone $baseQuery)->distinct()->count('stock_adjustments.id');
+
+        $quantityByUnit = (clone $baseQuery)
+            ->join('units', 'units.id', '=', 'products.unit_id')
+            ->select(
+                'units.id as unit_id',
+                'units.code as unit_code',
+                'units.name as unit_name',
+                DB::raw('SUM(stock_adjustment_items.quantity) as total_quantity')
+            )
+            ->groupBy('units.id', 'units.code', 'units.name')
+            ->get()
+            ->map(fn ($r) => [
+                'unit_id' => $r->unit_id,
+                'unit_code' => $r->unit_code,
+                'unit_name' => $r->unit_name,
+                'total_quantity' => DecimalQuantity::normalize($r->total_quantity),
+            ])->toArray();
+
+        return [
+            'total_rows' => $totalRows,
+            'total_documents' => $totalDocuments,
+            'quantity_by_unit' => $quantityByUnit,
+        ];
+    }
+
+    private function applyAdjustmentFilters($query, array $filters): void
+    {
+        if (! empty($filters['location_id'])) {
+            $query->where('stock_adjustments.location_id', $filters['location_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $query->where('stock_adjustment_items.product_id', $filters['product_id']);
+        }
+        if (! empty($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
+        }
+        if (! empty($filters['unit_id'])) {
+            $query->where('products.unit_id', $filters['unit_id']);
+        }
+        if (! empty($filters['direction'])) {
+            $query->where('stock_adjustments.direction', $filters['direction']);
+        }
+        if (! empty($filters['reason_code'])) {
+            $query->where('stock_adjustments.reason_code', $filters['reason_code']);
+        }
+        if (! empty($filters['start_date'])) {
+            $start = CarbonImmutable::parse($filters['start_date'], 'Asia/Jakarta')->startOfDay()->format('Y-m-d H:i:s');
+            $query->where('stock_adjustments.posted_at', '>=', $start);
+        }
+        if (! empty($filters['end_date'])) {
+            $endNext = CarbonImmutable::parse($filters['end_date'], 'Asia/Jakarta')->startOfDay()->addDay()->format('Y-m-d H:i:s');
+            $query->where('stock_adjustments.posted_at', '<', $endNext);
+        }
+        if (! empty($filters['search'])) {
+            $search = addcslashes($filters['search'], '%_');
+            $query->where(function ($q) use ($search) {
+                $q->where('stock_adjustments.adjustment_number', 'like', "%{$search}%")
+                    ->orWhere('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%")
+                    ->orWhere('stock_adjustments.notes', 'like', "%{$search}%");
+            });
+        }
+    }
+
+    // ==========================================
+    // 5. STOCK OPNAME REPORT
+    // ==========================================
+    public function getPaginatedStockOpnameReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc',
+        int $perPage = 15
+    ): LengthAwarePaginator {
+        if (empty($allowedLocationIds)) {
+            return new LengthAwarePaginator([], 0, $perPage);
+        }
+
+        $query = StockOpnameItem::query()
+            ->select('stock_opname_items.*')
+            ->join('stock_opnames', 'stock_opnames.id', '=', 'stock_opname_items.stock_opname_id')
+            ->join('products', 'products.id', '=', 'stock_opname_items.product_id')
+            ->where('stock_opnames.status', 'POSTED')
+            ->whereIn('stock_opnames.location_id', $allowedLocationIds);
+
+        $this->applyOpnameFilters($query, $filters);
+
+        $query->orderBy('stock_opnames.posted_at', 'desc')
+            ->orderBy('stock_opnames.id', 'desc')
+            ->orderBy('stock_opname_items.id', 'desc');
+
+        return $query->with(['opname.location', 'opname.creator', 'opname.completer', 'opname.poster', 'counter', 'product.unit', 'product.category'])
+            ->paginate($perPage);
+    }
+
+    public function getStockOpnameReportSummary(array $allowedLocationIds, array $filters): array
+    {
+        if (empty($allowedLocationIds)) {
+            return [
+                'total_rows' => 0,
+                'total_documents' => 0,
+                'positive_item_count' => 0,
+                'negative_item_count' => 0,
+                'zero_item_count' => 0,
+                'quantity_by_unit' => [],
+            ];
+        }
+
+        $baseQuery = StockOpnameItem::query()
+            ->join('stock_opnames', 'stock_opnames.id', '=', 'stock_opname_items.stock_opname_id')
+            ->join('products', 'products.id', '=', 'stock_opname_items.product_id')
+            ->where('stock_opnames.status', 'POSTED')
+            ->whereIn('stock_opnames.location_id', $allowedLocationIds);
+
+        $this->applyOpnameFilters($baseQuery, $filters);
+
+        $totalRows = (clone $baseQuery)->count();
+        $totalDocuments = (clone $baseQuery)->distinct()->count('stock_opnames.id');
+
+        $positiveCount = (clone $baseQuery)->where('stock_opname_items.variance_quantity', '>', 0)->count();
+        $negativeCount = (clone $baseQuery)->where('stock_opname_items.variance_quantity', '<', 0)->count();
+        $zeroCount = (clone $baseQuery)->where('stock_opname_items.variance_quantity', '=', 0)->count();
+
+        $quantityByUnit = (clone $baseQuery)
+            ->join('units', 'units.id', '=', 'products.unit_id')
+            ->select(
+                'units.id as unit_id',
+                'units.code as unit_code',
+                'units.name as unit_name',
+                DB::raw('SUM(stock_opname_items.counted_quantity) as total_quantity')
+            )
+            ->groupBy('units.id', 'units.code', 'units.name')
+            ->get()
+            ->map(fn ($r) => [
+                'unit_id' => $r->unit_id,
+                'unit_code' => $r->unit_code,
+                'unit_name' => $r->unit_name,
+                'total_quantity' => DecimalQuantity::normalize($r->total_quantity),
+            ])->toArray();
+
+        return [
+            'total_rows' => $totalRows,
+            'total_documents' => $totalDocuments,
+            'positive_item_count' => $positiveCount,
+            'negative_item_count' => $negativeCount,
+            'zero_item_count' => $zeroCount,
+            'quantity_by_unit' => $quantityByUnit,
+        ];
+    }
+
+    private function applyOpnameFilters($query, array $filters): void
+    {
+        if (! empty($filters['location_id'])) {
+            $query->where('stock_opnames.location_id', $filters['location_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $query->where('stock_opname_items.product_id', $filters['product_id']);
+        }
+        if (! empty($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
+        }
+        if (! empty($filters['unit_id'])) {
+            $query->where('products.unit_id', $filters['unit_id']);
+        }
+        if (! empty($filters['variance_direction'])) {
+            $dir = strtoupper($filters['variance_direction']);
+            if ($dir === 'POSITIVE') {
+                $query->where('stock_opname_items.variance_quantity', '>', 0);
+            } elseif ($dir === 'NEGATIVE') {
+                $query->where('stock_opname_items.variance_quantity', '<', 0);
+            } elseif ($dir === 'ZERO') {
+                $query->where('stock_opname_items.variance_quantity', '=', 0);
+            }
+        }
+        if (isset($filters['is_unexpected'])) {
+            $isUnex = in_array($filters['is_unexpected'], ['1', 1, 'true', true], true);
+            $query->where('stock_opname_items.is_unexpected', $isUnex);
+        }
+        if (! empty($filters['start_date'])) {
+            $start = CarbonImmutable::parse($filters['start_date'], 'Asia/Jakarta')->startOfDay()->format('Y-m-d H:i:s');
+            $query->where('stock_opnames.posted_at', '>=', $start);
+        }
+        if (! empty($filters['end_date'])) {
+            $endNext = CarbonImmutable::parse($filters['end_date'], 'Asia/Jakarta')->startOfDay()->addDay()->format('Y-m-d H:i:s');
+            $query->where('stock_opnames.posted_at', '<', $endNext);
+        }
+        if (! empty($filters['search'])) {
+            $search = addcslashes($filters['search'], '%_');
+            $query->where(function ($q) use ($search) {
+                $q->where('stock_opnames.opname_number', 'like', "%{$search}%")
+                    ->orWhere('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%");
+            });
+        }
     }
 }

@@ -37,7 +37,8 @@ class ConcurrencyTest extends TestCase
             '--type='.$type,
             '--id='.$id,
             '--user='.$userId,
-        ]);
+        ], base_path());
+        $process->setTimeout(30);
         $process->start();
 
         return $process;
