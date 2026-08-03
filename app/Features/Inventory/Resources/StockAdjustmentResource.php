@@ -9,6 +9,8 @@ class StockAdjustmentResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $user = $request->user();
+
         return [
             'id' => $this->id,
             'adjustment_number' => $this->adjustment_number,
@@ -31,6 +33,11 @@ class StockAdjustmentResource extends JsonResource
             'canceled_at' => $this->canceled_at?->format('Y-m-d H:i:s'),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+            'abilities' => [
+                'can_update' => $user ? $user->can('update', $this->resource) : false,
+                'can_post' => $user ? $user->can('post', $this->resource) : false,
+                'can_cancel' => $user ? $user->can('cancel', $this->resource) : false,
+            ],
         ];
     }
 }

@@ -258,13 +258,15 @@ dan alur transaksi sudah diputuskan.
   - [x] Multi-item atomic transaction & row locking.
   - [x] REST API Controller & Endpoints (index, store, show, update, post, cancel).
   - [x] Feature tests & MySQL Process-Isolated Concurrency Integration Tests.
-- [ ] **Fase 6B: Frontend Stock Adjustment**
-  - [ ] Buat halaman daftar adjustment.
-  - [ ] Buat form adjustment multi-item.
-  - [ ] Tambahkan konfirmasi sebelum posting & cancel modal.
-  - [ ] Integrasi Pinia Store & API client.
+- [x] **Fase 6B: Frontend Stock Adjustment**
+  - [x] Buat halaman daftar adjustment dengan server-side pagination, filter, & search.
+  - [x] Buat form adjustment multi-item dengan validation helper reason-direction compatibility & notes OTHER mandatory.
+  - [x] Tambahkan konfirmasi sebelum posting & cancel modal dengan peringatan immutability & delta quantity.
+  - [x] Integrasi Pinia Store & API client (`stockAdjustmentApi.js`, `useStockAdjustmentStore.js`).
+  - [x] Document abilities & Maker-Checker UX (menggunakan abilities backend tanpa self-post calculation di frontend).
+  - [x] Route guard (`stock_adjustments.view/.create/.update`) & AppLayout navigation menu.
 - [x] Pastikan adjustment yang diposting tidak dapat dihapus (immutable).
-- [ ] Jalankan seluruh test dan lint.
+- [x] Jalankan seluruh test dan lint.
 
 ---
 

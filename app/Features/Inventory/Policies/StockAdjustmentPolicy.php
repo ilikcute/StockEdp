@@ -1,9 +1,5 @@
 <?php
 
-namespace App\Features\Inventory\Models;
-
-// Move or keep policy in App\Features\Inventory\Policies\StockAdjustmentPolicy
-
 namespace App\Features\Inventory\Policies;
 
 use App\Features\Auth\Enums\PermissionCode;

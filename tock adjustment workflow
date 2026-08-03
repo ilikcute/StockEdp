@@ -1,0 +1,7 @@
+ TASKS.md                                           | 14 [32m+++[m[31m--[m
+ .../Inventory/Policies/StockAdjustmentPolicy.php   |  4 [31m--[m
+ .../Resources/StockAdjustmentResource.php          |  7 [32m+++[m
+ resources/js/features/inventory/routes/index.js    | 40 [32m+++++++++++++[m
+ resources/js/shared/layouts/AppLayout.vue          |  8 [32m+++[m
+ tests/Feature/Inventory/StockAdjustmentTest.php    | 66 [32m+++++++++++++++++++++[m[31m-[m
+ 6 files changed, 128 insertions(+), 11 deletions(-)

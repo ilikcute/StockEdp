@@ -120,13 +120,77 @@ class StockAdjustmentTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.status', 'DRAFT')
-            ->assertJsonPath('data.direction', 'INCREASE');
+            ->assertJsonPath('data.direction', 'INCREASE')
+            ->assertJsonPath('data.abilities.can_update', true)
+            ->assertJsonPath('data.abilities.can_post', false)
+            ->assertJsonPath('data.abilities.can_cancel', true);
 
         $this->assertDatabaseHas('stock_adjustments', [
             'location_id' => $this->location->id,
             'status' => 'DRAFT',
             'created_by' => $this->warehouseOfficer1->id,
         ]);
+    }
+
+    public function test_resource_returns_correct_abilities_matrix()
+    {
+        $adjustment = StockAdjustment::create([
+            'adjustment_number' => 'ADJ-202608-9999',
+            'location_id' => $this->location->id,
+            'adjustment_date' => now()->format('Y-m-d'),
+            'direction' => 'INCREASE',
+            'reason_code' => AdjustmentReason::FOUND->value,
+            'status' => AdjustmentStatus::DRAFT,
+            'created_by' => $this->warehouseOfficer1->id,
+        ]);
+        $adjustment->items()->create(['product_id' => $this->product->id, 'quantity' => '10.0000']);
+
+        // 1. Creator Petugas Gudang sees can_update=true, can_post=false, can_cancel=true
+        $this->actingAs($this->warehouseOfficer1)
+            ->getJson("/api/v1/stock-adjustments/{$adjustment->id}")
+            ->assertOk()
+            ->assertJsonPath('data.abilities.can_update', true)
+            ->assertJsonPath('data.abilities.can_post', false)
+            ->assertJsonPath('data.abilities.can_cancel', true);
+
+        // 2. Supervisor (different user) sees can_post=true
+        $this->actingAs($this->supervisor)
+            ->getJson("/api/v1/stock-adjustments/{$adjustment->id}")
+            ->assertOk()
+            ->assertJsonPath('data.abilities.can_post', true);
+
+        // 3. Supervisor viewing own draft sees can_post=false (maker-checker)
+        $ownAdjustment = StockAdjustment::create([
+            'adjustment_number' => 'ADJ-202608-9998',
+            'location_id' => $this->location->id,
+            'adjustment_date' => now()->format('Y-m-d'),
+            'direction' => 'INCREASE',
+            'reason_code' => AdjustmentReason::FOUND->value,
+            'status' => AdjustmentStatus::DRAFT,
+            'created_by' => $this->supervisor->id,
+        ]);
+        $this->actingAs($this->supervisor)
+            ->getJson("/api/v1/stock-adjustments/{$ownAdjustment->id}")
+            ->assertOk()
+            ->assertJsonPath('data.abilities.can_post', false);
+
+        // 4. POSTED document returns all false
+        $adjustment->update(['status' => AdjustmentStatus::POSTED]);
+        $this->actingAs($this->supervisor)
+            ->getJson("/api/v1/stock-adjustments/{$adjustment->id}")
+            ->assertOk()
+            ->assertJsonPath('data.abilities.can_update', false)
+            ->assertJsonPath('data.abilities.can_post', false)
+            ->assertJsonPath('data.abilities.can_cancel', false);
+
+        // 5. CANCELED document returns all false
+        $adjustment->update(['status' => AdjustmentStatus::CANCELED]);
+        $this->actingAs($this->warehouseOfficer1)
+            ->getJson("/api/v1/stock-adjustments/{$adjustment->id}")
+            ->assertOk()
+            ->assertJsonPath('data.abilities.can_update', false)
+            ->assertJsonPath('data.abilities.can_post', false)
+            ->assertJsonPath('data.abilities.can_cancel', false);
     }
 
     public function test_draft_adjustment_does_not_change_balance()
