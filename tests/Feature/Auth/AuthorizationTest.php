@@ -46,18 +46,17 @@ class AuthorizationTest extends TestCase
 
     public function test_authenticated_user_with_permission_can_access_route(): void
     {
-        $role = Role::create([
-            'code' => RoleCode::WAREHOUSE_OFFICER,
-            'name' => 'Petugas Gudang',
-        ]);
+        $role = Role::firstOrCreate(
+            ['code' => RoleCode::WAREHOUSE_OFFICER->value],
+            ['name' => 'Petugas Gudang']
+        );
 
-        $permission = Permission::create([
-            'code' => PermissionCode::PRODUCTS_CREATE,
-            'name' => 'Mengelola Produk',
-            'group' => 'products',
-        ]);
+        $permission = Permission::firstOrCreate(
+            ['code' => PermissionCode::PRODUCTS_CREATE->value],
+            ['name' => 'Mengelola Produk', 'group' => 'products']
+        );
 
-        $role->permissions()->attach($permission);
+        $role->permissions()->syncWithoutDetaching([$permission->id]);
 
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole(RoleCode::WAREHOUSE_OFFICER);
@@ -71,10 +70,10 @@ class AuthorizationTest extends TestCase
 
     public function test_admin_bypasses_permission_check(): void
     {
-        Role::create([
-            'code' => RoleCode::ADMIN,
-            'name' => 'Administrator',
-        ]);
+        Role::firstOrCreate(
+            ['code' => RoleCode::ADMIN->value],
+            ['name' => 'Administrator']
+        );
 
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole(RoleCode::ADMIN);
@@ -96,14 +95,14 @@ class AuthorizationTest extends TestCase
 
     public function test_permission_via_multiple_roles_works(): void
     {
-        $role1 = Role::create(['code' => RoleCode::WAREHOUSE_OFFICER, 'name' => 'Petugas Gudang']);
-        $role2 = Role::create(['code' => RoleCode::INVENTORY_SUPERVISOR, 'name' => 'Supervisor']);
+        $role1 = Role::firstOrCreate(['code' => RoleCode::WAREHOUSE_OFFICER->value], ['name' => 'Petugas Gudang']);
+        $role2 = Role::firstOrCreate(['code' => RoleCode::INVENTORY_SUPERVISOR->value], ['name' => 'Supervisor']);
 
-        $perm1 = Permission::create(['code' => PermissionCode::PRODUCTS_VIEW, 'name' => 'View', 'group' => 'products']);
-        $perm2 = Permission::create(['code' => PermissionCode::STOCK_ADJUSTMENTS_VIEW, 'name' => 'Adjust View', 'group' => 'stock_adjustments']);
+        $perm1 = Permission::firstOrCreate(['code' => PermissionCode::PRODUCTS_VIEW->value], ['name' => 'View', 'group' => 'products']);
+        $perm2 = Permission::firstOrCreate(['code' => PermissionCode::STOCK_ADJUSTMENTS_VIEW->value], ['name' => 'Adjust View', 'group' => 'stock_adjustments']);
 
-        $role1->permissions()->attach($perm1);
-        $role2->permissions()->attach($perm2);
+        $role1->permissions()->syncWithoutDetaching([$perm1->id]);
+        $role2->permissions()->syncWithoutDetaching([$perm2->id]);
 
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole(RoleCode::WAREHOUSE_OFFICER, RoleCode::INVENTORY_SUPERVISOR);
@@ -116,11 +115,11 @@ class AuthorizationTest extends TestCase
     public function test_multiple_roles_do_not_trigger_query_per_role(): void
     {
         // Setup 2 role berbeda
-        $role1 = Role::create(['code' => RoleCode::WAREHOUSE_OFFICER, 'name' => 'Gudang']);
-        $role2 = Role::create(['code' => RoleCode::INVENTORY_SUPERVISOR, 'name' => 'Supervisor']);
+        $role1 = Role::firstOrCreate(['code' => RoleCode::WAREHOUSE_OFFICER->value], ['name' => 'Gudang']);
+        $role2 = Role::firstOrCreate(['code' => RoleCode::INVENTORY_SUPERVISOR->value], ['name' => 'Supervisor']);
 
-        $perm = Permission::create(['code' => PermissionCode::PRODUCTS_VIEW, 'name' => 'View', 'group' => 'products']);
-        $role1->permissions()->attach($perm);
+        $perm = Permission::firstOrCreate(['code' => PermissionCode::PRODUCTS_VIEW->value], ['name' => 'View', 'group' => 'products']);
+        $role1->permissions()->syncWithoutDetaching([$perm->id]);
 
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole(RoleCode::WAREHOUSE_OFFICER, RoleCode::INVENTORY_SUPERVISOR);

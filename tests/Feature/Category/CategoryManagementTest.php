@@ -26,10 +26,10 @@ class CategoryManagementTest extends TestCase
         parent::setUp();
 
         // Role dengan semua category permissions
-        $adminRole = Role::create([
-            'code' => RoleCode::ADMIN->value,
-            'name' => 'Administrator',
-        ]);
+        $adminRole = Role::firstOrCreate(
+            ['code' => RoleCode::ADMIN->value],
+            ['name' => 'Administrator']
+        );
         $permissions = [
             PermissionCode::CATEGORIES_VIEW->value => 'Melihat Kategori',
             PermissionCode::CATEGORIES_CREATE->value => 'Membuat Kategori',
@@ -37,17 +37,17 @@ class CategoryManagementTest extends TestCase
             PermissionCode::CATEGORIES_CHANGE_STATUS->value => 'Mengubah Status Kategori',
         ];
         foreach ($permissions as $code => $name) {
-            $p = Permission::create(['code' => $code, 'name' => $name, 'group' => 'categories']);
-            $adminRole->permissions()->attach($p->id);
+            $p = Permission::firstOrCreate(['code' => $code], ['name' => $name, 'group' => 'categories']);
+            $adminRole->permissions()->syncWithoutDetaching([$p->id]);
         }
 
         // Role hanya view (warehouse officer hanya dapat categories.view)
-        $viewerRole = Role::create([
-            'code' => RoleCode::WAREHOUSE_OFFICER->value,
-            'name' => 'Petugas Gudang',
-        ]);
+        $viewerRole = Role::firstOrCreate(
+            ['code' => RoleCode::WAREHOUSE_OFFICER->value],
+            ['name' => 'Petugas Gudang']
+        );
         $viewPerm = Permission::where('code', PermissionCode::CATEGORIES_VIEW->value)->first();
-        $viewerRole->permissions()->attach($viewPerm->id);
+        $viewerRole->permissions()->syncWithoutDetaching([$viewPerm->id]);
 
         $this->admin = User::factory()->create(['is_active' => true]);
         $this->admin->roles()->attach($adminRole->id);

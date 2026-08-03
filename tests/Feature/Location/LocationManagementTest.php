@@ -25,33 +25,31 @@ class LocationManagementTest extends TestCase
     {
         parent::setUp();
 
-        $adminRole = Role::create([
-            'code' => RoleCode::ADMIN->value,
-            'name' => 'Administrator',
-        ]);
+        $adminRole = Role::firstOrCreate(
+            ['code' => RoleCode::ADMIN->value],
+            ['name' => 'Administrator']
+        );
 
-        $createPermission = Permission::create([
-            'code' => PermissionCode::LOCATIONS_CREATE->value,
-            'name' => 'Membuat Lokasi',
-            'group' => 'locations',
-        ]);
+        $createPermission = Permission::firstOrCreate(
+            ['code' => PermissionCode::LOCATIONS_CREATE->value],
+            ['name' => 'Membuat Lokasi', 'group' => 'locations']
+        );
 
-        $viewPermission = Permission::create([
-            'code' => PermissionCode::LOCATIONS_VIEW->value,
-            'name' => 'Lihat Lokasi',
-            'group' => 'locations',
-        ]);
+        $viewPermission = Permission::firstOrCreate(
+            ['code' => PermissionCode::LOCATIONS_VIEW->value],
+            ['name' => 'Lihat Lokasi', 'group' => 'locations']
+        );
 
-        $adminRole->permissions()->attach([$createPermission->id, $viewPermission->id]);
+        $adminRole->permissions()->syncWithoutDetaching([$createPermission->id, $viewPermission->id]);
 
         $this->admin = User::factory()->create(['is_active' => true]);
         $this->admin->roles()->attach($adminRole->id);
 
-        $viewerRole = Role::create([
-            'code' => RoleCode::WAREHOUSE_OFFICER->value,
-            'name' => 'Petugas Gudang',
-        ]);
-        $viewerRole->permissions()->attach($viewPermission->id);
+        $viewerRole = Role::firstOrCreate(
+            ['code' => RoleCode::WAREHOUSE_OFFICER->value],
+            ['name' => 'Petugas Gudang']
+        );
+        $viewerRole->permissions()->syncWithoutDetaching([$viewPermission->id]);
 
         $this->viewerUser = User::factory()->create(['is_active' => true]);
         $this->viewerUser->roles()->attach($viewerRole->id);
@@ -129,12 +127,11 @@ class LocationManagementTest extends TestCase
 
     public function test_admin_can_update_location(): void
     {
-        $updatePermission = Permission::create([
-            'code' => PermissionCode::LOCATIONS_UPDATE->value,
-            'name' => 'Ubah Lokasi',
-            'group' => 'locations',
-        ]);
-        $this->admin->roles->first()->permissions()->attach($updatePermission->id);
+        $updatePermission = Permission::firstOrCreate(
+            ['code' => PermissionCode::LOCATIONS_UPDATE->value],
+            ['name' => 'Ubah Lokasi', 'group' => 'locations']
+        );
+        $this->admin->roles->first()->permissions()->syncWithoutDetaching([$updatePermission->id]);
 
         $location = Location::factory()->create();
 
@@ -155,12 +152,11 @@ class LocationManagementTest extends TestCase
 
     public function test_admin_can_change_location_status(): void
     {
-        $statusPermission = Permission::create([
-            'code' => PermissionCode::LOCATIONS_CHANGE_STATUS->value,
-            'name' => 'Ubah Status',
-            'group' => 'locations',
-        ]);
-        $this->admin->roles->first()->permissions()->attach($statusPermission->id);
+        $statusPermission = Permission::firstOrCreate(
+            ['code' => PermissionCode::LOCATIONS_CHANGE_STATUS->value],
+            ['name' => 'Ubah Status', 'group' => 'locations']
+        );
+        $this->admin->roles->first()->permissions()->syncWithoutDetaching([$statusPermission->id]);
 
         $location = Location::factory()->create(['is_active' => true]);
 

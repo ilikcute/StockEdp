@@ -68,6 +68,9 @@ enum PermissionCode: string
 
     // Reports & Users
     case REPORTS_VIEW = 'reports.view';
+    case REPORTS_INVENTORY_BALANCE_VIEW = 'reports.inventory_balance.view';
+    case REPORTS_LOW_STOCK_VIEW = 'reports.low_stock.view';
+    case REPORTS_STOCK_CARD_VIEW = 'reports.stock_card.view';
     case REPORTS_EXPORT = 'reports.export';
     case USERS_MANAGE = 'users.manage';
 

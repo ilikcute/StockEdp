@@ -90,21 +90,20 @@
                 Transfer Stok
               </router-link>
               <router-link
-<<<<<<< HEAD
-                v-if="authStore.hasPermission('stock_opnames.view')"
-                to="/inventory/opnames"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/opnames') }"
-              >
-                Stock Opname
-=======
                 v-if="authStore.hasPermission('stock_adjustments.view')"
                 to="/inventory/adjustments"
                 class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
                 :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/adjustments') }"
               >
                 Penyesuaian Stok
->>>>>>> a618756 (feat: implement stock adjustment workflow complete with backend and frontend)
+              </router-link>
+              <router-link
+                v-if="authStore.hasPermission('stock_opnames.view')"
+                to="/inventory/opnames"
+                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/opnames') }"
+              >
+                Stock Opname
               </router-link>
             </div>
 

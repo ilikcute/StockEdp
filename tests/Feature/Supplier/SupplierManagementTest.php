@@ -25,42 +25,38 @@ class SupplierManagementTest extends TestCase
     {
         parent::setUp();
 
-        $adminRole = Role::create([
-            'code' => RoleCode::ADMIN->value,
-            'name' => 'Administrator',
-        ]);
+        $adminRole = Role::firstOrCreate(
+            ['code' => RoleCode::ADMIN->value],
+            ['name' => 'Administrator']
+        );
 
-        $viewPerm = Permission::create([
-            'code' => PermissionCode::SUPPLIERS_VIEW->value,
-            'name' => 'Melihat Supplier',
-            'group' => 'suppliers',
-        ]);
-        $createPerm = Permission::create([
-            'code' => PermissionCode::SUPPLIERS_CREATE->value,
-            'name' => 'Membuat Supplier',
-            'group' => 'suppliers',
-        ]);
-        $updatePerm = Permission::create([
-            'code' => PermissionCode::SUPPLIERS_UPDATE->value,
-            'name' => 'Mengubah Supplier',
-            'group' => 'suppliers',
-        ]);
-        $statusPerm = Permission::create([
-            'code' => PermissionCode::SUPPLIERS_CHANGE_STATUS->value,
-            'name' => 'Mengubah Status Supplier',
-            'group' => 'suppliers',
-        ]);
+        $viewPerm = Permission::firstOrCreate(
+            ['code' => PermissionCode::SUPPLIERS_VIEW->value],
+            ['name' => 'Melihat Supplier', 'group' => 'suppliers']
+        );
+        $createPerm = Permission::firstOrCreate(
+            ['code' => PermissionCode::SUPPLIERS_CREATE->value],
+            ['name' => 'Membuat Supplier', 'group' => 'suppliers']
+        );
+        $updatePerm = Permission::firstOrCreate(
+            ['code' => PermissionCode::SUPPLIERS_UPDATE->value],
+            ['name' => 'Mengubah Supplier', 'group' => 'suppliers']
+        );
+        $statusPerm = Permission::firstOrCreate(
+            ['code' => PermissionCode::SUPPLIERS_CHANGE_STATUS->value],
+            ['name' => 'Mengubah Status Supplier', 'group' => 'suppliers']
+        );
 
-        $adminRole->permissions()->attach([$viewPerm->id, $createPerm->id, $updatePerm->id, $statusPerm->id]);
+        $adminRole->permissions()->syncWithoutDetaching([$viewPerm->id, $createPerm->id, $updatePerm->id, $statusPerm->id]);
 
         $this->admin = User::factory()->create(['is_active' => true]);
         $this->admin->roles()->attach($adminRole->id);
 
-        $viewerRole = Role::create([
-            'code' => RoleCode::WAREHOUSE_OFFICER->value,
-            'name' => 'Petugas Gudang',
-        ]);
-        $viewerRole->permissions()->attach($viewPerm->id);
+        $viewerRole = Role::firstOrCreate(
+            ['code' => RoleCode::WAREHOUSE_OFFICER->value],
+            ['name' => 'Petugas Gudang']
+        );
+        $viewerRole->permissions()->syncWithoutDetaching([$viewPerm->id]);
 
         $this->viewerUser = User::factory()->create(['is_active' => true]);
         $this->viewerUser->roles()->attach($viewerRole->id);

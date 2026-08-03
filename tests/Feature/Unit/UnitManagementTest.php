@@ -25,10 +25,10 @@ class UnitManagementTest extends TestCase
     {
         parent::setUp();
 
-        $adminRole = Role::create([
-            'code' => RoleCode::ADMIN->value,
-            'name' => 'Administrator',
-        ]);
+        $adminRole = Role::firstOrCreate(
+            ['code' => RoleCode::ADMIN->value],
+            ['name' => 'Administrator']
+        );
         $permissions = [
             PermissionCode::UNITS_VIEW->value => 'Melihat Satuan',
             PermissionCode::UNITS_CREATE->value => 'Membuat Satuan',
@@ -36,16 +36,16 @@ class UnitManagementTest extends TestCase
             PermissionCode::UNITS_CHANGE_STATUS->value => 'Mengubah Status Satuan',
         ];
         foreach ($permissions as $code => $name) {
-            $p = Permission::create(['code' => $code, 'name' => $name, 'group' => 'units']);
-            $adminRole->permissions()->attach($p->id);
+            $p = Permission::firstOrCreate(['code' => $code], ['name' => $name, 'group' => 'units']);
+            $adminRole->permissions()->syncWithoutDetaching([$p->id]);
         }
 
-        $viewerRole = Role::create([
-            'code' => RoleCode::WAREHOUSE_OFFICER->value,
-            'name' => 'Petugas Gudang',
-        ]);
+        $viewerRole = Role::firstOrCreate(
+            ['code' => RoleCode::WAREHOUSE_OFFICER->value],
+            ['name' => 'Petugas Gudang']
+        );
         $viewPerm = Permission::where('code', PermissionCode::UNITS_VIEW->value)->first();
-        $viewerRole->permissions()->attach($viewPerm->id);
+        $viewerRole->permissions()->syncWithoutDetaching([$viewPerm->id]);
 
         $this->admin = User::factory()->create(['is_active' => true]);
         $this->admin->roles()->attach($adminRole->id);

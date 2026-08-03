@@ -139,7 +139,47 @@ export const inventoryRoutes = [
             permission: 'stock_transfers.update'
         }
     },
-<<<<<<< HEAD
+    // ── Stock Adjustments ──────────────────────────────────────
+    {
+        path: '/inventory/adjustments',
+        name: 'inventory.adjustments',
+        component: () => import('../pages/StockAdjustmentListPage.vue'),
+        meta: {
+            title: 'Penyesuaian Stok',
+            requiresAuth: true,
+            permission: 'stock_adjustments.view'
+        }
+    },
+    {
+        path: '/inventory/adjustments/create',
+        name: 'inventory.adjustments.create',
+        component: () => import('../pages/StockAdjustmentFormPage.vue'),
+        meta: {
+            title: 'Buat Penyesuaian Stok',
+            requiresAuth: true,
+            permission: 'stock_adjustments.create'
+        }
+    },
+    {
+        path: '/inventory/adjustments/:id',
+        name: 'inventory.adjustments.detail',
+        component: () => import('../pages/StockAdjustmentDetailPage.vue'),
+        meta: {
+            title: 'Detail Penyesuaian Stok',
+            requiresAuth: true,
+            permission: 'stock_adjustments.view'
+        }
+    },
+    {
+        path: '/inventory/adjustments/:id/edit',
+        name: 'inventory.adjustments.edit',
+        component: () => import('../pages/StockAdjustmentFormPage.vue'),
+        meta: {
+            title: 'Edit Penyesuaian Stok',
+            requiresAuth: true,
+            permission: 'stock_adjustments.update'
+        }
+    },
     // ── Stock Opname ──────────────────────────────────────────
     {
         path: '/inventory/opnames',
@@ -189,46 +229,6 @@ export const inventoryRoutes = [
             title: 'Ruang Hitung — Stock Opname',
             requiresAuth: true,
             permission: 'stock_opnames.update'
-=======
-    {
-        path: '/inventory/adjustments',
-        name: 'inventory.adjustments',
-        component: () => import('../pages/StockAdjustmentListPage.vue'),
-        meta: {
-            title: 'Penyesuaian Stok',
-            requiresAuth: true,
-            permission: 'stock_adjustments.view'
-        }
-    },
-    {
-        path: '/inventory/adjustments/create',
-        name: 'inventory.adjustments.create',
-        component: () => import('../pages/StockAdjustmentFormPage.vue'),
-        meta: {
-            title: 'Buat Penyesuaian Stok',
-            requiresAuth: true,
-            permission: 'stock_adjustments.create'
-        }
-    },
-    {
-        path: '/inventory/adjustments/:id',
-        name: 'inventory.adjustments.detail',
-        component: () => import('../pages/StockAdjustmentDetailPage.vue'),
-        meta: {
-            title: 'Detail Penyesuaian Stok',
-            requiresAuth: true,
-            permission: 'stock_adjustments.view'
-        }
-    },
-    {
-        path: '/inventory/adjustments/:id/edit',
-        name: 'inventory.adjustments.edit',
-        component: () => import('../pages/StockAdjustmentFormPage.vue'),
-        meta: {
-            title: 'Edit Penyesuaian Stok',
-            requiresAuth: true,
-            permission: 'stock_adjustments.update'
->>>>>>> a618756 (feat: implement stock adjustment workflow complete with backend and frontend)
         }
     }
 ];

@@ -24,6 +24,8 @@ use App\Features\Location\Repositories\Contracts\LocationRepositoryInterface;
 use App\Features\Location\Repositories\Eloquent\LocationRepository;
 use App\Features\Product\Repositories\Contracts\ProductRepositoryInterface;
 use App\Features\Product\Repositories\Eloquent\ProductRepository;
+use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
+use App\Features\Reporting\Repositories\Eloquent\ReportingRepository;
 use App\Features\Supplier\Repositories\Contracts\SupplierRepositoryInterface;
 use App\Features\Supplier\Repositories\Eloquent\SupplierRepository;
 use App\Features\Unit\Repositories\Contracts\UnitRepositoryInterface;
@@ -39,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(ReportingRepositoryInterface::class, ReportingRepository::class);
+
         $this->app->bind(
             CategoryRepositoryInterface::class,
             CategoryRepository::class

@@ -18,10 +18,10 @@ class RbacTest extends TestCase
 
     public function test_user_can_be_assigned_role(): void
     {
-        $role = Role::create([
-            'code' => RoleCode::WAREHOUSE_OFFICER,
-            'name' => 'Petugas Gudang',
-        ]);
+        $role = Role::firstOrCreate(
+            ['code' => RoleCode::WAREHOUSE_OFFICER->value],
+            ['name' => 'Petugas Gudang']
+        );
 
         $user = User::factory()->create();
 
@@ -33,18 +33,17 @@ class RbacTest extends TestCase
 
     public function test_user_with_role_has_corresponding_permissions(): void
     {
-        $role = Role::create([
-            'code' => RoleCode::WAREHOUSE_OFFICER,
-            'name' => 'Petugas Gudang',
-        ]);
+        $role = Role::firstOrCreate(
+            ['code' => RoleCode::WAREHOUSE_OFFICER->value],
+            ['name' => 'Petugas Gudang']
+        );
 
-        $permission = Permission::create([
-            'code' => PermissionCode::PRODUCTS_VIEW,
-            'name' => 'Melihat Daftar Produk',
-            'group' => 'products',
-        ]);
+        $permission = Permission::firstOrCreate(
+            ['code' => PermissionCode::PRODUCTS_VIEW->value],
+            ['name' => 'Melihat Daftar Produk', 'group' => 'products']
+        );
 
-        $role->permissions()->attach($permission);
+        $role->permissions()->syncWithoutDetaching([$permission->id]);
 
         $user = User::factory()->create();
         $user->assignRole(RoleCode::WAREHOUSE_OFFICER);
@@ -55,10 +54,10 @@ class RbacTest extends TestCase
 
     public function test_admin_has_all_permissions_implicitly(): void
     {
-        Role::create([
-            'code' => RoleCode::ADMIN,
-            'name' => 'Administrator',
-        ]);
+        Role::firstOrCreate(
+            ['code' => RoleCode::ADMIN->value],
+            ['name' => 'Administrator']
+        );
 
         $user = User::factory()->create();
         $user->assignRole(RoleCode::ADMIN);

@@ -3,6 +3,7 @@
 namespace App\Features\Location\Models;
 
 use App\Features\Auth\Models\User;
+use App\Features\Inventory\Models\InventoryLocationLock;
 use App\Features\Location\Observers\LocationObserver;
 use Database\Factories\Features\Location\LocationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -42,5 +43,10 @@ class Location extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_locations');
+    }
+
+    public function operationLock()
+    {
+        return $this->hasOne(InventoryLocationLock::class, 'location_id');
     }
 }

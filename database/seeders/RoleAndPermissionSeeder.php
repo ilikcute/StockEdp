@@ -94,6 +94,9 @@ class RoleAndPermissionSeeder extends Seeder
 
             // Reports & Users
             PermissionCode::REPORTS_VIEW->value => 'Melihat Laporan',
+            PermissionCode::REPORTS_INVENTORY_BALANCE_VIEW->value => 'Melihat Laporan Saldo Stok',
+            PermissionCode::REPORTS_LOW_STOCK_VIEW->value => 'Melihat Laporan Stok Minimum',
+            PermissionCode::REPORTS_STOCK_CARD_VIEW->value => 'Melihat Laporan Kartu Stok',
             PermissionCode::REPORTS_EXPORT->value => 'Mengekspor Laporan',
             PermissionCode::USERS_MANAGE->value => 'Mengelola Pengguna & Hak Akses',
         ];

@@ -27,6 +27,59 @@ Keputusan terbaru harus diletakkan paling atas.
 **Tinjau kembali jika:**  
 [Jelaskan kondisi yang menyebabkan keputusan perlu dievaluasi ulang.]
 
+## 2026-08-03 — Keputusan Desain Reporting & Stock Card (Fase 8A1)
+
+**Keputusan:**
+
+### 1. Struktur Modul & Canonical Endpoints
+1. Modul backend ditempatkan di `app/Features/Reporting` sesuai konvensi `ARCHITECTURE.md`.
+2. Endpoint canonical Fase 8A1:
+   - `GET /api/v1/reports/inventory-balances` (Laporan Saldo Stok Terkini)
+   - `GET /api/v1/reports/low-stock` (Laporan Stok Minimum)
+   - `GET /api/v1/reports/stock-card` (Laporan Kartu Stok)
+3. Controller bersifat tipis; business logic dipisahkan ke Query Services, Read Repositories, DTOs, dan API Resources. Controller dan API Resource tidak melakukan query DB atau perhitungan bisnis langsung.
+
+### 2. Otorisasi & Scoping Lokasi (Tanpa auth() di Repository)
+4. Permission granular disatukan di `PermissionCode`:
+   - `PermissionCode::REPORTS_INVENTORY_BALANCE_VIEW` (`reports.inventory_balance.view`)
+   - `PermissionCode::REPORTS_LOW_STOCK_VIEW` (`reports.low_stock.view`)
+   - `PermissionCode::REPORTS_STOCK_CARD_VIEW` (`reports.stock_card.view`)
+5. Location scoping dikirim secara **eksplisit** dari Controller/FormRequest ke Repository sebagai `$allowedLocationIds`. Repository tidak boleh memanggil helper `auth()` secara tersembunyi.
+6. Jika `$allowedLocationIds` kosong (user tidak memiliki lokasi yang diizinkan), repository langsung mengembalikan paginasi/list kosong dan summary bernilai nol tanpa mengeksekusi query database tanpa filter scope.
+7. Jika user meminta `location_id` di luar `$allowedLocationIds`, sistem menolak akses dengan `403 Forbidden` atau menyaringnya ke set kosong secara aman.
+
+### 3. Ledger Ordering & Penanganan Backdated Document Date
+8. `occurred_at` pada `stock_movements` berasal dari tanggal dokumen bisnis (misal penerimaan/pengeluaran/adjustment) dan **dapat di-backdate**.
+9. Namun, urutan mutasi saldo `quantity_before` $\rightarrow$ `quantity_after` dihitung secara atomik saat posting berbasis urutan `id ASC` pada `stock_movements`.
+10. Oleh karena itu, **`id ASC` (atau `occurred_at ASC, id ASC`) adalah urutan ledger balance otoritatif**. Opening balance dan Closing balance pada Kartu Stok dihitung dan diurutkan menggunakan urutan ledger yang sama.
+11. Tanggal dokumen bisnis (`occurred_at`) dan timestamp posting (`created_at`) disajikan sebagai kolom terpisah pada Kartu Stok.
+
+### 4. Direction & Penanganan REVERSAL
+12. Arah mutasi (`direction`) dan kuantitas masuk/keluar dihitung secara otoritatif dari selisih saldo:
+    $$\text{delta} = \text{quantity\_after} - \text{quantity\_before}$$
+    - `delta > 0` $\rightarrow$ `direction = IN`, `quantity_in = delta`, `quantity_out = 0.0000`
+    - `delta < 0` $\rightarrow$ `direction = OUT`, `quantity_in = 0.0000`, `quantity_out = abs(delta)`
+    - `delta = 0` $\rightarrow$ `direction = NONE`, `quantity_in = 0.0000`, `quantity_out = 0.0000`
+13. Untuk movement jenis `REVERSAL` atau pergerakan khusus lainnya, `delta` menjadi sumber kebenaran tunggal direction dan quantity di backend (frontend tidak menentukan direction).
+
+### 5. Aturan Low Stock Report
+14. `products.minimum_stock` diperlakukan sebagai threshold per lokasi untuk V1.
+15. Parameter `location_id` **wajib** pada `GET /api/v1/reports/low-stock` dan lokasi tersebut harus termasuk dalam `$allowedLocationIds` pengguna.
+16. Kriteria low stock adalah `on_hand_quantity < minimum_stock` (kurang dari minimum_stock).
+17. Produk dengan `minimum_stock = 0.00` tidak dianggap low stock.
+18. Produk aktif tanpa saldo di lokasi terkait diperlakukan sebagai `on_hand_quantity = 0.0000` (menggunakan `LEFT JOIN` yang aman).
+19. `shortage_quantity` dihitung di SQL / BCMath backend: `max(minimum_stock - on_hand_quantity, 0)` sebagai decimal string presisi 4 digit.
+
+### 6. Semantik Tanggal & Timezone
+20. Filter tanggal menggunakan format `Y-m-d` dengan timezone `Asia/Jakarta`.
+21. Backend membentuk half-open interval: `occurred_at >= start_date 00:00:00` AND `occurred_at < (end_date + 1 day) 00:00:00`.
+22. Rentang tanggal maksimal untuk Kartu Stok adalah 366 hari.
+
+**Alasan:**  
+Memisahkan urutan ledger berbasis `id` memastikan histori saldo pada Kartu Stok selalu konsisten secara matematis dengan `quantity_before` dan `quantity_after`, bahkan jika dokumen di-backdate. Location scoping yang dikirim eksplisit ke Repository mencegah kebocoran data dan mempermudah pengujian terisolasi tanpa session authentication global.
+
+---
+
 ## 2026-08-01 — Keputusan Desain Freeze Infrastructure & Lock Ordering Global (Fase 7A)
 
 **Keputusan:**
