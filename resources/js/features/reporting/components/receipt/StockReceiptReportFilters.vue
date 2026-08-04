@@ -12,200 +12,68 @@
         >
       </div>
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Lokasi</label>
-        <select
-          :value="filters.location_id"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @change="emit('update:filter', 'location_id', $event.target.value)"
-        >
-          <option value="">
-            Semua Lokasi
-          </option>
-          <option
-            v-for="loc in masterStore.locations"
-            :key="loc.id"
-            :value="loc.id"
-          >
-            {{ loc.name }}
-          </option>
-        </select>
-      </div>
+      <ReportMasterSelect
+        label="Lokasi"
+        placeholder="Semua Lokasi"
+        :model-value="filters.location_id"
+        :options="masterStore.locations"
+        @update:model-value="val => emit('update:filter', 'location_id', val)"
+      />
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Supplier</label>
-        <select
-          :value="filters.supplier_id"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          :disabled="!!masterStore.supplierError"
-          @change="emit('update:filter', 'supplier_id', $event.target.value)"
-        >
-          <option value="">
-            Semua Supplier
-          </option>
-          <option
-            v-for="sup in masterStore.suppliers"
-            :key="sup.id"
-            :value="sup.id"
-          >
-            {{ sup.name }}
-          </option>
-        </select>
-        <p
-          v-if="masterStore.supplierError"
-          class="mt-1 text-xs text-amber-600"
-        >
-          {{ masterStore.supplierError }}
-        </p>
-      </div>
+      <ReportMasterSelect
+        label="Supplier"
+        placeholder="Semua Supplier"
+        :model-value="filters.supplier_id"
+        :options="masterStore.suppliers"
+        :disabled="!!masterStore.supplierError"
+        :error-message="masterStore.supplierError"
+        @update:model-value="val => emit('update:filter', 'supplier_id', val)"
+      />
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Kategori</label>
-        <select
-          :value="filters.category_id"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @change="emit('update:filter', 'category_id', $event.target.value)"
-        >
-          <option value="">
-            Semua Kategori
-          </option>
-          <option
-            v-for="cat in masterStore.categories"
-            :key="cat.id"
-            :value="cat.id"
-          >
-            {{ cat.name }}
-          </option>
-        </select>
-      </div>
+      <ReportMasterSelect
+        label="Kategori"
+        placeholder="Semua Kategori"
+        :model-value="filters.category_id"
+        :options="masterStore.categories"
+        @update:model-value="val => emit('update:filter', 'category_id', val)"
+      />
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Satuan</label>
-        <select
-          :value="filters.unit_id"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @change="emit('update:filter', 'unit_id', $event.target.value)"
-        >
-          <option value="">
-            Semua Satuan
-          </option>
-          <option
-            v-for="u in masterStore.units"
-            :key="u.id"
-            :value="u.id"
-          >
-            {{ u.name }}
-          </option>
-        </select>
-      </div>
+      <ReportMasterSelect
+        label="Satuan"
+        placeholder="Semua Satuan"
+        :model-value="filters.unit_id"
+        :options="masterStore.units"
+        @update:model-value="val => emit('update:filter', 'unit_id', val)"
+      />
 
-      <div class="relative">
-        <label class="block text-xs font-medium text-gray-700">Produk</label>
-        <input
-          v-model="productSearch"
-          type="text"
-          placeholder="Cari produk (min 2 karakter)..."
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @input="$emit('product-search', productSearch)"
-          @focus="showProductDropdown = true"
-        >
-        <div
-          v-if="showProductDropdown && masterStore.products.length > 0"
-          class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-        >
-          <div
-            v-for="prod in masterStore.products"
-            :key="prod.id"
-            class="cursor-pointer px-3 py-1 text-xs hover:bg-indigo-50"
-            @click="onSelectProduct(prod)"
-          >
-            {{ prod.name }} ({{ prod.sku }})
-          </div>
-        </div>
-      </div>
+      <ReportProductSearch
+        :products="masterStore.products"
+        @product-search="q => emit('product-search', q)"
+        @select-product="p => emit('select-product', p)"
+      />
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Tanggal Mulai</label>
-        <input
-          :value="filters.start_date"
-          type="date"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @input="emit('update:filter', 'start_date', $event.target.value)"
-        >
-      </div>
+      <ReportPeriodFilters
+        :start-date="filters.start_date"
+        :end-date="filters.end_date"
+        @update:start-date="val => emit('update:filter', 'start_date', val)"
+        @update:end-date="val => emit('update:filter', 'end_date', val)"
+      />
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Tanggal Akhir</label>
-        <input
-          :value="filters.end_date"
-          type="date"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @input="emit('update:filter', 'end_date', $event.target.value)"
-        >
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Urutkan Berdasarkan</label>
-        <select
-          :value="filters.sort_by"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @change="emit('update:filter', 'sort_by', $event.target.value)"
-        >
-          <option value="posted_at">
-            Waktu Posting
-          </option>
-          <option value="document_date">
-            Tanggal Dokumen
-          </option>
-          <option value="receipt_number">
-            Nomor Penerimaan
-          </option>
-          <option value="id">
-            ID Item
-          </option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Arah Urutan</label>
-        <select
-          :value="filters.sort_order"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @change="emit('update:filter', 'sort_order', $event.target.value)"
-        >
-          <option value="desc">
-            Terbaru / Descending
-          </option>
-          <option value="asc">
-            Terlama / Ascending
-          </option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-medium text-gray-700">Per Halaman</label>
-        <select
-          :value="filters.per_page"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          @change="emit('update:filter', 'per_page', $event.target.value)"
-        >
-          <option value="15">
-            15 Baris
-          </option>
-          <option value="25">
-            25 Baris
-          </option>
-          <option value="50">
-            50 Baris
-          </option>
-        </select>
-      </div>
+      <ReportSortControls
+        :sort-by="filters.sort_by"
+        :sort-order="filters.sort_order"
+        :per-page="filters.per_page"
+        :sort-options="receiptSortOptions"
+        @update:sort-by="val => emit('update:filter', 'sort_by', val)"
+        @update:sort-order="val => emit('update:filter', 'sort_order', val)"
+        @update:per-page="val => emit('update:filter', 'per_page', val)"
+      />
 
       <div class="flex items-end">
         <button
           type="button"
           class="w-full rounded-md bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200"
-          @click="$emit('reset')"
+          @click="emit('reset')"
         >
           Reset Filter
         </button>
@@ -215,7 +83,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import ReportMasterSelect from '../shared/ReportMasterSelect.vue';
+import ReportPeriodFilters from '../shared/ReportPeriodFilters.vue';
+import ReportSortControls from '../shared/ReportSortControls.vue';
+import ReportProductSearch from '../shared/ReportProductSearch.vue';
 
 defineProps({
     filters: { type: Object, required: true },
@@ -224,12 +95,10 @@ defineProps({
 
 const emit = defineEmits(['update:filter', 'product-search', 'select-product', 'reset']);
 
-const productSearch = ref('');
-const showProductDropdown = ref(false);
-
-const onSelectProduct = (prod) => {
-    productSearch.value = prod.name;
-    showProductDropdown.value = false;
-    emit('select-product', prod);
-};
+const receiptSortOptions = [
+    { value: 'posted_at', label: 'Waktu Posting' },
+    { value: 'document_date', label: 'Tanggal Dokumen' },
+    { value: 'receipt_number', label: 'Nomor Penerimaan' },
+    { value: 'id', label: 'ID Item' },
+];
 </script>
