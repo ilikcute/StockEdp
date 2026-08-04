@@ -14,71 +14,33 @@
     <StockOpnameReportFilters
       :filters="filters"
       :master-store="masterStore"
+      :product-search="productSearch"
       @update:filter="(key, val) => filters[key] = val"
+      @update:product-search="val => productSearch = val"
       @product-search="onProductSearch"
       @select-product="selectProduct"
+      @clear-product="clearProduct"
       @reset="resetFilters"
     />
-
-    <div
-      v-if="localValidationError"
-      class="rounded-md bg-amber-50 p-4 text-sm text-amber-700"
-    >
-      {{ localValidationError }}
-    </div>
 
     <ReportFeedbackPanels
       :loading="store.loading"
       :error="store.error"
       :status="store.status"
       :validation-errors="store.validationErrors"
+      :local-validation-error="localValidationError"
       :has-data="store.data.length > 0"
       :has-fetched="hasFetched"
+      empty-message="Tidak ada data hasil opname yang sesuai filter."
       @retry="fetchData(1)"
-      @reset="resetFilters"
+      @reset-filters="resetFilters"
     />
-
-    <div
-      v-if="store.summary"
-      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
-    >
-      <div class="rounded-lg bg-white p-4 shadow">
-        <div class="text-xs font-medium text-gray-500">
-          Total Filtered Rows
-        </div>
-        <div class="mt-1 text-xl font-bold text-gray-900">
-          {{ store.summary.total_rows }}
-        </div>
-      </div>
-      <div class="rounded-lg bg-white p-4 shadow">
-        <div class="text-xs font-medium text-gray-500">
-          Total Dokumen Opname
-        </div>
-        <div class="mt-1 text-xl font-bold text-gray-900">
-          {{ store.summary.total_documents }}
-        </div>
-      </div>
-      <div class="rounded-lg bg-white p-4 shadow">
-        <div class="text-xs font-medium text-gray-500">
-          Item Selisih Positif
-        </div>
-        <div class="mt-1 text-xl font-bold text-green-600">
-          {{ store.summary.positive_item_count }}
-        </div>
-      </div>
-      <div class="rounded-lg bg-white p-4 shadow">
-        <div class="text-xs font-medium text-gray-500">
-          Item Selisih Negatif
-        </div>
-        <div class="mt-1 text-xl font-bold text-red-600">
-          {{ store.summary.negative_item_count }}
-        </div>
-      </div>
-    </div>
 
     <QuantityByUnitSummary
       v-if="store.summary"
       :summary="store.summary"
+      :total-documents="store.summary.total_documents"
+      :total-rows="store.summary.total_rows"
     />
 
     <div
@@ -118,12 +80,12 @@ const store = useStockOpnameReportStore();
 const masterStore = useReportFilterOptionsStore();
 
 const defaultFilters = {
+    variance_direction: '',
+    is_unexpected: '',
     location_id: '',
     product_id: '',
     category_id: '',
     unit_id: '',
-    variance_direction: '',
-    is_unexpected: '',
     start_date: '',
     end_date: '',
     search: '',
@@ -133,6 +95,7 @@ const defaultFilters = {
 };
 
 const filters = reactive({ ...defaultFilters });
+const productSearch = ref('');
 const localValidationError = ref('');
 const hasFetched = ref(false);
 
@@ -146,16 +109,25 @@ watch(() => ({ ...filters }), debouncedFetch, { deep: true });
 
 let productSearchTimer = null;
 const onProductSearch = (query) => {
+    productSearch.value = query;
+    filters.product_id = '';
     clearTimeout(productSearchTimer);
     productSearchTimer = setTimeout(() => {
         if (query.trim().length >= 2) {
             masterStore.searchProducts(query);
         }
-    }, 400);
+    }, 300);
 };
 
 const selectProduct = (prod) => {
     filters.product_id = prod.id;
+    productSearch.value = prod.name;
+};
+
+const clearProduct = () => {
+    filters.product_id = '';
+    productSearch.value = '';
+    masterStore.resetProducts();
 };
 
 const buildParams = (page) => {
@@ -177,6 +149,11 @@ const fetchData = async (page = 1) => {
 
 const resetFilters = () => {
     clearTimeout(debounceTimer);
+    clearTimeout(productSearchTimer);
+
+    productSearch.value = '';
+    masterStore.resetProducts();
+
     Object.assign(filters, defaultFilters);
     store.reset();
     hasFetched.value = false;
@@ -185,6 +162,5 @@ const resetFilters = () => {
 
 onMounted(async () => {
     await masterStore.fetchBaseOptions();
-    fetchData(1);
 });
 </script>

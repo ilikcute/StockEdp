@@ -37,9 +37,14 @@
       />
 
       <ReportProductSearch
+        :model-value="productSearch"
+        :selected-product-id="filters.product_id"
         :products="masterStore.products"
-        @product-search="q => emit('product-search', q)"
+        :loading="masterStore.loadingProducts"
+        @update:model-value="val => emit('update:productSearch', val)"
+        @search="q => emit('product-search', q)"
         @select-product="p => emit('select-product', p)"
+        @clear-product="emit('clear-product')"
       />
 
       <ReportPeriodFilters
@@ -81,9 +86,17 @@ import ReportProductSearch from '../shared/ReportProductSearch.vue';
 defineProps({
     filters: { type: Object, required: true },
     masterStore: { type: Object, required: true },
+    productSearch: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:filter', 'product-search', 'select-product', 'reset']);
+const emit = defineEmits([
+    'update:filter',
+    'update:productSearch',
+    'product-search',
+    'select-product',
+    'clear-product',
+    'reset',
+]);
 
 const issueSortOptions = [
     { value: 'posted_at', label: 'Waktu Posting' },

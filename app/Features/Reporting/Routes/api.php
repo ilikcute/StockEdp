@@ -2,6 +2,7 @@
 
 use App\Features\Reporting\Controllers\InventoryBalanceReportController;
 use App\Features\Reporting\Controllers\LowStockReportController;
+use App\Features\Reporting\Controllers\ReportFilterOptionsController;
 use App\Features\Reporting\Controllers\StockAdjustmentReportController;
 use App\Features\Reporting\Controllers\StockCardReportController;
 use App\Features\Reporting\Controllers\StockIssueReportController;
@@ -11,6 +12,10 @@ use App\Features\Reporting\Controllers\StockTransferReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('reports/filter-options/base', [ReportFilterOptionsController::class, 'baseOptions']);
+    Route::get('reports/filter-options/products', [ReportFilterOptionsController::class, 'productOptions']);
+    Route::get('reports/filter-options/suppliers', [ReportFilterOptionsController::class, 'supplierOptions']);
+
     Route::get('reports/inventory-balances', [InventoryBalanceReportController::class, 'index']);
     Route::get('reports/low-stock', [LowStockReportController::class, 'index']);
     Route::get('reports/stock-card', [StockCardReportController::class, 'index']);

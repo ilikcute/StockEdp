@@ -20,14 +20,16 @@
         @update:model-value="val => emit('update:filter', 'location_id', val)"
       />
 
-      <ReportMasterSelect
-        label="Supplier"
-        placeholder="Semua Supplier"
-        :model-value="filters.supplier_id"
-        :options="masterStore.suppliers"
-        :disabled="!!masterStore.supplierError"
-        :error-message="masterStore.supplierError"
-        @update:model-value="val => emit('update:filter', 'supplier_id', val)"
+      <ReportSupplierSearch
+        :model-value="supplierSearch"
+        :selected-supplier-id="filters.supplier_id"
+        :suppliers="masterStore.suppliers"
+        :loading="masterStore.loadingSuppliers"
+        :error="masterStore.supplierError"
+        @update:model-value="val => emit('update:supplierSearch', val)"
+        @search="q => emit('supplier-search', q)"
+        @select-supplier="s => emit('select-supplier', s)"
+        @clear-supplier="emit('clear-supplier')"
       />
 
       <ReportMasterSelect
@@ -47,9 +49,14 @@
       />
 
       <ReportProductSearch
+        :model-value="productSearch"
+        :selected-product-id="filters.product_id"
         :products="masterStore.products"
-        @product-search="q => emit('product-search', q)"
+        :loading="masterStore.loadingProducts"
+        @update:model-value="val => emit('update:productSearch', val)"
+        @search="q => emit('product-search', q)"
         @select-product="p => emit('select-product', p)"
+        @clear-product="emit('clear-product')"
       />
 
       <ReportPeriodFilters
@@ -84,6 +91,7 @@
 
 <script setup>
 import ReportMasterSelect from '../shared/ReportMasterSelect.vue';
+import ReportSupplierSearch from '../shared/ReportSupplierSearch.vue';
 import ReportPeriodFilters from '../shared/ReportPeriodFilters.vue';
 import ReportSortControls from '../shared/ReportSortControls.vue';
 import ReportProductSearch from '../shared/ReportProductSearch.vue';
@@ -91,9 +99,22 @@ import ReportProductSearch from '../shared/ReportProductSearch.vue';
 defineProps({
     filters: { type: Object, required: true },
     masterStore: { type: Object, required: true },
+    productSearch: { type: String, default: '' },
+    supplierSearch: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:filter', 'product-search', 'select-product', 'reset']);
+const emit = defineEmits([
+    'update:filter',
+    'update:productSearch',
+    'update:supplierSearch',
+    'product-search',
+    'select-product',
+    'clear-product',
+    'supplier-search',
+    'select-supplier',
+    'clear-supplier',
+    'reset',
+]);
 
 const receiptSortOptions = [
     { value: 'posted_at', label: 'Waktu Posting' },

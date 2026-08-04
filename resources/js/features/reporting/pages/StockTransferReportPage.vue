@@ -5,11 +5,8 @@
         <h1 class="text-2xl font-bold text-gray-900">
           Laporan Transfer Stok
         </h1>
-        <p
-          v-if="dateBasisDescription"
-          class="text-xs text-gray-500 mt-1"
-        >
-          {{ dateBasisDescription }}
+        <p class="text-xs text-gray-500 mt-1">
+          Laporan antar lokasi berdasarkan waktu pengiriman (SENT_AT) atau penerimaan (RECEIVED_AT).
         </p>
       </div>
     </div>
@@ -17,28 +14,26 @@
     <StockTransferReportFilters
       :filters="filters"
       :master-store="masterStore"
+      :product-search="productSearch"
       @update:filter="(key, val) => filters[key] = val"
+      @update:product-search="val => productSearch = val"
       @product-search="onProductSearch"
       @select-product="selectProduct"
+      @clear-product="clearProduct"
       @reset="resetFilters"
     />
-
-    <div
-      v-if="localValidationError"
-      class="rounded-md bg-amber-50 p-4 text-sm text-amber-700"
-    >
-      {{ localValidationError }}
-    </div>
 
     <ReportFeedbackPanels
       :loading="store.loading"
       :error="store.error"
       :status="store.status"
       :validation-errors="store.validationErrors"
+      :local-validation-error="localValidationError"
       :has-data="store.data.length > 0"
       :has-fetched="hasFetched"
+      empty-message="Tidak ada data transfer stok yang sesuai filter."
       @retry="fetchData(1)"
-      @reset="resetFilters"
+      @reset-filters="resetFilters"
     />
 
     <QuantityByUnitSummary
@@ -71,10 +66,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useStockTransferReportStore } from '../stores/useStockTransferReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
-import { cleanReportFilters, getDateBasisDescription, validatePeriod } from '../utils/reportHelpers';
+import { cleanReportFilters, validatePeriod } from '../utils/reportHelpers';
 import StockTransferReportFilters from '../components/transfer/StockTransferReportFilters.vue';
 import StockTransferReportTable from '../components/transfer/StockTransferReportTable.vue';
 import ReportPagination from '../components/ReportPagination.vue';
@@ -87,7 +82,6 @@ const masterStore = useReportFilterOptionsStore();
 const defaultFilters = {
     date_basis: 'SENT_AT',
     status: '',
-    search: '',
     origin_location_id: '',
     destination_location_id: '',
     product_id: '',
@@ -95,40 +89,16 @@ const defaultFilters = {
     unit_id: '',
     start_date: '',
     end_date: '',
+    search: '',
     sort_by: 'sent_at',
     sort_order: 'desc',
     per_page: '15',
 };
 
 const filters = reactive({ ...defaultFilters });
+const productSearch = ref('');
 const localValidationError = ref('');
 const hasFetched = ref(false);
-
-const dateBasisDescription = computed(() => getDateBasisDescription(store.meta?.date_basis));
-
-watch(() => filters.status, (newStatus) => {
-    if (newStatus === 'SENT' && filters.date_basis === 'RECEIVED_AT') {
-        filters.date_basis = 'SENT_AT';
-    }
-});
-
-watch(() => filters.date_basis, (newBasis) => {
-    if (newBasis === 'RECEIVED_AT') {
-        if (filters.status === 'SENT') {
-            filters.status = '';
-        }
-
-        if (filters.sort_by === 'sent_at') {
-            filters.sort_by = 'received_at';
-        }
-
-        return;
-    }
-
-    if (filters.sort_by === 'received_at') {
-        filters.sort_by = 'sent_at';
-    }
-});
 
 let debounceTimer = null;
 const debouncedFetch = () => {
@@ -138,26 +108,46 @@ const debouncedFetch = () => {
 
 watch(() => ({ ...filters }), debouncedFetch, { deep: true });
 
+watch(() => filters.date_basis, (newBasis) => {
+    if (newBasis === 'RECEIVED_AT') {
+        if (filters.status === 'SENT') {
+            filters.status = '';
+        }
+        if (filters.sort_by === 'sent_at') {
+            filters.sort_by = 'received_at';
+        }
+        return;
+    }
+
+    if (filters.sort_by === 'received_at') {
+        filters.sort_by = 'sent_at';
+    }
+});
+
 let productSearchTimer = null;
 const onProductSearch = (query) => {
+    productSearch.value = query;
+    filters.product_id = '';
     clearTimeout(productSearchTimer);
     productSearchTimer = setTimeout(() => {
         if (query.trim().length >= 2) {
             masterStore.searchProducts(query);
         }
-    }, 400);
+    }, 300);
 };
 
 const selectProduct = (prod) => {
     filters.product_id = prod.id;
+    productSearch.value = prod.name;
+};
+
+const clearProduct = () => {
+    filters.product_id = '';
+    productSearch.value = '';
+    masterStore.resetProducts();
 };
 
 const buildParams = (page) => {
-    if (filters.status === 'SENT' && filters.date_basis === 'RECEIVED_AT') {
-        localValidationError.value = 'Status SENT tidak dapat dikombinasikan dengan date_basis RECEIVED_AT.';
-        return null;
-    }
-
     const periodCheck = validatePeriod(filters.start_date, filters.end_date);
     if (!periodCheck.valid) {
         localValidationError.value = periodCheck.message;
@@ -176,6 +166,11 @@ const fetchData = async (page = 1) => {
 
 const resetFilters = () => {
     clearTimeout(debounceTimer);
+    clearTimeout(productSearchTimer);
+
+    productSearch.value = '';
+    masterStore.resetProducts();
+
     Object.assign(filters, defaultFilters);
     store.reset();
     hasFetched.value = false;
@@ -184,6 +179,5 @@ const resetFilters = () => {
 
 onMounted(async () => {
     await masterStore.fetchBaseOptions();
-    fetchData(1);
 });
 </script>

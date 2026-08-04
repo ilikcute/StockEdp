@@ -1,17 +1,18 @@
 <template>
   <div class="relative">
-    <label class="block text-xs font-medium text-gray-700">Produk</label>
+    <label class="block text-xs font-medium text-gray-700">Supplier</label>
     <div class="relative">
       <input
         :value="modelValue"
         type="text"
-        placeholder="Cari produk (min 2 karakter)..."
-        class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-8"
+        placeholder="Cari supplier (min 2 karakter)..."
+        :disabled="!!error"
+        class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-8 disabled:bg-gray-100 disabled:text-gray-500"
         @input="onInput"
-        @focus="showDropdown = true"
+        @focus="onFocus"
       >
       <button
-        v-if="modelValue || selectedProductId"
+        v-if="(modelValue || selectedSupplierId) && !error"
         type="button"
         class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
         @click="onClear"
@@ -20,25 +21,32 @@
       </button>
     </div>
 
+    <p
+      v-if="error"
+      class="mt-1 text-xs text-amber-600"
+    >
+      {{ error }}
+    </p>
+
     <div
-      v-if="showDropdown && (loading || products.length > 0)"
+      v-if="showDropdown && !error && (loading || suppliers.length > 0)"
       class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
     >
       <div
         v-if="loading"
         class="px-3 py-2 text-xs text-gray-500"
       >
-        Mencari produk...
+        Mencari supplier...
       </div>
       <template v-else>
         <div
-          v-for="prod in products"
-          :key="prod.id"
+          v-for="sup in suppliers"
+          :key="sup.id"
           class="cursor-pointer px-3 py-1.5 text-xs hover:bg-indigo-50 flex items-center justify-between"
-          @click="onSelect(prod)"
+          @click="onSelect(sup)"
         >
-          <span class="font-medium text-gray-900">{{ prod.name }}</span>
-          <span class="text-gray-500 text-[10px]">{{ prod.sku }}</span>
+          <span class="font-medium text-gray-900">{{ sup.name }}</span>
+          <span class="text-gray-500 text-[10px]">{{ sup.code }}</span>
         </div>
       </template>
     </div>
@@ -50,12 +58,13 @@ import { ref } from 'vue';
 
 defineProps({
     modelValue: { type: String, default: '' },
-    selectedProductId: { type: [String, Number], default: '' },
-    products: { type: Array, default: () => [] },
+    selectedSupplierId: { type: [String, Number], default: '' },
+    suppliers: { type: Array, default: () => [] },
     loading: { type: Boolean, default: false },
+    error: { type: String, default: null },
 });
 
-const emit = defineEmits(['update:modelValue', 'search', 'select-product', 'clear-product']);
+const emit = defineEmits(['update:modelValue', 'search', 'select-supplier', 'clear-supplier']);
 
 const showDropdown = ref(false);
 
@@ -66,13 +75,18 @@ const onInput = (event) => {
     emit('search', text);
 };
 
-const onSelect = (product) => {
+const onFocus = () => {
+    showDropdown.value = true;
+    emit('search', '');
+};
+
+const onSelect = (supplier) => {
     showDropdown.value = false;
-    emit('select-product', product);
+    emit('select-supplier', supplier);
 };
 
 const onClear = () => {
     showDropdown.value = false;
-    emit('clear-product');
+    emit('clear-supplier');
 };
 </script>

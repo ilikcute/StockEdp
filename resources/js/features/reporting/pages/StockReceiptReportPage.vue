@@ -14,28 +14,31 @@
     <StockReceiptReportFilters
       :filters="filters"
       :master-store="masterStore"
+      :product-search="productSearch"
+      :supplier-search="supplierSearch"
       @update:filter="(key, val) => filters[key] = val"
+      @update:product-search="val => productSearch = val"
+      @update:supplier-search="val => supplierSearch = val"
       @product-search="onProductSearch"
       @select-product="selectProduct"
+      @clear-product="clearProduct"
+      @supplier-search="onSupplierSearch"
+      @select-supplier="selectSupplier"
+      @clear-supplier="clearSupplier"
       @reset="resetFilters"
     />
-
-    <div
-      v-if="localValidationError"
-      class="rounded-md bg-amber-50 p-4 text-sm text-amber-700"
-    >
-      {{ localValidationError }}
-    </div>
 
     <ReportFeedbackPanels
       :loading="store.loading"
       :error="store.error"
       :status="store.status"
       :validation-errors="store.validationErrors"
+      :local-validation-error="localValidationError"
       :has-data="store.data.length > 0"
       :has-fetched="hasFetched"
+      empty-message="Tidak ada data penerimaan stok yang sesuai filter."
       @retry="fetchData(1)"
-      @reset="resetFilters"
+      @reset-filters="resetFilters"
     />
 
     <QuantityByUnitSummary
@@ -96,6 +99,8 @@ const defaultFilters = {
 };
 
 const filters = reactive({ ...defaultFilters });
+const productSearch = ref('');
+const supplierSearch = ref('');
 const localValidationError = ref('');
 const hasFetched = ref(false);
 
@@ -109,16 +114,48 @@ watch(() => ({ ...filters }), debouncedFetch, { deep: true });
 
 let productSearchTimer = null;
 const onProductSearch = (query) => {
+    productSearch.value = query;
+    filters.product_id = '';
     clearTimeout(productSearchTimer);
     productSearchTimer = setTimeout(() => {
         if (query.trim().length >= 2) {
             masterStore.searchProducts(query);
         }
-    }, 400);
+    }, 300);
 };
 
 const selectProduct = (prod) => {
     filters.product_id = prod.id;
+    productSearch.value = prod.name;
+};
+
+const clearProduct = () => {
+    filters.product_id = '';
+    productSearch.value = '';
+    masterStore.resetProducts();
+};
+
+let supplierSearchTimer = null;
+const onSupplierSearch = (query) => {
+    supplierSearch.value = query;
+    filters.supplier_id = '';
+    clearTimeout(supplierSearchTimer);
+    supplierSearchTimer = setTimeout(() => {
+        if (query.trim().length >= 2 || query === '') {
+            masterStore.searchSuppliers(query);
+        }
+    }, 300);
+};
+
+const selectSupplier = (sup) => {
+    filters.supplier_id = sup.id;
+    supplierSearch.value = sup.name;
+};
+
+const clearSupplier = () => {
+    filters.supplier_id = '';
+    supplierSearch.value = '';
+    masterStore.resetSuppliers();
 };
 
 const buildParams = (page) => {
@@ -140,6 +177,14 @@ const fetchData = async (page = 1) => {
 
 const resetFilters = () => {
     clearTimeout(debounceTimer);
+    clearTimeout(productSearchTimer);
+    clearTimeout(supplierSearchTimer);
+
+    productSearch.value = '';
+    supplierSearch.value = '';
+    masterStore.resetProducts();
+    masterStore.resetSuppliers();
+
     Object.assign(filters, defaultFilters);
     store.reset();
     hasFetched.value = false;
@@ -148,7 +193,6 @@ const resetFilters = () => {
 
 onMounted(async () => {
     await masterStore.fetchBaseOptions();
-    masterStore.searchSuppliers('');
-    fetchData(1);
+    await masterStore.searchSuppliers('');
 });
 </script>

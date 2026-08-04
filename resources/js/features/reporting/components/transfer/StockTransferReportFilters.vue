@@ -8,15 +8,10 @@
           class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-semibold"
           @change="emit('update:filter', 'date_basis', $event.target.value)"
         >
-          <option value="SENT_AT">
-            Tanggal Pengiriman (SENT_AT)
-          </option>
-          <option value="RECEIVED_AT">
-            Tanggal Penerimaan (RECEIVED_AT)
-          </option>
+          <option value="SENT_AT">Tanggal Pengiriman (SENT_AT)</option>
+          <option value="RECEIVED_AT">Tanggal Penerimaan (RECEIVED_AT)</option>
         </select>
       </div>
-
       <div>
         <label class="block text-xs font-medium text-gray-700">Status Transfer</label>
         <select
@@ -24,21 +19,11 @@
           class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           @change="emit('update:filter', 'status', $event.target.value)"
         >
-          <option value="">
-            Semua Status
-          </option>
-          <option
-            value="SENT"
-            :disabled="filters.date_basis === 'RECEIVED_AT'"
-          >
-            SENT (Dikirim)
-          </option>
-          <option value="RECEIVED">
-            RECEIVED (Diterima)
-          </option>
+          <option value="">Semua Status</option>
+          <option value="SENT" :disabled="filters.date_basis === 'RECEIVED_AT'">SENT (Dikirim)</option>
+          <option value="RECEIVED">RECEIVED (Diterima)</option>
         </select>
       </div>
-
       <div>
         <label class="block text-xs font-medium text-gray-700">Pencarian Teks</label>
         <input
@@ -49,7 +34,6 @@
           @input="emit('update:filter', 'search', $event.target.value)"
         >
       </div>
-
       <ReportMasterSelect
         label="Lokasi Asal"
         placeholder="Semua Lokasi Asal"
@@ -57,7 +41,6 @@
         :options="masterStore.locations"
         @update:model-value="val => emit('update:filter', 'origin_location_id', val)"
       />
-
       <ReportMasterSelect
         label="Lokasi Tujuan"
         placeholder="Semua Lokasi Tujuan"
@@ -65,7 +48,6 @@
         :options="masterStore.locations"
         @update:model-value="val => emit('update:filter', 'destination_location_id', val)"
       />
-
       <ReportMasterSelect
         label="Kategori"
         placeholder="Semua Kategori"
@@ -73,7 +55,6 @@
         :options="masterStore.categories"
         @update:model-value="val => emit('update:filter', 'category_id', val)"
       />
-
       <ReportMasterSelect
         label="Satuan"
         placeholder="Semua Satuan"
@@ -81,20 +62,22 @@
         :options="masterStore.units"
         @update:model-value="val => emit('update:filter', 'unit_id', val)"
       />
-
       <ReportProductSearch
+        :model-value="productSearch"
+        :selected-product-id="filters.product_id"
         :products="masterStore.products"
-        @product-search="q => emit('product-search', q)"
+        :loading="masterStore.loadingProducts"
+        @update:model-value="val => emit('update:productSearch', val)"
+        @search="q => emit('product-search', q)"
         @select-product="p => emit('select-product', p)"
+        @clear-product="emit('clear-product')"
       />
-
       <ReportPeriodFilters
         :start-date="filters.start_date"
         :end-date="filters.end_date"
         @update:start-date="val => emit('update:filter', 'start_date', val)"
         @update:end-date="val => emit('update:filter', 'end_date', val)"
       />
-
       <ReportSortControls
         :sort-by="filters.sort_by"
         :sort-order="filters.sort_order"
@@ -104,7 +87,6 @@
         @update:sort-order="val => emit('update:filter', 'sort_order', val)"
         @update:per-page="val => emit('update:filter', 'per_page', val)"
       />
-
       <div class="flex items-end">
         <button
           type="button"
@@ -127,9 +109,17 @@ import ReportProductSearch from '../shared/ReportProductSearch.vue';
 defineProps({
     filters: { type: Object, required: true },
     masterStore: { type: Object, required: true },
+    productSearch: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:filter', 'product-search', 'select-product', 'reset']);
+const emit = defineEmits([
+    'update:filter',
+    'update:productSearch',
+    'product-search',
+    'select-product',
+    'clear-product',
+    'reset',
+]);
 
 const transferSortOptions = [
     { value: 'sent_at', label: 'Waktu Pengiriman (sent_at)' },

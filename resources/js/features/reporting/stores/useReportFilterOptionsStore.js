@@ -1,9 +1,5 @@
 import { defineStore } from 'pinia';
-import { locationApi } from '@/features/location/api/location_api';
-import { categoryApi } from '@/features/category/api/category_api';
-import { unitApi } from '@/features/unit/api/unit_api';
-import { productApi } from '@/features/product/api/product_api';
-import { supplierApi } from '@/features/supplier/api/supplier_api';
+import { reportingApi } from '@/features/reporting/api/reportingApi';
 import { normalizeApiError } from '@/shared/api/api_client';
 
 let latestProductSearchRequestId = 0;
@@ -29,15 +25,11 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
             this.error = null;
             this.status = null;
             try {
-                const [locRes, catRes, unitRes] = await Promise.all([
-                    locationApi.getAll({ per_page: 100 }),
-                    categoryApi.getAll({ per_page: 100 }),
-                    unitApi.getAll({ per_page: 100 }),
-                ]);
-                this.locations = locRes.data.data;
-                this.categories = catRes.data.data;
-                this.units = unitRes.data.data;
-                this.status = locRes.status;
+                const response = await reportingApi.getFilterBaseOptions();
+                this.locations = response.data.data.locations || [];
+                this.categories = response.data.data.categories || [];
+                this.units = response.data.data.units || [];
+                this.status = response.status;
             } catch (err) {
                 const normalized = normalizeApiError(err);
                 this.error = normalized.message || 'Gagal memuat opsi filter';
@@ -53,9 +45,9 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
             const requestId = ++latestProductSearchRequestId;
             this.loadingProducts = true;
             try {
-                const response = await productApi.getAll({ search, per_page: 20 });
+                const response = await reportingApi.getFilterProductOptions({ search, per_page: 20 });
                 if (requestId !== latestProductSearchRequestId) return;
-                this.products = response.data.data;
+                this.products = response.data.data || [];
             } catch (err) {
                 if (requestId !== latestProductSearchRequestId) return;
                 const normalized = normalizeApiError(err);
@@ -71,9 +63,9 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
             this.loadingSuppliers = true;
             this.supplierError = null;
             try {
-                const response = await supplierApi.getAll({ search, per_page: 20 });
+                const response = await reportingApi.getFilterSupplierOptions({ search, per_page: 20 });
                 if (requestId !== latestSupplierSearchRequestId) return;
-                this.suppliers = response.data.data;
+                this.suppliers = response.data.data || [];
             } catch (err) {
                 if (requestId !== latestSupplierSearchRequestId) return;
                 const normalized = normalizeApiError(err);
@@ -85,6 +77,17 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
                     this.loadingSuppliers = false;
                 }
             }
+        },
+        resetProducts() {
+            latestProductSearchRequestId++;
+            this.products = [];
+            this.loadingProducts = false;
+        },
+        resetSuppliers() {
+            latestSupplierSearchRequestId++;
+            this.suppliers = [];
+            this.supplierError = null;
+            this.loadingSuppliers = false;
         },
     },
 });

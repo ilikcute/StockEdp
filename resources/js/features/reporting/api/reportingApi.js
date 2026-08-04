@@ -1,6 +1,18 @@
 import apiClient from '@/shared/api/api_client';
 
 export const reportingApi = {
+    getFilterBaseOptions() {
+        return apiClient.get('/reports/filter-options/base');
+    },
+
+    getFilterProductOptions(params = {}) {
+        return apiClient.get('/reports/filter-options/products', { params });
+    },
+
+    getFilterSupplierOptions(params = {}) {
+        return apiClient.get('/reports/filter-options/suppliers', { params });
+    },
+
     getInventoryBalances(params = {}) {
         return apiClient.get('/reports/inventory-balances', { params });
     },
