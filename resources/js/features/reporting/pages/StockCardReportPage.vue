@@ -285,7 +285,7 @@
                       {{ item.document_date || '-' }}
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      {{ item.occurred_at || item.posted_at || '-' }}
+                      {{ item.posted_at || '-' }}
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm">
                       <div class="font-medium text-gray-900">
@@ -299,11 +299,11 @@
                       {{ item.quantity_before }}
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-green-700 font-mono font-medium text-right bg-green-50/30">
-                      <span v-if="item.direction === 'in' || item.quantity_in && item.quantity_in !== '0.0000'">+{{ item.quantity_in || item.quantity }}</span>
+                      <span v-if="item.direction === 'IN'">+{{ item.quantity_in }}</span>
                       <span v-else>-</span>
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-red-700 font-mono font-medium text-right bg-red-50/30">
-                      <span v-if="item.direction === 'out' || item.quantity_out && item.quantity_out !== '0.0000'">-{{ item.quantity_out || item.quantity }}</span>
+                      <span v-if="item.direction === 'OUT'">-{{ item.quantity_out }}</span>
                       <span v-else>-</span>
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono font-bold text-right bg-gray-50/50">
@@ -369,11 +369,24 @@ const showProductDropdown = ref(false);
 const localValidationError = ref('');
 const hasFetchedData = ref(false);
 
-// Format date helper for default values
+// Helper for local calendar date formatting (YYYY-MM-DD) without UTC shift
+const toLocalDateInputValue = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const parseDateOnly = (dateStr) => {
+    if (!dateStr || !dateStr.includes('-')) return null;
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+};
+
 const today = new Date();
 const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-filters.end_date = today.toISOString().split('T')[0];
-filters.start_date = firstDayOfMonth.toISOString().split('T')[0];
+filters.end_date = toLocalDateInputValue(today);
+filters.start_date = toLocalDateInputValue(firstDayOfMonth);
 
 let productSearchTimer = null;
 const onProductSearch = () => {
@@ -417,16 +430,21 @@ const validateFilters = () => {
         return false;
     }
     
-    const start = new Date(filters.start_date);
-    const end = new Date(filters.end_date);
+    const start = parseDateOnly(filters.start_date);
+    const end = parseDateOnly(filters.end_date);
+    
+    if (!start || !end) {
+        localValidationError.value = 'Format tanggal tidak valid.';
+        return false;
+    }
     
     if (start > end) {
         localValidationError.value = 'Tanggal mulai tidak boleh melewati tanggal akhir.';
         return false;
     }
     
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays > 366) {
         localValidationError.value = 'Rentang waktu maksimal adalah 366 hari.';

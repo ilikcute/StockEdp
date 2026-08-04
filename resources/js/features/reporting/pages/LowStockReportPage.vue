@@ -204,6 +204,12 @@
               <span class="text-indigo-600 font-medium bg-white px-4 py-2 rounded-md shadow">Memuat data...</span>
             </div>
 
+            <div
+              v-if="selectedLocationName"
+              class="px-4 py-2 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700 sm:px-6"
+            >
+              Lokasi Terpilih: <span class="font-semibold text-gray-900">{{ selectedLocationName }}</span>
+            </div>
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
@@ -218,12 +224,6 @@
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
                     Kategori / Unit
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Lokasi
                   </th>
                   <th
                     scope="col"
@@ -248,7 +248,7 @@
               <tbody class="divide-y divide-gray-200 bg-white">
                 <tr v-if="!store.loading && store.data.length === 0">
                   <td
-                    colspan="6"
+                    colspan="5"
                     class="py-10 text-center text-sm text-gray-500"
                   >
                     Tidak ada produk di bawah batas minimum pada lokasi ini.
@@ -256,30 +256,27 @@
                 </tr>
                 <tr
                   v-for="item in store.data"
-                  :key="item.id"
+                  :key="item.product_id"
                 >
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                     <div class="font-mono font-medium text-gray-900">
-                      {{ item.product?.sku }}
+                      {{ item.product_sku }}
                     </div>
                     <div class="text-gray-900">
-                      {{ item.product?.name }}
+                      {{ item.product_name }}
                     </div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <div>{{ item.product?.category?.name || '-' }}</div>
+                    <div>{{ item.category_name || '-' }}</div>
                     <div class="text-xs">
-                      {{ item.product?.unit?.code || '-' }}
+                      {{ item.unit_name || '-' }}
                     </div>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    {{ item.location?.name }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono text-right font-medium">
                     {{ item.on_hand_quantity }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono text-right">
-                    {{ item.minimum_stock_level }}
+                    {{ item.minimum_stock }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-red-600 font-mono text-right font-bold">
                     {{ item.shortage_quantity }}
@@ -322,12 +319,18 @@
 </template>
 
 <script setup>
-import { onMounted, watch, reactive } from 'vue';
+import { onMounted, watch, reactive, computed } from 'vue';
 import { useLowStockReportStore } from '../stores/useLowStockReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 
 const store = useLowStockReportStore();
 const masterStore = useReportFilterOptionsStore();
+
+const selectedLocationName = computed(() => {
+    if (!filters.location_id) return '';
+    const loc = masterStore.locations.find(l => String(l.id) === String(filters.location_id));
+    return loc ? loc.name : '';
+});
 
 const filters = reactive({
     location_id: '',

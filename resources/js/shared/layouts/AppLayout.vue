@@ -50,14 +50,6 @@
               class="space-y-1"
             >
               <router-link
-                v-if="authStore.hasPermission('inventory.balances.view')"
-                to="/inventory/balances"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/balances') }"
-              >
-                Saldo Stok
-              </router-link>
-              <router-link
                 v-if="authStore.hasPermission('inventory.movements.view')"
                 to="/inventory/movements"
                 class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"

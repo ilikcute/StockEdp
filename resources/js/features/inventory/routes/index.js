@@ -1,15 +1,5 @@
 export const inventoryRoutes = [
     {
-        path: '/inventory/balances',
-        name: 'inventory.balances',
-        component: () => import('../pages/InventoryBalancePage.vue'),
-        meta: {
-            title: 'Saldo Stok',
-            requiresAuth: true,
-            permission: 'inventory.balances.view'
-        }
-    },
-    {
         path: '/inventory/movements',
         name: 'inventory.movements',
         component: () => import('../pages/StockMovementPage.vue'),

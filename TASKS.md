@@ -371,4 +371,4 @@ Sebuah tugas hanya boleh ditandai selesai jika:
 
 ## Sedang Dikerjakan
 
-- [-] Fase 8B1 — Frontend Reporting Foundation, Inventory Balance, Low Stock, dan Stock Card (Status: READY FOR FRONTEND AUDIT)
+- [-] Fase 8B1 — HOLD: Corrective Action in Progress

@@ -24,7 +24,11 @@ const router = createRouter({
 
         {
             path: '/inventory/balances',
-            redirect: '/reports/inventory-balances',
+            name: 'inventory.balances.legacy',
+            redirect: (to) => ({
+                name: 'reports.inventory-balances',
+                query: to.query,
+            }),
         },
 
         // Fallback default redirect / ke /profile

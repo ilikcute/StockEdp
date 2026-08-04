@@ -131,11 +131,17 @@
             <option value="id">
               ID
             </option>
-            <option value="product_name">
-              Nama Produk
+            <option value="product_id">
+              Produk
             </option>
-            <option value="on_hand_quantity">
-              Stok On-Hand
+            <option value="location_id">
+              Lokasi
+            </option>
+            <option value="quantity">
+              Kuantitas
+            </option>
+            <option value="created_at">
+              Waktu Dibuat
             </option>
           </select>
           <select
@@ -288,31 +294,31 @@
                 >
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                     <div class="font-mono font-medium text-gray-900">
-                      {{ item.product?.sku }}
+                      {{ item.product_sku }}
                     </div>
                     <div class="text-xs text-gray-500">
-                      {{ item.product?.barcode || '-' }}
+                      {{ item.product_barcode || '-' }}
                     </div>
                   </td>
                   <td class="px-3 py-4 text-sm text-gray-900">
                     <div class="font-medium text-gray-900">
-                      {{ item.product?.name }}
+                      {{ item.product_name }}
                     </div>
                     <span
-                      v-if="item.product?.is_active === false"
+                      v-if="item.is_product_active === false"
                       class="inline-flex items-center rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 mt-1"
                     >Nonaktif</span>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <div>{{ item.product?.category?.name || '-' }}</div>
+                    <div>{{ item.category_name || '-' }}</div>
                     <div class="text-xs">
-                      {{ item.product?.unit?.code || '-' }}
+                      {{ item.unit_name || '-' }}
                     </div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <div>{{ item.location?.name }}</div>
+                    <div>{{ item.location_name }}</div>
                     <span
-                      v-if="item.location?.is_frozen"
+                      v-if="item.is_location_frozen"
                       class="inline-flex items-center rounded-md bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 mt-1"
                     >Frozen</span>
                   </td>
@@ -323,7 +329,7 @@
                     {{ item.available_quantity }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono text-right">
-                    {{ item.minimum_stock_level }}
+                    {{ item.minimum_stock }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-center">
                     <span

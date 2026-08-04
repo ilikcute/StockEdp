@@ -1,43 +1,61 @@
 import { defineStore } from 'pinia';
-import apiClient from '@/shared/api/api_client';
+import { locationApi } from '@/features/location/api/location_api';
+import { categoryApi } from '@/features/category/api/category_api';
+import { unitApi } from '@/features/unit/api/unit_api';
+import { productApi } from '@/features/product/api/product_api';
+import { normalizeApiError } from '@/shared/api/api_client';
+
+let latestProductSearchRequestId = 0;
 
 export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
     state: () => ({
         locations: [],
         categories: [],
         units: [],
-        products: [], // Loaded on demand with search/limit
+        products: [],
         loading: false,
+        loadingProducts: false,
         error: null,
+        status: null,
     }),
     actions: {
         async fetchOptions() {
             this.loading = true;
             this.error = null;
+            this.status = null;
             try {
-                // Fetch locations, categories, units concurrently (usually they are small)
                 const [locRes, catRes, unitRes] = await Promise.all([
-                    apiClient.get('/locations', { params: { per_page: 100 } }),
-                    apiClient.get('/categories', { params: { per_page: 100 } }),
-                    apiClient.get('/units', { params: { per_page: 100 } })
+                    locationApi.getAll({ per_page: 100 }),
+                    categoryApi.getAll({ per_page: 100 }),
+                    unitApi.getAll({ per_page: 100 }),
                 ]);
-                this.locations = locRes.data.data || locRes.data;
-                this.categories = catRes.data.data || catRes.data;
-                this.units = unitRes.data.data || unitRes.data;
+                this.locations = locRes.data.data;
+                this.categories = catRes.data.data;
+                this.units = unitRes.data.data;
+                this.status = locRes.status;
             } catch (err) {
-                this.error = err.response?.data?.message || 'Gagal memuat opsi filter';
+                const normalized = normalizeApiError(err);
+                this.error = normalized.message || 'Gagal memuat opsi filter';
+                this.status = normalized.status;
             } finally {
                 this.loading = false;
             }
         },
         async searchProducts(search = '') {
+            const requestId = ++latestProductSearchRequestId;
+            this.loadingProducts = true;
             try {
-                const response = await apiClient.get('/products', { 
-                    params: { search, per_page: 20 } 
-                });
+                const response = await productApi.getAll({ search, per_page: 20 });
+                if (requestId !== latestProductSearchRequestId) return;
                 this.products = response.data.data;
             } catch (err) {
-                console.error('Failed to search products:', err);
+                if (requestId !== latestProductSearchRequestId) return;
+                const normalized = normalizeApiError(err);
+                this.error = normalized.message;
+            } finally {
+                if (requestId === latestProductSearchRequestId) {
+                    this.loadingProducts = false;
+                }
             }
         }
     }
