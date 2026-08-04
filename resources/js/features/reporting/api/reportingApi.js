@@ -12,4 +12,24 @@ export const reportingApi = {
     getStockCard(params = {}) {
         return apiClient.get('/reports/stock-card', { params });
     },
+
+    getStockReceipts(params = {}) {
+        return apiClient.get('/reports/stock-receipts', { params });
+    },
+
+    getStockIssues(params = {}) {
+        return apiClient.get('/reports/stock-issues', { params });
+    },
+
+    getStockTransfers(params = {}) {
+        return apiClient.get('/reports/stock-transfers', { params });
+    },
+
+    getStockAdjustments(params = {}) {
+        return apiClient.get('/reports/stock-adjustments', { params });
+    },
+
+    getStockOpnames(params = {}) {
+        return apiClient.get('/reports/stock-opnames', { params });
+    },
 };
