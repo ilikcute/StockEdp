@@ -8,8 +8,12 @@
           class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-semibold"
           @change="emit('update:filter', 'date_basis', $event.target.value)"
         >
-          <option value="SENT_AT">Tanggal Pengiriman (SENT_AT)</option>
-          <option value="RECEIVED_AT">Tanggal Penerimaan (RECEIVED_AT)</option>
+          <option value="SENT_AT">
+            Tanggal Pengiriman (SENT_AT)
+          </option>
+          <option value="RECEIVED_AT">
+            Tanggal Penerimaan (RECEIVED_AT)
+          </option>
         </select>
       </div>
       <div>
@@ -19,9 +23,18 @@
           class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           @change="emit('update:filter', 'status', $event.target.value)"
         >
-          <option value="">Semua Status</option>
-          <option value="SENT" :disabled="filters.date_basis === 'RECEIVED_AT'">SENT (Dikirim)</option>
-          <option value="RECEIVED">RECEIVED (Diterima)</option>
+          <option value="">
+            Semua Status
+          </option>
+          <option
+            value="SENT"
+            :disabled="filters.date_basis === 'RECEIVED_AT'"
+          >
+            SENT (Dikirim)
+          </option>
+          <option value="RECEIVED">
+            RECEIVED (Diterima)
+          </option>
         </select>
       </div>
       <div>

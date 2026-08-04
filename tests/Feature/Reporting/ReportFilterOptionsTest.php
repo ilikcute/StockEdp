@@ -12,8 +12,9 @@ use App\Features\Product\Models\Product;
 use App\Features\Supplier\Models\Supplier;
 use App\Features\Unit\Models\Unit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-class ReportFilterOptionsTest extends \Tests\TestCase
+class ReportFilterOptionsTest extends TestCase
 {
     use RefreshDatabase;
 

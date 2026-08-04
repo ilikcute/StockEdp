@@ -8,9 +8,15 @@
           class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           @change="emit('update:filter', 'direction', $event.target.value)"
         >
-          <option value="">Semua Direction</option>
-          <option value="INCREASE">INCREASE (Penambahan)</option>
-          <option value="DECREASE">DECREASE (Pengurangan)</option>
+          <option value="">
+            Semua Direction
+          </option>
+          <option value="INCREASE">
+            INCREASE (Penambahan)
+          </option>
+          <option value="DECREASE">
+            DECREASE (Pengurangan)
+          </option>
         </select>
       </div>
       <div>
@@ -20,12 +26,24 @@
           class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           @change="emit('update:filter', 'reason_code', $event.target.value)"
         >
-          <option value="">Semua Alasan</option>
-          <option value="DAMAGE">DAMAGE (Kerusakan)</option>
-          <option value="EXPIRATION">EXPIRATION (Kadaluarsa)</option>
-          <option value="SHRINKAGE">SHRINKAGE (Shrinkage)</option>
-          <option value="DATA_ENTRY_ERROR">DATA_ENTRY_ERROR (Kesalahan Input)</option>
-          <option value="OTHER">OTHER (Lainnya)</option>
+          <option value="">
+            Semua Alasan
+          </option>
+          <option value="DAMAGE">
+            DAMAGE (Kerusakan)
+          </option>
+          <option value="EXPIRATION">
+            EXPIRATION (Kadaluarsa)
+          </option>
+          <option value="SHRINKAGE">
+            SHRINKAGE (Shrinkage)
+          </option>
+          <option value="DATA_ENTRY_ERROR">
+            DATA_ENTRY_ERROR (Kesalahan Input)
+          </option>
+          <option value="OTHER">
+            OTHER (Lainnya)
+          </option>
         </select>
       </div>
       <div>
