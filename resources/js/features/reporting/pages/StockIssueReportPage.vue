@@ -140,7 +140,11 @@ const buildParams = (page) => {
 
 const fetchData = async (page = 1) => {
     const params = buildParams(page);
-    if (!params) return;
+    if (!params) {
+        store.reset();
+        hasFetched.value = false;
+        return;
+    }
     hasFetched.value = true;
     await store.fetchReport(params);
 };

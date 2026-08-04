@@ -3,9 +3,20 @@
 namespace App\Features\Reporting\Repositories\Contracts;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 interface ReportingRepositoryInterface
 {
+    public function getBaseLocations(array $allowedLocationIds): Collection;
+
+    public function getActiveCategories(): Collection;
+
+    public function getActiveUnits(): Collection;
+
+    public function searchProductOptions(?string $search, int $perPage = 20): Collection;
+
+    public function searchSupplierOptions(?string $search, int $perPage = 20): Collection;
+
     public function getPaginatedBalances(
         array $allowedLocationIds,
         array $filters,

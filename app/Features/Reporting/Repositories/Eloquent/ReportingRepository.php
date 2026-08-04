@@ -2,6 +2,7 @@
 
 namespace App\Features\Reporting\Repositories\Eloquent;
 
+use App\Features\Category\Models\Category;
 use App\Features\Inventory\Models\InventoryBalance;
 use App\Features\Inventory\Models\StockAdjustmentItem;
 use App\Features\Inventory\Models\StockIssue;
@@ -11,15 +12,77 @@ use App\Features\Inventory\Models\StockOpnameItem;
 use App\Features\Inventory\Models\StockReceipt;
 use App\Features\Inventory\Models\StockReceiptItem;
 use App\Features\Inventory\Models\StockTransferItem;
+use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use App\Features\Reporting\Helpers\DecimalQuantity;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
+use App\Features\Supplier\Models\Supplier;
+use App\Features\Unit\Models\Unit;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as ConcretePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ReportingRepository implements ReportingRepositoryInterface
 {
+    public function getBaseLocations(array $allowedLocationIds): Collection
+    {
+        return Location::query()
+            ->when(! empty($allowedLocationIds), fn ($q) => $q->whereIn('id', $allowedLocationIds))
+            ->when(empty($allowedLocationIds), fn ($q) => $q->whereRaw('1 = 0'))
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+    }
+
+    public function getActiveCategories(): Collection
+    {
+        return Category::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
+    public function getActiveUnits(): Collection
+    {
+        return Unit::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'symbol']);
+    }
+
+    public function searchProductOptions(?string $search, int $perPage = 20): Collection
+    {
+        $search = trim((string) $search);
+
+        return Product::query()
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit($perPage)
+            ->get(['id', 'name', 'sku']);
+    }
+
+    public function searchSupplierOptions(?string $search, int $perPage = 20): Collection
+    {
+        $search = trim((string) $search);
+
+        return Supplier::query()
+            ->where('is_active', true)
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit($perPage)
+            ->get(['id', 'name', 'code']);
+    }
+
     public function getPaginatedBalances(
         array $allowedLocationIds,
         array $filters,

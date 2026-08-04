@@ -2,7 +2,7 @@
   <div>
     <!-- 1. Forbidden 403 -->
     <div
-      v-if="status === 403"
+      v-if="feedbackState === 'forbidden'"
       class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
     >
       <h3 class="text-sm font-medium text-red-800">
@@ -15,7 +15,7 @@
 
     <!-- 2. Error / Network / Server -->
     <div
-      v-else-if="error"
+      v-else-if="feedbackState === 'error'"
       class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
     >
       <h3 class="text-sm font-medium text-red-800">
@@ -42,21 +42,22 @@
       </div>
     </div>
 
-    <!-- 3. Local & Backend Validation Errors -->
+    <!-- 3. Validation Errors (Local or Backend) -->
     <div
-      v-if="localValidationError"
-      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200"
+      v-else-if="feedbackState === 'validation'"
+      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200 space-y-2"
     >
-      <p class="text-sm text-yellow-700">
+      <p
+        v-if="localValidationError"
+        class="text-sm text-yellow-700"
+      >
         {{ localValidationError }}
       </p>
-    </div>
 
-    <div
-      v-if="validationErrors && Object.keys(validationErrors).length > 0"
-      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200"
-    >
-      <ul class="list-disc pl-5 text-sm text-yellow-700">
+      <ul
+        v-if="validationErrors && Object.keys(validationErrors).length > 0"
+        class="list-disc pl-5 text-sm text-yellow-700"
+      >
         <li
           v-for="(errors, field) in validationErrors"
           :key="field"
@@ -68,7 +69,7 @@
 
     <!-- 4. Loading State -->
     <div
-      v-if="loading && status !== 403"
+      v-else-if="feedbackState === 'loading'"
       class="mt-4 py-8 text-center"
     >
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent" />
@@ -79,7 +80,7 @@
 
     <!-- 5. Empty Result State -->
     <div
-      v-if="hasFetched && !hasData && !loading && !error && status !== 403"
+      v-else-if="feedbackState === 'empty'"
       class="mt-4 rounded-md bg-gray-50 p-8 text-center border border-gray-200"
     >
       <p class="text-sm text-gray-500">
@@ -90,7 +91,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
     loading: { type: Boolean, default: false },
     error: { type: String, default: null },
     status: { type: Number, default: null },
@@ -102,4 +105,27 @@ defineProps({
 });
 
 const emit = defineEmits(['retry', 'reset-filters']);
+
+const feedbackState = computed(() => {
+    if (props.status === 403) return 'forbidden';
+    if (props.error) return 'error';
+
+    if (
+        props.localValidationError
+        || Object.keys(props.validationErrors || {}).length > 0
+    ) {
+        return 'validation';
+    }
+
+    if (props.loading) return 'loading';
+
+    if (
+        props.hasFetched
+        && !props.hasData
+    ) {
+        return 'empty';
+    }
+
+    return null;
+});
 </script>
