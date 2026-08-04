@@ -372,3 +372,4 @@ Sebuah tugas hanya boleh ditandai selesai jika:
 ## Sedang Dikerjakan
 
 - [x] Fase 8B1 — Frontend Reporting Foundation, Inventory Balance, Low Stock, dan Stock Card (PASS WITH CLEAN AUDIT)
+- [-] Fase 8B2 — Frontend Transaction Reports

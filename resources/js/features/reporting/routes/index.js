@@ -1,6 +1,11 @@
 import InventoryBalanceReportPage from '../pages/InventoryBalanceReportPage.vue';
 import LowStockReportPage from '../pages/LowStockReportPage.vue';
 import StockCardReportPage from '../pages/StockCardReportPage.vue';
+import StockReceiptReportPage from '../pages/StockReceiptReportPage.vue';
+import StockIssueReportPage from '../pages/StockIssueReportPage.vue';
+import StockTransferReportPage from '../pages/StockTransferReportPage.vue';
+import StockAdjustmentReportPage from '../pages/StockAdjustmentReportPage.vue';
+import StockOpnameReportPage from '../pages/StockOpnameReportPage.vue';
 
 export const reportingRoutes = [
     {
@@ -28,6 +33,51 @@ export const reportingRoutes = [
         meta: {
             requiresAuth: true,
             permission: 'reports.stock_card.view',
+        },
+    },
+    {
+        path: '/reports/stock-receipts',
+        name: 'reports.stock-receipts',
+        component: StockReceiptReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.stock_receipts.view',
+        },
+    },
+    {
+        path: '/reports/stock-issues',
+        name: 'reports.stock-issues',
+        component: StockIssueReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.stock_issues.view',
+        },
+    },
+    {
+        path: '/reports/stock-transfers',
+        name: 'reports.stock-transfers',
+        component: StockTransferReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.stock_transfers.view',
+        },
+    },
+    {
+        path: '/reports/stock-adjustments',
+        name: 'reports.stock-adjustments',
+        component: StockAdjustmentReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.stock_adjustments.view',
+        },
+    },
+    {
+        path: '/reports/stock-opnames',
+        name: 'reports.stock-opnames',
+        component: StockOpnameReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.stock_opnames.view',
         },
     },
 ];

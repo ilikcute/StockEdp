@@ -110,12 +110,13 @@
 
             <!-- Laporan Dropdown -->
             <div
-              v-if="authStore.hasPermission('reports.inventory_balance.view') || authStore.hasPermission('reports.low_stock.view') || authStore.hasPermission('reports.stock_card.view')"
+              v-if="hasAnyReportPermission"
               class="relative"
             >
               <button
+                type="button"
                 class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
-                :class="{ 'text-blue-600 bg-blue-50/50': isReportOpen }"
+                :class="{ 'text-blue-600 bg-blue-50/50': isReportActive }"
                 @click="isReportOpen = !isReportOpen"
               >
                 Laporan
@@ -133,16 +134,20 @@
                   />
                 </svg>
               </button>
-              
+
               <div
                 v-if="isReportOpen"
-                class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1"
+                class="absolute left-0 mt-2 w-56 max-h-[70vh] overflow-y-auto rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1"
               >
+                <p class="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  Persediaan
+                </p>
                 <router-link
                   v-if="authStore.hasPermission('reports.inventory_balance.view')"
                   to="/reports/inventory-balances"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
                 >
                   Saldo Stok
                 </router-link>
@@ -151,6 +156,7 @@
                   to="/reports/low-stock"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
                 >
                   Stok Minimum
                 </router-link>
@@ -159,8 +165,61 @@
                   to="/reports/stock-card"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
                 >
                   Kartu Stok
+                </router-link>
+
+                <p
+                  v-if="hasAnyTransactionReportPermission"
+                  class="px-4 pt-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide border-t border-gray-100 mt-1"
+                >
+                  Transaksi
+                </p>
+                <router-link
+                  v-if="authStore.hasPermission('reports.stock_receipts.view')"
+                  to="/reports/stock-receipts"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
+                >
+                  Penerimaan Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('reports.stock_issues.view')"
+                  to="/reports/stock-issues"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
+                >
+                  Pengeluaran Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('reports.stock_transfers.view')"
+                  to="/reports/stock-transfers"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
+                >
+                  Transfer Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('reports.stock_adjustments.view')"
+                  to="/reports/stock-adjustments"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
+                >
+                  Stock Adjustment
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('reports.stock_opnames.view')"
+                  to="/reports/stock-opnames"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isReportOpen = false"
+                >
+                  Hasil Stock Opname
                 </router-link>
               </div>
             </div>
@@ -214,13 +273,43 @@
 
 <script setup>
 import { useAuthStore } from '../../features/auth/stores/use_auth_store.js';
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { computed, ref } from 'vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 const isReportOpen = ref(false);
+
+const reportPermissions = [
+    'reports.inventory_balance.view',
+    'reports.low_stock.view',
+    'reports.stock_card.view',
+    'reports.stock_receipts.view',
+    'reports.stock_issues.view',
+    'reports.stock_transfers.view',
+    'reports.stock_adjustments.view',
+    'reports.stock_opnames.view',
+];
+
+const transactionReportPermissions = [
+    'reports.stock_receipts.view',
+    'reports.stock_issues.view',
+    'reports.stock_transfers.view',
+    'reports.stock_adjustments.view',
+    'reports.stock_opnames.view',
+];
+
+const hasAnyReportPermission = computed(() =>
+    reportPermissions.some((permission) => authStore.hasPermission(permission)),
+);
+
+const hasAnyTransactionReportPermission = computed(() =>
+    transactionReportPermissions.some((permission) => authStore.hasPermission(permission)),
+);
+
+const isReportActive = computed(() => route.path.startsWith('/reports/'));
 
 async function handleLogout() {
     await authStore.logout();

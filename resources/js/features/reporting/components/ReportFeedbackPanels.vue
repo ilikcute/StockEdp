@@ -1,0 +1,89 @@
+<template>
+  <div>
+    <div
+      v-if="status === 403"
+      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+    >
+      <h3 class="text-sm font-medium text-red-800">
+        Akses ditolak
+      </h3>
+      <p class="mt-2 text-sm text-red-700">
+        Anda tidak memiliki izin untuk melihat laporan ini.
+      </p>
+    </div>
+
+    <div
+      v-else-if="error"
+      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+    >
+      <h3 class="text-sm font-medium text-red-800">
+        Error memuat data
+      </h3>
+      <p class="mt-2 text-sm text-red-700">
+        {{ error }}
+      </p>
+      <div class="mt-4 flex gap-2">
+        <button
+          type="button"
+          class="text-sm font-medium text-red-800 hover:text-red-900 bg-red-100 px-3 py-1.5 rounded-md"
+          @click="$emit('retry')"
+        >
+          Coba Lagi
+        </button>
+        <button
+          type="button"
+          class="text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-md"
+          @click="$emit('reset-filters')"
+        >
+          Reset Filter
+        </button>
+      </div>
+    </div>
+
+    <div
+      v-if="localValidationError"
+      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200"
+    >
+      <p class="text-sm text-yellow-700">
+        {{ localValidationError }}
+      </p>
+    </div>
+
+    <div
+      v-if="validationErrors && Object.keys(validationErrors).length > 0"
+      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200"
+    >
+      <ul class="list-disc pl-5 text-sm text-yellow-700">
+        <li
+          v-for="(errors, field) in validationErrors"
+          :key="field"
+        >
+          <span class="font-medium">{{ field }}:</span> {{ errors.join(', ') }}
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<script setup>
+defineProps({
+    error: {
+        type: String,
+        default: null,
+    },
+    status: {
+        type: Number,
+        default: null,
+    },
+    validationErrors: {
+        type: Object,
+        default: () => ({}),
+    },
+    localValidationError: {
+        type: String,
+        default: '',
+    },
+});
+
+defineEmits(['retry', 'reset-filters']);
+</script>
