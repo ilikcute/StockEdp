@@ -21,23 +21,22 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
         loadingSuppliers: false,
         error: null,
         status: null,
+        supplierError: null,
     }),
     actions: {
-        async fetchOptions() {
+        async fetchBaseOptions() {
             this.loading = true;
             this.error = null;
             this.status = null;
             try {
-                const [locRes, catRes, unitRes, supRes] = await Promise.all([
+                const [locRes, catRes, unitRes] = await Promise.all([
                     locationApi.getAll({ per_page: 100 }),
                     categoryApi.getAll({ per_page: 100 }),
                     unitApi.getAll({ per_page: 100 }),
-                    supplierApi.getAll({ per_page: 100 }),
                 ]);
                 this.locations = locRes.data.data;
                 this.categories = catRes.data.data;
                 this.units = unitRes.data.data;
-                this.suppliers = supRes.data.data;
                 this.status = locRes.status;
             } catch (err) {
                 const normalized = normalizeApiError(err);
@@ -46,6 +45,9 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
             } finally {
                 this.loading = false;
             }
+        },
+        async fetchOptions() {
+            return this.fetchBaseOptions();
         },
         async searchProducts(search = '') {
             const requestId = ++latestProductSearchRequestId;
@@ -67,6 +69,7 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
         async searchSuppliers(search = '') {
             const requestId = ++latestSupplierSearchRequestId;
             this.loadingSuppliers = true;
+            this.supplierError = null;
             try {
                 const response = await supplierApi.getAll({ search, per_page: 20 });
                 if (requestId !== latestSupplierSearchRequestId) return;
@@ -74,7 +77,9 @@ export const useReportFilterOptionsStore = defineStore('reportFilterOptions', {
             } catch (err) {
                 if (requestId !== latestSupplierSearchRequestId) return;
                 const normalized = normalizeApiError(err);
-                this.error = normalized.message;
+                this.supplierError = normalized.status === 403
+                    ? 'Akses daftar supplier tidak diizinkan.'
+                    : (normalized.message || 'Gagal memuat daftar supplier.');
             } finally {
                 if (requestId === latestSupplierSearchRequestId) {
                     this.loadingSuppliers = false;
