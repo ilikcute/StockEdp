@@ -115,13 +115,19 @@
             class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
           >
             <option value="shortage_quantity">
-              Defisit Terbesar
+              Defisit
+            </option>
+            <option value="minimum_stock">
+              Stok Minimum
+            </option>
+            <option value="on_hand_quantity">
+              Stok Saat Ini
             </option>
             <option value="product_name">
               Nama Produk
             </option>
-            <option value="id">
-              ID
+            <option value="sku">
+              SKU
             </option>
           </select>
           <select
@@ -305,7 +311,7 @@
 
     <!-- Pagination -->
     <div
-      v-if="store.meta.total > 0"
+      v-if="store.meta?.total > 0"
       class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm"
     >
       <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
@@ -410,13 +416,14 @@ const exportCsv = async () => {
 };
 
 const changePage = (page) => {
-    if (page >= 1 && page <= store.meta.last_page) {
-        store.fetchLowStock({
-            page,
-            ...filters,
-            include_inactive: filters.include_inactive ? 1 : null,
-        });
+    if (!store.meta || page < 1 || page > store.meta.last_page) {
+        return;
     }
+    store.fetchLowStock({
+        page,
+        ...filters,
+        include_inactive: filters.include_inactive ? 1 : null,
+    });
 };
 
 onMounted(async () => {

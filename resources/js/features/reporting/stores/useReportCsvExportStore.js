@@ -83,7 +83,7 @@ export const useReportCsvExportStore = defineStore('reportCsvExport', {
                 return true;
             } catch (error) {
                 const normalized = await normalizeCsvExportError(error);
-                this.status[reportKey] = normalized.status || 500;
+                this.status[reportKey] = normalized.status ?? 500;
 
                 if (normalized.status === 403) {
                     this.errors[reportKey] = 'Anda tidak memiliki izin untuk mengekspor laporan ini.';

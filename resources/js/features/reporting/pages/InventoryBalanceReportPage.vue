@@ -141,11 +141,17 @@
             <option value="id">
               ID
             </option>
+            <option value="product_id">
+              Produk
+            </option>
+            <option value="location_id">
+              Lokasi
+            </option>
             <option value="quantity">
               Kuantitas
             </option>
-            <option value="product_name">
-              Nama Produk
+            <option value="created_at">
+              Waktu Dibuat
             </option>
           </select>
           <select
@@ -243,7 +249,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-if="!store.loading && store.balances.length === 0">
+                <tr v-if="!store.loading && store.data.length === 0">
                   <td
                     colspan="4"
                     class="py-10 text-center text-sm text-gray-500"
@@ -252,7 +258,7 @@
                   </td>
                 </tr>
                 <tr
-                  v-for="item in store.balances"
+                  v-for="item in store.data"
                   :key="item.id"
                   class="hover:bg-gray-50"
                 >
@@ -292,7 +298,7 @@
 
     <!-- Pagination -->
     <div
-      v-if="store.meta.total > 0"
+      v-if="store.meta?.total > 0"
       class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm"
     >
       <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
@@ -386,14 +392,15 @@ const exportCsv = async () => {
 };
 
 const changePage = (page) => {
-    if (page >= 1 && page <= store.meta.last_page) {
-        store.fetchBalances({
-            page,
-            ...filters,
-            positive_stock: filters.positive_stock ? 1 : null,
-            zero_stock: filters.zero_stock ? 1 : null,
-        });
+    if (!store.meta || page < 1 || page > store.meta.last_page) {
+        return;
     }
+    store.fetchBalances({
+        page,
+        ...filters,
+        positive_stock: filters.positive_stock ? 1 : null,
+        zero_stock: filters.zero_stock ? 1 : null,
+    });
 };
 
 onMounted(async () => {
