@@ -181,6 +181,6 @@ class ReportFilterOptionsTest extends TestCase
 
         // 8. oversized search (> 100 chars) rejected (422)
         $longSearch = str_repeat('a', 101);
-        $this->actingAs($user)->getJson('/api/v1/reports/filter-options/products?search=' . $longSearch)->assertStatus(422);
+        $this->actingAs($user)->getJson('/api/v1/reports/filter-options/products?search='.$longSearch)->assertStatus(422);
     }
 }

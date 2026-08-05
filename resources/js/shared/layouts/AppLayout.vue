@@ -46,57 +46,90 @@
             </router-link>
 
             <div
-              v-if="isInventoryOpen"
-              class="space-y-1"
+              v-if="hasAnyInventoryPermission"
+              class="relative"
             >
-              <router-link
-                v-if="authStore.hasPermission('inventory.movements.view')"
-                to="/inventory/movements"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/movements') }"
+              <button
+                type="button"
+                class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+                :class="{ 'text-blue-600 bg-blue-50/50': isInventoryActive }"
+                @click="isInventoryOpen = !isInventoryOpen"
               >
-                Riwayat Pergerakan
-              </router-link>
-              <router-link
-                v-if="authStore.hasPermission('stock_receipts.view')"
-                to="/inventory/receipts"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/receipts') }"
+                Persediaan
+                <svg
+                  class="ml-1 h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              <div
+                v-if="isInventoryOpen"
+                class="absolute left-0 mt-2 w-56 max-h-[70vh] overflow-y-auto rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1"
               >
-                Penerimaan Stok
-              </router-link>
-              <router-link
-                v-if="authStore.hasPermission('stock_issues.view')"
-                to="/inventory/issues"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/issues') }"
-              >
-                Pengeluaran Stok
-              </router-link>
-              <router-link
-                v-if="authStore.hasPermission('stock_transfers.view')"
-                to="/inventory/transfers"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/transfers') }"
-              >
-                Transfer Stok
-              </router-link>
-              <router-link
-                v-if="authStore.hasPermission('stock_adjustments.view')"
-                to="/inventory/adjustments"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/adjustments') }"
-              >
-                Penyesuaian Stok
-              </router-link>
-              <router-link
-                v-if="authStore.hasPermission('stock_opnames.view')"
-                to="/inventory/opnames"
-                class="block rounded-md py-2 pl-11 pr-2 text-sm leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                :class="{ 'bg-gray-800 text-white': isCurrentRoute('/inventory/opnames') }"
-              >
-                Stock Opname
-              </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('inventory.movements.view')"
+                  to="/inventory/movements"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isInventoryOpen = false"
+                >
+                  Riwayat Pergerakan
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('stock_receipts.view')"
+                  to="/inventory/receipts"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isInventoryOpen = false"
+                >
+                  Penerimaan Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('stock_issues.view')"
+                  to="/inventory/issues"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isInventoryOpen = false"
+                >
+                  Pengeluaran Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('stock_transfers.view')"
+                  to="/inventory/transfers"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isInventoryOpen = false"
+                >
+                  Transfer Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('stock_adjustments.view')"
+                  to="/inventory/adjustments"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isInventoryOpen = false"
+                >
+                  Penyesuaian Stok
+                </router-link>
+                <router-link
+                  v-if="authStore.hasPermission('stock_opnames.view')"
+                  to="/inventory/opnames"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  active-class="bg-gray-100 text-blue-600 font-medium"
+                  @click="isInventoryOpen = false"
+                >
+                  Stock Opname
+                </router-link>
+              </div>
             </div>
 
             <router-link
@@ -106,6 +139,15 @@
               active-class="text-blue-600 bg-blue-50/50"
             >
               Supplier
+            </router-link>
+
+            <router-link
+              v-if="authStore.hasPermission('locations.view')"
+              to="/locations"
+              class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+              active-class="text-blue-600 bg-blue-50/50"
+            >
+              Lokasi
             </router-link>
 
             <!-- Laporan Dropdown -->
@@ -223,20 +265,6 @@
                 </router-link>
               </div>
             </div>
-
-            <template
-              v-for="item in navigation"
-              :key="item.to"
-            >
-              <router-link
-                v-if="authStore.hasPermission(item.permission)"
-                :to="item.to"
-                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
-                active-class="text-blue-600 bg-blue-50/50"
-              >
-                {{ item.name }}
-              </router-link>
-            </template>
           </nav>
         </div>
 
@@ -281,6 +309,16 @@ const router = useRouter();
 const route = useRoute();
 
 const isReportOpen = ref(false);
+const isInventoryOpen = ref(false);
+
+const inventoryPermissions = [
+    'inventory.movements.view',
+    'stock_receipts.view',
+    'stock_issues.view',
+    'stock_transfers.view',
+    'stock_adjustments.view',
+    'stock_opnames.view',
+];
 
 const reportPermissions = [
     'reports.inventory_balance.view',
@@ -305,11 +343,16 @@ const hasAnyReportPermission = computed(() =>
     reportPermissions.some((permission) => authStore.hasPermission(permission)),
 );
 
+const hasAnyInventoryPermission = computed(() =>
+    inventoryPermissions.some((permission) => authStore.hasPermission(permission)),
+);
+
 const hasAnyTransactionReportPermission = computed(() =>
     transactionReportPermissions.some((permission) => authStore.hasPermission(permission)),
 );
 
 const isReportActive = computed(() => route.path.startsWith('/reports/'));
+const isInventoryActive = computed(() => route.path.startsWith('/inventory/'));
 
 async function handleLogout() {
     await authStore.logout();
