@@ -63,6 +63,7 @@ interface ReportingRepositoryInterface
     ): LengthAwarePaginator;
 
     public function getCursorStockCardMovements(
+        array $allowedLocationIds,
         int $productId,
         int $locationId,
         string $startDateTime,

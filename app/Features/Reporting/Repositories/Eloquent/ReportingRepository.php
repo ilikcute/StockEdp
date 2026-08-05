@@ -1092,11 +1092,19 @@ class ReportingRepository implements ReportingRepositoryInterface
     }
 
     public function getCursorStockCardMovements(
+        array $allowedLocationIds,
         int $productId,
         int $locationId,
         string $startDateTime,
         string $endNextDayDateTime
     ): LazyCollection {
+        if (
+            empty($allowedLocationIds)
+            || ! in_array($locationId, $allowedLocationIds, true)
+        ) {
+            return LazyCollection::empty();
+        }
+
         return DB::table('stock_movements')
             ->join('products', 'products.id', '=', 'stock_movements.product_id')
             ->join('locations', 'locations.id', '=', 'stock_movements.location_id')
@@ -1107,6 +1115,7 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'stock_movements.created_at',
                 'stock_movements.movement_type',
                 'stock_movements.movement_id',
+                'stock_movements.reference_number',
                 'products.sku',
                 'products.name as product_name',
                 'locations.code as location_code',
@@ -1120,7 +1129,8 @@ class ReportingRepository implements ReportingRepositoryInterface
             ])
             ->where('stock_movements.product_id', $productId)
             ->where('stock_movements.location_id', $locationId)
-            ->whereBetween('stock_movements.created_at', [$startDateTime, $endNextDayDateTime])
+            ->where('stock_movements.created_at', '>=', $startDateTime)
+            ->where('stock_movements.created_at', '<', $endNextDayDateTime)
             ->orderBy('stock_movements.created_at', 'asc')
             ->orderBy('stock_movements.id', 'asc')
             ->cursor();
@@ -1173,10 +1183,16 @@ class ReportingRepository implements ReportingRepositoryInterface
 
         $this->applyReceiptFilters($query, $filters);
 
+        $sortMap = [
+            'posted_at' => 'stock_movements.created_at',
+            'document_date' => 'stock_receipts.date',
+            'receipt_number' => 'stock_receipts.receipt_number',
+            'id' => 'stock_receipt_items.id',
+        ];
+        $actualSortField = $sortMap[$sortField] ?? 'stock_movements.created_at';
         $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
-        return $query->orderBy('stock_movements.created_at', $sortDirection)
-            ->orderBy('stock_movements.id', $sortDirection)
+        return $query->orderBy($actualSortField, $sortDirection)
             ->orderBy('stock_receipt_items.id', $sortDirection)
             ->cursor();
     }
@@ -1227,10 +1243,16 @@ class ReportingRepository implements ReportingRepositoryInterface
 
         $this->applyIssueFilters($query, $filters);
 
+        $sortMap = [
+            'posted_at' => 'stock_movements.created_at',
+            'document_date' => 'stock_issues.date',
+            'issue_number' => 'stock_issues.issue_number',
+            'id' => 'stock_issue_items.id',
+        ];
+        $actualSortField = $sortMap[$sortField] ?? 'stock_movements.created_at';
         $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
-        return $query->orderBy('stock_movements.created_at', $sortDirection)
-            ->orderBy('stock_movements.id', $sortDirection)
+        return $query->orderBy($actualSortField, $sortDirection)
             ->orderBy('stock_issue_items.id', $sortDirection)
             ->cursor();
     }
@@ -1287,10 +1309,16 @@ class ReportingRepository implements ReportingRepositoryInterface
 
         $this->applyTransferFilters($query, $filters, $dateColumn);
 
+        $sortMap = [
+            'sent_at' => 'stock_transfers.sent_at',
+            'received_at' => 'stock_transfers.received_at',
+            'transfer_number' => 'stock_transfers.transfer_number',
+            'id' => 'stock_transfer_items.id',
+        ];
+        $actualSortField = $sortMap[$sortField] ?? $dateColumn;
         $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
-        return $query->orderBy($dateColumn, $sortDirection)
-            ->orderBy('stock_transfers.id', $sortDirection)
+        return $query->orderBy($actualSortField, $sortDirection)
             ->orderBy('stock_transfer_items.id', $sortDirection)
             ->cursor();
     }
@@ -1333,10 +1361,16 @@ class ReportingRepository implements ReportingRepositoryInterface
 
         $this->applyAdjustmentFilters($query, $filters);
 
+        $sortMap = [
+            'posted_at' => 'stock_adjustments.posted_at',
+            'adjustment_date' => 'stock_adjustments.adjustment_date',
+            'adjustment_number' => 'stock_adjustments.adjustment_number',
+            'id' => 'stock_adjustment_items.id',
+        ];
+        $actualSortField = $sortMap[$sortField] ?? 'stock_adjustments.posted_at';
         $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
-        return $query->orderBy('stock_adjustments.posted_at', $sortDirection)
-            ->orderBy('stock_adjustments.id', $sortDirection)
+        return $query->orderBy($actualSortField, $sortDirection)
             ->orderBy('stock_adjustment_items.id', $sortDirection)
             ->cursor();
     }
@@ -1384,10 +1418,16 @@ class ReportingRepository implements ReportingRepositoryInterface
 
         $this->applyOpnameFilters($query, $filters);
 
+        $sortMap = [
+            'posted_at' => 'stock_opnames.posted_at',
+            'opname_date' => 'stock_opnames.opname_date',
+            'opname_number' => 'stock_opnames.opname_number',
+            'id' => 'stock_opname_items.id',
+        ];
+        $actualSortField = $sortMap[$sortField] ?? 'stock_opnames.posted_at';
         $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
-        return $query->orderBy('stock_opnames.posted_at', $sortDirection)
-            ->orderBy('stock_opnames.id', $sortDirection)
+        return $query->orderBy($actualSortField, $sortDirection)
             ->orderBy('stock_opname_items.id', $sortDirection)
             ->cursor();
     }

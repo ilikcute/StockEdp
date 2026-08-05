@@ -36,7 +36,14 @@ class ReportExportController extends Controller
 
     public function stockCard(StockCardReportRequest $request): StreamedResponse
     {
-        return $this->exportService->exportStockCard($request->validated());
+        $allowedLocationIds = $request->user()
+            ? $request->user()->getAllowedLocationIds()
+            : [];
+
+        return $this->exportService->exportStockCard(
+            $allowedLocationIds,
+            $request->validated()
+        );
     }
 
     public function stockReceipts(StockReceiptReportRequest $request): StreamedResponse

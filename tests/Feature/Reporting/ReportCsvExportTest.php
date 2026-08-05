@@ -26,6 +26,7 @@ use App\Features\Supplier\Models\Supplier;
 use App\Features\Unit\Models\Unit;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -198,6 +199,188 @@ class ReportCsvExportTest extends TestCase
             $lines = explode("\n", trim($content));
             $this->assertGreaterThanOrEqual(2, count($lines), "Expected header + data row for {$slug}");
         }
+    }
+
+    public function test_stock_card_export_is_scoped_to_allowed_locations()
+    {
+        // Movement in loc1 (allowed for staffLoc1)
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 1,
+            'movement_id' => 'RC-LOC1',
+            'quantity' => '10.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '10.0000',
+            'occurred_at' => now(),
+            'created_by' => $this->admin->id,
+        ]);
+
+        // Movement in loc2 (NOT allowed for staffLoc1)
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc2->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 2,
+            'movement_id' => 'RC-LOC2',
+            'quantity' => '999.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '999.0000',
+            'occurred_at' => now(),
+            'created_by' => $this->admin->id,
+        ]);
+
+        $urlLoc1 = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05';
+        $resLoc1 = $this->actingAs($this->staffLoc1, 'sanctum')->get($urlLoc1)->assertStatus(200);
+        $this->assertStringContainsString('RC-LOC1', $resLoc1->streamedContent());
+
+        $urlLoc2 = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc2->id.'&start_date=2026-08-01&end_date=2026-08-05';
+        $resLoc2 = $this->actingAs($this->staffLoc1, 'sanctum')->get($urlLoc2)->assertStatus(200);
+        $contentLoc2 = $resLoc2->streamedContent();
+        $this->assertStringNotContainsString('RC-LOC2', $contentLoc2);
+        $this->assertCount(1, explode("\n", trim($contentLoc2)));
+    }
+
+    public function test_stock_card_export_with_empty_location_scope_returns_header_only()
+    {
+        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05';
+
+        $response = $this->actingAs($this->staffEmptyLoc, 'sanctum')->get($url)->assertStatus(200);
+        $content = $response->streamedContent();
+
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $content);
+        $lines = explode("\n", trim($content));
+        $this->assertCount(1, $lines);
+    }
+
+    public function test_stock_card_export_calculates_quantity_in_and_out_with_bcmath()
+    {
+        // 0.0000 -> 10.0000 => In: 10.0000, Out: 0.0000
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 1,
+            'reference_number' => 'REF-001',
+            'movement_id' => 'MOV-001',
+            'quantity' => '10.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '10.0000',
+            'created_at' => '2026-08-05 10:00:00',
+            'occurred_at' => '2026-08-05 10:00:00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        // 10.0000 -> 7.5000 => In: 0.0000, Out: 2.5000
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'ISSUE',
+            'reference_type' => StockIssue::class,
+            'reference_id' => 1,
+            'reference_number' => 'REF-002',
+            'movement_id' => 'MOV-002',
+            'quantity' => '2.5000',
+            'quantity_before' => '10.0000',
+            'quantity_after' => '7.5000',
+            'created_at' => '2026-08-05 11:00:00',
+            'occurred_at' => '2026-08-05 11:00:00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        // 0.0000 -> 0.0001 => In: 0.0001, Out: 0.0000
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 2,
+            'reference_number' => 'REF-003',
+            'movement_id' => 'MOV-003',
+            'quantity' => '0.0001',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '0.0001',
+            'created_at' => '2026-08-05 12:00:00',
+            'occurred_at' => '2026-08-05 12:00:00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-05&end_date=2026-08-05';
+        $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
+        $content = $response->streamedContent();
+
+        $this->assertStringContainsString('REF-001', $content);
+        $this->assertStringContainsString('REF-002', $content);
+        $this->assertStringContainsString('REF-003', $content);
+        $this->assertStringContainsString('10.0000', $content);
+        $this->assertStringContainsString('2.5000', $content);
+        $this->assertStringContainsString('0.0001', $content);
+    }
+
+    public function test_stock_card_export_half_open_date_interval_boundaries()
+    {
+        // Boundary 1: start 00:00:00 (Included)
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 1,
+            'reference_number' => 'BO-START',
+            'movement_id' => 'MOV-B1',
+            'quantity' => '1.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '1.0000',
+            'created_at' => '2026-08-05 00:00:00',
+            'occurred_at' => '2026-08-05 00:00:00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        // Boundary 2: end 23:59:59 (Included)
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 2,
+            'reference_number' => 'BO-END',
+            'movement_id' => 'MOV-B2',
+            'quantity' => '1.0000',
+            'quantity_before' => '1.0000',
+            'quantity_after' => '2.0000',
+            'created_at' => '2026-08-05 23:59:59',
+            'occurred_at' => '2026-08-05 23:59:59',
+            'created_by' => $this->admin->id,
+        ]);
+
+        // Boundary 3: next day 00:00:00 (EXCLUDED)
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 3,
+            'reference_number' => 'BO-NEXTDAY',
+            'movement_id' => 'MOV-B3',
+            'quantity' => '1.0000',
+            'quantity_before' => '2.0000',
+            'quantity_after' => '3.0000',
+            'created_at' => '2026-08-06 00:00:00',
+            'occurred_at' => '2026-08-06 00:00:00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-05&end_date=2026-08-05';
+        $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
+        $content = $response->streamedContent();
+
+        $this->assertStringContainsString('BO-START', $content);
+        $this->assertStringContainsString('BO-END', $content);
+        $this->assertStringNotContainsString('BO-NEXTDAY', $content);
     }
 
     public function test_low_stock_required_filter_validation()
@@ -426,6 +609,8 @@ class ReportCsvExportTest extends TestCase
 
     public function test_no_n_plus_one_query_count_does_not_scale_linearly()
     {
+        Model::preventLazyLoading(true);
+
         // Create 10 receipt records
         for ($i = 1; $i <= 10; $i++) {
             $rc = StockReceipt::create(['receipt_number' => "N1-RC-00{$i}", 'date' => '2026-08-05', 'supplier_id' => $this->supplier->id, 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id]);
@@ -444,6 +629,7 @@ class ReportCsvExportTest extends TestCase
 
         $queryCount = count(DB::getQueryLog());
         DB::disableQueryLog();
+        Model::preventLazyLoading(false);
 
         // 10 items processed in stream with direct SQL join query should execute exactly 1 SQL query
         $this->assertLessThanOrEqual(5, $queryCount);

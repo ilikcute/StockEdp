@@ -81,7 +81,7 @@ class ReportExportService
         return $this->downloadStream('low-stock', $headers, $generator());
     }
 
-    public function exportStockCard(array $filters): StreamedResponse
+    public function exportStockCard(array $allowedLocationIds, array $filters): StreamedResponse
     {
         $productId = (int) $filters['product_id'];
         $locationId = (int) $filters['location_id'];
@@ -93,6 +93,7 @@ class ReportExportService
         $endNextDayDateTime = CarbonImmutable::parse($endDate, 'Asia/Jakarta')->startOfDay()->addDay()->format('Y-m-d H:i:s');
 
         $cursor = $this->repository->getCursorStockCardMovements(
+            $allowedLocationIds,
             $productId,
             $locationId,
             $startDateTime,
@@ -108,24 +109,38 @@ class ReportExportService
 
         $generator = function () use ($cursor) {
             foreach ($cursor as $m) {
-                $isIncoming = in_array($m->movement_type, ['RECEIPT', 'TRANSFER_IN', 'OPNAME_IN', 'ADJUSTMENT_IN'], true);
-                $qtyIn = $isIncoming ? DecimalQuantity::normalize($m->quantity) : '0.0000';
-                $qtyOut = ! $isIncoming ? DecimalQuantity::normalize($m->quantity) : '0.0000';
+                $quantityBefore = DecimalQuantity::normalize((string) $m->quantity_before);
+                $quantityAfter = DecimalQuantity::normalize((string) $m->quantity_after);
+
+                $delta = bcsub($quantityAfter, $quantityBefore, 4);
+
+                if (bccomp($delta, '0.0000', 4) > 0) {
+                    $quantityIn = $delta;
+                    $quantityOut = '0.0000';
+                } elseif (bccomp($delta, '0.0000', 4) < 0) {
+                    $quantityIn = '0.0000';
+                    $quantityOut = bcsub('0.0000', $delta, 4);
+                } else {
+                    $quantityIn = '0.0000';
+                    $quantityOut = '0.0000';
+                }
+
                 $postedAt = $m->created_at ? CarbonImmutable::parse($m->created_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
+                $refNumber = ! empty($m->reference_number) ? $m->reference_number : ($m->movement_id ?? '');
 
                 yield [
                     $m->occurred_at ? CarbonImmutable::parse($m->occurred_at, 'Asia/Jakarta')->format('Y-m-d') : '-',
                     $postedAt,
                     $m->movement_type,
-                    $m->movement_id,
+                    $refNumber,
                     $m->sku ?? '',
                     $m->product_name ?? '',
                     $m->location_code ?? '',
                     $m->location_name ?? '',
-                    DecimalQuantity::normalize($m->quantity_before),
-                    $qtyIn,
-                    $qtyOut,
-                    DecimalQuantity::normalize($m->quantity_after),
+                    $quantityBefore,
+                    $quantityIn,
+                    $quantityOut,
+                    $quantityAfter,
                     $m->creator_name ?? ($m->creator_username ?? '-'),
                     $m->notes ?? '',
                 ];
