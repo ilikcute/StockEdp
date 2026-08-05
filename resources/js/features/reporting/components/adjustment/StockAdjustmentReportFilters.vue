@@ -29,20 +29,26 @@
           <option value="">
             Semua Alasan
           </option>
-          <option value="DAMAGE">
-            DAMAGE (Kerusakan)
+          <option value="FOUND">
+            FOUND (Barang ditemukan)
           </option>
-          <option value="EXPIRATION">
-            EXPIRATION (Kadaluarsa)
+          <option value="DAMAGED">
+            DAMAGED (Barang rusak)
           </option>
-          <option value="SHRINKAGE">
-            SHRINKAGE (Shrinkage)
+          <option value="EXPIRED">
+            EXPIRED (Barang kedaluwarsa)
           </option>
-          <option value="DATA_ENTRY_ERROR">
-            DATA_ENTRY_ERROR (Kesalahan Input)
+          <option value="RECORDING_ERROR">
+            RECORDING_ERROR (Kesalahan pencatatan)
+          </option>
+          <option value="ADMINISTRATIVE">
+            ADMINISTRATIVE (Koreksi administratif)
+          </option>
+          <option value="LOST">
+            LOST (Kehilangan barang)
           </option>
           <option value="OTHER">
-            OTHER (Lainnya)
+            OTHER (Lain-lain)
           </option>
         </select>
       </div>

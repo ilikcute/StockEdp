@@ -3,8 +3,10 @@
 namespace App\Features\Reporting\Requests;
 
 use App\Features\Auth\Enums\PermissionCode;
+use App\Features\Inventory\Enums\AdjustmentReason;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StockAdjustmentReportRequest extends FormRequest
 {
@@ -21,7 +23,7 @@ class StockAdjustmentReportRequest extends FormRequest
             'category_id' => 'nullable|integer|exists:categories,id',
             'unit_id' => 'nullable|integer|exists:units,id',
             'direction' => 'nullable|in:INCREASE,DECREASE',
-            'reason_code' => 'nullable|string|in:DAMAGE,EXPIRATION,SHRINKAGE,DATA_ENTRY_ERROR,OTHER',
+            'reason_code' => ['nullable', Rule::enum(AdjustmentReason::class)],
             'start_date' => 'nullable|date_format:Y-m-d',
             'end_date' => 'nullable|date_format:Y-m-d|after_or_equal:start_date',
             'search' => 'nullable|string|max:100',

@@ -22,6 +22,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as ConcretePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 
 class ReportingRepository implements ReportingRepositoryInterface
 {
@@ -947,5 +948,309 @@ class ReportingRepository implements ReportingRepositoryInterface
                     ->orWhere('products.sku', 'like', "%{$search}%");
             });
         }
+    }
+
+    // ==========================================
+    // CURSOR STREAM METHODS FOR CSV EXPORT
+    // ==========================================
+    public function getCursorBalances(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'id',
+        string $sortDirection = 'desc'
+    ): LazyCollection {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $query = InventoryBalance::with(['product.category', 'product.unit', 'location.operationLock'])
+            ->whereIn('location_id', $allowedLocationIds);
+
+        if (! empty($filters['location_id'])) {
+            if (! in_array((int) $filters['location_id'], $allowedLocationIds, true)) {
+                return LazyCollection::empty();
+            }
+            $query->where('location_id', $filters['location_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $query->where('product_id', $filters['product_id']);
+        }
+        if (! empty($filters['category_id'])) {
+            $query->whereHas('product', fn ($q) => $q->where('category_id', $filters['category_id']));
+        }
+        if (! empty($filters['unit_id'])) {
+            $query->whereHas('product', fn ($q) => $q->where('unit_id', $filters['unit_id']));
+        }
+        if (isset($filters['is_active']) && $filters['is_active'] !== '') {
+            $isActive = (bool) $filters['is_active'];
+            $query->whereHas('product', fn ($q) => $q->where('is_active', $isActive));
+        }
+        if (! empty($filters['positive_stock'])) {
+            $query->where('quantity', '>', '0.0000');
+        }
+        if (isset($filters['zero_stock']) && $filters['zero_stock'] === '1') {
+            $query->where('quantity', '=', '0.0000');
+        }
+        if (isset($filters['frozen_location']) && $filters['frozen_location'] === '1') {
+            $query->whereHas('location.operationLock', fn ($q) => $q->where('is_frozen', true));
+        }
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->whereHas('product', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
+            });
+        }
+
+        $allowlist = ['id', 'product_id', 'location_id', 'quantity', 'created_at'];
+        $sortField = in_array($sortField, $allowlist, true) ? $sortField : 'id';
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy($sortField, $sortDirection)->orderBy('id', $sortDirection)->cursor();
+    }
+
+    public function getCursorLowStock(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'shortage_quantity',
+        string $sortDirection = 'desc'
+    ): LazyCollection {
+        $locationId = isset($filters['location_id']) ? (int) $filters['location_id'] : 0;
+        if ($locationId === 0 || ! in_array($locationId, $allowedLocationIds, true)) {
+            return LazyCollection::empty();
+        }
+
+        $query = DB::table('products')
+            ->leftJoin('inventory_balances', function ($join) use ($locationId) {
+                $join->on('inventory_balances.product_id', '=', 'products.id')
+                    ->where('inventory_balances.location_id', '=', $locationId);
+            })
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
+            ->leftJoin('locations', 'locations.id', '=', DB::raw($locationId))
+            ->select([
+                'products.id as product_id',
+                'products.sku',
+                'products.barcode',
+                'products.name as product_name',
+                'products.minimum_stock',
+                'products.is_active as is_product_active',
+                'categories.name as category_name',
+                'units.name as unit_name',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                DB::raw('COALESCE(inventory_balances.quantity, 0.0000) as on_hand_quantity'),
+                DB::raw('GREATEST(products.minimum_stock - COALESCE(inventory_balances.quantity, 0.0000), 0.0000) as shortage_quantity'),
+            ])
+            ->where('products.minimum_stock', '>', 0)
+            ->whereRaw('COALESCE(inventory_balances.quantity, 0.0000) < products.minimum_stock');
+
+        if (isset($filters['include_inactive']) && $filters['include_inactive'] === '1') {
+        } else {
+            $query->where('products.is_active', true);
+        }
+
+        if (! empty($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
+        }
+        if (! empty($filters['unit_id'])) {
+            $query->where('products.unit_id', $filters['unit_id']);
+        }
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%")
+                    ->orWhere('products.barcode', 'like', "%{$search}%");
+            });
+        }
+
+        $allowlist = ['shortage_quantity', 'minimum_stock', 'on_hand_quantity', 'product_name', 'sku'];
+        $sortField = in_array($sortField, $allowlist, true) ? $sortField : 'shortage_quantity';
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy($sortField, $sortDirection)->orderBy('products.id', $sortDirection)->cursor();
+    }
+
+    public function getCursorStockCardMovements(
+        int $productId,
+        int $locationId,
+        string $startDateTime,
+        string $endNextDayDateTime
+    ): LazyCollection {
+        return StockMovement::with(['creator', 'product', 'location'])
+            ->where('product_id', $productId)
+            ->where('location_id', $locationId)
+            ->whereBetween('created_at', [$startDateTime, $endNextDayDateTime])
+            ->orderBy('created_at', 'asc')
+            ->orderBy('id', 'asc')
+            ->cursor();
+    }
+
+    public function getCursorStockReceiptReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $query = StockReceiptItem::query()
+            ->select('stock_receipt_items.*', 'stock_movements.created_at as movement_posted_at')
+            ->join('stock_receipts', 'stock_receipts.id', '=', 'stock_receipt_items.stock_receipt_id')
+            ->join('products', 'products.id', '=', 'stock_receipt_items.product_id')
+            ->leftJoin('suppliers', 'suppliers.id', '=', 'stock_receipts.supplier_id')
+            ->leftJoin('stock_movements', function ($join) {
+                $join->on('stock_movements.reference_id', '=', 'stock_receipts.id')
+                    ->where('stock_movements.reference_type', '=', StockReceipt::class)
+                    ->on('stock_movements.product_id', '=', 'stock_receipt_items.product_id')
+                    ->on('stock_movements.location_id', '=', 'stock_receipt_items.location_id')
+                    ->where('stock_movements.movement_type', '=', 'RECEIPT');
+            })
+            ->where('stock_receipts.status', 'POSTED')
+            ->whereIn('stock_receipt_items.location_id', $allowedLocationIds);
+
+        $this->applyReceiptFilters($query, $filters);
+
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy('stock_movements.created_at', $sortDirection)
+            ->orderBy('stock_movements.id', $sortDirection)
+            ->orderBy('stock_receipt_items.id', $sortDirection)
+            ->with(['receipt.supplier', 'receipt.creator', 'product.unit', 'product.category', 'location'])
+            ->cursor();
+    }
+
+    public function getCursorStockIssueReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $query = StockIssueItem::query()
+            ->select('stock_issue_items.*', 'stock_movements.created_at as movement_posted_at')
+            ->join('stock_issues', 'stock_issues.id', '=', 'stock_issue_items.stock_issue_id')
+            ->join('products', 'products.id', '=', 'stock_issue_items.product_id')
+            ->leftJoin('stock_movements', function ($join) {
+                $join->on('stock_movements.reference_id', '=', 'stock_issues.id')
+                    ->where('stock_movements.reference_type', '=', StockIssue::class)
+                    ->on('stock_movements.product_id', '=', 'stock_issue_items.product_id')
+                    ->on('stock_movements.location_id', '=', 'stock_issue_items.location_id')
+                    ->where('stock_movements.movement_type', '=', 'ISSUE');
+            })
+            ->where('stock_issues.status', 'POSTED')
+            ->whereIn('stock_issue_items.location_id', $allowedLocationIds);
+
+        $this->applyIssueFilters($query, $filters);
+
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy('stock_movements.created_at', $sortDirection)
+            ->orderBy('stock_movements.id', $sortDirection)
+            ->orderBy('stock_issue_items.id', $sortDirection)
+            ->with(['issue.creator', 'issue.poster', 'product.unit', 'product.category', 'location'])
+            ->cursor();
+    }
+
+    public function getCursorStockTransferReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'sent_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $dateBasis = strtoupper($filters['date_basis'] ?? 'SENT_AT');
+        $dateColumn = ($dateBasis === 'RECEIVED_AT') ? 'stock_transfers.received_at' : 'stock_transfers.sent_at';
+
+        $query = StockTransferItem::query()
+            ->select('stock_transfer_items.*')
+            ->join('stock_transfers', 'stock_transfers.id', '=', 'stock_transfer_items.stock_transfer_id')
+            ->join('products', 'products.id', '=', 'stock_transfer_items.product_id')
+            ->where(function ($q) use ($allowedLocationIds) {
+                $q->whereIn('stock_transfers.origin_location_id', $allowedLocationIds)
+                    ->orWhereIn('stock_transfers.destination_location_id', $allowedLocationIds);
+            });
+
+        if ($dateBasis === 'RECEIVED_AT') {
+            $query->where('stock_transfers.status', 'RECEIVED');
+        } else {
+            $query->whereIn('stock_transfers.status', ['SENT', 'RECEIVED']);
+        }
+
+        $this->applyTransferFilters($query, $filters, $dateColumn);
+
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy($dateColumn, $sortDirection)
+            ->orderBy('stock_transfers.id', $sortDirection)
+            ->orderBy('stock_transfer_items.id', $sortDirection)
+            ->with(['transfer.originLocation', 'transfer.destinationLocation', 'transfer.sender', 'transfer.receiver', 'product.unit', 'product.category'])
+            ->cursor();
+    }
+
+    public function getCursorStockAdjustmentReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $query = StockAdjustmentItem::query()
+            ->select('stock_adjustment_items.*')
+            ->join('stock_adjustments', 'stock_adjustments.id', '=', 'stock_adjustment_items.stock_adjustment_id')
+            ->join('products', 'products.id', '=', 'stock_adjustment_items.product_id')
+            ->where('stock_adjustments.status', 'POSTED')
+            ->whereIn('stock_adjustments.location_id', $allowedLocationIds);
+
+        $this->applyAdjustmentFilters($query, $filters);
+
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy('stock_adjustments.posted_at', $sortDirection)
+            ->orderBy('stock_adjustments.id', $sortDirection)
+            ->orderBy('stock_adjustment_items.id', $sortDirection)
+            ->with(['adjustment.location', 'adjustment.poster', 'product.unit', 'product.category'])
+            ->cursor();
+    }
+
+    public function getCursorStockOpnameReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $query = StockOpnameItem::query()
+            ->select('stock_opname_items.*')
+            ->join('stock_opnames', 'stock_opnames.id', '=', 'stock_opname_items.stock_opname_id')
+            ->join('products', 'products.id', '=', 'stock_opname_items.product_id')
+            ->where('stock_opnames.status', 'POSTED')
+            ->whereIn('stock_opnames.location_id', $allowedLocationIds);
+
+        $this->applyOpnameFilters($query, $filters);
+
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy('stock_opnames.posted_at', $sortDirection)
+            ->orderBy('stock_opnames.id', $sortDirection)
+            ->orderBy('stock_opname_items.id', $sortDirection)
+            ->with(['opname.location', 'opname.creator', 'opname.completer', 'opname.poster', 'counter', 'product.unit', 'product.category'])
+            ->cursor();
     }
 }

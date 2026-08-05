@@ -79,15 +79,18 @@ export function formatTransitDuration(seconds) {
 
 export function getReasonCodeLabel(code) {
     const labels = {
-        DAMAGE: 'Kerusakan',
-        EXPIRATION: 'Kadaluarsa',
-        SHRINKAGE: 'Shrinkage',
-        DATA_ENTRY_ERROR: 'Kesalahan Input',
-        OTHER: 'Lainnya',
+        FOUND: 'Barang ditemukan',
+        DAMAGED: 'Barang rusak',
+        EXPIRED: 'Barang kedaluwarsa',
+        RECORDING_ERROR: 'Kesalahan pencatatan',
+        ADMINISTRATIVE: 'Koreksi administratif',
+        LOST: 'Kehilangan barang',
+        OTHER: 'Lain-lain',
     };
 
     return labels[code] || code;
 }
+
 
 export function getDirectionLabel(direction) {
     if (direction === 'INCREASE') return 'Penambahan';

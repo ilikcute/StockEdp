@@ -4,6 +4,7 @@ namespace App\Features\Reporting\Repositories\Contracts;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 
 interface ReportingRepositoryInterface
 {
@@ -25,6 +26,13 @@ interface ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator;
 
+    public function getCursorBalances(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'id',
+        string $sortDirection = 'desc'
+    ): LazyCollection;
+
     public function getPaginatedLowStock(
         array $allowedLocationIds,
         array $filters,
@@ -32,6 +40,13 @@ interface ReportingRepositoryInterface
         string $sortDirection = 'desc',
         int $perPage = 15
     ): LengthAwarePaginator;
+
+    public function getCursorLowStock(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'shortage_quantity',
+        string $sortDirection = 'desc'
+    ): LazyCollection;
 
     public function getOpeningBalanceForStockCard(
         int $productId,
@@ -46,6 +61,13 @@ interface ReportingRepositoryInterface
         string $endNextDayDateTime,
         int $perPage = 15
     ): LengthAwarePaginator;
+
+    public function getCursorStockCardMovements(
+        int $productId,
+        int $locationId,
+        string $startDateTime,
+        string $endNextDayDateTime
+    ): LazyCollection;
 
     public function getStockCardSummary(
         int $productId,
@@ -63,6 +85,13 @@ interface ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator;
 
+    public function getCursorStockReceiptReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection;
+
     public function getStockReceiptReportSummary(array $allowedLocationIds, array $filters): array;
 
     public function getPaginatedStockIssueReport(
@@ -72,6 +101,13 @@ interface ReportingRepositoryInterface
         string $sortDirection = 'desc',
         int $perPage = 15
     ): LengthAwarePaginator;
+
+    public function getCursorStockIssueReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection;
 
     public function getStockIssueReportSummary(array $allowedLocationIds, array $filters): array;
 
@@ -83,6 +119,13 @@ interface ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator;
 
+    public function getCursorStockTransferReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'sent_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection;
+
     public function getStockTransferReportSummary(array $allowedLocationIds, array $filters): array;
 
     public function getPaginatedStockAdjustmentReport(
@@ -93,6 +136,13 @@ interface ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator;
 
+    public function getCursorStockAdjustmentReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection;
+
     public function getStockAdjustmentReportSummary(array $allowedLocationIds, array $filters): array;
 
     public function getPaginatedStockOpnameReport(
@@ -102,6 +152,13 @@ interface ReportingRepositoryInterface
         string $sortDirection = 'desc',
         int $perPage = 15
     ): LengthAwarePaginator;
+
+    public function getCursorStockOpnameReport(
+        array $allowedLocationIds,
+        array $filters,
+        string $sortField = 'posted_at',
+        string $sortDirection = 'desc'
+    ): LazyCollection;
 
     public function getStockOpnameReportSummary(array $allowedLocationIds, array $filters): array;
 }

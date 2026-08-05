@@ -292,8 +292,10 @@ dan alur transaksi sudah diputuskan.
 
 ---
 
-## Fase 8 — Saldo, Kartu Stok, dan Laporan (Fase 8A2 Backend — PASS WITH CLEAN AUDIT)
+## Fase 8 — Saldo, Kartu Stok, dan Laporan (Fase 8B2 — PASS WITH CLEAN AUDIT)
 
+- [x] Fase 8B2 — Frontend Transaction Reports
+- [-] Fase 8C1 — Backend CSV Export
 - [x] Buat endpoint saldo stok per produk dan lokasi.
 - [x] Buat endpoint kartu stok dengan pagination.
 - [x] Buat filter periode, produk, kategori, lokasi, dan jenis movement.

@@ -27,6 +27,53 @@ Keputusan terbaru harus diletakkan paling atas.
 **Tinjau kembali jika:**  
 [Jelaskan kondisi yang menyebabkan keputusan perlu dievaluasi ulang.]
 
+## 2026-08-05 — Keputusan CSV Export Laporan V1 (Fase 8C)
+
+**Keputusan:**
+
+### 1. Format & Mode Pengiriman
+- Ekspor menggunakan format **CSV UTF-8 dengan Byte Order Mark (BOM)** (`\xEF\xBB\xBF`).
+- Pengiriman dilakukan secara **synchronous streamed download** menggunakan `response()->streamDownload(...)`.
+- Tidak ada file fisik permanen di disk, job queue background, scheduled export, cloud storage, email attachment, Excel (.xlsx), PDF, maupun ZIP.
+
+### 2. Scope Laporan & Endpoint Canonical
+CSV export disediakan untuk seluruh delapan (8) jenis laporan inventory:
+- `GET /api/v1/reports/inventory-balances/export` (`reports.inventory-balances.export`)
+- `GET /api/v1/reports/low-stock/export` (`reports.low-stock.export`)
+- `GET /api/v1/reports/stock-card/export` (`reports.stock-card.export`)
+- `GET /api/v1/reports/stock-receipts/export` (`reports.stock-receipts.export`)
+- `GET /api/v1/reports/stock-issues/export` (`reports.stock-issues.export`)
+- `GET /api/v1/reports/stock-transfers/export` (`reports.stock-transfers.export`)
+- `GET /api/v1/reports/stock-adjustments/export` (`reports.stock-adjustments.export`)
+- `GET /api/v1/reports/stock-opnames/export` (`reports.stock-opnames.export`)
+
+### 3. Otorisasi & Scoping Lokasi
+- Ekspor menggunakan permission view yang sama dengan laporan terkait (`reports.inventory_balance.view`, `reports.low_stock.view`, `reports.stock_card.view`, `reports.stock_receipts.view`, `reports.stock_issues.view`, `reports.stock_transfers.view`, `reports.stock_adjustments.view`, `reports.stock_opnames.view`).
+- Scoping lokasi wajib menggunakan `$user->getAllowedLocationIds()`. Jika allowed locations kosong, CSV mengembalikan header saja tanpa membocorkan lokasi lain.
+
+### 4. Struktur Rectangular & Tanpa Metadata/Footer
+- CSV V1 hanya berisi 1 baris header bahasa Indonesia dan 0 atau lebih baris data.
+- Tidak ada metadata preamble, ringkasan footer, baris kosong ekstra, atau multiple tables.
+
+### 5. Memory-Safe Streaming & Formula Injection Protection
+- Data diambil dari database menggunakan cursor streaming / LazyCollection dengan pengurutan deterministik berbasis tie-breaker ID (`ORDER BY ... DESC, id DESC`).
+- Seluruh bidang teks yang dimulai dengan karakter berbahaya (`=`, `+`, `-`, `@`, `\t`, `\r`) dinetralkan dengan apostrof (`'`).
+- Tipe data string desimal kuantitas dan variance (misalnya `0.0000`, `-0.0001`, `9999999999.9999`) **TIDAK** dinetralkan atau diubah menjadi float/number; nilai desimal asli diteruskan secara passthrough tanpa modifikasi.
+
+**Alasan:**
+- Mendukung pemrosesan data besar secara efisien tanpa risiko Out-Of-Memory (OOM).
+- Menghindari penambahan dependency library eksternal (seperti PhpSpreadsheet atau Laravel Excel).
+- Kompatibel langsung dengan Microsoft Excel dan aplikasi spreadsheet modern tanpa isu encoding karakter.
+
+**Alternatif yang ditolak:**
+- Background queue job + file storage: Menambah kompleksitas infrastruktur pada versi 1.
+- Excel / PDF format: Membutuhkan package berat dan memakan alokasi memory besar.
+
+**Tinjau kembali jika:**
+- Pengguna membutuhkan file spreadsheet ber-formatting kompleks atau format PDF resmi.
+
+---
+
 ## 2026-08-03 — Keputusan Desain Laporan Transaksi Backend & Lock Order (Fase 8A2)
 
 **Keputusan:**

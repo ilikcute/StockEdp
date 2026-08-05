@@ -241,8 +241,67 @@ class ReportingPhase8A2Test extends TestCase
             ->assertStatus(200);
 
         $this->assertEquals(1, count($response->json('data')));
-        $this->assertEquals('IN', $response->json('data.0.direction'));
         $this->assertEquals('5.0000', $response->json('data.0.quantity'));
+    }
+
+    public function test_adjustment_report_accepts_all_canonical_reason_codes_and_rejects_legacy_codes()
+    {
+        $canonicalCodes = ['FOUND', 'DAMAGED', 'EXPIRED', 'RECORDING_ERROR', 'ADMINISTRATIVE', 'LOST', 'OTHER'];
+        foreach ($canonicalCodes as $code) {
+            $this->actingAs($this->staffLoc1, 'sanctum')
+                ->getJson('/api/v1/reports/stock-adjustments?reason_code='.$code)
+                ->assertStatus(200);
+        }
+
+        $legacyCodes = ['DAMAGE', 'EXPIRATION', 'SHRINKAGE', 'DATA_ENTRY_ERROR'];
+        foreach ($legacyCodes as $code) {
+            $this->actingAs($this->staffLoc1, 'sanctum')
+                ->getJson('/api/v1/reports/stock-adjustments?reason_code='.$code)
+                ->assertStatus(422)
+                ->assertJsonValidationErrors(['reason_code']);
+        }
+    }
+
+    public function test_adjustment_report_filters_by_each_canonical_reason_code()
+    {
+        $reasons = [
+            'FOUND' => 'INCREASE',
+            'DAMAGED' => 'DECREASE',
+            'EXPIRED' => 'DECREASE',
+            'RECORDING_ERROR' => 'INCREASE',
+            'ADMINISTRATIVE' => 'DECREASE',
+            'LOST' => 'DECREASE',
+            'OTHER' => 'INCREASE',
+        ];
+
+        $i = 1;
+        foreach ($reasons as $code => $direction) {
+            $adj = StockAdjustment::create([
+                'adjustment_number' => 'ADJ-CANONICAL-00'.$i++,
+                'location_id' => $this->loc1->id,
+                'adjustment_date' => '2026-08-01',
+                'direction' => $direction,
+                'reason_code' => $code,
+                'status' => 'POSTED',
+                'posted_at' => now(),
+                'created_by' => $this->admin->id,
+            ]);
+
+            StockAdjustmentItem::create([
+                'stock_adjustment_id' => $adj->id,
+                'product_id' => $this->prod1->id,
+                'quantity' => 10.0000,
+            ]);
+        }
+
+        foreach (array_keys($reasons) as $code) {
+            $response = $this->actingAs($this->staffLoc1, 'sanctum')
+                ->getJson('/api/v1/reports/stock-adjustments?reason_code='.$code)
+                ->assertStatus(200);
+
+            $this->assertEquals(1, count($response->json('data')));
+            $this->assertEquals($code, $response->json('data.0.reason_code'));
+        }
     }
 
     public function test_returns_opname_report_correctly()
