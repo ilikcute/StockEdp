@@ -1,5 +1,14 @@
 import apiClient from '@/shared/api/api_client';
 
+const csvRequestConfig = (params = {}) => ({
+    params,
+    responseType: 'blob',
+    timeout: 0,
+    headers: {
+        Accept: 'text/csv, application/json',
+    },
+});
+
 export const reportingApi = {
     getFilterBaseOptions() {
         return apiClient.get('/reports/filter-options/base');
@@ -43,5 +52,37 @@ export const reportingApi = {
 
     getStockOpnames(params = {}) {
         return apiClient.get('/reports/stock-opnames', { params });
+    },
+
+    exportInventoryBalances(params = {}) {
+        return apiClient.get('/reports/inventory-balances/export', csvRequestConfig(params));
+    },
+
+    exportLowStock(params = {}) {
+        return apiClient.get('/reports/low-stock/export', csvRequestConfig(params));
+    },
+
+    exportStockCard(params = {}) {
+        return apiClient.get('/reports/stock-card/export', csvRequestConfig(params));
+    },
+
+    exportStockReceipts(params = {}) {
+        return apiClient.get('/reports/stock-receipts/export', csvRequestConfig(params));
+    },
+
+    exportStockIssues(params = {}) {
+        return apiClient.get('/reports/stock-issues/export', csvRequestConfig(params));
+    },
+
+    exportStockTransfers(params = {}) {
+        return apiClient.get('/reports/stock-transfers/export', csvRequestConfig(params));
+    },
+
+    exportStockAdjustments(params = {}) {
+        return apiClient.get('/reports/stock-adjustments/export', csvRequestConfig(params));
+    },
+
+    exportStockOpnames(params = {}) {
+        return apiClient.get('/reports/stock-opnames/export', csvRequestConfig(params));
     },
 };

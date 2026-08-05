@@ -53,6 +53,15 @@ export function cleanReportFilters(filters) {
     return result;
 }
 
+export function cleanReportExportFilters(filters = {}) {
+    const cleaned = cleanReportFilters({ ...filters });
+
+    delete cleaned.page;
+    delete cleaned.per_page;
+
+    return cleaned;
+}
+
 export function formatTransitDuration(seconds) {
     if (seconds === null || seconds === undefined) {
         return '-';

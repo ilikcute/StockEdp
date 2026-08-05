@@ -9,6 +9,19 @@
           Daftar produk yang jumlah stoknya berada di bawah batas minimum pada lokasi tertentu.
         </p>
       </div>
+      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <ReportCsvExportControl
+          :loading="exportStore.isExporting(reportKey)"
+          :disabled="!filters.location_id"
+          disabled-reason="Pilih lokasi terlebih dahulu."
+          :error="exportStore.errorFor(reportKey)"
+          :status="exportStore.statusFor(reportKey)"
+          :validation-errors="exportStore.validationErrorsFor(reportKey)"
+          :success-message="exportStore.successFor(reportKey)"
+          @export="exportCsv"
+          @dismiss="exportStore.clearFeedback(reportKey)"
+        />
+      </div>
     </div>
 
     <!-- Filters -->
@@ -251,35 +264,36 @@
                     colspan="5"
                     class="py-10 text-center text-sm text-gray-500"
                   >
-                    Tidak ada produk di bawah batas minimum pada lokasi ini.
+                    Tidak ada produk di bawah stok minimum pada lokasi ini.
                   </td>
                 </tr>
                 <tr
                   v-for="item in store.data"
-                  :key="item.product_id"
+                  :key="item.id"
+                  class="hover:bg-gray-50"
                 >
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                    <div class="font-mono font-medium text-gray-900">
-                      {{ item.product_sku }}
-                    </div>
-                    <div class="text-gray-900">
+                    <div class="font-medium text-gray-900">
                       {{ item.product_name }}
+                    </div>
+                    <div class="text-xs text-gray-500 font-mono">
+                      {{ item.sku }}
                     </div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     <div>{{ item.category_name || '-' }}</div>
-                    <div class="text-xs">
+                    <div class="text-xs text-gray-400">
                       {{ item.unit_name || '-' }}
                     </div>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono text-right font-medium">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-900">
                     {{ item.on_hand_quantity }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono text-right">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-500">
                     {{ item.minimum_stock }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-red-600 font-mono text-right font-bold">
-                    {{ item.shortage_quantity }}
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-semibold text-red-600">
+                    -{{ item.shortage_quantity }}
                   </td>
                 </tr>
               </tbody>
@@ -291,28 +305,42 @@
 
     <!-- Pagination -->
     <div
-      v-if="filters.location_id && store.meta && store.meta.total > 0"
-      class="mt-4 flex items-center justify-between"
+      v-if="store.meta.total > 0"
+      class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm"
     >
-      <p class="text-sm text-gray-700">
-        Menampilkan <span class="font-medium">{{ store.meta.from || 0 }}</span> sampai <span class="font-medium">{{ store.meta.to || 0 }}</span> dari <span class="font-medium">{{ store.meta.total }}</span> data
-      </p>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.meta.current_page === 1 || store.loading"
-          @click="changePage(store.meta.current_page - 1)"
-        >
-          Previous
-        </button>
-        <span class="px-3 py-1 text-sm font-medium text-gray-700">Halaman {{ store.meta.current_page }} / {{ store.meta.last_page }}</span>
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.meta.current_page === store.meta.last_page || store.loading"
-          @click="changePage(store.meta.current_page + 1)"
-        >
-          Next
-        </button>
+      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Menampilkan
+            <span class="font-medium">{{ store.meta.from }}</span>
+            sampai
+            <span class="font-medium">{{ store.meta.to }}</span>
+            dari
+            <span class="font-medium">{{ store.meta.total }}</span>
+            hasil
+          </p>
+        </div>
+        <div>
+          <nav
+            class="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
+            <button
+              :disabled="store.meta.current_page === 1"
+              class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+              @click="changePage(store.meta.current_page - 1)"
+            >
+              Previous
+            </button>
+            <button
+              :disabled="store.meta.current_page === store.meta.last_page"
+              class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 ml-2"
+              @click="changePage(store.meta.current_page + 1)"
+            >
+              Next
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
   </div>
@@ -322,9 +350,14 @@
 import { onMounted, watch, reactive, computed } from 'vue';
 import { useLowStockReportStore } from '../stores/useLowStockReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
+import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
+import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import { cleanReportExportFilters } from '../utils/reportHelpers';
 
 const store = useLowStockReportStore();
 const masterStore = useReportFilterOptionsStore();
+const exportStore = useReportCsvExportStore();
+const reportKey = 'low-stock';
 
 const selectedLocationName = computed(() => {
     if (!filters.location_id) return '';
@@ -340,7 +373,7 @@ const filters = reactive({
     include_inactive: false,
     sort_by: 'shortage_quantity',
     sort_order: 'desc',
-    per_page: '15'
+    per_page: '15',
 });
 
 let debounceTimer = null;
@@ -355,17 +388,25 @@ const debouncedFetch = () => {
     }, 500);
 };
 
-// When any filter changes, reset to page 1
-watch(() => ({...filters}), debouncedFetch, { deep: true });
+watch(() => ({ ...filters }), debouncedFetch, { deep: true });
 
 const fetchData = (page = 1) => {
     if (!filters.location_id) return;
-    
+
     store.fetchLowStock({
         page,
         ...filters,
         include_inactive: filters.include_inactive ? 1 : null,
     });
+};
+
+const exportCsv = async () => {
+    if (!filters.location_id) return;
+    const params = cleanReportExportFilters({
+        ...filters,
+        include_inactive: filters.include_inactive ? 1 : null,
+    });
+    await exportStore.exportReport(reportKey, params);
 };
 
 const changePage = (page) => {
@@ -380,6 +421,5 @@ const changePage = (page) => {
 
 onMounted(async () => {
     await masterStore.fetchOptions();
-    // Do not fetch data automatically since location is empty initially
 });
 </script>

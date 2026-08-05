@@ -9,6 +9,18 @@
           Periode laporan menggunakan waktu posting opname (POSTED_AT).
         </p>
       </div>
+      <div>
+        <ReportCsvExportControl
+          :loading="exportStore.isExporting(reportKey)"
+          :disabled="false"
+          :error="exportStore.errorFor(reportKey)"
+          :status="exportStore.statusFor(reportKey)"
+          :validation-errors="exportStore.validationErrorsFor(reportKey)"
+          :success-message="exportStore.successFor(reportKey)"
+          @export="exportCsv"
+          @dismiss="exportStore.clearFeedback(reportKey)"
+        />
+      </div>
     </div>
 
     <StockOpnameReportFilters
@@ -69,15 +81,19 @@
 import { onMounted, reactive, ref, watch } from 'vue';
 import { useStockOpnameReportStore } from '../stores/useStockOpnameReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
-import { cleanReportFilters, validatePeriod } from '../utils/reportHelpers';
+import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
+import { cleanReportFilters, cleanReportExportFilters, validatePeriod } from '../utils/reportHelpers';
 import StockOpnameReportFilters from '../components/opname/StockOpnameReportFilters.vue';
 import StockOpnameReportTable from '../components/opname/StockOpnameReportTable.vue';
 import ReportPagination from '../components/ReportPagination.vue';
 import ReportFeedbackPanels from '../components/ReportFeedbackPanels.vue';
 import QuantityByUnitSummary from '../components/QuantityByUnitSummary.vue';
+import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 
 const store = useStockOpnameReportStore();
 const masterStore = useReportFilterOptionsStore();
+const exportStore = useReportCsvExportStore();
+const reportKey = 'stock-opnames';
 
 const defaultFilters = {
     variance_direction: '',
@@ -149,6 +165,17 @@ const fetchData = async (page = 1) => {
     }
     hasFetched.value = true;
     await store.fetchReport(params);
+};
+
+const exportCsv = async () => {
+    const periodCheck = validatePeriod(filters.start_date, filters.end_date);
+    if (!periodCheck.valid) {
+        localValidationError.value = periodCheck.message;
+        return;
+    }
+    localValidationError.value = '';
+    const params = cleanReportExportFilters({ ...filters });
+    await exportStore.exportReport(reportKey, params);
 };
 
 const resetFilters = () => {

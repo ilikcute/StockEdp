@@ -9,6 +9,19 @@
           Riwayat pergerakan stok untuk suatu produk di lokasi tertentu dalam periode waktu tertentu.
         </p>
       </div>
+      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <ReportCsvExportControl
+          :loading="exportStore.isExporting(reportKey)"
+          :disabled="!canFetch"
+          disabled-reason="Pilih produk, lokasi, dan periode terlebih dahulu."
+          :error="exportStore.errorFor(reportKey)"
+          :status="exportStore.statusFor(reportKey)"
+          :validation-errors="exportStore.validationErrorsFor(reportKey)"
+          :success-message="exportStore.successFor(reportKey)"
+          @export="exportCsv"
+          @dismiss="exportStore.clearFeedback(reportKey)"
+        />
+      </div>
     </div>
 
     <!-- Filters -->
@@ -250,13 +263,13 @@
                     </th>
                     <th
                       scope="col"
-                      class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                      class="px-3 py-3.5 text-right text-sm font-semibold text-green-700"
                     >
                       Masuk
                     </th>
                     <th
                       scope="col"
-                      class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                      class="px-3 py-3.5 text-right text-sm font-semibold text-red-700"
                     >
                       Keluar
                     </th>
@@ -269,44 +282,43 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
-                  <tr v-if="store.data.length === 0">
+                  <tr v-if="store.movements.length === 0">
                     <td
                       colspan="7"
                       class="py-10 text-center text-sm text-gray-500"
                     >
-                      Tidak ada pergerakan stok dalam periode ini.
+                      Tidak ada pergerakan stok pada periode ini.
                     </td>
                   </tr>
                   <tr
-                    v-for="item in store.data"
+                    v-for="item in store.movements"
                     :key="item.id"
+                    class="hover:bg-gray-50"
                   >
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6 text-gray-900">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6 font-mono">
                       {{ item.document_date || '-' }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      {{ item.posted_at || '-' }}
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      {{ item.movement_posted_at || item.occurred_at || '-' }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <div class="font-medium text-gray-900">
-                        {{ item.reference_number || '-' }}
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+                      <div class="font-medium">
+                        {{ item.reference_number || item.movement_id }}
                       </div>
                       <div class="text-xs text-gray-500">
                         {{ item.movement_type }}
                       </div>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono text-right">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-500">
                       {{ item.quantity_before }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-green-700 font-mono font-medium text-right bg-green-50/30">
-                      <span v-if="item.direction === 'IN'">+{{ item.quantity_in }}</span>
-                      <span v-else>-</span>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-medium text-green-600">
+                      {{ item.quantity_in !== '0.0000' ? '+' + item.quantity_in : '-' }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-red-700 font-mono font-medium text-right bg-red-50/30">
-                      <span v-if="item.direction === 'OUT'">-{{ item.quantity_out }}</span>
-                      <span v-else>-</span>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-medium text-red-600">
+                      {{ item.quantity_out !== '0.0000' ? '-' + item.quantity_out : '-' }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono font-bold text-right bg-gray-50/50">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-semibold text-gray-900">
                       {{ item.quantity_after }}
                     </td>
                   </tr>
@@ -316,31 +328,45 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Pagination -->
       <div
-        v-if="store.meta && store.meta.total > 0"
-        class="mt-4 flex items-center justify-between"
+        v-if="store.meta.total > 0"
+        class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm"
       >
-        <p class="text-sm text-gray-700">
-          Menampilkan <span class="font-medium">{{ store.meta.from || 0 }}</span> sampai <span class="font-medium">{{ store.meta.to || 0 }}</span> dari <span class="font-medium">{{ store.meta.total }}</span> pergerakan
-        </p>
-        <div class="flex gap-2">
-          <button
-            class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-            :disabled="store.meta.current_page === 1 || store.loading"
-            @click="changePage(store.meta.current_page - 1)"
-          >
-            Previous
-          </button>
-          <span class="px-3 py-1 text-sm font-medium text-gray-700">Halaman {{ store.meta.current_page }} / {{ store.meta.last_page }}</span>
-          <button
-            class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-            :disabled="store.meta.current_page === store.meta.last_page || store.loading"
-            @click="changePage(store.meta.current_page + 1)"
-          >
-            Next
-          </button>
+        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-gray-700">
+              Menampilkan
+              <span class="font-medium">{{ store.meta.from }}</span>
+              sampai
+              <span class="font-medium">{{ store.meta.to }}</span>
+              dari
+              <span class="font-medium">{{ store.meta.total }}</span>
+              hasil
+            </p>
+          </div>
+          <div>
+            <nav
+              class="isolate inline-flex -space-x-px rounded-md shadow-sm"
+              aria-label="Pagination"
+            >
+              <button
+                :disabled="store.meta.current_page === 1"
+                class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                @click="changePage(store.meta.current_page - 1)"
+              >
+                Previous
+              </button>
+              <button
+                :disabled="store.meta.current_page === store.meta.last_page"
+                class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 ml-2"
+                @click="changePage(store.meta.current_page + 1)"
+              >
+                Next
+              </button>
+            </nav>
+          </div>
         </div>
       </div>
     </div>
@@ -348,34 +374,31 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch, reactive, computed } from 'vue';
+import { onMounted, reactive, ref, computed, watch } from 'vue';
 import { useStockCardReportStore } from '../stores/useStockCardReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
+import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
+import { toLocalDateInputValue, cleanReportExportFilters } from '../utils/reportHelpers';
+import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 
 const store = useStockCardReportStore();
 const masterStore = useReportFilterOptionsStore();
+const exportStore = useReportCsvExportStore();
+const reportKey = 'stock-card';
+
+const productSearch = ref('');
+const showProductDropdown = ref(false);
+const selectedProduct = ref(null);
+const localValidationError = ref('');
+const hasFetchedData = ref(false);
 
 const filters = reactive({
     product_id: '',
     location_id: '',
     start_date: '',
     end_date: '',
-    per_page: '15'
+    per_page: '15',
 });
-
-const productSearch = ref('');
-const selectedProduct = ref(null);
-const showProductDropdown = ref(false);
-const localValidationError = ref('');
-const hasFetchedData = ref(false);
-
-// Helper for local calendar date formatting (YYYY-MM-DD) without UTC shift
-const toLocalDateInputValue = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
 
 const parseDateOnly = (dateStr) => {
     if (!dateStr || !dateStr.includes('-')) return null;
@@ -411,7 +434,6 @@ const clearProduct = () => {
     productSearch.value = '';
 };
 
-// Close dropdown when clicking outside (simplified for this example)
 watch(productSearch, (val) => {
     if (!val) {
         clearProduct();
@@ -424,45 +446,51 @@ const canFetch = computed(() => {
 
 const validateFilters = () => {
     localValidationError.value = '';
-    
+
     if (!filters.product_id || !filters.location_id || !filters.start_date || !filters.end_date) {
         localValidationError.value = 'Mohon lengkapi produk, lokasi, tanggal mulai, dan tanggal akhir.';
         return false;
     }
-    
+
     const start = parseDateOnly(filters.start_date);
     const end = parseDateOnly(filters.end_date);
-    
+
     if (!start || !end) {
         localValidationError.value = 'Format tanggal tidak valid.';
         return false;
     }
-    
+
     if (start > end) {
         localValidationError.value = 'Tanggal mulai tidak boleh melewati tanggal akhir.';
         return false;
     }
-    
+
     const diffTime = end.getTime() - start.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays > 366) {
         localValidationError.value = 'Rentang waktu maksimal adalah 366 hari.';
         return false;
     }
-    
+
     return true;
 };
 
 const fetchData = async (page = 1) => {
     if (!validateFilters()) return;
-    
+
     hasFetchedData.value = true;
-    
+
     await store.fetchStockCard({
         page,
-        ...filters
+        ...filters,
     });
+};
+
+const exportCsv = async () => {
+    if (!validateFilters()) return;
+    const params = cleanReportExportFilters({ ...filters });
+    await exportStore.exportReport(reportKey, params);
 };
 
 const changePage = (page) => {

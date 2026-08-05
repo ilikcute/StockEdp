@@ -9,6 +9,18 @@
           Informasi ketersediaan stok produk di semua lokasi.
         </p>
       </div>
+      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <ReportCsvExportControl
+          :loading="exportStore.isExporting(reportKey)"
+          :disabled="false"
+          :error="exportStore.errorFor(reportKey)"
+          :status="exportStore.statusFor(reportKey)"
+          :validation-errors="exportStore.validationErrorsFor(reportKey)"
+          :success-message="exportStore.successFor(reportKey)"
+          @export="exportCsv"
+          @dismiss="exportStore.clearFeedback(reportKey)"
+        />
+      </div>
     </div>
 
     <!-- Filters -->
@@ -107,19 +119,17 @@
             <input
               v-model="filters.positive_stock"
               type="checkbox"
-              value="1"
               class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             >
-            <span class="text-sm text-gray-700">Stok Positif</span>
+            <span class="text-sm text-gray-700">Hanya Stok Positif</span>
           </label>
           <label class="flex items-center gap-2">
             <input
               v-model="filters.zero_stock"
               type="checkbox"
-              value="1"
               class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             >
-            <span class="text-sm text-gray-700">Stok Nol</span>
+            <span class="text-sm text-gray-700">Hanya Stok Nol</span>
           </label>
         </div>
 
@@ -131,28 +141,22 @@
             <option value="id">
               ID
             </option>
-            <option value="product_id">
-              Produk
-            </option>
-            <option value="location_id">
-              Lokasi
-            </option>
             <option value="quantity">
               Kuantitas
             </option>
-            <option value="created_at">
-              Waktu Dibuat
+            <option value="product_name">
+              Nama Produk
             </option>
           </select>
           <select
             v-model="filters.sort_order"
             class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
           >
-            <option value="asc">
-              Menaik (Asc)
-            </option>
             <option value="desc">
               Menurun (Desc)
+            </option>
+            <option value="asc">
+              Menaik (Asc)
             </option>
           </select>
           <select
@@ -198,21 +202,6 @@
       </div>
     </div>
 
-    <!-- Validation Errors -->
-    <div
-      v-if="Object.keys(store.validationErrors).length > 0"
-      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200"
-    >
-      <ul class="list-disc pl-5 text-sm text-yellow-700">
-        <li
-          v-for="(errors, field) in store.validationErrors"
-          :key="field"
-        >
-          {{ errors.join(', ') }}
-        </li>
-      </ul>
-    </div>
-
     <!-- Data Table -->
     <div class="mt-6 flex flex-col relative">
       <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -224,7 +213,6 @@
             >
               <span class="text-indigo-600 font-medium bg-white px-4 py-2 rounded-md shadow">Memuat data...</span>
             </div>
-
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
@@ -232,13 +220,7 @@
                     scope="col"
                     class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
                   >
-                    SKU / Barcode
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Produk
+                    SKU / Produk
                   </th>
                   <th
                     scope="col"
@@ -256,90 +238,49 @@
                     scope="col"
                     class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
                   >
-                    On-Hand
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
-                  >
-                    Available
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
-                  >
-                    Min Stock
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
-                  >
-                    Status
+                    Stok Posisi
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-if="!store.loading && store.data.length === 0">
+                <tr v-if="!store.loading && store.balances.length === 0">
                   <td
-                    colspan="8"
+                    colspan="4"
                     class="py-10 text-center text-sm text-gray-500"
                   >
-                    Tidak ada data saldo stok yang sesuai kriteria filter.
+                    Tidak ada data saldo stok yang ditemukan.
                   </td>
                 </tr>
                 <tr
-                  v-for="item in store.data"
+                  v-for="item in store.balances"
                   :key="item.id"
-                  :class="{'bg-red-50': item.is_below_minimum}"
+                  class="hover:bg-gray-50"
                 >
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                    <div class="font-mono font-medium text-gray-900">
-                      {{ item.product_sku }}
-                    </div>
-                    <div class="text-xs text-gray-500">
-                      {{ item.product_barcode || '-' }}
-                    </div>
-                  </td>
-                  <td class="px-3 py-4 text-sm text-gray-900">
                     <div class="font-medium text-gray-900">
-                      {{ item.product_name }}
+                      {{ item.product?.name }}
                     </div>
-                    <span
-                      v-if="item.is_product_active === false"
-                      class="inline-flex items-center rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 mt-1"
-                    >Nonaktif</span>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <div>{{ item.category_name || '-' }}</div>
-                    <div class="text-xs">
-                      {{ item.unit_name || '-' }}
+                    <div class="text-xs text-gray-500 font-mono">
+                      {{ item.product?.sku }}
                     </div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <div>{{ item.location_name }}</div>
+                    <div>{{ item.product?.category?.name || '-' }}</div>
+                    <div class="text-xs text-gray-400">
+                      {{ item.product?.unit?.code || '-' }}
+                    </div>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     <span
-                      v-if="item.is_location_frozen"
-                      class="inline-flex items-center rounded-md bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 mt-1"
-                    >Frozen</span>
+                      v-if="item.location"
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                    >
+                      {{ item.location.name }}
+                    </span>
+                    <span v-else>-</span>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono text-right font-medium">
-                    {{ item.on_hand_quantity }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-mono text-right">
-                    {{ item.available_quantity }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono text-right">
-                    {{ item.minimum_stock }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-center">
-                    <span
-                      v-if="item.is_below_minimum"
-                      class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700"
-                    >Below Min</span>
-                    <span
-                      v-else
-                      class="inline-flex items-center rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700"
-                    >OK</span>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-medium text-gray-900">
+                    {{ item.quantity }}
                   </td>
                 </tr>
               </tbody>
@@ -351,34 +292,42 @@
 
     <!-- Pagination -->
     <div
-      v-if="store.meta && store.meta.total > 0"
-      class="mt-4 flex items-center justify-between"
+      v-if="store.meta.total > 0"
+      class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm"
     >
-      <p class="text-sm text-gray-700">
-        Menampilkan
-        <span class="font-medium">{{ store.meta.from || 0 }}</span>
-        sampai
-        <span class="font-medium">{{ store.meta.to || 0 }}</span>
-        dari
-        <span class="font-medium">{{ store.meta.total }}</span>
-        data
-      </p>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.meta.current_page === 1 || store.loading"
-          @click="changePage(store.meta.current_page - 1)"
-        >
-          Previous
-        </button>
-        <span class="px-3 py-1 text-sm font-medium text-gray-700">Halaman {{ store.meta.current_page }} / {{ store.meta.last_page }}</span>
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.meta.current_page === store.meta.last_page || store.loading"
-          @click="changePage(store.meta.current_page + 1)"
-        >
-          Next
-        </button>
+      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Menampilkan
+            <span class="font-medium">{{ store.meta.from }}</span>
+            sampai
+            <span class="font-medium">{{ store.meta.to }}</span>
+            dari
+            <span class="font-medium">{{ store.meta.total }}</span>
+            hasil
+          </p>
+        </div>
+        <div>
+          <nav
+            class="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
+            <button
+              :disabled="store.meta.current_page === 1"
+              class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+              @click="changePage(store.meta.current_page - 1)"
+            >
+              Previous
+            </button>
+            <button
+              :disabled="store.meta.current_page === store.meta.last_page"
+              class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 ml-2"
+              @click="changePage(store.meta.current_page + 1)"
+            >
+              Next
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
   </div>
@@ -388,9 +337,14 @@
 import { onMounted, watch, reactive } from 'vue';
 import { useInventoryBalanceReportStore } from '../stores/useInventoryBalanceReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
+import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
+import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import { cleanReportExportFilters } from '../utils/reportHelpers';
 
 const store = useInventoryBalanceReportStore();
 const masterStore = useReportFilterOptionsStore();
+const exportStore = useReportCsvExportStore();
+const reportKey = 'inventory-balances';
 
 const filters = reactive({
     search: '',
@@ -402,7 +356,7 @@ const filters = reactive({
     zero_stock: false,
     sort_by: 'id',
     sort_order: 'desc',
-    per_page: '15'
+    per_page: '15',
 });
 
 let debounceTimer = null;
@@ -411,8 +365,7 @@ const debouncedFetch = () => {
     debounceTimer = setTimeout(() => fetchData(1), 500);
 };
 
-// When any filter changes, reset to page 1
-watch(() => ({...filters}), debouncedFetch, { deep: true });
+watch(() => ({ ...filters }), debouncedFetch, { deep: true });
 
 const fetchData = (page = 1) => {
     store.fetchBalances({
@@ -421,6 +374,15 @@ const fetchData = (page = 1) => {
         positive_stock: filters.positive_stock ? 1 : null,
         zero_stock: filters.zero_stock ? 1 : null,
     });
+};
+
+const exportCsv = async () => {
+    const params = cleanReportExportFilters({
+        ...filters,
+        positive_stock: filters.positive_stock ? 1 : null,
+        zero_stock: filters.zero_stock ? 1 : null,
+    });
+    await exportStore.exportReport(reportKey, params);
 };
 
 const changePage = (page) => {
