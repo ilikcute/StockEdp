@@ -124,8 +124,8 @@ class ReportCsvExportTest extends TestCase
     {
         $endpoints = [
             '/api/v1/reports/inventory-balances/export',
-            '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
-            '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
+            '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id,
+            '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05',
             '/api/v1/reports/stock-receipts/export',
             '/api/v1/reports/stock-issues/export',
             '/api/v1/reports/stock-transfers/export',
@@ -176,8 +176,8 @@ class ReportCsvExportTest extends TestCase
 
         $endpointConfigs = [
             'inventory-balances' => '/api/v1/reports/inventory-balances/export',
-            'low-stock' => '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
-            'stock-card' => '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
+            'low-stock' => '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id,
+            'stock-card' => '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05',
             'stock-receipts' => '/api/v1/reports/stock-receipts/export',
             'stock-issues' => '/api/v1/reports/stock-issues/export',
             'stock-transfers' => '/api/v1/reports/stock-transfers/export',
@@ -233,11 +233,11 @@ class ReportCsvExportTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $urlLoc1 = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05';
+        $urlLoc1 = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05';
         $resLoc1 = $this->actingAs($this->staffLoc1, 'sanctum')->get($urlLoc1)->assertStatus(200);
         $this->assertStringContainsString('RC-LOC1', $resLoc1->streamedContent());
 
-        $urlLoc2 = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc2->id . '&start_date=2026-08-01&end_date=2026-08-05';
+        $urlLoc2 = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc2->id.'&start_date=2026-08-01&end_date=2026-08-05';
         $resLoc2 = $this->actingAs($this->staffLoc1, 'sanctum')->get($urlLoc2)->assertStatus(200);
         $contentLoc2 = $resLoc2->streamedContent();
         $this->assertStringNotContainsString('RC-LOC2', $contentLoc2);
@@ -246,7 +246,7 @@ class ReportCsvExportTest extends TestCase
 
     public function test_stock_card_export_with_empty_location_scope_returns_header_only()
     {
-        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05';
+        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05';
 
         $response = $this->actingAs($this->staffEmptyLoc, 'sanctum')->get($url)->assertStatus(200);
         $content = $response->streamedContent();
@@ -309,7 +309,7 @@ class ReportCsvExportTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-05&end_date=2026-08-05';
+        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-05&end_date=2026-08-05';
         $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
         $content = $response->streamedContent();
 
@@ -374,7 +374,7 @@ class ReportCsvExportTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-05&end_date=2026-08-05';
+        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-05&end_date=2026-08-05';
         $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
         $content = $response->streamedContent();
 
@@ -401,7 +401,7 @@ class ReportCsvExportTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-05&end_date=2026-08-05';
+        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-05&end_date=2026-08-05';
         $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
         $content = $response->streamedContent();
 
@@ -409,31 +409,186 @@ class ReportCsvExportTest extends TestCase
         $this->assertStringNotContainsString('MOVEMENT-INTERNAL-001', $content);
     }
 
+    public function test_transfer_csv_default_sort_follows_date_basis()
+    {
+        $trA = StockTransfer::create([
+            'transfer_number' => 'TR-A',
+            'origin_location_id' => $this->loc1->id,
+            'destination_location_id' => $this->loc2->id,
+            'status' => 'RECEIVED',
+            'sent_at' => '2026-08-05 10:00:00',
+            'received_at' => '2026-08-05 15:00:00',
+            'created_by' => $this->admin->id,
+            'sent_by' => $this->admin->id,
+            'received_by' => $this->admin->id,
+            'transfer_date' => '2026-08-05',
+        ]);
+        StockTransferItem::create(['stock_transfer_id' => $trA->id, 'product_id' => $this->product->id, 'quantity' => 10.0000]);
+
+        $trB = StockTransfer::create([
+            'transfer_number' => 'TR-B',
+            'origin_location_id' => $this->loc1->id,
+            'destination_location_id' => $this->loc2->id,
+            'status' => 'RECEIVED',
+            'sent_at' => '2026-08-05 11:00:00',
+            'received_at' => '2026-08-05 14:00:00',
+            'created_by' => $this->admin->id,
+            'sent_by' => $this->admin->id,
+            'received_by' => $this->admin->id,
+            'transfer_date' => '2026-08-05',
+        ]);
+        StockTransferItem::create(['stock_transfer_id' => $trB->id, 'product_id' => $this->product->id, 'quantity' => 20.0000]);
+
+        // Scenario A: date_basis=SENT_AT & sort_order=asc (Default sort should be sent_at) -> TR-A (10:00) before TR-B (11:00)
+        $resSent = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-transfers/export?date_basis=SENT_AT&sort_order=asc')
+            ->assertStatus(200);
+        $contentSent = $resSent->streamedContent();
+        $posA_Sent = strpos($contentSent, 'TR-A');
+        $posB_Sent = strpos($contentSent, 'TR-B');
+        $this->assertLessThan($posB_Sent, $posA_Sent);
+
+        // Scenario B: date_basis=RECEIVED_AT & sort_order=asc (Default sort should be received_at) -> TR-B (14:00) before TR-A (15:00)
+        $resRec = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-transfers/export?date_basis=RECEIVED_AT&sort_order=asc')
+            ->assertStatus(200);
+        $contentRec = $resRec->streamedContent();
+        $posA_Rec = strpos($contentRec, 'TR-A');
+        $posB_Rec = strpos($contentRec, 'TR-B');
+        $this->assertLessThan($posA_Rec, $posB_Rec);
+
+        // Scenario C: date_basis=RECEIVED_AT & sort_by=transfer_number & sort_order=asc -> Explicit sort authoritative (TR-A before TR-B)
+        $resExplicit = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-transfers/export?date_basis=RECEIVED_AT&sort_by=transfer_number&sort_order=asc')
+            ->assertStatus(200);
+        $contentExplicit = $resExplicit->streamedContent();
+        $posA_Exp = strpos($contentExplicit, 'TR-A');
+        $posB_Exp = strpos($contentExplicit, 'TR-B');
+        $this->assertLessThan($posB_Exp, $posA_Exp);
+    }
+
+    public function test_transfer_json_and_csv_order_parity()
+    {
+        $trA = StockTransfer::create([
+            'transfer_number' => 'TR-P-01',
+            'origin_location_id' => $this->loc1->id,
+            'destination_location_id' => $this->loc2->id,
+            'status' => 'RECEIVED',
+            'sent_at' => '2026-08-05 10:00:00',
+            'received_at' => '2026-08-05 15:00:00',
+            'created_by' => $this->admin->id,
+            'sent_by' => $this->admin->id,
+            'received_by' => $this->admin->id,
+            'transfer_date' => '2026-08-05',
+        ]);
+        StockTransferItem::create(['stock_transfer_id' => $trA->id, 'product_id' => $this->product->id, 'quantity' => 10.0000]);
+
+        $trB = StockTransfer::create([
+            'transfer_number' => 'TR-P-02',
+            'origin_location_id' => $this->loc1->id,
+            'destination_location_id' => $this->loc2->id,
+            'status' => 'RECEIVED',
+            'sent_at' => '2026-08-05 11:00:00',
+            'received_at' => '2026-08-05 14:00:00',
+            'created_by' => $this->admin->id,
+            'sent_by' => $this->admin->id,
+            'received_by' => $this->admin->id,
+            'transfer_date' => '2026-08-05',
+        ]);
+        StockTransferItem::create(['stock_transfer_id' => $trB->id, 'product_id' => $this->product->id, 'quantity' => 20.0000]);
+
+        // 1. date_basis=RECEIVED_AT & sort_order=asc
+        $jsonRes = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->getJson('/api/v1/reports/stock-transfers?date_basis=RECEIVED_AT&sort_order=asc')
+            ->assertStatus(200);
+        $jsonNumbers = array_map(fn ($item) => $item['transfer_number'], $jsonRes->json('data'));
+
+        $csvRes = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-transfers/export?date_basis=RECEIVED_AT&sort_order=asc')
+            ->assertStatus(200);
+        $csvContent = $csvRes->streamedContent();
+        $posP1 = strpos($csvContent, 'TR-P-01');
+        $posP2 = strpos($csvContent, 'TR-P-02');
+        $csvNumbers = $posP2 < $posP1 ? ['TR-P-02', 'TR-P-01'] : ['TR-P-01', 'TR-P-02'];
+
+        $this->assertEquals($jsonNumbers, $csvNumbers);
+
+        // 2. date_basis=SENT_AT & sort_order=desc
+        $jsonResDesc = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->getJson('/api/v1/reports/stock-transfers?date_basis=SENT_AT&sort_order=desc')
+            ->assertStatus(200);
+        $jsonNumbersDesc = array_map(fn ($item) => $item['transfer_number'], $jsonResDesc->json('data'));
+
+        $csvResDesc = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-transfers/export?date_basis=SENT_AT&sort_order=desc')
+            ->assertStatus(200);
+        $csvContentDesc = $csvResDesc->streamedContent();
+        $posP1Desc = strpos($csvContentDesc, 'TR-P-01');
+        $posP2Desc = strpos($csvContentDesc, 'TR-P-02');
+        $csvNumbersDesc = $posP2Desc < $posP1Desc ? ['TR-P-02', 'TR-P-01'] : ['TR-P-01', 'TR-P-02'];
+
+        $this->assertEquals($jsonNumbersDesc, $csvNumbersDesc);
+    }
+
     public function test_transaction_exports_respect_sort_by_and_sort_order()
     {
+        // 1. Receipt test
         $rc1 = StockReceipt::create(['receipt_number' => 'RC-SORT-AAA', 'date' => '2026-08-01', 'supplier_id' => $this->supplier->id, 'status' => 'POSTED', 'posted_at' => '2026-08-05 10:00:00', 'created_by' => $this->admin->id]);
         StockReceiptItem::create(['stock_receipt_id' => $rc1->id, 'product_id' => $this->product->id, 'location_id' => $this->loc1->id, 'quantity' => 10.0000]);
 
         $rc2 = StockReceipt::create(['receipt_number' => 'RC-SORT-ZZZ', 'date' => '2026-08-05', 'supplier_id' => $this->supplier->id, 'status' => 'POSTED', 'posted_at' => '2026-08-05 12:00:00', 'created_by' => $this->admin->id]);
         StockReceiptItem::create(['stock_receipt_id' => $rc2->id, 'product_id' => $this->product->id, 'location_id' => $this->loc1->id, 'quantity' => 20.0000]);
 
-        // ASC sort by receipt_number
         $resAsc = $this->actingAs($this->staffLoc1, 'sanctum')
             ->get('/api/v1/reports/stock-receipts/export?sort_by=receipt_number&sort_order=asc')
             ->assertStatus(200);
         $contentAsc = $resAsc->streamedContent();
-        $posAAA = strpos($contentAsc, 'RC-SORT-AAA');
-        $posZZZ = strpos($contentAsc, 'RC-SORT-ZZZ');
-        $this->assertLessThan($posZZZ, $posAAA);
+        $this->assertLessThan(strpos($contentAsc, 'RC-SORT-ZZZ'), strpos($contentAsc, 'RC-SORT-AAA'));
 
-        // DESC sort by receipt_number
         $resDesc = $this->actingAs($this->staffLoc1, 'sanctum')
             ->get('/api/v1/reports/stock-receipts/export?sort_by=receipt_number&sort_order=desc')
             ->assertStatus(200);
         $contentDesc = $resDesc->streamedContent();
-        $posAAA2 = strpos($contentDesc, 'RC-SORT-AAA');
-        $posZZZ2 = strpos($contentDesc, 'RC-SORT-ZZZ');
-        $this->assertLessThan($posAAA2, $posZZZ2);
+        $this->assertLessThan(strpos($contentDesc, 'RC-SORT-AAA'), strpos($contentDesc, 'RC-SORT-ZZZ'));
+
+        // 2. Issue test
+        $is1 = StockIssue::create(['issue_number' => 'IS-SORT-AAA', 'date' => '2026-08-01', 'purpose' => 'Test', 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id]);
+        StockIssueItem::create(['stock_issue_id' => $is1->id, 'product_id' => $this->product->id, 'location_id' => $this->loc1->id, 'quantity' => 5.0000]);
+
+        $is2 = StockIssue::create(['issue_number' => 'IS-SORT-ZZZ', 'date' => '2026-08-05', 'purpose' => 'Test', 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id]);
+        StockIssueItem::create(['stock_issue_id' => $is2->id, 'product_id' => $this->product->id, 'location_id' => $this->loc1->id, 'quantity' => 5.0000]);
+
+        $resIssueAsc = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-issues/export?sort_by=issue_number&sort_order=asc')
+            ->assertStatus(200);
+        $contentIssueAsc = $resIssueAsc->streamedContent();
+        $this->assertLessThan(strpos($contentIssueAsc, 'IS-SORT-ZZZ'), strpos($contentIssueAsc, 'IS-SORT-AAA'));
+
+        // 3. Adjustment test
+        $adj1 = StockAdjustment::create(['adjustment_number' => 'ADJ-SORT-AAA', 'adjustment_date' => '2026-08-01', 'location_id' => $this->loc1->id, 'direction' => 'INCREASE', 'reason_code' => 'FOUND', 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id, 'posted_by' => $this->admin->id]);
+        StockAdjustmentItem::create(['stock_adjustment_id' => $adj1->id, 'product_id' => $this->product->id, 'quantity' => 1.0000]);
+
+        $adj2 = StockAdjustment::create(['adjustment_number' => 'ADJ-SORT-ZZZ', 'adjustment_date' => '2026-08-05', 'location_id' => $this->loc1->id, 'direction' => 'INCREASE', 'reason_code' => 'FOUND', 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id, 'posted_by' => $this->admin->id]);
+        StockAdjustmentItem::create(['stock_adjustment_id' => $adj2->id, 'product_id' => $this->product->id, 'quantity' => 1.0000]);
+
+        $resAdjAsc = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-adjustments/export?sort_by=adjustment_number&sort_order=asc')
+            ->assertStatus(200);
+        $contentAdjAsc = $resAdjAsc->streamedContent();
+        $this->assertLessThan(strpos($contentAdjAsc, 'ADJ-SORT-ZZZ'), strpos($contentAdjAsc, 'ADJ-SORT-AAA'));
+
+        // 4. Opname test
+        $op1 = StockOpname::create(['opname_number' => 'OP-SORT-AAA', 'location_id' => $this->loc1->id, 'opname_date' => now()->toDateString(), 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id]);
+        StockOpnameItem::create(['stock_opname_id' => $op1->id, 'product_id' => $this->product->id, 'snapshot_quantity' => 10.0000, 'counted_quantity' => 10.0000, 'variance_quantity' => 0.0000, 'is_unexpected' => false]);
+
+        $op2 = StockOpname::create(['opname_number' => 'OP-SORT-ZZZ', 'location_id' => $this->loc1->id, 'opname_date' => now()->toDateString(), 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id]);
+        StockOpnameItem::create(['stock_opname_id' => $op2->id, 'product_id' => $this->product->id, 'snapshot_quantity' => 10.0000, 'counted_quantity' => 10.0000, 'variance_quantity' => 0.0000, 'is_unexpected' => false]);
+
+        $resOpAsc = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-opnames/export?sort_by=opname_number&sort_order=asc')
+            ->assertStatus(200);
+        $contentOpAsc = $resOpAsc->streamedContent();
+        $this->assertLessThan(strpos($contentOpAsc, 'OP-SORT-ZZZ'), strpos($contentOpAsc, 'OP-SORT-AAA'));
     }
 
     public function test_exports_do_not_trigger_lazy_loading()
@@ -442,8 +597,8 @@ class ReportCsvExportTest extends TestCase
 
         $endpoints = [
             '/api/v1/reports/inventory-balances/export',
-            '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
-            '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
+            '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id,
+            '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05',
             '/api/v1/reports/stock-receipts/export',
             '/api/v1/reports/stock-issues/export',
             '/api/v1/reports/stock-transfers/export',
@@ -470,7 +625,7 @@ class ReportCsvExportTest extends TestCase
 
         // Allowed location_id -> 200
         $this->actingAs($this->staffLoc1, 'sanctum')
-            ->get('/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id)
+            ->get('/api/v1/reports/low-stock/export?location_id='.$this->loc1->id)
             ->assertStatus(200);
     }
 
@@ -484,7 +639,7 @@ class ReportCsvExportTest extends TestCase
 
         // Exceeding 366 days date range -> 422
         $this->actingAs($this->staffLoc1, 'sanctum')
-            ->getJson('/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2024-01-01&end_date=2026-01-01')
+            ->getJson('/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2024-01-01&end_date=2026-01-01')
             ->assertStatus(422)
             ->assertJsonValidationErrors(['end_date']);
     }
@@ -574,13 +729,13 @@ class ReportCsvExportTest extends TestCase
 
         // JSON response count
         $jsonRes = $this->actingAs($this->staffLoc1, 'sanctum')
-            ->getJson('/api/v1/reports/stock-receipts?supplier_id=' . $this->supplier->id)
+            ->getJson('/api/v1/reports/stock-receipts?supplier_id='.$this->supplier->id)
             ->assertStatus(200);
         $jsonTotal = $jsonRes->json('pagination.total');
 
         // CSV response row count
         $csvRes = $this->actingAs($this->staffLoc1, 'sanctum')
-            ->get('/api/v1/reports/stock-receipts/export?supplier_id=' . $this->supplier->id)
+            ->get('/api/v1/reports/stock-receipts/export?supplier_id='.$this->supplier->id)
             ->assertStatus(200);
         $csvLines = explode("\n", trim($csvRes->streamedContent()));
         $csvDataRowCount = count($csvLines) - 1;
@@ -636,8 +791,8 @@ class ReportCsvExportTest extends TestCase
     {
         $endpoints = [
             '/api/v1/reports/inventory-balances/export?search=NONEXISTENT_SEARCH_TERM',
-            '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id . '&search=NONEXISTENT_SEARCH_TERM',
-            '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2020-01-01&end_date=2020-01-02',
+            '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id.'&search=NONEXISTENT_SEARCH_TERM',
+            '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2020-01-01&end_date=2020-01-02',
             '/api/v1/reports/stock-receipts/export?search=NONEXISTENT_SEARCH_TERM',
             '/api/v1/reports/stock-issues/export?search=NONEXISTENT_SEARCH_TERM',
             '/api/v1/reports/stock-transfers/export?search=NONEXISTENT_SEARCH_TERM',
@@ -663,8 +818,8 @@ class ReportCsvExportTest extends TestCase
 
         $endpoints = [
             'inventory-balances' => '/api/v1/reports/inventory-balances/export',
-            'low-stock' => '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
-            'stock-card' => '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
+            'low-stock' => '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id,
+            'stock-card' => '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05',
             'stock-receipts' => '/api/v1/reports/stock-receipts/export',
             'stock-issues' => '/api/v1/reports/stock-issues/export',
             'stock-transfers' => '/api/v1/reports/stock-transfers/export',

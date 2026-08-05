@@ -238,7 +238,8 @@ class ReportExportService
 
     public function exportStockTransfers(array $allowedLocationIds, array $filters): StreamedResponse
     {
-        $sortField = $filters['sort_by'] ?? 'sent_at';
+        $dateBasis = strtoupper($filters['date_basis'] ?? 'SENT_AT');
+        $sortField = $filters['sort_by'] ?? ($dateBasis === 'RECEIVED_AT' ? 'received_at' : 'sent_at');
         $sortDirection = $filters['sort_order'] ?? 'desc';
 
         $cursor = $this->repository->getCursorStockTransferReport($allowedLocationIds, $filters, $sortField, $sortDirection);

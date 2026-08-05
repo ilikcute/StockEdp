@@ -586,9 +586,17 @@ class ReportingRepository implements ReportingRepositoryInterface
 
         $this->applyTransferFilters($query, $filters, $dateColumn);
 
-        $query->orderBy($dateColumn, 'desc')
-            ->orderBy('stock_transfers.id', 'desc')
-            ->orderBy('stock_transfer_items.id', 'desc');
+        $sortMap = [
+            'sent_at' => 'stock_transfers.sent_at',
+            'received_at' => 'stock_transfers.received_at',
+            'transfer_number' => 'stock_transfers.transfer_number',
+            'id' => 'stock_transfer_items.id',
+        ];
+        $actualSortField = $sortMap[$sortField] ?? $dateColumn;
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($actualSortField, $sortDirection)
+            ->orderBy('stock_transfer_items.id', $sortDirection);
 
         return $query->with(['transfer.originLocation', 'transfer.destinationLocation', 'transfer.sender', 'transfer.receiver', 'product.unit', 'product.category'])
             ->paginate($perPage);
