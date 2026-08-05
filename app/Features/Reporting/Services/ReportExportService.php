@@ -31,16 +31,16 @@ class ReportExportService
         $generator = function () use ($cursor) {
             foreach ($cursor as $item) {
                 yield [
-                    $item->product->sku ?? '',
-                    $item->product->name ?? '',
-                    $item->product->category->name ?? '',
-                    $item->product->unit->name ?? '',
-                    $item->location->code ?? '',
-                    $item->location->name ?? '',
+                    $item->sku ?? '',
+                    $item->product_name ?? '',
+                    $item->category_name ?? '',
+                    $item->unit_name ?? '',
+                    $item->location_code ?? '',
+                    $item->location_name ?? '',
                     DecimalQuantity::normalize($item->quantity),
-                    DecimalQuantity::normalize($item->product->minimum_stock ?? 0),
-                    ($item->product->is_active ?? true) ? 'Aktif' : 'Nonaktif',
-                    ($item->location->operationLock?->is_frozen) ? 'Dibekukan' : 'Normal',
+                    DecimalQuantity::normalize($item->minimum_stock ?? 0),
+                    ($item->is_product_active ?? true) ? 'Aktif' : 'Nonaktif',
+                    ($item->is_frozen ?? false) ? 'Dibekukan' : 'Normal',
                 ];
             }
         };
@@ -108,9 +108,9 @@ class ReportExportService
 
         $generator = function () use ($cursor) {
             foreach ($cursor as $m) {
-                $change = (float) $m->quantity_change;
-                $qtyIn = $change > 0 ? DecimalQuantity::normalize($m->quantity) : '0.0000';
-                $qtyOut = $change < 0 ? DecimalQuantity::normalize($m->quantity) : '0.0000';
+                $isIncoming = in_array($m->movement_type, ['RECEIPT', 'TRANSFER_IN', 'OPNAME_IN', 'ADJUSTMENT_IN'], true);
+                $qtyIn = $isIncoming ? DecimalQuantity::normalize($m->quantity) : '0.0000';
+                $qtyOut = ! $isIncoming ? DecimalQuantity::normalize($m->quantity) : '0.0000';
                 $postedAt = $m->created_at ? CarbonImmutable::parse($m->created_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
 
                 yield [
@@ -118,15 +118,15 @@ class ReportExportService
                     $postedAt,
                     $m->movement_type,
                     $m->movement_id,
-                    $m->product->sku ?? '',
-                    $m->product->name ?? '',
-                    $m->location->code ?? '',
-                    $m->location->name ?? '',
+                    $m->sku ?? '',
+                    $m->product_name ?? '',
+                    $m->location_code ?? '',
+                    $m->location_name ?? '',
                     DecimalQuantity::normalize($m->quantity_before),
                     $qtyIn,
                     $qtyOut,
                     DecimalQuantity::normalize($m->quantity_after),
-                    $m->creator->name ?? ($m->creator->username ?? '-'),
+                    $m->creator_name ?? ($m->creator_username ?? '-'),
                     $m->notes ?? '',
                 ];
             }
@@ -153,24 +153,24 @@ class ReportExportService
                 $postedAt = $item->movement_posted_at
                     ? CarbonImmutable::parse($item->movement_posted_at, 'Asia/Jakarta')->format('Y-m-d H:i:s')
                     : '-';
-                $docDate = $item->receipt->date
-                    ? CarbonImmutable::parse($item->receipt->date, 'Asia/Jakarta')->format('Y-m-d')
+                $docDate = $item->receipt_date
+                    ? CarbonImmutable::parse($item->receipt_date, 'Asia/Jakarta')->format('Y-m-d')
                     : '-';
 
                 yield [
-                    $item->receipt->receipt_number ?? '',
+                    $item->receipt_number ?? '',
                     $docDate,
                     $postedAt,
-                    $item->receipt->supplier->name ?? '',
-                    $item->location->code ?? '',
-                    $item->location->name ?? '',
-                    $item->product->sku ?? '',
-                    $item->product->name ?? '',
-                    $item->product->unit->name ?? '',
+                    $item->supplier_name ?? '',
+                    $item->location_code ?? '',
+                    $item->location_name ?? '',
+                    $item->sku ?? '',
+                    $item->product_name ?? '',
+                    $item->unit_name ?? '',
                     DecimalQuantity::normalize($item->quantity),
-                    $item->receipt->creator->name ?? ($item->receipt->creator->username ?? '-'),
-                    $item->receipt->poster->name ?? ($item->receipt->poster->username ?? '-'),
-                    $item->receipt->notes ?? '',
+                    $item->creator_name ?? ($item->creator_username ?? '-'),
+                    $item->poster_name ?? ($item->poster_username ?? '-'),
+                    $item->notes ?? '',
                 ];
             }
         };
@@ -196,24 +196,24 @@ class ReportExportService
                 $postedAt = $item->movement_posted_at
                     ? CarbonImmutable::parse($item->movement_posted_at, 'Asia/Jakarta')->format('Y-m-d H:i:s')
                     : '-';
-                $docDate = $item->issue->date
-                    ? CarbonImmutable::parse($item->issue->date, 'Asia/Jakarta')->format('Y-m-d')
+                $docDate = $item->issue_date
+                    ? CarbonImmutable::parse($item->issue_date, 'Asia/Jakarta')->format('Y-m-d')
                     : '-';
 
                 yield [
-                    $item->issue->issue_number ?? '',
+                    $item->issue_number ?? '',
                     $docDate,
                     $postedAt,
-                    $item->location->code ?? '',
-                    $item->location->name ?? '',
-                    $item->issue->purpose ?? '',
-                    $item->product->sku ?? '',
-                    $item->product->name ?? '',
-                    $item->product->unit->name ?? '',
+                    $item->location_code ?? '',
+                    $item->location_name ?? '',
+                    $item->purpose ?? '',
+                    $item->sku ?? '',
+                    $item->product_name ?? '',
+                    $item->unit_name ?? '',
                     DecimalQuantity::normalize($item->quantity),
-                    $item->issue->creator->name ?? ($item->issue->creator->username ?? '-'),
-                    $item->issue->poster->name ?? ($item->issue->poster->username ?? '-'),
-                    $item->issue->notes ?? '',
+                    $item->creator_name ?? ($item->creator_username ?? '-'),
+                    $item->poster_name ?? ($item->poster_username ?? '-'),
+                    $item->notes ?? '',
                 ];
             }
         };
@@ -237,32 +237,31 @@ class ReportExportService
 
         $generator = function () use ($cursor) {
             foreach ($cursor as $item) {
-                $transfer = $item->transfer;
-                $sentAt = $transfer->sent_at ? CarbonImmutable::parse($transfer->sent_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
-                $receivedAt = $transfer->received_at ? CarbonImmutable::parse($transfer->received_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
-                $docDate = $transfer->transfer_date ? CarbonImmutable::parse($transfer->transfer_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
+                $sentAt = $item->sent_at ? CarbonImmutable::parse($item->sent_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
+                $receivedAt = $item->received_at ? CarbonImmutable::parse($item->received_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
+                $docDate = $item->transfer_date ? CarbonImmutable::parse($item->transfer_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
 
-                $isInTransit = ($transfer->status === 'SENT');
+                $isInTransit = ($item->status === 'SENT');
                 $transitSeconds = null;
-                if ($transfer->sent_at) {
-                    $start = CarbonImmutable::parse($transfer->sent_at);
-                    $end = $transfer->received_at ? CarbonImmutable::parse($transfer->received_at) : CarbonImmutable::now();
-                    $transitSeconds = max(0, $start::parse($start)->diffInSeconds($end));
+                if ($item->sent_at) {
+                    $start = CarbonImmutable::parse($item->sent_at);
+                    $end = $item->received_at ? CarbonImmutable::parse($item->received_at) : CarbonImmutable::now();
+                    $transitSeconds = max(0, $start->diffInSeconds($end));
                 }
 
                 yield [
-                    $transfer->transfer_number ?? '',
+                    $item->transfer_number ?? '',
                     $docDate,
-                    $transfer->status ?? '',
-                    $transfer->originLocation->name ?? '',
-                    $transfer->destinationLocation->name ?? '',
-                    $item->product->sku ?? '',
-                    $item->product->name ?? '',
-                    $item->product->unit->name ?? '',
+                    $item->status ?? '',
+                    $item->origin_location_name ?? '',
+                    $item->destination_location_name ?? '',
+                    $item->sku ?? '',
+                    $item->product_name ?? '',
+                    $item->unit_name ?? '',
                     DecimalQuantity::normalize($item->quantity),
-                    $transfer->sender->name ?? ($transfer->sender->username ?? '-'),
+                    $item->sender_name ?? ($item->sender_username ?? '-'),
                     $sentAt,
-                    $transfer->receiver->name ?? ($transfer->receiver->username ?? '-'),
+                    $item->receiver_name ?? ($item->receiver_username ?? '-'),
                     $receivedAt,
                     $isInTransit ? 'Ya' : 'Tidak',
                     $transitSeconds !== null ? (string) $transitSeconds : '-',
@@ -288,11 +287,10 @@ class ReportExportService
 
         $generator = function () use ($cursor) {
             foreach ($cursor as $item) {
-                $adj = $item->adjustment;
-                $postedAt = $adj->posted_at ? CarbonImmutable::parse($adj->posted_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
-                $docDate = $adj->adjustment_date ? CarbonImmutable::parse($adj->adjustment_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
+                $postedAt = $item->posted_at ? CarbonImmutable::parse($item->posted_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
+                $docDate = $item->adjustment_date ? CarbonImmutable::parse($item->adjustment_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
 
-                $reasonCode = $adj->reason_code ?? '';
+                $reasonCode = $item->reason_code ?? '';
                 $reasonLabel = $reasonCode;
                 try {
                     $reasonEnum = AdjustmentReason::tryFrom($reasonCode);
@@ -303,20 +301,20 @@ class ReportExportService
                 }
 
                 yield [
-                    $adj->adjustment_number ?? '',
+                    $item->adjustment_number ?? '',
                     $docDate,
                     $postedAt,
-                    $adj->direction ?? '',
+                    $item->direction ?? '',
                     $reasonCode,
                     $reasonLabel,
-                    $adj->location->code ?? '',
-                    $adj->location->name ?? '',
-                    $item->product->sku ?? '',
-                    $item->product->name ?? '',
-                    $item->product->unit->name ?? '',
+                    $item->location_code ?? '',
+                    $item->location_name ?? '',
+                    $item->sku ?? '',
+                    $item->product_name ?? '',
+                    $item->unit_name ?? '',
                     DecimalQuantity::normalize($item->quantity),
-                    $adj->poster->name ?? ($adj->poster->username ?? '-'),
-                    $adj->notes ?? '',
+                    $item->poster_name ?? ($item->poster_username ?? '-'),
+                    $item->notes ?? '',
                 ];
             }
         };
@@ -340,9 +338,8 @@ class ReportExportService
 
         $generator = function () use ($cursor) {
             foreach ($cursor as $item) {
-                $opname = $item->opname;
-                $postedAt = $opname->posted_at ? CarbonImmutable::parse($opname->posted_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
-                $docDate = $opname->opname_date ? CarbonImmutable::parse($opname->opname_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
+                $postedAt = $item->posted_at ? CarbonImmutable::parse($item->posted_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
+                $docDate = $item->opname_date ? CarbonImmutable::parse($item->opname_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
 
                 $variance = DecimalQuantity::normalize($item->variance_quantity);
                 $signedVariance = ((float) $item->variance_quantity >= 0 ? '+' : '').$variance;
@@ -355,22 +352,22 @@ class ReportExportService
                 }
 
                 yield [
-                    $opname->opname_number ?? '',
+                    $item->opname_number ?? '',
                     $docDate,
                     $postedAt,
-                    $opname->location->code ?? '',
-                    $opname->location->name ?? '',
-                    $item->product->sku ?? '',
-                    $item->product->name ?? '',
-                    $item->product->unit->name ?? '',
+                    $item->location_code ?? '',
+                    $item->location_name ?? '',
+                    $item->sku ?? '',
+                    $item->product_name ?? '',
+                    $item->unit_name ?? '',
                     DecimalQuantity::normalize($item->snapshot_quantity),
                     DecimalQuantity::normalize($item->counted_quantity),
                     $signedVariance,
                     $movementDirection,
                     $item->is_unexpected ? 'Ya' : 'Tidak',
-                    $item->counter->name ?? ($item->counter->username ?? '-'),
-                    $opname->poster->name ?? ($opname->poster->username ?? '-'),
-                    $item->item_notes ?? ($opname->notes ?? ''),
+                    $item->counter_name ?? ($item->counter_username ?? '-'),
+                    $item->poster_name ?? ($item->poster_username ?? '-'),
+                    $item->item_notes ?? ($item->opname_notes ?? ''),
                 ];
             }
         };

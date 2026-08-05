@@ -963,51 +963,69 @@ class ReportingRepository implements ReportingRepositoryInterface
             return LazyCollection::empty();
         }
 
-        $query = InventoryBalance::with(['product.category', 'product.unit', 'location.operationLock'])
-            ->whereIn('location_id', $allowedLocationIds);
+        $query = DB::table('inventory_balances')
+            ->join('products', 'products.id', '=', 'inventory_balances.product_id')
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
+            ->join('locations', 'locations.id', '=', 'inventory_balances.location_id')
+            ->leftJoin('inventory_location_locks', 'inventory_location_locks.location_id', '=', 'locations.id')
+            ->select([
+                'inventory_balances.id',
+                'products.sku',
+                'products.name as product_name',
+                'categories.name as category_name',
+                'units.name as unit_name',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'inventory_balances.quantity',
+                'products.minimum_stock',
+                'products.is_active as is_product_active',
+                'inventory_location_locks.is_frozen',
+            ])
+            ->whereIn('inventory_balances.location_id', $allowedLocationIds);
 
         if (! empty($filters['location_id'])) {
             if (! in_array((int) $filters['location_id'], $allowedLocationIds, true)) {
                 return LazyCollection::empty();
             }
-            $query->where('location_id', $filters['location_id']);
+            $query->where('inventory_balances.location_id', $filters['location_id']);
         }
         if (! empty($filters['product_id'])) {
-            $query->where('product_id', $filters['product_id']);
+            $query->where('inventory_balances.product_id', $filters['product_id']);
         }
         if (! empty($filters['category_id'])) {
-            $query->whereHas('product', fn ($q) => $q->where('category_id', $filters['category_id']));
+            $query->where('products.category_id', $filters['category_id']);
         }
         if (! empty($filters['unit_id'])) {
-            $query->whereHas('product', fn ($q) => $q->where('unit_id', $filters['unit_id']));
+            $query->where('products.unit_id', $filters['unit_id']);
         }
         if (isset($filters['is_active']) && $filters['is_active'] !== '') {
             $isActive = (bool) $filters['is_active'];
-            $query->whereHas('product', fn ($q) => $q->where('is_active', $isActive));
+            $query->where('products.is_active', $isActive);
         }
         if (! empty($filters['positive_stock'])) {
-            $query->where('quantity', '>', '0.0000');
+            $query->where('inventory_balances.quantity', '>', '0.0000');
         }
         if (isset($filters['zero_stock']) && $filters['zero_stock'] === '1') {
-            $query->where('quantity', '=', '0.0000');
+            $query->where('inventory_balances.quantity', '=', '0.0000');
         }
         if (isset($filters['frozen_location']) && $filters['frozen_location'] === '1') {
-            $query->whereHas('location.operationLock', fn ($q) => $q->where('is_frozen', true));
+            $query->where('inventory_location_locks.is_frozen', true);
         }
         if (! empty($filters['search'])) {
             $search = $filters['search'];
-            $query->whereHas('product', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhere('barcode', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%")
+                    ->orWhere('products.barcode', 'like', "%{$search}%");
             });
         }
 
         $allowlist = ['id', 'product_id', 'location_id', 'quantity', 'created_at'];
-        $sortField = in_array($sortField, $allowlist, true) ? $sortField : 'id';
+        $sortField = in_array($sortField, $allowlist, true) ? "inventory_balances.{$sortField}" : 'inventory_balances.id';
         $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
-        return $query->orderBy($sortField, $sortDirection)->orderBy('id', $sortDirection)->cursor();
+        return $query->orderBy($sortField, $sortDirection)->orderBy('inventory_balances.id', $sortDirection)->cursor();
     }
 
     public function getCursorLowStock(
@@ -1079,12 +1097,32 @@ class ReportingRepository implements ReportingRepositoryInterface
         string $startDateTime,
         string $endNextDayDateTime
     ): LazyCollection {
-        return StockMovement::with(['creator', 'product', 'location'])
-            ->where('product_id', $productId)
-            ->where('location_id', $locationId)
-            ->whereBetween('created_at', [$startDateTime, $endNextDayDateTime])
-            ->orderBy('created_at', 'asc')
-            ->orderBy('id', 'asc')
+        return DB::table('stock_movements')
+            ->join('products', 'products.id', '=', 'stock_movements.product_id')
+            ->join('locations', 'locations.id', '=', 'stock_movements.location_id')
+            ->leftJoin('users as creators', 'creators.id', '=', 'stock_movements.created_by')
+            ->select([
+                'stock_movements.id',
+                'stock_movements.occurred_at',
+                'stock_movements.created_at',
+                'stock_movements.movement_type',
+                'stock_movements.movement_id',
+                'products.sku',
+                'products.name as product_name',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'stock_movements.quantity_before',
+                'stock_movements.quantity',
+                'stock_movements.quantity_after',
+                'creators.name as creator_name',
+                'creators.username as creator_username',
+                DB::raw("'' as notes"),
+            ])
+            ->where('stock_movements.product_id', $productId)
+            ->where('stock_movements.location_id', $locationId)
+            ->whereBetween('stock_movements.created_at', [$startDateTime, $endNextDayDateTime])
+            ->orderBy('stock_movements.created_at', 'asc')
+            ->orderBy('stock_movements.id', 'asc')
             ->cursor();
     }
 
@@ -1098,11 +1136,13 @@ class ReportingRepository implements ReportingRepositoryInterface
             return LazyCollection::empty();
         }
 
-        $query = StockReceiptItem::query()
-            ->select('stock_receipt_items.*', 'stock_movements.created_at as movement_posted_at')
+        $query = DB::table('stock_receipt_items')
             ->join('stock_receipts', 'stock_receipts.id', '=', 'stock_receipt_items.stock_receipt_id')
             ->join('products', 'products.id', '=', 'stock_receipt_items.product_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
             ->leftJoin('suppliers', 'suppliers.id', '=', 'stock_receipts.supplier_id')
+            ->leftJoin('locations', 'locations.id', '=', 'stock_receipt_items.location_id')
+            ->leftJoin('users as creators', 'creators.id', '=', 'stock_receipts.created_by')
             ->leftJoin('stock_movements', function ($join) {
                 $join->on('stock_movements.reference_id', '=', 'stock_receipts.id')
                     ->where('stock_movements.reference_type', '=', StockReceipt::class)
@@ -1110,6 +1150,24 @@ class ReportingRepository implements ReportingRepositoryInterface
                     ->on('stock_movements.location_id', '=', 'stock_receipt_items.location_id')
                     ->where('stock_movements.movement_type', '=', 'RECEIPT');
             })
+            ->select([
+                'stock_receipt_items.id as item_id',
+                'stock_receipts.receipt_number',
+                'stock_receipts.date as receipt_date',
+                'stock_movements.created_at as movement_posted_at',
+                'suppliers.name as supplier_name',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'products.sku',
+                'products.name as product_name',
+                'units.name as unit_name',
+                'stock_receipt_items.quantity',
+                'creators.name as creator_name',
+                'creators.username as creator_username',
+                'creators.name as poster_name',
+                'creators.username as poster_username',
+                'stock_receipts.notes',
+            ])
             ->where('stock_receipts.status', 'POSTED')
             ->whereIn('stock_receipt_items.location_id', $allowedLocationIds);
 
@@ -1120,7 +1178,6 @@ class ReportingRepository implements ReportingRepositoryInterface
         return $query->orderBy('stock_movements.created_at', $sortDirection)
             ->orderBy('stock_movements.id', $sortDirection)
             ->orderBy('stock_receipt_items.id', $sortDirection)
-            ->with(['receipt.supplier', 'receipt.creator', 'product.unit', 'product.category', 'location'])
             ->cursor();
     }
 
@@ -1134,10 +1191,12 @@ class ReportingRepository implements ReportingRepositoryInterface
             return LazyCollection::empty();
         }
 
-        $query = StockIssueItem::query()
-            ->select('stock_issue_items.*', 'stock_movements.created_at as movement_posted_at')
+        $query = DB::table('stock_issue_items')
             ->join('stock_issues', 'stock_issues.id', '=', 'stock_issue_items.stock_issue_id')
             ->join('products', 'products.id', '=', 'stock_issue_items.product_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
+            ->leftJoin('locations', 'locations.id', '=', 'stock_issue_items.location_id')
+            ->leftJoin('users as creators', 'creators.id', '=', 'stock_issues.created_by')
             ->leftJoin('stock_movements', function ($join) {
                 $join->on('stock_movements.reference_id', '=', 'stock_issues.id')
                     ->where('stock_movements.reference_type', '=', StockIssue::class)
@@ -1145,6 +1204,24 @@ class ReportingRepository implements ReportingRepositoryInterface
                     ->on('stock_movements.location_id', '=', 'stock_issue_items.location_id')
                     ->where('stock_movements.movement_type', '=', 'ISSUE');
             })
+            ->select([
+                'stock_issue_items.id as item_id',
+                'stock_issues.issue_number',
+                'stock_issues.date as issue_date',
+                'stock_movements.created_at as movement_posted_at',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'stock_issues.purpose',
+                'products.sku',
+                'products.name as product_name',
+                'units.name as unit_name',
+                'stock_issue_items.quantity',
+                'creators.name as creator_name',
+                'creators.username as creator_username',
+                'creators.name as poster_name',
+                'creators.username as poster_username',
+                'stock_issues.notes',
+            ])
             ->where('stock_issues.status', 'POSTED')
             ->whereIn('stock_issue_items.location_id', $allowedLocationIds);
 
@@ -1155,7 +1232,6 @@ class ReportingRepository implements ReportingRepositoryInterface
         return $query->orderBy('stock_movements.created_at', $sortDirection)
             ->orderBy('stock_movements.id', $sortDirection)
             ->orderBy('stock_issue_items.id', $sortDirection)
-            ->with(['issue.creator', 'issue.poster', 'product.unit', 'product.category', 'location'])
             ->cursor();
     }
 
@@ -1172,10 +1248,32 @@ class ReportingRepository implements ReportingRepositoryInterface
         $dateBasis = strtoupper($filters['date_basis'] ?? 'SENT_AT');
         $dateColumn = ($dateBasis === 'RECEIVED_AT') ? 'stock_transfers.received_at' : 'stock_transfers.sent_at';
 
-        $query = StockTransferItem::query()
-            ->select('stock_transfer_items.*')
+        $query = DB::table('stock_transfer_items')
             ->join('stock_transfers', 'stock_transfers.id', '=', 'stock_transfer_items.stock_transfer_id')
             ->join('products', 'products.id', '=', 'stock_transfer_items.product_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
+            ->leftJoin('locations as origin_locations', 'origin_locations.id', '=', 'stock_transfers.origin_location_id')
+            ->leftJoin('locations as dest_locations', 'dest_locations.id', '=', 'stock_transfers.destination_location_id')
+            ->leftJoin('users as senders', 'senders.id', '=', 'stock_transfers.sent_by')
+            ->leftJoin('users as receivers', 'receivers.id', '=', 'stock_transfers.received_by')
+            ->select([
+                'stock_transfer_items.id as item_id',
+                'stock_transfers.transfer_number',
+                'stock_transfers.transfer_date',
+                'stock_transfers.status',
+                'origin_locations.name as origin_location_name',
+                'dest_locations.name as destination_location_name',
+                'products.sku',
+                'products.name as product_name',
+                'units.name as unit_name',
+                'stock_transfer_items.quantity',
+                'senders.name as sender_name',
+                'senders.username as sender_username',
+                'stock_transfers.sent_at',
+                'receivers.name as receiver_name',
+                'receivers.username as receiver_username',
+                'stock_transfers.received_at',
+            ])
             ->where(function ($q) use ($allowedLocationIds) {
                 $q->whereIn('stock_transfers.origin_location_id', $allowedLocationIds)
                     ->orWhereIn('stock_transfers.destination_location_id', $allowedLocationIds);
@@ -1194,7 +1292,6 @@ class ReportingRepository implements ReportingRepositoryInterface
         return $query->orderBy($dateColumn, $sortDirection)
             ->orderBy('stock_transfers.id', $sortDirection)
             ->orderBy('stock_transfer_items.id', $sortDirection)
-            ->with(['transfer.originLocation', 'transfer.destinationLocation', 'transfer.sender', 'transfer.receiver', 'product.unit', 'product.category'])
             ->cursor();
     }
 
@@ -1208,10 +1305,29 @@ class ReportingRepository implements ReportingRepositoryInterface
             return LazyCollection::empty();
         }
 
-        $query = StockAdjustmentItem::query()
-            ->select('stock_adjustment_items.*')
+        $query = DB::table('stock_adjustment_items')
             ->join('stock_adjustments', 'stock_adjustments.id', '=', 'stock_adjustment_items.stock_adjustment_id')
             ->join('products', 'products.id', '=', 'stock_adjustment_items.product_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
+            ->leftJoin('locations', 'locations.id', '=', 'stock_adjustments.location_id')
+            ->leftJoin('users as posters', 'posters.id', '=', 'stock_adjustments.posted_by')
+            ->select([
+                'stock_adjustment_items.id as item_id',
+                'stock_adjustments.adjustment_number',
+                'stock_adjustments.adjustment_date',
+                'stock_adjustments.posted_at',
+                'stock_adjustments.direction',
+                'stock_adjustments.reason_code',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'products.sku',
+                'products.name as product_name',
+                'units.name as unit_name',
+                'stock_adjustment_items.quantity',
+                'posters.name as poster_name',
+                'posters.username as poster_username',
+                'stock_adjustments.notes',
+            ])
             ->where('stock_adjustments.status', 'POSTED')
             ->whereIn('stock_adjustments.location_id', $allowedLocationIds);
 
@@ -1222,7 +1338,6 @@ class ReportingRepository implements ReportingRepositoryInterface
         return $query->orderBy('stock_adjustments.posted_at', $sortDirection)
             ->orderBy('stock_adjustments.id', $sortDirection)
             ->orderBy('stock_adjustment_items.id', $sortDirection)
-            ->with(['adjustment.location', 'adjustment.poster', 'product.unit', 'product.category'])
             ->cursor();
     }
 
@@ -1236,10 +1351,34 @@ class ReportingRepository implements ReportingRepositoryInterface
             return LazyCollection::empty();
         }
 
-        $query = StockOpnameItem::query()
-            ->select('stock_opname_items.*')
+        $query = DB::table('stock_opname_items')
             ->join('stock_opnames', 'stock_opnames.id', '=', 'stock_opname_items.stock_opname_id')
             ->join('products', 'products.id', '=', 'stock_opname_items.product_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
+            ->leftJoin('locations', 'locations.id', '=', 'stock_opnames.location_id')
+            ->leftJoin('users as counters', 'counters.id', '=', 'stock_opname_items.counted_by')
+            ->leftJoin('users as posters', 'posters.id', '=', 'stock_opnames.posted_by')
+            ->select([
+                'stock_opname_items.id as item_id',
+                'stock_opnames.opname_number',
+                'stock_opnames.opname_date',
+                'stock_opnames.posted_at',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'products.sku',
+                'products.name as product_name',
+                'units.name as unit_name',
+                'stock_opname_items.snapshot_quantity',
+                'stock_opname_items.counted_quantity',
+                'stock_opname_items.variance_quantity',
+                'stock_opname_items.is_unexpected',
+                'counters.name as counter_name',
+                'counters.username as counter_username',
+                'posters.name as poster_name',
+                'posters.username as poster_username',
+                DB::raw("'' as item_notes"),
+                'stock_opnames.notes as opname_notes',
+            ])
             ->where('stock_opnames.status', 'POSTED')
             ->whereIn('stock_opnames.location_id', $allowedLocationIds);
 
@@ -1250,7 +1389,6 @@ class ReportingRepository implements ReportingRepositoryInterface
         return $query->orderBy('stock_opnames.posted_at', $sortDirection)
             ->orderBy('stock_opnames.id', $sortDirection)
             ->orderBy('stock_opname_items.id', $sortDirection)
-            ->with(['opname.location', 'opname.creator', 'opname.completer', 'opname.poster', 'counter', 'product.unit', 'product.category'])
             ->cursor();
     }
 }
