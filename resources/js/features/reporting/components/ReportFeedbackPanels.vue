@@ -13,7 +13,32 @@
       </p>
     </div>
 
-    <!-- 2. Error / Network / Server -->
+    <!-- 2. Validation Errors (422, Local, or Backend Validation Errors) -->
+    <div
+      v-else-if="feedbackState === 'validation'"
+      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200 space-y-2"
+    >
+      <p
+        v-if="localValidationError"
+        class="text-sm text-yellow-700 font-medium"
+      >
+        {{ localValidationError }}
+      </p>
+
+      <ul
+        v-if="validationErrors && Object.keys(validationErrors).length > 0"
+        class="list-disc pl-5 text-sm text-yellow-700"
+      >
+        <li
+          v-for="(errors, field) in validationErrors"
+          :key="field"
+        >
+          <span class="font-medium">{{ field }}:</span> {{ Array.isArray(errors) ? errors.join(', ') : errors }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- 3. Error / Network / Server (500, Network Failure) -->
     <div
       v-else-if="feedbackState === 'error'"
       class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
@@ -40,31 +65,6 @@
           Reset Filter
         </button>
       </div>
-    </div>
-
-    <!-- 3. Validation Errors (Local or Backend) -->
-    <div
-      v-else-if="feedbackState === 'validation'"
-      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200 space-y-2"
-    >
-      <p
-        v-if="localValidationError"
-        class="text-sm text-yellow-700"
-      >
-        {{ localValidationError }}
-      </p>
-
-      <ul
-        v-if="validationErrors && Object.keys(validationErrors).length > 0"
-        class="list-disc pl-5 text-sm text-yellow-700"
-      >
-        <li
-          v-for="(errors, field) in validationErrors"
-          :key="field"
-        >
-          <span class="font-medium">{{ field }}:</span> {{ Array.isArray(errors) ? errors.join(', ') : errors }}
-        </li>
-      </ul>
     </div>
 
     <!-- 4. Loading State -->
@@ -107,22 +107,29 @@ const props = defineProps({
 const emit = defineEmits(['retry', 'reset-filters']);
 
 const feedbackState = computed(() => {
-    if (props.status === 403) return 'forbidden';
-    if (props.error) return 'error';
+    const hasValidationErrors = Object.keys(props.validationErrors || {}).length > 0;
+
+    if (props.status === 403) {
+        return 'forbidden';
+    }
 
     if (
-        props.localValidationError
-        || Object.keys(props.validationErrors || {}).length > 0
+        props.status === 422
+        || props.localValidationError
+        || hasValidationErrors
     ) {
         return 'validation';
     }
 
-    if (props.loading) return 'loading';
+    if (props.error) {
+        return 'error';
+    }
 
-    if (
-        props.hasFetched
-        && !props.hasData
-    ) {
+    if (props.loading) {
+        return 'loading';
+    }
+
+    if (props.hasFetched && !props.hasData) {
         return 'empty';
     }
 

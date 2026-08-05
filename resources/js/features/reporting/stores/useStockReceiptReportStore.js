@@ -38,9 +38,11 @@ export const useStockReceiptReportStore = defineStore('stockReceiptReport', {
                 if (requestId !== latestRequestId) return;
 
                 const normalized = normalizeApiError(err);
-                this.error = normalized.message || 'Gagal memuat laporan penerimaan stok';
                 this.status = normalized.status;
                 this.validationErrors = normalized.errors || {};
+                this.error = normalized.status === 422
+                    ? null
+                    : (normalized.message || 'Gagal memuat laporan penerimaan stok');
             } finally {
                 if (requestId === latestRequestId) {
                     this.loading = false;
