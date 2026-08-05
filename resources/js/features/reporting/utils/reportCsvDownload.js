@@ -1,5 +1,35 @@
 import { normalizeApiError } from '@/shared/api/api_client';
 
+export function validateCsvExportResponse(response) {
+    const blob = response?.data;
+    const contentType = String(
+        response?.headers?.['content-type'] ?? response?.headers?.['Content-Type'] ?? blob?.type ?? ''
+    ).toLowerCase();
+
+    if (!(blob instanceof Blob)) {
+        return {
+            valid: false,
+            message: 'Response export tidak valid.',
+        };
+    }
+
+    if (!contentType.includes('text/csv')) {
+        return {
+            valid: false,
+            message: 'Response export tidak valid.',
+        };
+    }
+
+    if (blob.size === 0) {
+        return {
+            valid: false,
+            message: 'Response export tidak valid.',
+        };
+    }
+
+    return { valid: true };
+}
+
 export function extractCsvFilename(contentDisposition, fallbackFilename = 'report.csv') {
     if (!contentDisposition || typeof contentDisposition !== 'string') {
         return sanitizeFilename(fallbackFilename);
@@ -76,7 +106,23 @@ export function downloadCsvBlob(blob, filename) {
 }
 
 export async function normalizeCsvExportError(error) {
-    if (error?.response?.data && error.response.data instanceof Blob) {
+    if (error?.code === 'ECONNABORTED' || (typeof error?.message === 'string' && error.message.toLowerCase().includes('timeout'))) {
+        return {
+            status: 408,
+            message: 'Proses ekspor melewati batas waktu.',
+            errors: {},
+        };
+    }
+
+    if (!error?.response) {
+        return {
+            status: 0,
+            message: 'Tidak dapat terhubung ke server. Periksa koneksi jaringan.',
+            errors: {},
+        };
+    }
+
+    if (error.response.data && error.response.data instanceof Blob) {
         try {
             const text = await error.response.data.text();
             if (text && text.trim().startsWith('{')) {

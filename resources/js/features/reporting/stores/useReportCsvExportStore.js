@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia';
 import { reportingApi } from '../api/reportingApi';
-import { extractCsvFilename, downloadCsvBlob, normalizeCsvExportError } from '../utils/reportCsvDownload';
+import {
+    extractCsvFilename,
+    downloadCsvBlob,
+    normalizeCsvExportError,
+    validateCsvExportResponse,
+} from '../utils/reportCsvDownload';
 
 const fallbackFilenames = {
     'inventory-balances': 'inventory-balances.csv',
@@ -60,8 +65,9 @@ export const useReportCsvExportStore = defineStore('reportCsvExport', {
             try {
                 const response = await handler({ ...params });
 
-                if (!response?.data || !(response.data instanceof Blob)) {
-                    this.errors[reportKey] = 'Response export tidak valid.';
+                const validation = validateCsvExportResponse(response);
+                if (!validation.valid) {
+                    this.errors[reportKey] = validation.message;
                     return false;
                 }
 
