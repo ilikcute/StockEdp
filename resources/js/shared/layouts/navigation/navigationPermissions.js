@@ -16,7 +16,7 @@ export const inventoryNavLinks = [
 ];
 
 export const inventoryReportNavLinks = [
-    { to: '/reports/inventory-balance', label: 'Saldo Stok', permission: 'reports.inventory_balance.view' },
+    { to: '/reports/inventory-balances', label: 'Saldo Stok', permission: 'reports.inventory_balance.view' },
     { to: '/reports/low-stock', label: 'Stok Minimum', permission: 'reports.low_stock.view' },
     { to: '/reports/stock-card', label: 'Kartu Stok', permission: 'reports.stock_card.view' },
 ];
