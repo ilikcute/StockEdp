@@ -124,8 +124,8 @@ class ReportCsvExportTest extends TestCase
     {
         $endpoints = [
             '/api/v1/reports/inventory-balances/export',
-            '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id,
-            '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05',
+            '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
+            '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
             '/api/v1/reports/stock-receipts/export',
             '/api/v1/reports/stock-issues/export',
             '/api/v1/reports/stock-transfers/export',
@@ -176,8 +176,8 @@ class ReportCsvExportTest extends TestCase
 
         $endpointConfigs = [
             'inventory-balances' => '/api/v1/reports/inventory-balances/export',
-            'low-stock' => '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id,
-            'stock-card' => '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05',
+            'low-stock' => '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
+            'stock-card' => '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
             'stock-receipts' => '/api/v1/reports/stock-receipts/export',
             'stock-issues' => '/api/v1/reports/stock-issues/export',
             'stock-transfers' => '/api/v1/reports/stock-transfers/export',
@@ -233,11 +233,11 @@ class ReportCsvExportTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $urlLoc1 = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05';
+        $urlLoc1 = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05';
         $resLoc1 = $this->actingAs($this->staffLoc1, 'sanctum')->get($urlLoc1)->assertStatus(200);
         $this->assertStringContainsString('RC-LOC1', $resLoc1->streamedContent());
 
-        $urlLoc2 = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc2->id.'&start_date=2026-08-01&end_date=2026-08-05';
+        $urlLoc2 = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc2->id . '&start_date=2026-08-01&end_date=2026-08-05';
         $resLoc2 = $this->actingAs($this->staffLoc1, 'sanctum')->get($urlLoc2)->assertStatus(200);
         $contentLoc2 = $resLoc2->streamedContent();
         $this->assertStringNotContainsString('RC-LOC2', $contentLoc2);
@@ -246,7 +246,7 @@ class ReportCsvExportTest extends TestCase
 
     public function test_stock_card_export_with_empty_location_scope_returns_header_only()
     {
-        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05';
+        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05';
 
         $response = $this->actingAs($this->staffEmptyLoc, 'sanctum')->get($url)->assertStatus(200);
         $content = $response->streamedContent();
@@ -256,7 +256,7 @@ class ReportCsvExportTest extends TestCase
         $this->assertCount(1, $lines);
     }
 
-    public function test_stock_card_export_calculates_quantity_in_and_out_with_bcmath()
+    public function test_stock_card_export_calculates_quantity_in_and_out_using_bcmath_delta()
     {
         // 0.0000 -> 10.0000 => In: 10.0000, Out: 0.0000
         StockMovement::create([
@@ -309,7 +309,7 @@ class ReportCsvExportTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-05&end_date=2026-08-05';
+        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-05&end_date=2026-08-05';
         $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
         $content = $response->streamedContent();
 
@@ -321,7 +321,7 @@ class ReportCsvExportTest extends TestCase
         $this->assertStringContainsString('0.0001', $content);
     }
 
-    public function test_stock_card_export_half_open_date_interval_boundaries()
+    public function test_stock_card_export_uses_half_open_date_interval()
     {
         // Boundary 1: start 00:00:00 (Included)
         StockMovement::create([
@@ -374,13 +374,90 @@ class ReportCsvExportTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $url = '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-05&end_date=2026-08-05';
+        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-05&end_date=2026-08-05';
         $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
         $content = $response->streamedContent();
 
         $this->assertStringContainsString('BO-START', $content);
         $this->assertStringContainsString('BO-END', $content);
         $this->assertStringNotContainsString('BO-NEXTDAY', $content);
+    }
+
+    public function test_stock_card_export_uses_reference_number()
+    {
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => 'RECEIPT',
+            'reference_type' => StockReceipt::class,
+            'reference_id' => 10,
+            'reference_number' => 'DOC-REF-001',
+            'movement_id' => 'MOVEMENT-INTERNAL-001',
+            'quantity' => '5.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '5.0000',
+            'created_at' => '2026-08-05 10:00:00',
+            'occurred_at' => '2026-08-05 10:00:00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $url = '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-05&end_date=2026-08-05';
+        $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url)->assertStatus(200);
+        $content = $response->streamedContent();
+
+        $this->assertStringContainsString('DOC-REF-001', $content);
+        $this->assertStringNotContainsString('MOVEMENT-INTERNAL-001', $content);
+    }
+
+    public function test_transaction_exports_respect_sort_by_and_sort_order()
+    {
+        $rc1 = StockReceipt::create(['receipt_number' => 'RC-SORT-AAA', 'date' => '2026-08-01', 'supplier_id' => $this->supplier->id, 'status' => 'POSTED', 'posted_at' => '2026-08-05 10:00:00', 'created_by' => $this->admin->id]);
+        StockReceiptItem::create(['stock_receipt_id' => $rc1->id, 'product_id' => $this->product->id, 'location_id' => $this->loc1->id, 'quantity' => 10.0000]);
+
+        $rc2 = StockReceipt::create(['receipt_number' => 'RC-SORT-ZZZ', 'date' => '2026-08-05', 'supplier_id' => $this->supplier->id, 'status' => 'POSTED', 'posted_at' => '2026-08-05 12:00:00', 'created_by' => $this->admin->id]);
+        StockReceiptItem::create(['stock_receipt_id' => $rc2->id, 'product_id' => $this->product->id, 'location_id' => $this->loc1->id, 'quantity' => 20.0000]);
+
+        // ASC sort by receipt_number
+        $resAsc = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-receipts/export?sort_by=receipt_number&sort_order=asc')
+            ->assertStatus(200);
+        $contentAsc = $resAsc->streamedContent();
+        $posAAA = strpos($contentAsc, 'RC-SORT-AAA');
+        $posZZZ = strpos($contentAsc, 'RC-SORT-ZZZ');
+        $this->assertLessThan($posZZZ, $posAAA);
+
+        // DESC sort by receipt_number
+        $resDesc = $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/stock-receipts/export?sort_by=receipt_number&sort_order=desc')
+            ->assertStatus(200);
+        $contentDesc = $resDesc->streamedContent();
+        $posAAA2 = strpos($contentDesc, 'RC-SORT-AAA');
+        $posZZZ2 = strpos($contentDesc, 'RC-SORT-ZZZ');
+        $this->assertLessThan($posAAA2, $posZZZ2);
+    }
+
+    public function test_exports_do_not_trigger_lazy_loading()
+    {
+        Model::preventLazyLoading(true);
+
+        $endpoints = [
+            '/api/v1/reports/inventory-balances/export',
+            '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
+            '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
+            '/api/v1/reports/stock-receipts/export',
+            '/api/v1/reports/stock-issues/export',
+            '/api/v1/reports/stock-transfers/export',
+            '/api/v1/reports/stock-adjustments/export',
+            '/api/v1/reports/stock-opnames/export',
+        ];
+
+        foreach ($endpoints as $url) {
+            $response = $this->actingAs($this->staffLoc1, 'sanctum')->get($url);
+            $response->assertStatus(200);
+            $response->streamedContent();
+        }
+
+        Model::preventLazyLoading(false);
     }
 
     public function test_low_stock_required_filter_validation()
@@ -393,7 +470,7 @@ class ReportCsvExportTest extends TestCase
 
         // Allowed location_id -> 200
         $this->actingAs($this->staffLoc1, 'sanctum')
-            ->get('/api/v1/reports/low-stock/export?location_id='.$this->loc1->id)
+            ->get('/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id)
             ->assertStatus(200);
     }
 
@@ -407,7 +484,7 @@ class ReportCsvExportTest extends TestCase
 
         // Exceeding 366 days date range -> 422
         $this->actingAs($this->staffLoc1, 'sanctum')
-            ->getJson('/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2024-01-01&end_date=2026-01-01')
+            ->getJson('/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2024-01-01&end_date=2026-01-01')
             ->assertStatus(422)
             ->assertJsonValidationErrors(['end_date']);
     }
@@ -497,13 +574,13 @@ class ReportCsvExportTest extends TestCase
 
         // JSON response count
         $jsonRes = $this->actingAs($this->staffLoc1, 'sanctum')
-            ->getJson('/api/v1/reports/stock-receipts?supplier_id='.$this->supplier->id)
+            ->getJson('/api/v1/reports/stock-receipts?supplier_id=' . $this->supplier->id)
             ->assertStatus(200);
         $jsonTotal = $jsonRes->json('pagination.total');
 
         // CSV response row count
         $csvRes = $this->actingAs($this->staffLoc1, 'sanctum')
-            ->get('/api/v1/reports/stock-receipts/export?supplier_id='.$this->supplier->id)
+            ->get('/api/v1/reports/stock-receipts/export?supplier_id=' . $this->supplier->id)
             ->assertStatus(200);
         $csvLines = explode("\n", trim($csvRes->streamedContent()));
         $csvDataRowCount = count($csvLines) - 1;
@@ -559,8 +636,8 @@ class ReportCsvExportTest extends TestCase
     {
         $endpoints = [
             '/api/v1/reports/inventory-balances/export?search=NONEXISTENT_SEARCH_TERM',
-            '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id.'&search=NONEXISTENT_SEARCH_TERM',
-            '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2020-01-01&end_date=2020-01-02',
+            '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id . '&search=NONEXISTENT_SEARCH_TERM',
+            '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2020-01-01&end_date=2020-01-02',
             '/api/v1/reports/stock-receipts/export?search=NONEXISTENT_SEARCH_TERM',
             '/api/v1/reports/stock-issues/export?search=NONEXISTENT_SEARCH_TERM',
             '/api/v1/reports/stock-transfers/export?search=NONEXISTENT_SEARCH_TERM',
@@ -586,8 +663,8 @@ class ReportCsvExportTest extends TestCase
 
         $endpoints = [
             'inventory-balances' => '/api/v1/reports/inventory-balances/export',
-            'low-stock' => '/api/v1/reports/low-stock/export?location_id='.$this->loc1->id,
-            'stock-card' => '/api/v1/reports/stock-card/export?product_id='.$this->product->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05',
+            'low-stock' => '/api/v1/reports/low-stock/export?location_id=' . $this->loc1->id,
+            'stock-card' => '/api/v1/reports/stock-card/export?product_id=' . $this->product->id . '&location_id=' . $this->loc1->id . '&start_date=2026-08-01&end_date=2026-08-05',
             'stock-receipts' => '/api/v1/reports/stock-receipts/export',
             'stock-issues' => '/api/v1/reports/stock-issues/export',
             'stock-transfers' => '/api/v1/reports/stock-transfers/export',
