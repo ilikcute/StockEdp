@@ -297,6 +297,7 @@ dan alur transaksi sudah diputuskan.
 - [x] Fase 8B2 — Frontend Transaction Reports
 - [x] Fase 8C1 — Backend CSV Export
 - [-] Fase 8C2 — Frontend CSV Export
+- [x] Fase 8C Final Audit
 - [x] Buat endpoint saldo stok per produk dan lokasi.
 - [x] Buat endpoint kartu stok dengan pagination.
 - [x] Buat filter periode, produk, kategori, lokasi, dan jenis movement.
