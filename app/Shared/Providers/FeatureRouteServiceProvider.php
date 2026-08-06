@@ -17,7 +17,7 @@ class FeatureRouteServiceProvider extends ServiceProvider
         }
 
         Route::prefix('api/v1')
-            ->middleware('api')
+            ->middleware(['api', 'throttle:api'])
             ->group(function () use ($featuresPath): void {
                 foreach (File::directories($featuresPath) as $featureDirectory) {
                     $routeFile = $featureDirectory.DIRECTORY_SEPARATOR.'Routes'.DIRECTORY_SEPARATOR.'api.php';

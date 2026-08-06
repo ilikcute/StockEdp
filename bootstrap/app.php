@@ -8,9 +8,12 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([
@@ -55,6 +58,28 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
+        $exceptions->render(function (TooManyRequestsHttpException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return ApiResponse::error(
+                message: 'Terlalu banyak permintaan. Silakan coba kembali nanti.',
+                status: 429,
+            )->withHeaders($exception->getHeaders());
+        });
+
+        $exceptions->render(function (ThrottleRequestsException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return ApiResponse::error(
+                message: 'Terlalu banyak permintaan. Silakan coba kembali nanti.',
+                status: 429,
+            )->withHeaders($exception->getHeaders());
+        });
+
         $exceptions->render(function (DomainException $exception, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
@@ -67,6 +92,14 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
+        $exceptions->render(function (HttpResponseException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return $exception->getResponse();
+        });
+
         $exceptions->render(function (Throwable $exception, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
@@ -76,9 +109,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ? $exception->getStatusCode()
                 : 500;
 
-            $message = $status >= 500
-                ? 'Terjadi kesalahan pada server.'
-                : ($exception->getMessage() ?: 'Permintaan tidak dapat diproses.');
+            $message = $status === 429
+                ? 'Terlalu banyak permintaan. Silakan coba kembali nanti.'
+                : ($status >= 500
+                    ? 'Terjadi kesalahan pada server.'
+                    : ($exception->getMessage() ?: 'Permintaan tidak dapat diproses.'));
 
             return ApiResponse::error(
                 message: $message,

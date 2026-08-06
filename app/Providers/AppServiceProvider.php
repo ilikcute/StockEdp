@@ -30,7 +30,11 @@ use App\Features\Supplier\Repositories\Contracts\SupplierRepositoryInterface;
 use App\Features\Supplier\Repositories\Eloquent\SupplierRepository;
 use App\Features\Unit\Repositories\Contracts\UnitRepositoryInterface;
 use App\Features\Unit\Repositories\Eloquent\UnitRepository;
+use App\Shared\Http\Responses\ApiResponse;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 
@@ -112,5 +116,17 @@ class AppServiceProvider extends ServiceProvider
                 return method_exists($user, 'hasPermissionTo') && $user->hasPermissionTo($permission);
             });
         }
+
+        // Daftarkan Named API Rate Limiter
+        RateLimiter::for('api', function (Request $request) {
+            $key = $request->user()?->getAuthIdentifier() ?? $request->ip();
+
+            return Limit::perMinute(60)->by((string) $key)->response(function (Request $request, array $headers) {
+                return ApiResponse::error(
+                    message: 'Terlalu banyak permintaan. Silakan coba kembali nanti.',
+                    status: 429,
+                )->withHeaders($headers);
+            });
+        });
     }
 }
