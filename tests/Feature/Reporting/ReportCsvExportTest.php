@@ -170,7 +170,8 @@ class ReportCsvExportTest extends TestCase
             'quantity' => '50.0000',
             'quantity_before' => '0.0000',
             'quantity_after' => '50.0000',
-            'occurred_at' => now(),
+            'occurred_at' => '2026-08-05 10:00:00',
+            'created_at' => '2026-08-05 10:00:00',
             'created_by' => $this->admin->id,
         ]);
 
@@ -214,7 +215,8 @@ class ReportCsvExportTest extends TestCase
             'quantity' => '10.0000',
             'quantity_before' => '0.0000',
             'quantity_after' => '10.0000',
-            'occurred_at' => now(),
+            'occurred_at' => '2026-08-05 10:00:00',
+            'created_at' => '2026-08-05 10:00:00',
             'created_by' => $this->admin->id,
         ]);
 
@@ -229,7 +231,8 @@ class ReportCsvExportTest extends TestCase
             'quantity' => '999.0000',
             'quantity_before' => '0.0000',
             'quantity_after' => '999.0000',
-            'occurred_at' => now(),
+            'occurred_at' => '2026-08-05 10:00:00',
+            'created_at' => '2026-08-05 10:00:00',
             'created_by' => $this->admin->id,
         ]);
 
