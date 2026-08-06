@@ -869,4 +869,111 @@ class ReportCsvExportTest extends TestCase
         // 10 items processed in stream with direct SQL join query should execute exactly 1 SQL query
         $this->assertLessThanOrEqual(5, $queryCount);
     }
+
+    public function test_inventory_balance_json_and_csv_accept_all_canonical_sort_fields(): void
+    {
+        InventoryBalance::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'quantity' => '10.0000',
+        ]);
+
+        $sortFields = [
+            'id',
+            'product_id',
+            'location_id',
+            'quantity',
+            'created_at',
+        ];
+
+        foreach ($sortFields as $sortField) {
+            $jsonResponse = $this
+                ->actingAs($this->staffLoc1, 'sanctum')
+                ->getJson(
+                    '/api/v1/reports/inventory-balances'
+                    .'?sort_by='.$sortField
+                    .'&sort_order=asc'
+                );
+
+            $csvResponse = $this
+                ->actingAs($this->staffLoc1, 'sanctum')
+                ->get(
+                    '/api/v1/reports/inventory-balances/export'
+                    .'?sort_by='.$sortField
+                    .'&sort_order=asc'
+                );
+
+            $jsonResponse->assertStatus(200);
+            $csvResponse->assertStatus(200);
+        }
+    }
+
+    public function test_low_stock_json_and_csv_accept_all_canonical_sort_fields(): void
+    {
+        InventoryBalance::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'quantity' => '10.0000',
+        ]);
+
+        $sortFields = [
+            'shortage_quantity',
+            'minimum_stock',
+            'on_hand_quantity',
+            'product_name',
+            'sku',
+        ];
+
+        foreach ($sortFields as $sortField) {
+            $query = http_build_query([
+                'location_id' => $this->loc1->id,
+                'sort_by' => $sortField,
+                'sort_order' => 'asc',
+            ]);
+
+            $jsonResponse = $this
+                ->actingAs($this->staffLoc1, 'sanctum')
+                ->getJson('/api/v1/reports/low-stock?'.$query);
+
+            $csvResponse = $this
+                ->actingAs($this->staffLoc1, 'sanctum')
+                ->get('/api/v1/reports/low-stock/export?'.$query);
+
+            $jsonResponse->assertStatus(200);
+            $csvResponse->assertStatus(200);
+        }
+    }
+
+    public function test_inventory_balance_json_and_csv_reject_noncanonical_sort_field(): void
+    {
+        $query = http_build_query([
+            'sort_by' => 'product_name',
+            'sort_order' => 'asc',
+        ]);
+
+        $this->actingAs($this->staffLoc1, 'sanctum')
+            ->getJson('/api/v1/reports/inventory-balances?'.$query)
+            ->assertStatus(422);
+
+        $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/inventory-balances/export?'.$query)
+            ->assertStatus(422);
+    }
+
+    public function test_low_stock_json_and_csv_reject_noncanonical_sort_field(): void
+    {
+        $query = http_build_query([
+            'location_id' => $this->loc1->id,
+            'sort_by' => 'id',
+            'sort_order' => 'asc',
+        ]);
+
+        $this->actingAs($this->staffLoc1, 'sanctum')
+            ->getJson('/api/v1/reports/low-stock?'.$query)
+            ->assertStatus(422);
+
+        $this->actingAs($this->staffLoc1, 'sanctum')
+            ->get('/api/v1/reports/low-stock/export?'.$query)
+            ->assertStatus(422);
+    }
 }
