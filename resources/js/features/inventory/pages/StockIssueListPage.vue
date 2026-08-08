@@ -97,7 +97,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
-          <tr v-if="store.loading && store.issues.data.length === 0">
+          <tr v-if="store.loading && (!store.issues?.data || store.issues.data.length === 0)">
             <td
               colspan="5"
               class="py-10 text-center text-sm text-gray-500"
@@ -105,7 +105,7 @@
               Memuat data...
             </td>
           </tr>
-          <tr v-else-if="store.issues.data.length === 0">
+          <tr v-else-if="!store.issues?.data || store.issues.data.length === 0">
             <td
               colspan="5"
               class="py-10 text-center text-sm text-gray-500"
@@ -114,7 +114,7 @@
             </td>
           </tr>
           <tr
-            v-for="item in store.issues.data"
+            v-for="item in (store.issues?.data || [])"
             :key="item.id"
           >
             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
@@ -153,16 +153,16 @@
     </div>
 
     <div
-      v-if="store.issues.meta && store.issues.meta.total > 0"
+      v-if="store.issues?.meta && store.issues.meta.total > 0"
       class="mt-4 flex items-center justify-between"
     >
       <p class="text-sm text-gray-700">
         Menampilkan
-        <span class="font-medium">{{ (store.issues.meta.current_page - 1) * store.issues.meta.per_page + 1 }}</span>
+        <span class="font-medium">{{ ((store.issues.meta.current_page || 1) - 1) * (store.issues.meta.per_page || 15) + 1 }}</span>
         sampai
-        <span class="font-medium">{{ Math.min(store.issues.meta.current_page * store.issues.meta.per_page, store.issues.meta.total) }}</span>
+        <span class="font-medium">{{ Math.min((store.issues.meta.current_page || 1) * (store.issues.meta.per_page || 15), store.issues.meta.total || 0) }}</span>
         dari
-        <span class="font-medium">{{ store.issues.meta.total }}</span>
+        <span class="font-medium">{{ store.issues.meta.total || 0 }}</span>
         data
       </p>
       <div class="flex gap-2">
