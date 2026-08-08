@@ -18,7 +18,23 @@ export const useStockReceiptStore = defineStore('stockReceipt', {
             this.error = null;
             try {
                 const response = await inventoryApi.getReceipts(params);
-                this.receipts = response.data.data;
+                const raw = response.data;
+                if (raw && Array.isArray(raw.data)) {
+                    this.receipts = {
+                        data: raw.data,
+                        meta: raw.meta || {},
+                    };
+                } else if (Array.isArray(raw)) {
+                    this.receipts = {
+                        data: raw,
+                        meta: {},
+                    };
+                } else {
+                    this.receipts = {
+                        data: [],
+                        meta: {},
+                    };
+                }
             } catch (error) {
                 this.error = error.response?.data?.message || 'Gagal memuat daftar dokumen penerimaan';
                 throw error;
