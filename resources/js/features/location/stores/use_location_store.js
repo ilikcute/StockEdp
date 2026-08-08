@@ -21,8 +21,13 @@ export const useLocationStore = defineStore('location', () => {
         error.value = null;
         try {
             const response = await locationApi.getAll(params);
-            items.value = response.data;
-            pagination.value = response.meta;
+            items.value = response.data || [];
+            pagination.value = response.meta || {
+                current_page: 1,
+                last_page: 1,
+                per_page: 15,
+                total: 0,
+            };
         } catch (err) {
             error.value = err.message || 'Gagal memuat data lokasi';
         } finally {
