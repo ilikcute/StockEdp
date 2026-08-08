@@ -18,7 +18,23 @@ export const useStockIssueStore = defineStore('stockIssue', {
             this.error = null;
             try {
                 const response = await inventoryApi.getIssues(params);
-                this.issues = response.data.data;
+                const raw = response.data;
+                if (raw && Array.isArray(raw.data)) {
+                    this.issues = {
+                        data: raw.data,
+                        meta: raw.meta || {},
+                    };
+                } else if (Array.isArray(raw)) {
+                    this.issues = {
+                        data: raw,
+                        meta: {},
+                    };
+                } else {
+                    this.issues = {
+                        data: [],
+                        meta: {},
+                    };
+                }
             } catch (error) {
                 this.error = error.response?.data?.message || 'Gagal memuat daftar dokumen pengeluaran';
                 throw error;
