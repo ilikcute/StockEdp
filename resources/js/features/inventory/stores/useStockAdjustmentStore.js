@@ -23,7 +23,23 @@ export const useStockAdjustmentStore = defineStore('stockAdjustment', {
             this.error = null;
             try {
                 const response = await stockAdjustmentApi.getAdjustments(params);
-                this.adjustments = response.data.data;
+                const raw = response.data;
+                if (raw && Array.isArray(raw.data)) {
+                    this.adjustments = {
+                        data: raw.data,
+                        meta: raw.meta || {},
+                    };
+                } else if (Array.isArray(raw)) {
+                    this.adjustments = {
+                        data: raw,
+                        meta: {},
+                    };
+                } else {
+                    this.adjustments = {
+                        data: [],
+                        meta: {},
+                    };
+                }
             } catch (error) {
                 const normalized = normalizeApiError(error);
                 this.error = normalized.message;
