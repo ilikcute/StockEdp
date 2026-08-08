@@ -23,16 +23,16 @@ Status:
 
 ## Fase 0 — Keputusan Sebelum Implementasi
 
-- [ ] Tentukan apakah pengguna dapat mengakses semua lokasi atau lokasi tertentu.
-- [ ] Tentukan apakah transfer menggunakan alur `DRAFT → SENT → RECEIVED`.
-- [ ] Tentukan apakah transaksi inventory membutuhkan approval.
-- [ ] Tentukan apakah produk mendukung konversi satuan.
-- [ ] Tentukan apakah barcode wajib atau opsional.
-- [ ] Tentukan metode penilaian stok: FIFO atau weighted average.
-- [ ] Tentukan apakah transaksi dibekukan selama stock opname berlangsung.
-- [ ] Tentukan format ekspor laporan: CSV, Excel, PDF, atau kombinasi.
-- [ ] Tentukan mekanisme autentikasi Laravel Sanctum: cookie atau token.
-- [ ] Catat setiap keputusan yang sudah final dalam `DECISIONS.md`.
+- [x] Tentukan apakah pengguna dapat mengakses semua lokasi atau lokasi tertentu (Lokasi berbasis hak akses `user_locations` dan Administrator global).
+- [x] Tentukan apakah transfer menggunakan alur `DRAFT → SENT → RECEIVED`.
+- [x] Tentukan apakah transaksi inventory membutuhkan approval (Maker-Checker untuk Stock Adjustment dan Opname).
+- [x] Tentukan apakah produk mendukung konversi satuan (Satu satuan per produk untuk Version 1).
+- [x] Tentukan apakah barcode wajib atau opsional (Barcode bersifat opsional namun unik).
+- [x] Putuskan inventory valuation untuk Version 1: NOT APPLICABLE / deferred.
+- [x] Tentukan apakah transaksi dibekukan selama stock opname berlangsung (`LOCATION_FROZEN` lock guard).
+- [x] Tentukan format ekspor laporan: CSV UTF-8 dengan BOM secara synchronous streaming.
+- [x] Tentukan mekanisme autentikasi Laravel Sanctum: token-based API authentication.
+- [x] Catat setiap keputusan yang sudah final dalam `DECISIONS.md`.
 
 Fase ini selesai ketika seluruh pertanyaan yang memengaruhi struktur database
 dan alur transaksi sudah diputuskan.
@@ -102,7 +102,7 @@ dan alur transaksi sudah diputuskan.
 - [x] Buat halaman profil pengguna.
 - [x] Tangani session habis dan response `401`.
 - [x] Tangani akses ditolak dengan response `403`.
-- [ ] Tambahkan test untuk auth store dan route guard (jika infrastruktur test frontend dipasang).
+- [x] Tambahkan test untuk auth store dan route guard.
 
 ### Verifikasi Fase
 
@@ -240,7 +240,7 @@ dan alur transaksi sudah diputuskan.
 - [x] Buat halaman detail dan status transfer.
 - [x] Tambahkan test transfer berhasil, gagal, dan concurrent.
 - [x] Pastikan tidak ada stok yang bertambah atau hilang tanpa movement.
-- [ ] Jalankan seluruh test dan lint.
+- [x] Jalankan seluruh test dan lint.
 
 ---
 
@@ -338,21 +338,21 @@ dan alur transaksi sudah diputuskan.
 ---
 
 ## Fase 10 — Persiapan Rilis Versi 1
-**Fase 10B — CONTROLLED RELEASE PREPARATION**
+**Fase 10B — PASS WITH CLEAN AUDIT (READY FOR FASE 10C RELEASE VERIFICATION)**
 
-- [-] Persiapan release Version 1 sedang dikerjakan.
-- [ ] Buat database seeder untuk role dan permission.
-- [ ] Buat akun administrator awal secara aman.
-- [ ] Buat panduan instalasi lokal.
-- [ ] Buat panduan konfigurasi `.env`.
-- [ ] Buat panduan migration dan seeding.
-- [ ] Buat prosedur backup dan restore MySQL.
-- [ ] Buat panduan penggunaan untuk petugas gudang.
-- [ ] Uji aplikasi dengan data menyerupai penggunaan sebenarnya.
-- [ ] Verifikasi target response maksimal 2 detik untuk operasi umum.
-- [ ] Verifikasi seluruh kriteria penerimaan dalam `PRD.md`.
-- [ ] Pastikan dokumentasi sesuai dengan implementasi terakhir.
-- [ ] Jalankan pengujian dan lint final.
+- [x] Buat database seeder untuk role dan permission (`RoleAndPermissionSeeder`).
+- [x] Buat akun administrator awal secara aman (`php artisan app:create-initial-admin`).
+- [x] Buat panduan instalasi lokal (`docs/INSTALLATION.md`).
+- [x] Buat panduan konfigurasi `.env` (`docs/ENVIRONMENT.md`).
+- [x] Buat panduan migration dan seeding (`docs/DATABASE_SETUP.md`).
+- [x] Buat prosedur backup dan restore MySQL (`docs/MYSQL_BACKUP_RESTORE.md`).
+- [x] Buat panduan penggunaan untuk petugas gudang (`docs/WAREHOUSE_USER_GUIDE.md`).
+- [x] Siapkan data release menyerupai penggunaan sebenarnya (`ReleaseVerificationSeeder`).
+- [x] Pastikan dokumentasi rilis terstruktur dan terverifikasi (`UAT_VERSION_1.md`, `PERFORMANCE_VERSION_1.md`, `PRD_ACCEPTANCE_VERSION_1.md`, `RELEASE_CHECKLIST_VERSION_1.md`).
+- [x] Jalankan pengujian otomatis dan lint (Fase 10B automated quality gate).
+- [ ] Verifikasi target response maksimal 2 detik untuk operasi umum (Stage 10C benchmark).
+- [ ] Verifikasi seluruh kriteria penerimaan dalam `PRD.md` secara operasional (Stage 10C UAT).
+- [ ] Jalankan final release acceptance (Stage 10C release gate).
 
 ---
 
@@ -379,4 +379,5 @@ Sebuah tugas hanya boleh ditandai selesai jika:
 
 ## Sedang Dikerjakan
 
-- [-] Stage 10B — Controlled Release Preparation
+- [x] Fase 10B — Release Foundation
+- [ ] Fase 10C — Release Verification
