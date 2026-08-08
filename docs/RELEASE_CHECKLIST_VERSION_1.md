@@ -26,6 +26,7 @@ Dokumen ini melacak kesiapan teknis, keamanan, integritas data, serta kelengkapa
 
 ### D. Pengujian Otomatis & Quality Gates
 - [x] Focused tests (`RoleAndPermissionSeederTest`, `CreateInitialAdminCommandTest`, `ReleaseDatasetIntegrityTest`, `RateLimitingTest`, `BalanceMovementReconciliationTest`, `TransactionRollbackTest`) 100% PASS.
+- [x] `ReleaseDatasetIntegrityTest` diverifikasi ulang **PASS 56/56** (104.948 assertion) pada database rehearsal terpisah (`InventorySystemRehearsal`) — 08-Agu-2026.
 - [x] Parity discovery Artisan vs PHPUnit terkonfirmasi identik.
 - [x] Executed full PHPUnit suite 100% PASS (0 failure, 0 error).
 - [x] Format backend Pint lulus 0 issue (`./vendor/bin/pint --test`).

@@ -5,7 +5,7 @@ Dokumen ini memetakan seluruh kriteria penerimaan dari `PRD.md` terhadap kode im
 ---
 
 ## 1. Status Keseluruhan Versi 1
-Status: **NOT VERIFIED — Stage 10C pending**
+Status: **SEBAGIAN VERIFIED — Release Verification Suite PASS 56/56 (08-Agu-2026); Stage 10C manual & performance pending**
 
 ---
 
@@ -28,7 +28,7 @@ Status: **NOT VERIFIED — Stage 10C pending**
 | **13. Operasi Umum Selesai < 60 Detik** | Application workflow design | Automated feature tests | Operational Drill | **NOT VERIFIED** |
 | **14. Response Time API <= 2000 ms** | Optimized Indexing & Cursor Streaming | Benchmark script | Performance Measurement Drill | **NOT VERIFIED** |
 | **15. Backup & Restore Drill** | `mysqldump` & SQL import script | N/A | Database Rehearsal Drill | **NOT VERIFIED** |
-| **16. Production-like Rehearsal** | Seeder & Environment Guard | `ReleaseDatasetIntegrityTest` | Rehearsal Execution Drill | **NOT VERIFIED** |
+| **16. Production-like Rehearsal** | Seeder & Environment Guard | `ReleaseDatasetIntegrityTest` **PASS 56/56** pada DB rehearsal bersih | Rehearsal Execution Drill | **PASS — AUTOMATED** |
 | **17. Format Code Backend (`Pint`)** | `./vendor/bin/pint --test` | Laravel Pint Check | N/A | **PASS — AUTOMATED** |
 | **18. Format Code Frontend (`ESLint`)** | `npm run lint` | ESLint Zero-Warning Check | N/A | **PASS — AUTOMATED** |
 | **19. Inventory Valuation / Accounting** | Scope Deferred to Version 2 | N/A | N/A | **NOT APPLICABLE** |
