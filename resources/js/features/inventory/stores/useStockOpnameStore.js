@@ -50,7 +50,23 @@ export const useStockOpnameStore = defineStore('stockOpname', {
             this.error = null;
             try {
                 const response = await stockOpnameApi.getOpnames(params);
-                this.opnames = response.data.data;
+                const raw = response.data;
+                if (raw && Array.isArray(raw.data)) {
+                    this.opnames = {
+                        data: raw.data,
+                        meta: raw.meta || {},
+                    };
+                } else if (Array.isArray(raw)) {
+                    this.opnames = {
+                        data: raw,
+                        meta: {},
+                    };
+                } else {
+                    this.opnames = {
+                        data: [],
+                        meta: {},
+                    };
+                }
             } catch (error) {
                 const normalized = normalizeApiError(error);
                 this.error = normalized.message;
