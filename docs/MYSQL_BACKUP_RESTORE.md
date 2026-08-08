@@ -76,3 +76,21 @@ Jalankan query verifikasi pada database restore test:
    ```powershell
    mysql -u root -p -e "DROP DATABASE stockedp_restore_test;"
    ```
+
+---
+
+## 3. Catatan Bukti Verifikasi Pemulihan Data (Stage 10C-1 Verification Record)
+
+- **Tanggal Eksekusi**: 08 Agustus 2026
+- **Database Sumber Rehearsal**: `stockedp_release_rehearsal`
+- **Database Target Restore**: `stockedp_release_restore_test`
+- **Backup Command Exit Code**: `0`
+- **Restore Command Exit Code**: `0`
+- **Ukuran File Backup**: 3.624.538 bytes (~3,62 MB)
+- **Checksum SHA-256 Backup**: `64E9A5031884E3B16C605E508CA95B29A44289C19A54714C2BCD9B77E2CCEBBD`
+- **Status Paritas Data (Source vs Restore)**: **PASS (100% Identik, Delta = 0 pada seluruh 22 tabel data & pivot)**
+- **Status Rilis Verifier (`ReleaseVerificationSeeder`)**: **PASS (Dataset complete & valid, 0 duplicate, 0 row growth)**
+- **Status Paritas RBAC (`roles`, `permissions`, `permission_role`, `role_user`)**: **PASS (3 roles, 64 permissions, 135 pivots, 21 role_user, 0 tuple difference)**
+- **Status Paritas Freeze Locks (`inventory_location_locks`)**: **PASS (5/5 locks matched, 0 orphan, 0 duplicate)**
+- **Status Administrator Awal (`rehearsal_admin`)**: **PASS (is_active=1, role=ADMIN, Bcrypt password hash verified)**
+- **Hasil Akhir Gate**: **FASE 10C-1 — PASS WITH CLEAN RECOVERABILITY AUDIT**
