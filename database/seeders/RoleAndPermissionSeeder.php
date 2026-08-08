@@ -13,17 +13,17 @@ class RoleAndPermissionSeeder extends Seeder
     public function run(): void
     {
         // 1. Buat Roles
-        $adminRole = Role::firstOrCreate(
+        $adminRole = Role::updateOrCreate(
             ['code' => RoleCode::ADMIN->value],
             ['name' => RoleCode::ADMIN->label(), 'description' => 'Akses penuh ke seluruh sistem']
         );
 
-        $warehouseRole = Role::firstOrCreate(
+        $warehouseRole = Role::updateOrCreate(
             ['code' => RoleCode::WAREHOUSE_OFFICER->value],
             ['name' => RoleCode::WAREHOUSE_OFFICER->label(), 'description' => 'Petugas operasional gudang']
         );
 
-        $supervisorRole = Role::firstOrCreate(
+        $supervisorRole = Role::updateOrCreate(
             ['code' => RoleCode::INVENTORY_SUPERVISOR->value],
             ['name' => RoleCode::INVENTORY_SUPERVISOR->label(), 'description' => 'Supervisor pemeriksaan & rekonsiliasi stok']
         );
@@ -109,7 +109,7 @@ class RoleAndPermissionSeeder extends Seeder
         $permissionModels = [];
         foreach ($permissions as $code => $name) {
             $group = explode('.', $code)[0];
-            $permissionModels[$code] = Permission::firstOrCreate(
+            $permissionModels[$code] = Permission::updateOrCreate(
                 ['code' => $code],
                 ['name' => $name, 'group' => $group]
             );
