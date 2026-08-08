@@ -307,37 +307,40 @@ dan alur transaksi sudah diputuskan.
 - [x] Buat laporan transfer.
 - [x] Buat laporan adjustment.
 - [x] Buat laporan hasil stock opname.
-- [ ] Implementasikan ekspor sesuai format yang telah disetujui.
-- [ ] Buat halaman saldo stok.
-- [ ] Buat halaman kartu stok.
-- [ ] Buat halaman laporan dan filter.
+- [x] Implementasikan ekspor sesuai format yang telah disetujui.
+- [x] Buat halaman saldo stok.
+- [x] Buat halaman kartu stok.
+- [x] Buat halaman laporan dan filter.
 - [x] Pastikan query laporan menggunakan index yang sesuai.
-- [ ] Tambahkan test filter, pagination, authorization, dan ekspor.
-- [ ] Jalankan seluruh test dan lint.
+- [x] Tambahkan test filter, pagination, authorization, dan ekspor.
+- [x] Jalankan seluruh test dan lint.
 
 ---
 
 ## Fase 9 — Audit, Keamanan, dan Stabilitas
+**Fase 9 — PASS WITH CLEAN AUDIT**
 
-- [ ] Audit seluruh endpoint untuk authentication dan authorization.
-- [ ] Audit seluruh Form Request dan domain validation.
-- [ ] Audit mass assignment pada Model.
-- [ ] Audit query untuk masalah N+1.
-- [ ] Audit transaksi stok untuk race condition.
-- [ ] Audit kemungkinan duplicate submission.
-- [ ] Audit penggunaan decimal dan larangan float.
-- [ ] Audit data sensitif pada log dan response API.
-- [ ] Pastikan `.env` tidak masuk repository.
-- [ ] Pastikan tidak ada secret dalam variable `VITE_*`.
-- [ ] Tambahkan rate limiting pada endpoint yang diperlukan.
-- [ ] Uji seluruh rollback transaksi.
-- [ ] Uji saldo terhadap akumulasi stock movement.
-- [ ] Jalankan seluruh test dan lint.
+- [x] Audit seluruh endpoint untuk authentication dan authorization.
+- [x] Audit seluruh Form Request dan domain validation.
+- [x] Audit mass assignment pada Model.
+- [x] Audit query untuk masalah N+1.
+- [x] Audit transaksi stok untuk race condition.
+- [x] Audit kemungkinan duplicate submission.
+- [x] Audit penggunaan decimal dan larangan float.
+- [x] Audit data sensitif pada log dan response API.
+- [x] Pastikan `.env` tidak masuk repository.
+- [x] Pastikan tidak ada secret dalam variable `VITE_*`.
+- [x] Tambahkan rate limiting pada endpoint yang diperlukan.
+- [x] Uji seluruh rollback transaksi.
+- [x] Uji saldo terhadap akumulasi stock movement.
+- [x] Jalankan seluruh test dan lint.
 
 ---
 
 ## Fase 10 — Persiapan Rilis Versi 1
+**Fase 10B — CONTROLLED RELEASE PREPARATION**
 
+- [-] Persiapan release Version 1 sedang dikerjakan.
 - [ ] Buat database seeder untuk role dan permission.
 - [ ] Buat akun administrator awal secara aman.
 - [ ] Buat panduan instalasi lokal.
@@ -376,5 +379,4 @@ Sebuah tugas hanya boleh ditandai selesai jika:
 
 ## Sedang Dikerjakan
 
-- [x] Fase 8B1 — Frontend Reporting Foundation, Inventory Balance, Low Stock, dan Stock Card (PASS WITH CLEAN AUDIT)
-- [-] Fase 8B2 — HOLD: Corrective Action in Progress
+- [-] Stage 10B — Controlled Release Preparation
