@@ -83,7 +83,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
-          <tr v-if="store.loadingList && store.opnames.data.length === 0">
+          <tr v-if="store.loadingList && (!store.opnames?.data || store.opnames.data.length === 0)">
             <td
               colspan="6"
               class="py-10 text-center text-sm text-gray-500"
@@ -91,7 +91,7 @@
               Memuat data...
             </td>
           </tr>
-          <tr v-else-if="store.opnames.data.length === 0">
+          <tr v-else-if="!store.opnames?.data || store.opnames.data.length === 0">
             <td
               colspan="6"
               class="py-10 text-center text-sm text-gray-500"
@@ -100,7 +100,7 @@
             </td>
           </tr>
           <tr
-            v-for="row in store.opnames.data"
+            v-for="row in (store.opnames?.data || [])"
             :key="row.id"
           >
             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 font-mono">
