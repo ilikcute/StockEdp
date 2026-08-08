@@ -23,7 +23,23 @@ export const useStockTransferStore = defineStore('stockTransfer', {
             this.error = null;
             try {
                 const response = await inventoryApi.getTransfers(params);
-                this.transfers = response.data.data;
+                const raw = response.data;
+                if (raw && Array.isArray(raw.data)) {
+                    this.transfers = {
+                        data: raw.data,
+                        meta: raw.meta || {},
+                    };
+                } else if (Array.isArray(raw)) {
+                    this.transfers = {
+                        data: raw,
+                        meta: {},
+                    };
+                } else {
+                    this.transfers = {
+                        data: [],
+                        meta: {},
+                    };
+                }
             } catch (error) {
                 const normalized = normalizeApiError(error);
                 this.error = normalized.message;
