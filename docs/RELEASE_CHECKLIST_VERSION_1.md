@@ -15,7 +15,7 @@ Dokumen ini melacak kesiapan teknis, keamanan, integritas data, serta kelengkapa
 - [x] Migration skema database berjalan lancar (`php artisan migrate`).
 - [x] Role dan Permission Seeder bersifat deterministik & konvergen (`RoleAndPermissionSeeder`).
 - [x] Command interaktif pembuatan administrator awal tersedia dan teruji (`php artisan app:create-initial-admin`).
-- [ ] Prosedur restore drill pada database uji terpisah berhasil dieksekusi (**Stage 10C**).
+- [x] Prosedur restore drill pada database uji terpisah berhasil dieksekusi (**Stage 10C-1**).
 - [x] Rekonsiliasi saldo vs movement pada dataset verifikasi terbukti presisi 100% via BCMath (`ReleaseDatasetIntegrityTest`).
 
 ### C. Proteksi Keamanan & Kontrak Error
