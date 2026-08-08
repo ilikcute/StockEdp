@@ -5,7 +5,7 @@ Dokumen ini memetakan seluruh kriteria penerimaan dari `PRD.md` terhadap kode im
 ---
 
 ## 1. Status Keseluruhan Versi 1
-Status: **STAGE 10C-2 CLOSED — Operational UAT 12/12 PASS (08-Agu-2026); Stage 10C-3 Performance Verification Pending**
+Status: **STAGE 10C-3 CLOSED — Performance & Operational Acceptance 100% PASS (08-Agu-2026); Stage 10C-4 Final Release Acceptance Pending**
 
 ---
 
@@ -25,10 +25,10 @@ Status: **STAGE 10C-2 CLOSED — Operational UAT 12/12 PASS (08-Agu-2026); Stage
 | **10. Filter Laporan & Ekspor CSV** | `ReportExportController`, `ReportCsvExportService` | `ReportCsvExportTest`, `RateLimitingTest` | Canonical UAT-08, UAT-09 | **PASS — VERIFIED** |
 | **11. Manual User Acceptance Test (UAT)** | Frontend Vue pages & user workflows | Unit / Feature Tests | Matriks UAT-01 s.d UAT-12 | **PASS — VERIFIED** |
 | **12. Responsive UI ($1280 \times 800$, $1024 \times 768$)** | CSS Layout & Viewport rules | Vite / ESLint | Canonical UAT-12 Viewport Audit | **PASS — VERIFIED** |
-| **13. Operasi Umum Selesai < 60 Detik** | Application workflow design | Automated feature tests | Stage 10C-3 Operational Timing Drill | **NOT VERIFIED — Stage 10C-3 Operational Timing** |
-| **14. Response Time API <= 2000 ms** | Optimized Indexing & Cursor Streaming | Benchmark script | Stage 10C-3 Performance Drill | **NOT VERIFIED — Stage 10C-3** |
+| **13. Operasi Umum Selesai < 60 Detik** | Application workflow design | Automated feature tests | Stage 10C-3 Operational Timing Drill | **PASS — VERIFIED (Max < 10.53s)** |
+| **14. Response Time API <= 2000 ms** | Optimized Indexing & Cursor Streaming | Benchmark script | Stage 10C-3 Performance Drill | **PASS — VERIFIED (Max <= 88.29ms)** |
 | **15. Backup & Restore Drill** | `mysqldump` & SQL import script | N/A | Stage 10C-1 Recoverability Drill | **PASS — VERIFIED** |
-| **16. Production-like Rehearsal** | Seeder & Environment Guard | `ReleaseDatasetIntegrityTest` **PASS 56/56** pada DB rehearsal bersih | Rehearsal Execution Drill | **PASS — VERIFIED** |
+| **16. Production-like Rehearsal** | Seeder & Environment Guard | `ReleaseDatasetIntegrityTest` **PASS 56/56** pada DB rehearsal bersih | Stage 10C-3 Rehearsal Execution | **PASS — VERIFIED** |
 | **17. Format Code Backend (`Pint`)** | `./vendor/bin/pint --test` | Laravel Pint Check | N/A | **PASS — AUTOMATED** |
 | **18. Format Code Frontend (`ESLint`)** | `npm run lint` | ESLint Zero-Warning Check | N/A | **PASS — AUTOMATED** |
 | **19. Inventory Valuation / Accounting** | Scope Deferred to Version 2 | N/A | N/A | **NOT APPLICABLE** |
