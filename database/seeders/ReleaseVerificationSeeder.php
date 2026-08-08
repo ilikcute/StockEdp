@@ -673,11 +673,7 @@ class ReleaseVerificationSeeder extends Seeder
             $this->command?->info("Release verification dataset seeded: {$totalMovementsCount} movements created.");
         };
 
-        if (DB::transactionLevel() > 0) {
-            $seedCallback();
-        } else {
-            DB::transaction($seedCallback);
-        }
+        DB::transaction($seedCallback);
     }
 
     private function pairBaseDate(
