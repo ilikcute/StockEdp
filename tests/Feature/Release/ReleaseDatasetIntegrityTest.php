@@ -203,7 +203,17 @@ class ReleaseDatasetIntegrityTest extends TestCase
 
     public function test_release_dataset_is_fully_rolled_back_when_generation_fails(): void
     {
+        $this->seed(RoleAndPermissionSeeder::class);
+
+        Location::where('code', 'like', 'REL-LOC-%')->delete();
+        Category::where('code', 'like', 'REL-CAT-%')->delete();
+        Unit::where('code', 'like', 'REL-UNT-%')->delete();
+        Supplier::where('code', 'like', 'REL-SUP-%')->delete();
         Product::where('sku', 'like', 'REL-SKU-%')->delete();
+        $relUserIds = User::where('username', 'like', 'rel_user_%')->pluck('id');
+        DB::table('user_locations')->whereIn('user_id', $relUserIds)->delete();
+        User::whereIn('id', $relUserIds)->delete();
+
         $caught = null;
 
         StockOpname::creating(function (): void {
