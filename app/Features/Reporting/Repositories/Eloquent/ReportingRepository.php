@@ -18,6 +18,7 @@ use App\Features\Reporting\Helpers\DecimalQuantity;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
 use App\Features\Supplier\Models\Supplier;
 use App\Features\Unit\Models\Unit;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as ConcretePaginator;
 use Illuminate\Support\Collection;
