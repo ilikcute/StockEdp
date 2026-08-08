@@ -40,8 +40,8 @@ Dokumen ini melacak kesiapan teknis, keamanan, integritas data, serta kelengkapa
 - [x] `docs/DATABASE_SETUP.md`
 - [x] `docs/MYSQL_BACKUP_RESTORE.md`
 - [x] `docs/WAREHOUSE_USER_GUIDE.md`
-- [x] `docs/UAT_VERSION_1.md` (Terstruktur; Siap dieksekusi pada Stage 10C)
-- [x] `docs/PERFORMANCE_VERSION_1.md` (Terstruktur; Siap dieksekusi pada Stage 10C)
+- [x] `docs/UAT_VERSION_1.md` (Terstruktur; **EXECUTED — 12/12 CANONICAL SCENARIOS PASS**)
+- [x] `docs/PERFORMANCE_VERSION_1.md` (Terstruktur; Siap dieksekusi pada Stage 10C-3)
 - [x] `docs/PRD_ACCEPTANCE_VERSION_1.md`
 - [x] `docs/RELEASE_CHECKLIST_VERSION_1.md`
 - [x] Navigasi `README.md` terupdate menyambungkan seluruh dokumen resmi.
