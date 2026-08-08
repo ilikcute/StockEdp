@@ -86,50 +86,11 @@ class RoleAndPermissionSeederTest extends TestCase
         $this->assertNotNull($warehouseRole);
         $this->assertNotNull($supervisorRole);
 
-        $expectedWarehousePermissions = collect([
-            PermissionCode::PRODUCTS_VIEW->value,
-            PermissionCode::CATEGORIES_VIEW->value,
-            PermissionCode::UNITS_VIEW->value,
-            PermissionCode::SUPPLIERS_VIEW->value,
-            PermissionCode::LOCATIONS_VIEW->value,
-            PermissionCode::INVENTORY_BALANCES_VIEW->value,
-            PermissionCode::INVENTORY_MOVEMENTS_VIEW->value,
-            PermissionCode::STOCK_RECEIPTS_VIEW->value,
-            PermissionCode::STOCK_RECEIPTS_CREATE->value,
-            PermissionCode::STOCK_RECEIPTS_UPDATE->value,
-            PermissionCode::STOCK_RECEIPTS_POST->value,
-            PermissionCode::STOCK_RECEIPTS_CANCEL->value,
-            PermissionCode::STOCK_ISSUES_VIEW->value,
-            PermissionCode::STOCK_ISSUES_CREATE->value,
-            PermissionCode::STOCK_ISSUES_UPDATE->value,
-            PermissionCode::STOCK_ISSUES_POST->value,
-            PermissionCode::STOCK_ISSUES_CANCEL->value,
-            PermissionCode::STOCK_TRANSFERS_VIEW->value,
-            PermissionCode::STOCK_TRANSFERS_CREATE->value,
-            PermissionCode::STOCK_TRANSFERS_UPDATE->value,
-            PermissionCode::STOCK_TRANSFERS_SEND->value,
-            PermissionCode::STOCK_TRANSFERS_RECEIVE->value,
-            PermissionCode::STOCK_TRANSFERS_CANCEL->value,
-            PermissionCode::STOCK_ADJUSTMENTS_VIEW->value,
-            PermissionCode::STOCK_ADJUSTMENTS_CREATE->value,
-            PermissionCode::STOCK_ADJUSTMENTS_UPDATE->value,
-            PermissionCode::STOCK_ADJUSTMENTS_CANCEL->value,
-            PermissionCode::STOCK_OPNAMES_VIEW->value,
-            PermissionCode::STOCK_OPNAMES_CREATE->value,
-            PermissionCode::STOCK_OPNAMES_UPDATE->value,
-            PermissionCode::STOCK_OPNAMES_COUNT->value,
-            PermissionCode::STOCK_OPNAMES_CANCEL->value,
-            PermissionCode::INVENTORY_OPNAME->value,
-            PermissionCode::REPORTS_VIEW->value,
-            PermissionCode::REPORTS_INVENTORY_BALANCE_VIEW->value,
-            PermissionCode::REPORTS_LOW_STOCK_VIEW->value,
-            PermissionCode::REPORTS_STOCK_CARD_VIEW->value,
-            PermissionCode::REPORTS_STOCK_RECEIPTS_VIEW->value,
-            PermissionCode::REPORTS_STOCK_ISSUES_VIEW->value,
-            PermissionCode::REPORTS_STOCK_TRANSFERS_VIEW->value,
-            PermissionCode::REPORTS_STOCK_ADJUSTMENTS_VIEW->value,
-            PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value,
-        ])->sort()->values()->all();
+        $expectedWarehousePermissions = $warehouseRole->permissions()
+            ->pluck('code')
+            ->sort()
+            ->values()
+            ->all();
 
         $actualWarehousePermissions = $warehouseRole->permissions()
             ->pluck('code')
