@@ -238,39 +238,39 @@
     </div>
 
     <div
-      v-if="store.pagination.total > 0"
+      v-if="store.pagination?.total > 0"
       class="mt-4 flex items-center justify-between"
     >
       <p class="text-sm text-gray-700">
         Menampilkan
-        <span class="font-medium">{{ (store.pagination.current_page - 1) * store.pagination.per_page + 1 }}</span>
+        <span class="font-medium">{{ ((store.pagination?.current_page || 1) - 1) * (store.pagination?.per_page || 15) + 1 }}</span>
         sampai
-        <span class="font-medium">{{ Math.min(store.pagination.current_page * store.pagination.per_page, store.pagination.total) }}</span>
+        <span class="font-medium">{{ Math.min((store.pagination?.current_page || 1) * (store.pagination?.per_page || 15), store.pagination?.total || 0) }}</span>
         dari
-        <span class="font-medium">{{ store.pagination.total }}</span>
+        <span class="font-medium">{{ store.pagination?.total || 0 }}</span>
         data
       </p>
       <div class="flex gap-2">
         <button
           class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.pagination.current_page === 1"
-          @click="changePage(store.pagination.current_page - 1)"
+          :disabled="(store.pagination?.current_page || 1) === 1"
+          @click="changePage((store.pagination?.current_page || 1) - 1)"
         >
           &laquo;
         </button>
         <button
-          v-for="page in store.pagination.last_page"
+          v-for="page in (store.pagination?.last_page || 1)"
           :key="page"
           class="px-3 py-1 text-sm rounded border"
-          :class="page === store.pagination.current_page ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'"
+          :class="page === (store.pagination?.current_page || 1) ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'"
           @click="changePage(page)"
         >
           {{ page }}
         </button>
         <button
           class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.pagination.current_page === store.pagination.last_page"
-          @click="changePage(store.pagination.current_page + 1)"
+          :disabled="(store.pagination?.current_page || 1) === (store.pagination?.last_page || 1)"
+          @click="changePage((store.pagination?.current_page || 1) + 1)"
         >
           &raquo;
         </button>
@@ -362,7 +362,7 @@ const fetchData = (page = 1) => {
 };
 
 const changePage = (page) => {
-    if (page >= 1 && page <= store.pagination.last_page) fetchData(page);
+    if (page >= 1 && page <= (store.pagination?.last_page || 1)) fetchData(page);
 };
 
 const openCreateModal = () => {
