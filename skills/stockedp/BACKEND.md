@@ -301,3 +301,14 @@ Reconciliation       : 5 / 55,028
 ```
 
 Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang wajib adalah tidak ada unexplained regression.
+
+## 16. Master Data Bulk Import (Fase 11A)
+
+- Entitas didukung: `products`, `categories`, `units`, `locations`.
+- Format: CSV UTF-8 native (`SplFileObject` / `fgetcsv`) dengan BOM support dan limit 5.000 baris.
+- Kontrak: **CREATE ONLY** (duplikat di DB atau file ditolak), **All-or-Nothing** transaksional.
+- Verifikasi: SHA256 checksum mismatch ditolak dengan HTTP 409.
+- Location import: memicu `LocationObserver` (`inventory_location_locks`), tanpa penugasan otomatis ke `user_locations`.
+- Product import: resolusi kode kategori & satuan secara batch, preservasi barcode string (termasuk leading zero), minimum stock decimal 4 digit (`0.0000`) tanpa float.
+- Tidak ada mutasi persediaan atau perubahan saldo stok yang terjadi.
+

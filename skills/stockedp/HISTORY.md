@@ -250,3 +250,13 @@ Important discovery:
 - `.env.example` historically used `InventorySystem`, inconsistent with release docs using `stockedp`;
 - `DatabaseSeeder` historically creates an admin factory user with test default password, so `migrate:fresh --seed` is not release bootstrap;
 - release bootstrap uses `migrate`, `RoleAndPermissionSeeder`, then `app:create-initial-admin`.
+
+## Fase 11A — Master Data Bulk Import (Products, Categories, Units & Locations)
+
+- Implemented bulk import for 4 master entities: Categories, Units, Locations, Products.
+- Full cycle: Template download → CSV Upload & Native Parsing (`SplFileObject`) → Backend Validation & Preview (max 20 rows) / Error Table → Transactional Commit (CREATE ONLY, All-or-Nothing, SHA256 checksum verification).
+- Reusable Vue 3 modal component `MasterDataImportModal.vue` integrated into 4 master pages with granular permissions (`{type}.import`).
+- `LocationObserver` triggered automatically to create `inventory_location_locks` without automatic `user_locations` assignment.
+- Product barcode leading zeros preserved as strings; `minimum_stock` maintained as decimal strings.
+- 0 stock movements or balance records mutated.
+

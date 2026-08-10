@@ -95,7 +95,16 @@ Invariant utama:
 
 Semua memiliki CSV export V1 dengan UTF-8 BOM, streamed response, header Indonesia, formula-injection protection, decimal passthrough, dan location scoping.
 
-## 7. Release Database
+## 7. Master Data CSV Bulk Import (Fase 11A)
+
+Mendukung bulk import data master via file CSV UTF-8 (Excel-compatible) dengan alur Template → Validate → Preview → Commit:
+- **Products**: resolusi kode kategori & satuan, barcode string, decimal minimum stock.
+- **Categories**: kode unik, nama.
+- **Units**: kode unik, nama, simbol.
+- **Locations**: kode unik, observer locks, tanpa penugasan user otomatis.
+- Dokumentasi detail: `docs/MASTER_DATA_IMPORT.md`, `skills/stockedp/BACKEND.md` (bagian 16), `skills/stockedp/FRONTEND.md` (bagian 16).
+
+## 8. Release Database
 
 Database operasional/release: **`stockedp`**.
 

@@ -728,3 +728,33 @@ refresh.
 4. **Indeks Database**:
    - Menambahkan indeks aditif `idx_stock_card_posted` (`product_id`, `location_id`, `created_at`, `id`) pada `stock_movements`.
    - Indeks `idx_stock_card` (`product_id`, `location_id`, `occurred_at`, `id`) tetap dipertahankan untuk kebutuhan query tanggal dokumen/operational.
+
+---
+
+## 2026-08-10 — Keputusan Desain Master Data Bulk Import (Fase 11A)
+
+**Keputusan:**
+
+1. **Format CSV UTF-8 Tanpa Dependency Baru**:
+   - Menggunakan format CSV berbasis native PHP (`SplFileObject` / `fgetcsv`) dengan dukungan UTF-8 BOM, standard escaping, CRLF/LF, dan limit 5.000 baris.
+   - Tidak menambahkan dependency pihak ketiga seperti `phpoffice/phpspreadsheet` atau `maatwebsite/excel`.
+2. **Kontrak CREATE ONLY**:
+   - Import hanya membuat data baru (tidak ada upsert, update, delete, atau replace).
+   - Data yang sudah ada di database atau kode/SKU/barcode duplikat di dalam file menghasilkan error validasi.
+3. **All-or-Nothing Transaksional**:
+   - Seluruh baris harus valid agar proses import dapat dikomit.
+   - Jika terdapat 1 baris error, seluruh proses import ditolak (0 data disimpan).
+4. **Verifikasi Checksum SHA256**:
+   - Endpoint commit memverifikasi `expected_sha256` untuk memastikan file yang dikomit identik dengan file yang telah divalidasi.
+5. **Resolusi Referensi Produk & Preservasi Tipe Data**:
+   - Produk menggunakan kode bisnis (`category_code`, `unit_code`) yang dipetakan ke ID internal secara batch.
+   - Barcode dipertahankan sebagai string murni (leading zero tidak terpotong).
+   - `minimum_stock` ditangani sebagai string desimal 4 digit (`0.0000`) tanpa casting `float`.
+6. **Infrastruktur Lokasi**:
+   - Import lokasi memicu `LocationObserver` untuk pembentukan row `inventory_location_locks`.
+   - Tidak ada penugasan otomatis ke `user_locations` (`NEW_LOCATIONS_REQUIRE_MANUAL_ADMIN_ASSIGNMENT`).
+7. **Isolasi Mutasi Persediaan**:
+   - Master data bulk import tidak membuat saldo stok (`inventory_balances`) dan tidak membuat mutasi persediaan (`stock_movements`).
+
+**Alasan:**  
+Menjaga konsistensi data master, mencegah race condition atau modifikasi file yang tidak disengaja, dan memastikan integritas saldo stok tetap terjaga tanpa efek samping.

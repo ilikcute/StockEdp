@@ -9,11 +9,21 @@
           Kelola daftar lokasi penyimpanan barang.
         </p>
       </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-2">
+        <button
+          v-if="hasPermission('locations.import')"
+          id="btn-import-location"
+          type="button"
+          class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto cursor-pointer"
+          @click="isImportModalOpen = true"
+        >
+          📥 Import CSV
+        </button>
         <button 
           v-if="hasPermission('locations.create')"
+          id="btn-create-location"
           type="button" 
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto cursor-pointer"
           @click="openCreateModal"
         >
           Tambah Lokasi
@@ -316,6 +326,14 @@
       @close="closeStatusModal" 
       @status-changed="fetchData" 
     />
+
+    <MasterDataImportModal
+      :show="isImportModalOpen"
+      type="locations"
+      title="Import Lokasi Masal"
+      @close="isImportModalOpen = false"
+      @imported="fetchData(1)"
+    />
   </div>
 </template>
 
@@ -325,6 +343,7 @@ import { useLocationStore } from '../stores/use_location_store';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import LocationFormModal from '../components/LocationFormModal.vue';
 import LocationStatusModal from '../components/LocationStatusModal.vue';
+import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';
 
 const store = useLocationStore();
 const authStore = useAuthStore();
@@ -343,6 +362,7 @@ const sortBy = ref('created_at');
 
 const isFormModalOpen = ref(false);
 const isStatusModalOpen = ref(false);
+const isImportModalOpen = ref(false);
 const selectedLocation = ref(null);
 
 const hasPermission = (permission) => {

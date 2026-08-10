@@ -386,3 +386,4 @@ Sebuah tugas hanya boleh ditandai selesai jika:
 - [x] Fase 10C-3 — Performance, Operational Timing & Concurrency Verification
 - [x] Fase 10C-4 — Final Version 1 Release Acceptance
 - [x] Fase 10D — Version 1 Independent Final Release Audit
+- [x] Fase 11A — Master Data Bulk Import (Products, Categories, Units & Locations: Template → Validate → Preview → Import)

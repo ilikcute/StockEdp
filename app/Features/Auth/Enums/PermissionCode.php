@@ -9,14 +9,17 @@ enum PermissionCode: string
     case PRODUCTS_CREATE = 'products.create';
     case PRODUCTS_UPDATE = 'products.update';
     case PRODUCTS_CHANGE_STATUS = 'products.change_status';
+    case PRODUCTS_IMPORT = 'products.import';
     case CATEGORIES_VIEW = 'categories.view';
     case CATEGORIES_CREATE = 'categories.create';
     case CATEGORIES_UPDATE = 'categories.update';
     case CATEGORIES_CHANGE_STATUS = 'categories.change_status';
+    case CATEGORIES_IMPORT = 'categories.import';
     case UNITS_VIEW = 'units.view';
     case UNITS_CREATE = 'units.create';
     case UNITS_UPDATE = 'units.update';
     case UNITS_CHANGE_STATUS = 'units.change_status';
+    case UNITS_IMPORT = 'units.import';
     case SUPPLIERS_VIEW = 'suppliers.view';
     case SUPPLIERS_CREATE = 'suppliers.create';
     case SUPPLIERS_UPDATE = 'suppliers.update';
@@ -25,6 +28,7 @@ enum PermissionCode: string
     case LOCATIONS_CREATE = 'locations.create';
     case LOCATIONS_UPDATE = 'locations.update';
     case LOCATIONS_CHANGE_STATUS = 'locations.change_status';
+    case LOCATIONS_IMPORT = 'locations.import';
 
     // Transactions
     case INVENTORY_BALANCES_VIEW = 'inventory.balances.view';

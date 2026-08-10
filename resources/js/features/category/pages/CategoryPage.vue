@@ -10,14 +10,24 @@
           Kelola kategori produk inventory
         </p>
       </div>
-      <button
-        v-if="authStore.hasPermission('categories.create')"
-        id="btn-create-category"
-        class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm cursor-pointer"
-        @click="openCreateModal"
-      >
-        Tambah Kategori
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          v-if="authStore.hasPermission('categories.import')"
+          id="btn-import-category"
+          class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors shadow-xs cursor-pointer"
+          @click="showImportModal = true"
+        >
+          📥 Import CSV
+        </button>
+        <button
+          v-if="authStore.hasPermission('categories.create')"
+          id="btn-create-category"
+          class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm cursor-pointer"
+          @click="openCreateModal"
+        >
+          Tambah Kategori
+        </button>
+      </div>
     </div>
 
     <!-- Success feedback -->
@@ -192,6 +202,14 @@
       @confirm="handleStatusConfirm"
       @cancel="showStatusModal = false"
     />
+
+    <MasterDataImportModal
+      :show="showImportModal"
+      type="categories"
+      title="Import Kategori Masal"
+      @close="showImportModal = false"
+      @imported="onImportSuccess"
+    />
   </div>
 </template>
 
@@ -202,6 +220,7 @@ import BaseError from '@shared/components/BaseError.vue';
 import BaseEmpty from '@shared/components/BaseEmpty.vue';
 import CategoryFormModal from '../components/CategoryFormModal.vue';
 import CategoryStatusModal from '../components/CategoryStatusModal.vue';
+import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';
 import { useCategoryStore } from '../stores/use_category_store.js';
 import { useAuthStore } from '../../auth/stores/use_auth_store.js';
 
@@ -212,6 +231,7 @@ const searchQuery = ref('');
 const filterActive = ref('');
 const currentPage = ref(1);
 const showFormModal = ref(false);
+const showImportModal = ref(false);
 const editingCategory = ref(null);
 const showStatusModal = ref(false);
 const statusCategory = ref(null);
@@ -293,5 +313,9 @@ async function handleStatusConfirm() {
     } catch {
         // Errors handled by store
     }
+}
+
+function onImportSuccess() {
+    loadCategories();
 }
 </script>

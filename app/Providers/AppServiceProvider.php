@@ -22,6 +22,8 @@ use App\Features\Inventory\Repositories\Eloquent\StockReceiptRepository;
 use App\Features\Inventory\Repositories\Eloquent\StockTransferRepository;
 use App\Features\Location\Repositories\Contracts\LocationRepositoryInterface;
 use App\Features\Location\Repositories\Eloquent\LocationRepository;
+use App\Features\MasterDataImport\Contracts\MasterDataImportReaderInterface;
+use App\Features\MasterDataImport\Readers\CsvMasterDataImportReader;
 use App\Features\Product\Repositories\Contracts\ProductRepositoryInterface;
 use App\Features\Product\Repositories\Eloquent\ProductRepository;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
@@ -85,6 +87,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             StockOpnameRepositoryInterface::class,
             StockOpnameRepository::class
+        );
+
+        $this->app->bind(
+            MasterDataImportReaderInterface::class,
+            CsvMasterDataImportReader::class
         );
     }
 

@@ -117,3 +117,10 @@ Minimal update ketika:
 - release status berubah;
 - V2 scope dimulai;
 - deployment production benar-benar dilakukan.
+
+## 9. Native XLSX Import Deferred (CSV Excel-Compatible Only)
+
+Pada Fase 11A, import masal master data difokuskan pada format CSV UTF-8 native tanpa dependensi pihak ketiga (`phpoffice/phpspreadsheet` / `maatwebsite/excel`).
+- File `.xlsx` langsung belum didukung (user harus menyimpan/export sebagai CSV UTF-8 terlebih dahulu).
+- Workflow CSV didesain kompatibel dengan Microsoft Excel (mendukung UTF-8 BOM, separator koma, dan CRLF).
+

@@ -9,11 +9,21 @@
           Kelola daftar produk, kategori, dan satuan.
         </p>
       </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-2">
+        <button
+          v-if="hasPermission('products.import')"
+          id="btn-import-product"
+          type="button"
+          class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
+          @click="isImportModalOpen = true"
+        >
+          📥 Import CSV
+        </button>
         <button
           v-if="hasPermission('products.create')"
+          id="btn-create-product"
           type="button"
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
           @click="openCreateModal"
         >
           Tambah Produk
@@ -291,6 +301,13 @@
       @close="closeStatusModal"
       @status-changed="fetchData"
     />
+    <MasterDataImportModal
+      :show="isImportModalOpen"
+      type="products"
+      title="Import Produk Masal"
+      @close="isImportModalOpen = false"
+      @imported="fetchData(1)"
+    />
   </div>
 </template>
 
@@ -300,6 +317,7 @@ import { useProductStore } from '../stores/use_product_store';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import ProductFormModal from '../components/ProductFormModal.vue';
 import ProductStatusModal from '../components/ProductStatusModal.vue';
+import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';
 import apiClient from '@/shared/api/api_client';
 
 const store = useProductStore();
@@ -313,6 +331,7 @@ const sortBy = ref('created_at');
 
 const isFormModalOpen = ref(false);
 const isStatusModalOpen = ref(false);
+const isImportModalOpen = ref(false);
 const selectedProduct = ref(null);
 
 const categories = ref([]);

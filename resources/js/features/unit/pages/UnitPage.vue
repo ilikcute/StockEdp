@@ -10,14 +10,24 @@
           Kelola satuan ukuran produk inventory
         </p>
       </div>
-      <button
-        v-if="authStore.hasPermission('units.create')"
-        id="btn-create-unit"
-        class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm cursor-pointer"
-        @click="openCreateModal"
-      >
-        Tambah Satuan
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          v-if="authStore.hasPermission('units.import')"
+          id="btn-import-unit"
+          class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors shadow-xs cursor-pointer"
+          @click="showImportModal = true"
+        >
+          📥 Import CSV
+        </button>
+        <button
+          v-if="authStore.hasPermission('units.create')"
+          id="btn-create-unit"
+          class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm cursor-pointer"
+          @click="openCreateModal"
+        >
+          Tambah Satuan
+        </button>
+      </div>
     </div>
 
     <!-- Success feedback -->
@@ -198,6 +208,14 @@
       @confirm="handleStatusConfirm"
       @cancel="showStatusModal = false"
     />
+
+    <MasterDataImportModal
+      :show="showImportModal"
+      type="units"
+      title="Import Satuan Masal"
+      @close="showImportModal = false"
+      @imported="onImportSuccess"
+    />
   </div>
 </template>
 
@@ -208,6 +226,7 @@ import BaseError from '@shared/components/BaseError.vue';
 import BaseEmpty from '@shared/components/BaseEmpty.vue';
 import UnitFormModal from '../components/UnitFormModal.vue';
 import UnitStatusModal from '../components/UnitStatusModal.vue';
+import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';
 import { useUnitStore } from '../stores/use_unit_store.js';
 import { useAuthStore } from '../../auth/stores/use_auth_store.js';
 
@@ -218,6 +237,7 @@ const searchQuery = ref('');
 const filterActive = ref('');
 const currentPage = ref(1);
 const showFormModal = ref(false);
+const showImportModal = ref(false);
 const editingUnit = ref(null);
 const showStatusModal = ref(false);
 const statusUnit = ref(null);
@@ -299,5 +319,9 @@ async function handleStatusConfirm() {
     } catch {
         // Errors handled by store
     }
+}
+
+function onImportSuccess() {
+    loadUnits();
 }
 </script>
