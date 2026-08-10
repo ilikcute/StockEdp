@@ -1,6 +1,6 @@
 # Checklist Kesiapan Rilis (Release Checklist Version 1)
 
-Dokumen ini melacak kesiapan teknis, keamanan, integritas data, serta kelengkapan dokumentasi untuk pelepasan Version 1 Release Candidate pada Sistem Inventory.
+Dokumen ini melacak kesiapan teknis, keamanan, integritas data, serta kelengkapan dokumentasi untuk pelepasan Version 1 Stable & Release Ready pada Sistem Inventory.
 
 ---
 
