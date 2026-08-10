@@ -1,6 +1,6 @@
 # Dokumentasi Fitur: Master Data Bulk Import
 
-Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data masal berbasis file CSV (UTF-8, Excel-compatible) untuk 4 entitas master data:
+Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data masal berbasis file CSV (UTF-8, Excel-compatible) untuk 4 entitas master data persediaan:
 1. **Kategori (Categories)**
 2. **Satuan (Units)**
 3. **Lokasi (Locations)**
@@ -24,15 +24,22 @@ Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data m
    - Backend memverifikasi SHA256 checksum antara file yang divalidasi dan file yang dikomit.
    - Jika file mengalami modifikasi setelah validasi awal, backend menolak proses dengan HTTP 409 `FILE_CHANGED_AFTER_VALIDATION`.
 
-4. **Preservasi String & Ketelitian Desimal**:
+4. **Preservasi String & Ketelitian Desimal Minimum Stock**:
    - `barcode` dipertahankan sebagai string murni termasuk leading zeros (contoh: `000123456789`).
-   - `minimum_stock` ditangani sebagai string desimal 4 digit (`0.0000`) tanpa casting float untuk menghindari rounding error.
+   - `minimum_stock` mengikuti kontrak model Product `DECIMAL(12,2)`: dinormalisasi murni via string/BCMath (`bcadd($val, '0', 2)`) tanpa PHP float casting. Nilai dengan lebih dari 2 digit pecahan (contoh `10.5000` atau `10.501`) ditolak dengan error `INVALID_MINIMUM_STOCK`.
+   - *Catatan*: Kuantitas mutasi/saldo persediaan tetap menggunakan `DECIMAL(14,4)`.
 
 5. **Infrastruktur Lokasi & Penguncian Stok**:
    - Import lokasi memicu `LocationObserver` secara otomatis untuk membuat row `inventory_location_locks` (`is_frozen = 0`).
    - Lokasi baru **tidak secara otomatis** ditugaskan ke user (`NEW_LOCATIONS_REQUIRE_MANUAL_ADMIN_ASSIGNMENT`).
 
-6. **Isolasi Saldo & Mutasi**:
+6. **Audit Fields Persistence**:
+   - Product: `created_by` = current user, `updated_by` = current user.
+   - Category: `created_by` = current user, `updated_by` = null pada create.
+   - Unit: `created_by` = current user, `updated_by` = null pada create.
+   - Location: `created_by` = current user, `updated_by` = null pada create.
+
+7. **Isolasi Saldo & Mutasi**:
    - Master data import tidak mengubah saldo stok (`inventory_balances`) dan tidak membuat mutasi stok (`stock_movements`).
 
 ---
@@ -66,13 +73,13 @@ Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data m
 ### Produk (`template_products.csv`)
 | Kolom | Wajib | Tipe / Panjang | Keterangan |
 |---|---|---|---|
-| `sku` | Ya | String(100), Upper | SKU unik produk |
+| `sku` | Ya | String(50), Upper | SKU unik produk (maks 50 karakter) |
 | `barcode` | Tidak | String(100) | Barcode unik (string, leading zero preserved) |
-| `name` | Ya | String(255) | Nama produk |
-| `description` | Tidak | String | Deskripsi produk |
+| `name` | Ya | String(150) | Nama produk (maks 150 karakter) |
+| `description` | Tidak | String(2000) | Deskripsi produk (maks 2000 karakter) |
 | `category_code` | Ya | String(50), Upper | Kode kategori yang sudah terdaftar |
 | `unit_code` | Ya | String(50), Upper | Kode satuan yang sudah terdaftar |
-| `minimum_stock` | Tidak | Decimal(15,4) | Minimum stok aman (default: `0.0000`) |
+| `minimum_stock` | Tidak | Decimal(12,2) | Minimum stok aman (default: `0.00`, maks 2 desimal) |
 
 ---
 
@@ -82,7 +89,7 @@ Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data m
 - **Method / URI**: `GET /api/v1/master-data-import/{type}/template`
 - **Tipe didukung**: `products`, `categories`, `units`, `locations`
 - **Permission**: `{type}.import`
-- **Response**: `200 OK` (Attachment `Content-Type: text/csv; charset=UTF-8` dengan UTF-8 BOM).
+- **Response**: `200 OK` (Attachment `Content-Type: text/csv; charset=UTF-8` dengan filename `template_{type}.csv` dan UTF-8 BOM).
 
 ### 2. Validasi & Preview File
 - **Method / URI**: `POST /api/v1/master-data-import/{type}/validate`
@@ -126,12 +133,21 @@ Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data m
 
 ---
 
-## 4. Hak Akses & Keamanan
+## 4. Error Code Dictionary
 
-- Permission yang digunakan:
-  - `products.import`
-  - `categories.import`
-  - `units.import`
-  - `locations.import`
-- Secara default, role **Admin** memiliki seluruh hak akses import.
-- Petugas Gudang (Warehouse Officer) dan Supervisor tidak memiliki hak akses import secara default.
+| Error Code | Keterangan |
+|---|---|
+| `REQUIRED_FIELD_MISSING` | Kolom wajib tidak diisi / kosong. |
+| `FIELD_TOO_LONG` | Panjang teks melebihi batas kolom database. |
+| `DUPLICATE_CODE_IN_FILE` | Kode/SKU duplikat ditemukan di baris lain dalam file CSV. |
+| `DUPLICATE_CODE_IN_DB` | Kode/SKU sudah ada di database. |
+| `DUPLICATE_SKU_IN_FILE` | SKU duplikat ditemukan dalam file CSV. |
+| `DUPLICATE_SKU_IN_DB` | SKU sudah terdaftar di database. |
+| `DUPLICATE_BARCODE_IN_FILE` | Barcode duplikat ditemukan dalam file CSV. |
+| `DUPLICATE_BARCODE_IN_DB` | Barcode sudah terdaftar di database. |
+| `CATEGORY_NOT_FOUND` | `category_code` tidak ditemukan di tabel kategori. |
+| `UNIT_NOT_FOUND` | `unit_code` tidak ditemukan di tabel satuan. |
+| `INVALID_MINIMUM_STOCK` | Format stok minimum tidak valid (harus angka desimal $\ge 0$ maks 2 angka di belakang koma). |
+| `MISSING_REQUIRED_HEADER` | Header CSV tidak memiliki kolom wajib. |
+| `UNKNOWN_HEADER` | Header CSV memiliki nama kolom yang tidak dikenali. |
+| `DUPLICATE_HEADER` | Header CSV memiliki kolom dengan nama duplikat. |

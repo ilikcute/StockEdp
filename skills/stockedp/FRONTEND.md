@@ -258,6 +258,7 @@ Pertahankan kondisi ini pada perubahan berikutnya.
 
 - Lokasi feature: `resources/js/features/master_data_import/`
   - `api/master_data_import_api.js`: API helper untuk download template (blob), validate CSV (multipart), dan commit import (multipart + expectedSha256).
-  - `components/MasterDataImportModal.vue`: Modal interaktif terpadu (Download Template → Pilih File → Validasi & Preview 20 Baris / Error Table → Konfirmasi Commit → Success Feedback).
+  - `composables/use_master_data_import.js`: Reusable composable untuk state & flow import masal.
+  - `components/`: Modular UI (`MasterDataImportModal.vue` orchestrator, `MasterDataImportInstructions.vue`, `MasterDataImportUploader.vue`, `MasterDataImportSummary.vue`, `MasterDataImportPreviewTable.vue`, `MasterDataImportErrorTable.vue`).
 - Integrasi tombol: Terintegrasi pada halaman master `CategoryPage.vue`, `UnitPage.vue`, `LocationPage.vue`, dan `ProductPage.vue` dengan proteksi permission granular (`{type}.import`).
 

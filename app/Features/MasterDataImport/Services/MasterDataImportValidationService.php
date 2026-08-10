@@ -488,12 +488,12 @@ class MasterDataImportValidationService
                     'code' => 'REQUIRED_FIELD_MISSING',
                     'message' => 'SKU produk wajib diisi.',
                 ];
-            } elseif (strlen($sku) > 100) {
+            } elseif (strlen($sku) > 50) {
                 $rowErrors[] = [
                     'row' => $rowNum,
                     'field' => 'sku',
                     'code' => 'FIELD_TOO_LONG',
-                    'message' => 'SKU produk maksimal 100 karakter.',
+                    'message' => 'SKU produk maksimal 50 karakter.',
                 ];
             } else {
                 if (isset($seenSkusInFile[$sku])) {
@@ -558,16 +558,26 @@ class MasterDataImportValidationService
                     'code' => 'REQUIRED_FIELD_MISSING',
                     'message' => 'Nama produk wajib diisi.',
                 ];
-            } elseif (strlen($name) > 255) {
+            } elseif (strlen($name) > 150) {
                 $rowErrors[] = [
                     'row' => $rowNum,
                     'field' => 'name',
                     'code' => 'FIELD_TOO_LONG',
-                    'message' => 'Nama produk maksimal 255 karakter.',
+                    'message' => 'Nama produk maksimal 150 karakter.',
                 ];
             }
 
-            // 4. Category reference validation
+            // 4. Description validation
+            if ($desc !== null && strlen($desc) > 2000) {
+                $rowErrors[] = [
+                    'row' => $rowNum,
+                    'field' => 'description',
+                    'code' => 'FIELD_TOO_LONG',
+                    'message' => 'Deskripsi produk maksimal 2000 karakter.',
+                ];
+            }
+
+            // 5. Category reference validation
             $categoryId = null;
             if ($catCode === '') {
                 $rowErrors[] = [
@@ -587,7 +597,7 @@ class MasterDataImportValidationService
                 $categoryId = (int) $categoryMap[$catCode];
             }
 
-            // 5. Unit reference validation
+            // 6. Unit reference validation
             $unitId = null;
             if ($unitCode === '') {
                 $rowErrors[] = [
@@ -607,18 +617,18 @@ class MasterDataImportValidationService
                 $unitId = (int) $unitMap[$unitCode];
             }
 
-            // 6. Minimum Stock decimal validation
-            $minStock = '0.0000';
+            // 7. Minimum Stock decimal validation (2 decimal places max, no float)
+            $minStock = '0.00';
             if ($minStockRaw !== null && $minStockRaw !== '') {
-                if (! preg_match('/^\d+(\.\d{1,4})?$/', $minStockRaw)) {
+                if (! preg_match('/^\d+(\.\d{1,2})?$/', $minStockRaw)) {
                     $rowErrors[] = [
                         'row' => $rowNum,
                         'field' => 'minimum_stock',
                         'code' => 'INVALID_MINIMUM_STOCK',
-                        'message' => 'Stok minimum harus berupa angka desimal non-negatif maksimal 4 digit di belakang koma.',
+                        'message' => 'Stok minimum harus berupa angka desimal non-negatif maksimal 2 digit di belakang koma.',
                     ];
                 } else {
-                    $minStock = number_format((float) $minStockRaw, 4, '.', '');
+                    $minStock = bcadd($minStockRaw, '0', 2);
                 }
             }
 

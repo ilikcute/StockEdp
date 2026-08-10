@@ -68,6 +68,12 @@ class CsvMasterDataImportReader implements MasterDataImportReaderInterface
                 throw new DomainException('Jumlah baris data melebihi batas maksimum 5.000 baris.', 422);
             }
 
+            if (count($row) !== count($headers)) {
+                $expectedCount = count($headers);
+                $actualCount = count($row);
+                throw new DomainException("Struktur baris {$rawRowIndex} tidak sesuai dengan jumlah kolom header (diharapkan {$expectedCount} kolom, ditemukan {$actualCount} kolom).", 422);
+            }
+
             $mappedData = [];
             foreach ($headers as $index => $headerName) {
                 $val = $row[$index] ?? null;

@@ -91,6 +91,22 @@ class CsvMasterDataImportReaderTest extends TestCase
         }
     }
 
+    public function test_csv_09_rejects_malformed_csv_row_shape(): void
+    {
+        $csv = "code,name,description\nCAT-01,Only Name\n";
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_');
+        file_put_contents($tempFile, $csv);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Struktur baris 2 tidak sesuai dengan jumlah kolom header');
+
+        try {
+            $this->reader->read($tempFile);
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
     public function test_hdr_03_rejects_duplicate_column_headers(): void
     {
         $csv = "code,name,code\nCAT-01,Name,CAT-01\n";

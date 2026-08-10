@@ -309,6 +309,6 @@ Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang waj
 - Kontrak: **CREATE ONLY** (duplikat di DB atau file ditolak), **All-or-Nothing** transaksional.
 - Verifikasi: SHA256 checksum mismatch ditolak dengan HTTP 409.
 - Location import: memicu `LocationObserver` (`inventory_location_locks`), tanpa penugasan otomatis ke `user_locations`.
-- Product import: resolusi kode kategori & satuan secara batch, preservasi barcode string (termasuk leading zero), minimum stock decimal 4 digit (`0.0000`) tanpa float.
+- Product import: resolusi kode kategori & satuan secara batch, preservasi barcode string (termasuk leading zero), minimum stock decimal 2 digit (DECIMAL(12,2)) dinormalisasi murni string/BCMath tanpa float.
 - Tidak ada mutasi persediaan atau perubahan saldo stok yang terjadi.
 

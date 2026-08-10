@@ -76,4 +76,17 @@ class MasterDataImportAuthorizationTest extends TestCase
             ])
             ->assertCreated();
     }
+
+    public function test_csv_12_rejects_oversized_file_upload(): void
+    {
+        // 5121 KB exceeds the 5120 KB (5 MB) limit
+        $oversizedFile = UploadedFile::fake()->create('large.csv', 5121, 'text/csv');
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/v1/master-data-import/categories/validate', [
+                'file' => $oversizedFile,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['file']);
+    }
 }

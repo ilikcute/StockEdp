@@ -749,7 +749,7 @@ refresh.
 5. **Resolusi Referensi Produk & Preservasi Tipe Data**:
    - Produk menggunakan kode bisnis (`category_code`, `unit_code`) yang dipetakan ke ID internal secara batch.
    - Barcode dipertahankan sebagai string murni (leading zero tidak terpotong).
-   - `minimum_stock` ditangani sebagai string desimal 4 digit (`0.0000`) tanpa casting `float`.
+   - `minimum_stock` mengikuti domain Product `DECIMAL(12,2)` dan dinormalisasi murni via string/BCMath tanpa casting `float`. Nilai dengan > 2 digit desimal ditolak.
 6. **Infrastruktur Lokasi**:
    - Import lokasi memicu `LocationObserver` untuk pembentukan row `inventory_location_locks`.
    - Tidak ada penugasan otomatis ke `user_locations` (`NEW_LOCATIONS_REQUIRE_MANUAL_ADMIN_ASSIGNMENT`).
