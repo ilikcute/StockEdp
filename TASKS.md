@@ -351,7 +351,7 @@ dan alur transaksi sudah diputuskan.
 - [x] Pastikan dokumentasi rilis terstruktur dan terverifikasi (`UAT_VERSION_1.md`, `PERFORMANCE_VERSION_1.md`, `PRD_ACCEPTANCE_VERSION_1.md`, `RELEASE_CHECKLIST_VERSION_1.md`).
 - [x] Jalankan pengujian otomatis dan lint (Fase 10B automated quality gate).
 - [x] Verifikasi seluruh kriteria penerimaan dalam `PRD.md` secara operasional (Stage 10C-2 Canonical UAT 12/12 PASS).
-- [x] Verifikasi target response maksimal 2 detik untuk operasi umum (Stage 10C-3 Benchmark Max <= 88.29ms).
+- [x] Verifikasi target response maksimal 2 detik untuk operasi umum (Stage 10C-3 Benchmark Max 267.55ms <= 2000ms & Human Operational Timings < 12.64s <= 60s).
 - [ ] Jalankan final release acceptance (Stage 10C-4 release gate).
 
 ---

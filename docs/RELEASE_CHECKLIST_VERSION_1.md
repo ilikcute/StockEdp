@@ -41,7 +41,7 @@ Dokumen ini melacak kesiapan teknis, keamanan, integritas data, serta kelengkapa
 - [x] `docs/MYSQL_BACKUP_RESTORE.md`
 - [x] `docs/WAREHOUSE_USER_GUIDE.md`
 - [x] `docs/UAT_VERSION_1.md` (Terstruktur; **EXECUTED — 12/12 CANONICAL SCENARIOS PASS**)
-- [x] `docs/PERFORMANCE_VERSION_1.md` (Terstruktur; **EXECUTED — ALL 17 API ENDPOINTS PASS MAX <= 88.29ms**)
+- [x] `docs/PERFORMANCE_VERSION_1.md` (Terstruktur; **EXECUTED — ALL 17 BASE & 11 SUPPLEMENTAL API ENDPOINTS PASS MAX <= 267.55ms, 10 HUMAN OPERATIONAL WORKFLOWS PASS < 12.64s**)
 - [x] `docs/PRD_ACCEPTANCE_VERSION_1.md`
 - [x] `docs/RELEASE_CHECKLIST_VERSION_1.md`
 - [x] Navigasi `README.md` terupdate menyambungkan seluruh dokumen resmi.
