@@ -84,4 +84,51 @@ class DashboardRecentActivityTest extends TestCase
         // Check string representation (no float casting)
         $this->assertIsString($recentActivity[0]['quantity']);
     }
+
+    public function test_recent_activity_orders_by_created_at_descending_even_when_occurred_at_differs(): void
+    {
+        // Movement A: occurred_at newer, created_at older
+        StockMovement::create([
+            'movement_id' => 'MOV-ORD-A',
+            'reference_type' => 'App\Features\Inventory\Models\StockReceipt',
+            'reference_id' => 101,
+            'product_id' => $this->product->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::RECEIPT->value,
+            'quantity' => '10.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '10.0000',
+            'reference_number' => 'REF-A-OCCURRED-NEWER',
+            'created_by' => $this->admin->id,
+            'occurred_at' => '2026-08-11 15:00:00', // Newer occurred_at
+            'created_at' => '2026-08-10 10:00:00',  // Older created_at
+        ]);
+
+        // Movement B: occurred_at older, created_at newer
+        StockMovement::create([
+            'movement_id' => 'MOV-ORD-B',
+            'reference_type' => 'App\Features\Inventory\Models\StockReceipt',
+            'reference_id' => 102,
+            'product_id' => $this->product->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::RECEIPT->value,
+            'quantity' => '20.0000',
+            'quantity_before' => '10.0000',
+            'quantity_after' => '30.0000',
+            'reference_number' => 'REF-B-CREATED-NEWER',
+            'created_by' => $this->admin->id,
+            'occurred_at' => '2026-08-01 10:00:00', // Older occurred_at
+            'created_at' => '2026-08-11 10:00:00',  // Newer created_at
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/dashboard');
+        $response->assertOk();
+
+        $recentActivity = $response->json('data.recent_activity');
+
+        // Movement B (created_at 2026-08-11) MUST appear before Movement A (created_at 2026-08-10)
+        $this->assertCount(2, $recentActivity);
+        $this->assertSame('REF-B-CREATED-NEWER', $recentActivity[0]['reference_number']);
+        $this->assertSame('REF-A-OCCURRED-NEWER', $recentActivity[1]['reference_number']);
+    }
 }
