@@ -1,10 +1,10 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 mb-6">
+  <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-5">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
           <svg
-            class="w-5 h-5 text-blue-600 dark:text-blue-400"
+            class="w-5 h-5 text-blue-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -18,7 +18,7 @@
           </svg>
           Ringkasan Aktivitas Periode
         </h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p class="text-xs text-gray-500 mt-0.5">
           Jumlah dokumen yang selesai diposting/diterima dan total pergerakan stok selama periode terpilih.
         </p>
       </div>
@@ -26,38 +26,38 @@
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <!-- Posted Receipts -->
-      <div class="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-3.5">
-        <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Penerimaan Diposting</span>
+      <div class="bg-emerald-50/50 border border-emerald-200 rounded-lg p-3.5">
+        <span class="text-xs font-semibold text-emerald-700 uppercase tracking-wider block">Penerimaan Diposting</span>
         <span
           id="period-posted-receipt-count"
-          class="text-2xl font-bold text-gray-900 dark:text-white mt-1 block"
+          class="text-2xl font-bold text-gray-900 mt-1 block"
         >{{ data.posted_receipt_count || 0 }}</span>
       </div>
 
       <!-- Posted Issues -->
-      <div class="bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-lg p-3.5">
-        <span class="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">Pengeluaran Diposting</span>
+      <div class="bg-amber-50/50 border border-amber-200 rounded-lg p-3.5">
+        <span class="text-xs font-semibold text-amber-700 uppercase tracking-wider block">Pengeluaran Diposting</span>
         <span
           id="period-posted-issue-count"
-          class="text-2xl font-bold text-gray-900 dark:text-white mt-1 block"
+          class="text-2xl font-bold text-gray-900 mt-1 block"
         >{{ data.posted_issue_count || 0 }}</span>
       </div>
 
       <!-- Received Transfers -->
-      <div class="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3.5">
-        <span class="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider block">Transfer Diterima</span>
+      <div class="bg-blue-50/50 border border-blue-200 rounded-lg p-3.5">
+        <span class="text-xs font-semibold text-blue-700 uppercase tracking-wider block">Transfer Diterima</span>
         <span
           id="period-received-transfer-count"
-          class="text-2xl font-bold text-gray-900 dark:text-white mt-1 block"
+          class="text-2xl font-bold text-gray-900 mt-1 block"
         >{{ data.received_transfer_count || 0 }}</span>
       </div>
 
       <!-- Stock Movements -->
-      <div class="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50 rounded-lg p-3.5">
-        <span class="text-xs font-semibold text-purple-700 dark:text-purple-400 uppercase tracking-wider block">Total Movement Stok</span>
+      <div class="bg-purple-50/50 border border-purple-200 rounded-lg p-3.5">
+        <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider block">Total Movement Stok</span>
         <span
           id="period-movement-count"
-          class="text-2xl font-bold text-gray-900 dark:text-white mt-1 block"
+          class="text-2xl font-bold text-gray-900 mt-1 block"
         >{{ data.movement_count || 0 }}</span>
       </div>
     </div>

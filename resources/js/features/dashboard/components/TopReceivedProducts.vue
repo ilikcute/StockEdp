@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+  <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-5">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
           <svg
             class="w-4 h-4 text-emerald-500"
             fill="none"
@@ -18,7 +18,7 @@
           </svg>
           Top 10 Produk Paling Banyak Diterima
         </h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p class="text-xs text-gray-500 mt-0.5">
           Ringkasan total kuantitas barang masuk (Penerimaan Stok) dalam periode terpilih.
         </p>
       </div>
@@ -27,7 +27,7 @@
     <!-- Empty State -->
     <div
       v-if="!products || products.length === 0"
-      class="text-center py-6 text-gray-400 dark:text-gray-500 text-xs"
+      class="text-center py-6 text-gray-400 text-xs"
     >
       Tidak ada data penerimaan barang pada periode ini.
     </div>
@@ -39,7 +39,7 @@
     >
       <table class="w-full text-left text-xs border-collapse">
         <thead>
-          <tr class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700">
+          <tr class="bg-gray-50 text-gray-600 font-semibold border-b border-gray-200">
             <th class="py-2 px-2.5 w-10 text-center">
               No.
             </th>
@@ -54,27 +54,27 @@
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+        <tbody class="divide-y divide-gray-100">
           <tr
             v-for="(item, index) in products"
             :key="item.product_id || index"
-            class="hover:bg-gray-50/80 dark:hover:bg-gray-700/40 transition-colors"
+            class="hover:bg-gray-50/80 transition-colors"
           >
             <td class="py-2 px-2.5 text-center text-gray-400 font-mono">
               {{ index + 1 }}
             </td>
             <td class="py-2 px-2.5">
-              <div class="font-semibold text-gray-900 dark:text-white">
+              <div class="font-semibold text-gray-900">
                 {{ item.name }}
               </div>
               <div class="text-[10px] text-gray-400 font-mono">
                 {{ item.sku }}
               </div>
             </td>
-            <td class="py-2 px-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+            <td class="py-2 px-2.5 text-right font-mono font-bold text-emerald-600 whitespace-nowrap">
               {{ item.total_quantity ?? '0.0000' }} {{ item.unit_symbol }}
             </td>
-            <td class="py-2 px-2.5 text-center text-gray-500 dark:text-gray-400 font-mono text-[11px]">
+            <td class="py-2 px-2.5 text-center text-gray-500 font-mono text-[11px]">
               {{ item.movement_count }}x
             </td>
           </tr>

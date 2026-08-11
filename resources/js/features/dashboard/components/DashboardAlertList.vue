@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 mb-6">
+  <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-5">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
           <svg
             class="w-5 h-5 text-amber-500"
             fill="none"
@@ -18,13 +18,13 @@
           </svg>
           Computed Operational Alert Center
         </h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p class="text-xs text-gray-500 mt-0.5">
           Peringatan otomatis yang dihitung secara real-time berdasarkan kondisi persediaan saat ini.
         </p>
       </div>
       <span
         v-if="alerts.length > 0"
-        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300"
+        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800"
       >
         {{ alerts.length }} Peringatan
       </span>
@@ -33,10 +33,10 @@
     <!-- Empty State -->
     <div
       v-if="!alerts || alerts.length === 0"
-      class="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-lg text-emerald-800 dark:text-emerald-300"
+      class="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800"
     >
       <svg
-        class="w-5 h-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400"
+        class="w-5 h-5 flex-shrink-0 text-emerald-600"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -70,12 +70,12 @@
           <div :class="['w-2 h-2 rounded-full mt-1.5 flex-shrink-0', severityDot(alert.severity)]" />
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-gray-900 dark:text-white">{{ alert.title }}</span>
+              <span class="text-xs font-bold text-gray-900">{{ alert.title }}</span>
               <span :class="['px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider', severityBadge(alert.severity)]">
                 {{ alert.severity }} ({{ alert.count }})
               </span>
             </div>
-            <p class="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+            <p class="text-xs text-gray-600 mt-0.5">
               {{ alert.message }}
             </p>
           </div>
@@ -84,7 +84,7 @@
         <button
           v-if="alert.route_name && canNavigate(alert.permission)"
           type="button"
-          class="self-end sm:self-center px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-xs font-medium rounded-md shadow-sm transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="self-end sm:self-center px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 text-xs font-medium rounded-md shadow-xs transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           @click="navigateToRoute(alert.route_name)"
         >
           Tindak Lanjuti &rarr;
@@ -122,11 +122,11 @@ const navigateToRoute = (routeName) => {
 const severityClasses = (severity) => {
   switch (severity) {
     case 'CRITICAL':
-      return 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60';
+      return 'bg-rose-50/70 border-rose-200';
     case 'WARNING':
-      return 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60';
+      return 'bg-amber-50/70 border-amber-200';
     default:
-      return 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/60';
+      return 'bg-blue-50/70 border-blue-200';
   }
 };
 
@@ -144,11 +144,11 @@ const severityDot = (severity) => {
 const severityBadge = (severity) => {
   switch (severity) {
     case 'CRITICAL':
-      return 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300';
+      return 'bg-rose-100 text-rose-800';
     case 'WARNING':
-      return 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300';
+      return 'bg-amber-100 text-amber-800';
     default:
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300';
+      return 'bg-blue-100 text-blue-800';
   }
 };
 </script>
