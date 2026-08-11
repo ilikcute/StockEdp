@@ -310,6 +310,7 @@ class ProductImportTest extends TestCase
 
         $category = Category::where('code', 'CAT-AUDIT')->firstOrFail();
         $this->assertSame($this->admin->id, $category->created_by);
+        $this->assertNull($category->updated_by);
 
         // 3. Unit Audit Fields
         $unitCsv = "code,name,symbol,description\nUNT-AUD,Unit Audit,ua,Desc\n";
@@ -325,6 +326,7 @@ class ProductImportTest extends TestCase
 
         $unit = Unit::where('code', 'UNT-AUD')->firstOrFail();
         $this->assertSame($this->admin->id, $unit->created_by);
+        $this->assertNull($unit->updated_by);
 
         // 4. Location Audit Fields
         $locCsv = "code,name,description,address,phone\nLOC-AUD,Loc Audit,Desc,Addr,08123\n";
@@ -340,5 +342,6 @@ class ProductImportTest extends TestCase
 
         $location = Location::where('code', 'LOC-AUD')->firstOrFail();
         $this->assertSame($this->admin->id, $location->created_by);
+        $this->assertNull($location->updated_by);
     }
 }
