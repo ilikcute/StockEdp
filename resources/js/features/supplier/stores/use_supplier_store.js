@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { supplierApi } from '../api/supplier_api.js';
+import { normalizeApiError } from '@shared/api/api_client.js';
 
 export const useSupplierStore = defineStore('supplier', () => {
     const items = ref([]);
@@ -20,15 +21,16 @@ export const useSupplierStore = defineStore('supplier', () => {
         error.value = null;
         try {
             const response = await supplierApi.getAll(params);
-            items.value = response.data || [];
-            pagination.value = response.meta || {
+            items.value = response.data?.data || [];
+            pagination.value = response.data?.meta || {
                 current_page: 1,
                 last_page: 1,
                 per_page: 15,
                 total: 0,
             };
         } catch (err) {
-            error.value = err.message || 'Gagal memuat data supplier';
+            const normalized = normalizeApiError(err);
+            error.value = normalized.message || 'Gagal memuat data supplier';
         } finally {
             isLoading.value = false;
         }
@@ -40,14 +42,14 @@ export const useSupplierStore = defineStore('supplier', () => {
         error.value = null;
         try {
             const response = await supplierApi.create(data);
-            successMessage.value = response.message;
+            successMessage.value = response.data?.message || 'Supplier berhasil dibuat.';
             return true;
         } catch (err) {
-            if (err.errors) {
-                validationErrors.value = err.errors;
-            } else {
-                error.value = err.message || 'Gagal membuat supplier';
+            const normalized = normalizeApiError(err);
+            if (normalized.status === 422) {
+                validationErrors.value = normalized.errors;
             }
+            error.value = normalized.message || 'Gagal membuat supplier';
             return false;
         } finally {
             isLoading.value = false;
@@ -60,14 +62,14 @@ export const useSupplierStore = defineStore('supplier', () => {
         error.value = null;
         try {
             const response = await supplierApi.update(id, data);
-            successMessage.value = response.message;
+            successMessage.value = response.data?.message || 'Supplier berhasil diperbarui.';
             return true;
         } catch (err) {
-            if (err.errors) {
-                validationErrors.value = err.errors;
-            } else {
-                error.value = err.message || 'Gagal memperbarui supplier';
+            const normalized = normalizeApiError(err);
+            if (normalized.status === 422) {
+                validationErrors.value = normalized.errors;
             }
+            error.value = normalized.message || 'Gagal memperbarui supplier';
             return false;
         } finally {
             isLoading.value = false;
@@ -79,10 +81,11 @@ export const useSupplierStore = defineStore('supplier', () => {
         error.value = null;
         try {
             const response = await supplierApi.changeStatus(id, isActive);
-            successMessage.value = response.message;
+            successMessage.value = response.data?.message || 'Status supplier berhasil diubah.';
             return true;
         } catch (err) {
-            error.value = err.message || 'Gagal mengubah status supplier';
+            const normalized = normalizeApiError(err);
+            error.value = normalized.message || 'Gagal mengubah status supplier';
             return false;
         } finally {
             isLoading.value = false;

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { locationApi } from '../api/location_api';
+import { normalizeApiError } from '@shared/api/api_client.js';
 
 export const useLocationStore = defineStore('location', () => {
     const items = ref([]);
@@ -10,7 +11,7 @@ export const useLocationStore = defineStore('location', () => {
         per_page: 15,
         total: 0,
     });
-    
+
     const isLoading = ref(false);
     const error = ref(null);
     const validationErrors = ref({});
@@ -21,15 +22,16 @@ export const useLocationStore = defineStore('location', () => {
         error.value = null;
         try {
             const response = await locationApi.getAll(params);
-            items.value = response.data || [];
-            pagination.value = response.meta || {
+            items.value = response.data?.data || [];
+            pagination.value = response.data?.meta || {
                 current_page: 1,
                 last_page: 1,
                 per_page: 15,
                 total: 0,
             };
         } catch (err) {
-            error.value = err.message || 'Gagal memuat data lokasi';
+            const normalized = normalizeApiError(err);
+            error.value = normalized.message || 'Gagal memuat data lokasi';
         } finally {
             isLoading.value = false;
         }
@@ -41,14 +43,14 @@ export const useLocationStore = defineStore('location', () => {
         error.value = null;
         try {
             const response = await locationApi.create(data);
-            successMessage.value = response.message;
+            successMessage.value = response.data?.message || 'Lokasi berhasil dibuat.';
             return true;
         } catch (err) {
-            if (err.errors) {
-                validationErrors.value = err.errors;
-            } else {
-                error.value = err.message || 'Gagal membuat lokasi';
+            const normalized = normalizeApiError(err);
+            if (normalized.status === 422) {
+                validationErrors.value = normalized.errors;
             }
+            error.value = normalized.message || 'Gagal membuat lokasi';
             return false;
         } finally {
             isLoading.value = false;
@@ -61,14 +63,14 @@ export const useLocationStore = defineStore('location', () => {
         error.value = null;
         try {
             const response = await locationApi.update(id, data);
-            successMessage.value = response.message;
+            successMessage.value = response.data?.message || 'Lokasi berhasil diperbarui.';
             return true;
         } catch (err) {
-            if (err.errors) {
-                validationErrors.value = err.errors;
-            } else {
-                error.value = err.message || 'Gagal memperbarui lokasi';
+            const normalized = normalizeApiError(err);
+            if (normalized.status === 422) {
+                validationErrors.value = normalized.errors;
             }
+            error.value = normalized.message || 'Gagal memperbarui lokasi';
             return false;
         } finally {
             isLoading.value = false;
@@ -80,10 +82,11 @@ export const useLocationStore = defineStore('location', () => {
         error.value = null;
         try {
             const response = await locationApi.changeStatus(id, isActive);
-            successMessage.value = response.message;
+            successMessage.value = response.data?.message || 'Status lokasi berhasil diubah.';
             return true;
         } catch (err) {
-            error.value = err.message || 'Gagal mengubah status lokasi';
+            const normalized = normalizeApiError(err);
+            error.value = normalized.message || 'Gagal mengubah status lokasi';
             return false;
         } finally {
             isLoading.value = false;
