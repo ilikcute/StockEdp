@@ -1,20 +1,21 @@
 <template>
-  <div class="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">
-          Satuan
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-xl font-semibold text-gray-900">
+          Master Satuan
         </h1>
-        <p class="text-sm text-gray-500 mt-1">
-          Kelola satuan ukuran produk inventory
+        <p class="mt-2 text-sm text-gray-700">
+          Kelola daftar satuan ukuran produk inventory.
         </p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center gap-2">
         <button
           v-if="authStore.hasPermission('units.import')"
           id="btn-import-unit"
-          class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors shadow-xs cursor-pointer"
+          type="button"
+          class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
           @click="showImportModal = true"
         >
           📥 Import CSV
@@ -22,7 +23,8 @@
         <button
           v-if="authStore.hasPermission('units.create')"
           id="btn-create-unit"
-          class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm cursor-pointer"
+          type="button"
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
           @click="openCreateModal"
         >
           Tambah Satuan
@@ -30,36 +32,21 @@
       </div>
     </div>
 
-    <!-- Success feedback -->
-    <div
-      v-if="unitStore.successMessage"
-      class="flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800"
-    >
-      <span>{{ unitStore.successMessage }}</span>
-      <button
-        class="ml-auto text-green-600 hover:text-green-800"
-        @click="unitStore.clearSuccess()"
-      >
-        ✕
-      </button>
-    </div>
-
-    <!-- Filters -->
-    <div class="flex flex-col sm:flex-row gap-3 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-      <div class="flex-1">
+    <!-- Search & Filter Controls -->
+    <div class="mt-6 flex flex-col sm:flex-row justify-between gap-4">
+      <div class="w-full sm:max-w-xs">
         <input
+          id="search"
           v-model="searchQuery"
           type="text"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-          placeholder="Cari kode, nama, atau simbol satuan…"
-          @input="onSearchInput"
+          class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          placeholder="Cari kode, nama, atau simbol..."
         >
       </div>
-      <div class="w-full sm:w-48">
+      <div class="flex gap-2 flex-wrap sm:flex-nowrap">
         <select
           v-model="filterActive"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
-          @change="loadUnits"
+          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Status
@@ -71,114 +58,173 @@
             Nonaktif
           </option>
         </select>
+        <select
+          v-model="sortBy"
+          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="created_at">
+            Terbaru
+          </option>
+          <option value="code">
+            Kode
+          </option>
+          <option value="name">
+            Nama
+          </option>
+        </select>
       </div>
     </div>
 
-    <!-- Loading -->
-    <BaseLoading v-if="unitStore.isLoading && !unitStore.items.length" />
-
-    <!-- Forbidden -->
+    <!-- Alerts -->
     <div
-      v-else-if="isForbidden"
-      class="text-center py-12 bg-white rounded-xl border border-gray-100 shadow-sm"
+      v-if="unitStore.error && !isForbidden"
+      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
     >
-      <p class="text-gray-500">
+      <p class="text-sm font-medium text-red-800">
+        {{ unitStore.error }}
+      </p>
+    </div>
+    <div
+      v-if="unitStore.successMessage"
+      class="mt-4 rounded-md bg-green-50 p-4 border border-green-200 flex items-center justify-between"
+    >
+      <p class="text-sm font-medium text-green-800">
+        {{ unitStore.successMessage }}
+      </p>
+      <button
+        class="text-green-600 hover:text-green-800 font-bold"
+        @click="unitStore.clearSuccess()"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Forbidden Message -->
+    <div
+      v-if="isForbidden"
+      class="mt-6 text-center py-12 bg-white rounded-lg border border-gray-300 shadow-sm"
+    >
+      <p class="text-gray-500 text-sm">
         Anda tidak memiliki izin untuk melihat data satuan.
       </p>
     </div>
 
-    <!-- Error -->
-    <BaseError
-      v-else-if="unitStore.error && !isForbidden && !unitStore.items.length"
-      :message="unitStore.error"
-    />
-
-    <!-- Empty -->
-    <BaseEmpty v-else-if="!unitStore.items.length && !unitStore.isLoading" />
-
     <!-- Table -->
     <div
       v-else
-      class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
+      class="mt-8 overflow-hidden shadow-sm border border-gray-300 md:rounded-lg"
     >
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-100">
-          <thead class="bg-gray-50/50">
-            <tr>
-              <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Kode
-              </th>
-              <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Nama
-              </th>
-              <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Simbol
-              </th>
-              <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th class="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr
-              v-for="item in unitStore.items"
-              :key="item.id"
-              class="hover:bg-gray-50/50 transition-colors"
+      <table class="min-w-full divide-y divide-gray-300">
+        <thead class="bg-gray-50">
+          <tr>
+            <th
+              scope="col"
+              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
             >
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                {{ item.code }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ item.name }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                <span class="px-2 py-0.5 bg-gray-100 text-gray-800 rounded font-mono text-xs">{{ item.symbol }}</span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span
-                  class="px-2.5 py-1 text-xs font-semibold rounded-full"
-                  :class="item.is_active ? 'text-green-700 bg-green-50' : 'text-gray-600 bg-gray-100'"
-                >
-                  {{ item.is_active ? 'Aktif' : 'Nonaktif' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
-                <button
-                  v-if="authStore.hasPermission('units.update')"
-                  class="text-blue-600 hover:text-blue-800 font-medium transition-colors cursor-pointer"
-                  @click="openEditModal(item)"
-                >
-                  Edit
-                </button>
-                <button
-                  v-if="authStore.hasPermission('units.change_status')"
-                  class="font-medium transition-colors cursor-pointer"
-                  :class="item.is_active ? 'text-amber-600 hover:text-amber-800' : 'text-green-600 hover:text-green-800'"
-                  @click="openStatusModal(item)"
-                >
-                  {{ item.is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div
-        v-if="unitStore.pagination && unitStore.pagination.total > 0"
-        class="px-6 py-3 border-t border-gray-100"
-      >
-        <BasePagination
-          :pagination="unitStore.pagination"
-          :loading="unitStore.isLoading"
-          @change="goToPage"
-        />
-      </div>
+              Kode
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+            >
+              Nama Satuan
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+            >
+              Simbol
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+            >
+              Deskripsi
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+            >
+              Status
+            </th>
+            <th
+              scope="col"
+              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
+            >
+              <span class="sr-only">Aksi</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 bg-white">
+          <tr v-if="unitStore.isLoading && !unitStore.items.length">
+            <td
+              colspan="6"
+              class="py-10 text-center text-sm text-gray-500"
+            >
+              Memuat data...
+            </td>
+          </tr>
+          <tr v-else-if="!unitStore.items.length">
+            <td
+              colspan="6"
+              class="py-10 text-center text-sm text-gray-500"
+            >
+              Tidak ada data satuan yang ditemukan.
+            </td>
+          </tr>
+          <tr
+            v-for="item in unitStore.items"
+            :key="item.id"
+            :class="{ 'bg-gray-50': !item.is_active }"
+          >
+            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              {{ item.code }}
+            </td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-700 font-medium">
+              {{ item.name }}
+            </td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600 font-mono">
+              {{ item.symbol || '-' }}
+            </td>
+            <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
+              {{ item.description || '-' }}
+            </td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm">
+              <span
+                class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
+                :class="item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+              >
+                {{ item.is_active ? 'Aktif' : 'Nonaktif' }}
+              </span>
+            </td>
+            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+              <button
+                v-if="authStore.hasPermission('units.update')"
+                class="text-indigo-600 hover:text-indigo-900 mr-4 font-medium"
+                @click="openEditModal(item)"
+              >
+                Ubah
+              </button>
+              <button
+                v-if="authStore.hasPermission('units.change_status')"
+                class="font-medium"
+                :class="item.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'"
+                @click="openStatusModal(item)"
+              >
+                {{ item.is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+
+    <!-- Pagination -->
+    <BasePagination
+      :pagination="unitStore.pagination"
+      :loading="unitStore.isLoading"
+      @change="goToPage"
+    />
 
     <!-- Modals -->
     <UnitFormModal
@@ -209,10 +255,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import BaseLoading from '@shared/components/BaseLoading.vue';
-import BaseError from '@shared/components/BaseError.vue';
-import BaseEmpty from '@shared/components/BaseEmpty.vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import BasePagination from '@shared/components/BasePagination.vue';
 import UnitFormModal from '../components/UnitFormModal.vue';
 import UnitStatusModal from '../components/UnitStatusModal.vue';
@@ -225,7 +268,9 @@ const authStore = useAuthStore();
 
 const searchQuery = ref('');
 const filterActive = ref('');
+const sortBy = ref('created_at');
 const currentPage = ref(1);
+
 const showFormModal = ref(false);
 const showImportModal = ref(false);
 const editingUnit = ref(null);
@@ -238,23 +283,34 @@ const isForbidden = computed(() =>
     unitStore.error?.includes('tidak memiliki izin') ?? false,
 );
 
-onMounted(() => {
-    loadUnits();
-});
-
-function loadUnits() {
-    const params = { page: currentPage.value, per_page: 15 };
-    if (searchQuery.value) params.search = searchQuery.value;
-    if (filterActive.value) params.is_active = filterActive.value;
-    unitStore.fetchAll(params);
-}
-
-function onSearchInput() {
+const debouncedSearch = () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
         currentPage.value = 1;
         loadUnits();
     }, 400);
+};
+
+watch(searchQuery, debouncedSearch);
+watch([filterActive, sortBy], () => {
+    currentPage.value = 1;
+    loadUnits();
+});
+
+onMounted(() => {
+    loadUnits();
+});
+
+function loadUnits() {
+    const params = {
+        page: currentPage.value,
+        per_page: 15,
+        sort_by: sortBy.value,
+        sort_order: sortBy.value === 'created_at' ? 'desc' : 'asc',
+    };
+    if (searchQuery.value) params.search = searchQuery.value;
+    if (filterActive.value) params.is_active = filterActive.value;
+    unitStore.fetchAll(params);
 }
 
 function goToPage(page) {

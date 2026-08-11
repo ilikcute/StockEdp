@@ -37,7 +37,7 @@
           for="search"
           class="sr-only"
         >Cari</label>
-        <div class="relative rounded-md shadow-sm">
+        <div class="relative rounded-md shadow-xs">
           <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <svg
               class="h-5 w-5 text-gray-400"
@@ -58,7 +58,7 @@
             v-model="searchQuery" 
             type="text" 
             name="search"
-            class="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+            class="block w-full rounded-md border border-gray-300 bg-white pl-10 pr-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" 
             placeholder="Cari kode atau nama..."
           >
         </div>
@@ -66,7 +66,7 @@
       <div class="w-full sm:max-w-xs flex gap-2">
         <select 
           v-model="statusFilter"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Status
@@ -80,7 +80,7 @@
         </select>
         <select 
           v-model="sortBy"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="created_at">
             Terbaru
@@ -97,64 +97,62 @@
 
     <div
       v-if="store.error"
-      class="mt-4 rounded-md bg-red-50 p-4"
+      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
     >
-      <div class="flex">
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">
-            {{ store.error }}
-          </h3>
-        </div>
-      </div>
+      <p class="text-sm font-medium text-red-800">
+        {{ store.error }}
+      </p>
     </div>
         
     <div
       v-if="store.successMessage"
-      class="mt-4 rounded-md bg-green-50 p-4"
+      class="mt-4 rounded-md bg-green-50 p-4 border border-green-200 flex items-center justify-between"
     >
-      <div class="flex">
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-green-800">
-            {{ store.successMessage }}
-          </h3>
-        </div>
-      </div>
+      <p class="text-sm font-medium text-green-800">
+        {{ store.successMessage }}
+      </p>
+      <button
+        class="text-green-600 hover:text-green-800 font-bold"
+        @click="store.clearMessages()"
+      >
+        ✕
+      </button>
     </div>
 
     <div class="mt-8 flex flex-col">
       <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <div class="overflow-hidden shadow-sm border border-gray-300 md:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
                   <th
                     scope="col"
-                    class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                    class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
                   >
                     Kode
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Nama Lokasi
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Alamat & Telp
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Status
                   </th>
                   <th
                     scope="col"
-                    class="relative py-3.5 pl-3 pr-4 sm:pr-6"
+                    class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
                   >
                     <span class="sr-only">Aksi</span>
                   </th>
