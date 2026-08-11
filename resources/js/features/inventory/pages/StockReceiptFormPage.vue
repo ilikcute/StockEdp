@@ -117,31 +117,37 @@
           </button>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+        <div class="overflow-x-auto shadow-sm border border-gray-300 rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
             <thead class="bg-gray-50">
               <tr>
                 <th
                   scope="col"
-                  class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-b border-gray-300 w-16"
+                >
+                  No.
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b border-gray-300"
                 >
                   Produk *
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b border-gray-300"
                 >
                   Lokasi *
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b border-gray-300"
                 >
                   Kuantitas *
                 </th>
                 <th
                   scope="col"
-                  class="relative px-3 py-3"
+                  class="relative px-3 py-3 border-b border-gray-300"
                 >
                   <span class="sr-only">Hapus</span>
                 </th>
@@ -150,7 +156,7 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-if="form.items.length === 0">
                 <td
-                  colspan="4"
+                  colspan="5"
                   class="px-3 py-4 text-center text-sm text-gray-500"
                 >
                   Belum ada item ditambahkan.
@@ -160,6 +166,9 @@
                 v-for="(item, index) in form.items"
                 :key="index"
               >
+                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-center text-gray-500">
+                  {{ index + 1 }}
+                </td>
                 <td class="px-3 py-4 whitespace-nowrap">
                   <select
                     v-model="item.product_id"

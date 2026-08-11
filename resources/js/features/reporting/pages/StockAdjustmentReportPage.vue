@@ -65,7 +65,10 @@
       </div>
 
       <div class="rounded-lg bg-white shadow-sm border border-gray-300 overflow-hidden">
-        <StockAdjustmentReportTable :items="store.data" />
+        <StockAdjustmentReportTable
+          :items="store.data"
+          :pagination="store.pagination"
+        />
       </div>
 
       <ReportPagination

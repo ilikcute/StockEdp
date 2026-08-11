@@ -66,7 +66,13 @@
           <tr>
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
+              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+            >
+              No.
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
             >
               Nomor Dokumen
             </th>
@@ -99,7 +105,7 @@
         <tbody class="divide-y divide-gray-200 bg-white">
           <tr v-if="store.loading && (!store.issues?.data || store.issues.data.length === 0)">
             <td
-              colspan="5"
+              colspan="6"
               class="py-10 text-center text-sm text-gray-500"
             >
               Memuat data...
@@ -107,17 +113,20 @@
           </tr>
           <tr v-else-if="!store.issues?.data || store.issues.data.length === 0">
             <td
-              colspan="5"
+              colspan="6"
               class="py-10 text-center text-sm text-gray-500"
             >
               Tidak ada data.
             </td>
           </tr>
           <tr
-            v-for="item in (store.issues?.data || [])"
+            v-for="(item, index) in (store.issues?.data || [])"
             :key="item.id"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+              {{ (store.issues?.meta?.from ? store.issues.meta.from + index : ((page - 1) * 15) + index + 1) }}
+            </td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
               {{ item.issue_number }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

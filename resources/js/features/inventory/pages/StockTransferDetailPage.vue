@@ -186,37 +186,43 @@
       </div>
 
       <!-- Items Section -->
-      <div class="mt-8 bg-white shadow sm:rounded-lg overflow-hidden">
+      <div class="mt-6 bg-white shadow-sm border border-gray-300 sm:rounded-lg overflow-hidden">
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-base font-semibold leading-6 text-gray-900">
             Daftar Barang Ditransfer
           </h3>
         </div>
-        <div class="border-t border-gray-200">
+        <div class="border-t border-gray-300">
           <table class="min-w-full divide-y divide-gray-300">
             <thead class="bg-gray-50">
               <tr>
                 <th
                   scope="col"
-                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                  class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+                >
+                  No.
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Produk
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   SKU
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Satuan (Unit)
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 sm:pr-6"
+                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 sm:pr-6 border-b border-gray-300"
                 >
                   Jumlah (Quantity)
                 </th>
@@ -224,10 +230,13 @@
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
               <tr
-                v-for="item in transfer.items"
+                v-for="(item, index) in transfer.items"
                 :key="item.id"
               >
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                  {{ index + 1 }}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
                   {{ item.product?.name || '-' }}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

@@ -144,7 +144,13 @@
               <tr>
                 <th
                   scope="col"
-                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
+                  class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+                >
+                  No.
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Produk
                 </th>
@@ -164,10 +170,13 @@
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
               <tr
-                v-for="item in store.currentReceipt.items"
+                v-for="(item, index) in store.currentReceipt.items"
                 :key="item.id"
               >
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                  {{ index + 1 }}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm">
                   <div class="font-medium text-gray-900">
                     {{ item.product?.name }}
                   </div>

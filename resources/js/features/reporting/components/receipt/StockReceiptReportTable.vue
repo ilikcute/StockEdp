@@ -5,6 +5,12 @@
         <tr>
           <th
             scope="col"
+            class="py-3.5 pl-4 pr-3 text-center text-xs font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+          >
+            No.
+          </th>
+          <th
+            scope="col"
             class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             No. Penerimaan
@@ -67,10 +73,13 @@
       </thead>
       <tbody class="divide-y divide-gray-200 bg-white">
         <tr
-          v-for="item in items"
+          v-for="(item, index) in items"
           :key="item.item_id"
           class="hover:bg-gray-50"
         >
+          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+            {{ (pagination?.from ? pagination.from + index : index + 1) }}
+          </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
             {{ item.receipt_number }}
           </td>
@@ -118,5 +127,6 @@
 <script setup>
 defineProps({
   items: { type: Array, required: true },
+  pagination: { type: Object, default: null },
 });
 </script>

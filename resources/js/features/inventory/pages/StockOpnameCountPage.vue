@@ -105,43 +105,49 @@
       </div>
 
       <!-- Items counting table -->
-      <div class="mt-4 bg-white shadow sm:rounded-lg overflow-hidden">
+      <div class="mt-4 bg-white shadow-sm border border-gray-300 sm:rounded-lg overflow-hidden">
         <table class="min-w-full divide-y divide-gray-300">
           <thead class="bg-gray-50">
             <tr>
               <th
                 scope="col"
-                class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+              >
+                No.
+              </th>
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
               >
                 Produk
               </th>
               <th
                 scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
               >
                 SKU
               </th>
               <th
                 scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
               >
                 Satuan
               </th>
               <th
                 scope="col"
-                class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
               >
                 Qty Hitung Fisik
               </th>
               <th
                 scope="col"
-                class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
+                class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 border-b border-gray-300"
               >
                 Status
               </th>
               <th
                 scope="col"
-                class="relative py-3.5 pl-3 pr-4 sm:pr-6"
+                class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
               >
                 <span class="sr-only">Simpan</span>
               </th>
@@ -150,19 +156,22 @@
           <tbody class="divide-y divide-gray-200 bg-white">
             <tr v-if="filteredItems.length === 0">
               <td
-                colspan="6"
+                colspan="7"
                 class="py-8 text-center text-sm text-gray-500"
               >
                 Tidak ada item sesuai pencarian.
               </td>
             </tr>
             <tr
-              v-for="item in filteredItems"
+              v-for="(item, index) in filteredItems"
               :key="item.id"
               :class="{ 'bg-green-50': item.is_counted && !store.countConflicts[item.id] }"
             >
+              <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                {{ index + 1 }}
+              </td>
               <!-- Product name -->
-              <td class="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              <td class="py-4 px-3 text-sm font-medium text-gray-900">
                 {{ item.product?.name || item.product_name || '-' }}
                 <span
                   v-if="item.is_unexpected"

@@ -234,19 +234,25 @@
               <tr>
                 <th
                   scope="col"
-                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                  class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+                >
+                  No.
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Produk
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   SKU
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Stok Sistem
                 </th>
@@ -254,13 +260,13 @@
                 <template v-if="opname.status === 'COUNTED' || opname.status === 'POSTED'">
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Hitung Fisik
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Selisih
                   </th>
@@ -269,7 +275,7 @@
                 <template v-else-if="opname.status === 'IN_PROGRESS'">
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Status Hitung
                   </th>
@@ -279,17 +285,20 @@
             <tbody class="divide-y divide-gray-200 bg-white">
               <tr v-if="!opname.items || opname.items.length === 0">
                 <td
-                  :colspan="opname.status === 'IN_PROGRESS' ? 4 : 5"
+                  :colspan="opname.status === 'IN_PROGRESS' ? 5 : 6"
                   class="py-8 text-center text-sm text-gray-500"
                 >
                   Belum ada item.
                 </td>
               </tr>
               <tr
-                v-for="item in opname.items"
+                v-for="(item, index) in opname.items"
                 :key="item.id"
               >
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                  {{ index + 1 }}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
                   {{ item.product?.name || item.product_name || '-' }}
                   <span
                     v-if="item.is_unexpected"

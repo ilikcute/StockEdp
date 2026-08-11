@@ -11,7 +11,7 @@
         <thead class="bg-gray-50 text-gray-700 font-semibold sticky top-0 border-b border-gray-200">
           <tr>
             <th class="p-2.5 w-14 text-center">
-              #
+              No.
             </th>
             <th class="p-2.5 w-16 text-center">
               Status

@@ -132,7 +132,13 @@
           <tr>
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
+              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+            >
+              No.
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
             >
               SKU & Barcode
             </th>
@@ -171,7 +177,7 @@
         <tbody class="divide-y divide-gray-200 bg-white">
           <tr v-if="store.isLoading && store.items.length === 0">
             <td
-              colspan="6"
+              colspan="7"
               class="py-10 text-center text-sm text-gray-500"
             >
               Memuat data...
@@ -179,18 +185,21 @@
           </tr>
           <tr v-else-if="store.items.length === 0">
             <td
-              colspan="6"
+              colspan="7"
               class="py-10 text-center text-sm text-gray-500"
             >
               Tidak ada data produk yang ditemukan.
             </td>
           </tr>
           <tr
-            v-for="product in store.items"
+            v-for="(product, index) in store.items"
             :key="product.id"
             :class="{ 'bg-gray-50': !product.is_active }"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+              {{ (store.pagination?.from ? store.pagination.from + index : ((filters.page - 1) * filters.per_page) + index + 1) }}
+            </td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm">
               <div class="font-mono font-medium text-gray-900">
                 {{ product.sku }}
               </div>

@@ -181,34 +181,43 @@
           {{ store.validationErrors.items[0] }}
         </p>
 
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead>
+        <div class="overflow-x-auto shadow-sm border border-gray-300 rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
               <tr>
                 <th
                   scope="col"
-                  class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2"
+                  class="text-center text-xs font-medium text-gray-700 uppercase tracking-wider py-3.5 px-3 border-b border-gray-300 w-16"
+                >
+                  No.
+                </th>
+                <th
+                  scope="col"
+                  class="text-left text-xs font-medium text-gray-700 uppercase tracking-wider py-3.5 px-3 border-b border-gray-300"
                 >
                   Produk *
                 </th>
                 <th
                   scope="col"
-                  class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2 w-48"
+                  class="text-left text-xs font-medium text-gray-700 uppercase tracking-wider py-3.5 px-3 border-b border-gray-300 w-48"
                 >
                   Jumlah (Quantity) *
                 </th>
                 <th
                   scope="col"
-                  class="w-16 py-2"
+                  class="w-16 py-3.5 border-b border-gray-300"
                 />
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="divide-y divide-gray-200 bg-white">
               <tr
                 v-for="(item, index) in form.items"
                 :key="index"
               >
-                <td class="py-3 pr-4">
+                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-center text-gray-500">
+                  {{ index + 1 }}
+                </td>
+                <td class="py-3 px-3">
                   <select
                     v-model="item.product_id"
                     aria-label="Pilih Produk"

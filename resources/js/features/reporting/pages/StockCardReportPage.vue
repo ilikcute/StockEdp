@@ -239,7 +239,13 @@
                   <tr>
                     <th
                       scope="col"
-                      class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
+                      class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+                    >
+                      No.
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                     >
                       Tanggal Dokumen
                     </th>
@@ -284,18 +290,21 @@
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <tr v-if="store.data.length === 0">
                     <td
-                      colspan="7"
+                      colspan="8"
                       class="py-10 text-center text-sm text-gray-500"
                     >
                       Tidak ada pergerakan stok pada periode ini.
                     </td>
                   </tr>
                   <tr
-                    v-for="item in store.data"
+                    v-for="(item, index) in store.data"
                     :key="item.id"
                     class="hover:bg-gray-50"
                   >
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6 font-mono">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                      {{ (store.pagination?.from ? store.pagination.from + index : ((store.pagination?.current_page - 1) * 15) + index + 1) }}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       {{ item.document_date || '-' }}
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
