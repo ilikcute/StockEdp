@@ -20,7 +20,7 @@ Tujuannya: AI tidak perlu membaca ulang seluruh riwayat chat untuk memahami atur
 - Certified Version 1 SHA: `674dbf2e5b4d047fd8a67fee91a04f8caeb2b613`
 - Fase 10D: **PASS WITH CLEAN INDEPENDENT FINAL RELEASE AUDIT**
 - Version 1: **STABLE & RELEASE READY**
-- Belum deploy production
+- Operational Dashboard Fase 12A: read-only (`delta = 0`), location-scoped (`$user->getAllowedLocationIds()`), computed alerts, inventory health, operational queue, recent movement activity (max 10), top issued/received products (max 10).
 - Belum membuat Git tag
 - Belum membuat GitHub Release
 
