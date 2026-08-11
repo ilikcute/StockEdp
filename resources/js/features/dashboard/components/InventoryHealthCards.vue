@@ -1,9 +1,14 @@
 <template>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <!-- Out of Stock Card -->
-    <div
-      class="bg-white dark:bg-gray-800 rounded-xl border border-rose-200 dark:border-rose-900/50 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-      @click="navigateTo('/inventory-balances')"
+    <component
+      :is="canNavigate('reports.inventory_balance.view') ? 'button' : 'div'"
+      type="button"
+      :class="[
+        'bg-white dark:bg-gray-800 rounded-xl border border-rose-200 dark:border-rose-900/50 p-4 shadow-sm text-left transition-all',
+        canNavigate('reports.inventory_balance.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-rose-500' : ''
+      ]"
+      @click="canNavigate('reports.inventory_balance.view') && navigateTo('reports.inventory-balances')"
     >
       <div class="flex items-center justify-between">
         <span class="text-xs font-medium text-rose-600 dark:text-rose-400 uppercase tracking-wider">Stok Habis (0)</span>
@@ -28,16 +33,24 @@
           id="stat-out-of-stock-count"
           class="text-2xl font-bold text-gray-900 dark:text-white"
         >{{ data.out_of_stock_count || 0 }}</span>
-        <span class="text-xs text-rose-600 dark:text-rose-400 font-medium group-hover:underline flex items-center gap-1">
+        <span
+          v-if="canNavigate('reports.inventory_balance.view')"
+          class="text-xs text-rose-600 dark:text-rose-400 font-medium group-hover:underline flex items-center gap-1"
+        >
           Lihat Persediaan &rarr;
         </span>
       </div>
-    </div>
+    </component>
 
     <!-- Low Stock Card -->
-    <div
-      class="bg-white dark:bg-gray-800 rounded-xl border border-amber-200 dark:border-amber-900/50 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-      @click="navigateTo('/reports/low-stock')"
+    <component
+      :is="canNavigate('reports.low_stock.view') ? 'button' : 'div'"
+      type="button"
+      :class="[
+        'bg-white dark:bg-gray-800 rounded-xl border border-amber-200 dark:border-amber-900/50 p-4 shadow-sm text-left transition-all',
+        canNavigate('reports.low_stock.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-amber-500' : ''
+      ]"
+      @click="canNavigate('reports.low_stock.view') && navigateTo('reports.low-stock')"
     >
       <div class="flex items-center justify-between">
         <span class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider">Di Bawah Min. Stok</span>
@@ -62,16 +75,24 @@
           id="stat-low-stock-count"
           class="text-2xl font-bold text-gray-900 dark:text-white"
         >{{ data.low_stock_count || 0 }}</span>
-        <span class="text-xs text-amber-600 dark:text-amber-400 font-medium group-hover:underline flex items-center gap-1">
+        <span
+          v-if="canNavigate('reports.low_stock.view')"
+          class="text-xs text-amber-600 dark:text-amber-400 font-medium group-hover:underline flex items-center gap-1"
+        >
           Laporan Stok &rarr;
         </span>
       </div>
-    </div>
+    </component>
 
     <!-- Active Opname Card -->
-    <div
-      class="bg-white dark:bg-gray-800 rounded-xl border border-purple-200 dark:border-purple-900/50 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-      @click="navigateTo('/stock-opnames')"
+    <component
+      :is="canNavigate('stock_opnames.view') ? 'button' : 'div'"
+      type="button"
+      :class="[
+        'bg-white dark:bg-gray-800 rounded-xl border border-purple-200 dark:border-purple-900/50 p-4 shadow-sm text-left transition-all',
+        canNavigate('stock_opnames.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-purple-500' : ''
+      ]"
+      @click="canNavigate('stock_opnames.view') && navigateTo('stockOpnames')"
     >
       <div class="flex items-center justify-between">
         <span class="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wider">Opname Aktif</span>
@@ -86,7 +107,7 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 022 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
             />
           </svg>
         </div>
@@ -96,16 +117,24 @@
           id="stat-active-opname-count"
           class="text-2xl font-bold text-gray-900 dark:text-white"
         >{{ data.active_opname_count || 0 }}</span>
-        <span class="text-xs text-purple-600 dark:text-purple-400 font-medium group-hover:underline flex items-center gap-1">
+        <span
+          v-if="canNavigate('stock_opnames.view')"
+          class="text-xs text-purple-600 dark:text-purple-400 font-medium group-hover:underline flex items-center gap-1"
+        >
           Kelola Opname &rarr;
         </span>
       </div>
-    </div>
+    </component>
 
     <!-- Frozen Location Card -->
-    <div
-      class="bg-white dark:bg-gray-800 rounded-xl border border-cyan-200 dark:border-cyan-900/50 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-      @click="navigateTo('/locations')"
+    <component
+      :is="canNavigate('locations.view') ? 'button' : 'div'"
+      type="button"
+      :class="[
+        'bg-white dark:bg-gray-800 rounded-xl border border-cyan-200 dark:border-cyan-900/50 p-4 shadow-sm text-left transition-all',
+        canNavigate('locations.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-cyan-500' : ''
+      ]"
+      @click="canNavigate('locations.view') && navigateTo('locations.index')"
     >
       <div class="flex items-center justify-between">
         <span class="text-xs font-medium text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Lokasi Beku</span>
@@ -130,16 +159,20 @@
           id="stat-frozen-location-count"
           class="text-2xl font-bold text-gray-900 dark:text-white"
         >{{ data.frozen_location_count || 0 }}</span>
-        <span class="text-xs text-cyan-600 dark:text-cyan-400 font-medium group-hover:underline flex items-center gap-1">
+        <span
+          v-if="canNavigate('locations.view')"
+          class="text-xs text-cyan-600 dark:text-cyan-400 font-medium group-hover:underline flex items-center gap-1"
+        >
           Status Lokasi &rarr;
         </span>
       </div>
-    </div>
+    </component>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../auth/stores/use_auth_store';
 
 defineProps({
   data: {
@@ -154,10 +187,15 @@ defineProps({
 });
 
 const router = useRouter();
+const authStore = useAuthStore();
 
-const navigateTo = (path) => {
-  if (router) {
-    router.push(path);
+const canNavigate = (permission) => {
+  return authStore && authStore.hasPermission ? authStore.hasPermission(permission) : false;
+};
+
+const navigateTo = (routeName) => {
+  if (router && routeName) {
+    router.push({ name: routeName });
   }
 };
 </script>

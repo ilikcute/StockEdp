@@ -19,10 +19,17 @@ Tujuannya: AI tidak perlu membaca ulang seluruh riwayat chat untuk memahami atur
 
 - Certified Version 1 SHA: `674dbf2e5b4d047fd8a67fee91a04f8caeb2b613`
 - Fase 10D: **PASS WITH CLEAN INDEPENDENT FINAL RELEASE AUDIT**
-- Version 1: **STABLE & RELEASE READY**
-- Operational Dashboard Fase 12A: read-only (`delta = 0`), location-scoped (`$user->getAllowedLocationIds()`), computed alerts, inventory health, operational queue, recent movement activity (max 10), top issued/received products (max 10).
+- Belum deploy production
 - Belum membuat Git tag
 - Belum membuat GitHub Release
+
+## Post-Version-1 Enhancements
+
+### Fase 11A — Master Data Bulk Import
+- Bulk import Categories, Units, Locations, Products via CSV UTF-8 template, validate/preview, & transactional commit.
+
+### Fase 12A — Operational Inventory Dashboard & Computed Alert Center
+- Read-only (`delta = 0`), location-scoped (`$user->getAllowedLocationIds()`), computed alerts, inventory health, operational queue, period activity event-time basis, recent activity (max 10, created_at DESC), top issued/received products (max 10, ISSUE/RECEIPT only), assignment-scoped filter options.
 
 Catatan: commit dokumentasi setelah SHA di atas boleh membuat HEAD bergerak. Jangan menganggap perubahan dokumentasi sebagai perubahan source aplikasi. Jika source/test/migration/dependency berubah setelah baseline ini, lakukan regression baru sebelum mempertahankan status release.
 

@@ -136,4 +136,114 @@ class DashboardTopMovementsTest extends TestCase
         $this->assertSame($p1->sku, $topReceived[0]['sku']);
         $this->assertSame('500.0000', $topReceived[0]['total_quantity']);
     }
+
+    public function test_top_movements_excludes_transfer_adjustment_and_opname_movements(): void
+    {
+        $cat = Category::create(['code' => 'CAT-EXCL', 'name' => 'Cat Excl', 'is_active' => true]);
+        $unit = Unit::create(['code' => 'UNT-EXCL', 'name' => 'Unit Excl', 'symbol' => 'ue', 'is_active' => true]);
+
+        $p = Product::create([
+            'sku' => 'PRD-EXCL-001',
+            'name' => 'Exclusion Product',
+            'category_id' => $cat->id,
+            'unit_id' => $unit->id,
+            'is_active' => true,
+        ]);
+
+        // Outflows for P: ISSUE (10.0000), TRANSFER_OUT (999.0000), ADJUSTMENT_OUT (888.0000), OPNAME_OUT (777.0000)
+        StockMovement::create([
+            'movement_id' => 'MOV-EX-01',
+            'reference_type' => 'App\Features\Inventory\Models\StockIssue',
+            'reference_id' => 10,
+            'product_id' => $p->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::ISSUE->value,
+            'quantity' => '10.0000',
+            'quantity_before' => '10.0000',
+            'quantity_after' => '0.0000',
+            'created_by' => $this->admin->id,
+            'occurred_at' => now(),
+        ]);
+        StockMovement::create([
+            'movement_id' => 'MOV-EX-02',
+            'reference_type' => 'App\Features\Inventory\Models\StockTransfer',
+            'reference_id' => 11,
+            'product_id' => $p->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::TRANSFER_OUT->value,
+            'quantity' => '999.0000',
+            'quantity_before' => '999.0000',
+            'quantity_after' => '0.0000',
+            'created_by' => $this->admin->id,
+            'occurred_at' => now(),
+        ]);
+        StockMovement::create([
+            'movement_id' => 'MOV-EX-03',
+            'reference_type' => 'App\Features\Inventory\Models\StockAdjustment',
+            'reference_id' => 12,
+            'product_id' => $p->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::ADJUSTMENT_OUT->value,
+            'quantity' => '888.0000',
+            'quantity_before' => '888.0000',
+            'quantity_after' => '0.0000',
+            'created_by' => $this->admin->id,
+            'occurred_at' => now(),
+        ]);
+        StockMovement::create([
+            'movement_id' => 'MOV-EX-04',
+            'reference_type' => 'App\Features\Inventory\Models\StockOpname',
+            'reference_id' => 13,
+            'product_id' => $p->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::OPNAME_OUT->value,
+            'quantity' => '777.0000',
+            'quantity_before' => '777.0000',
+            'quantity_after' => '0.0000',
+            'created_by' => $this->admin->id,
+            'occurred_at' => now(),
+        ]);
+
+        // Inflows for P: RECEIPT (20.0000), TRANSFER_IN (999.0000), ADJUSTMENT_IN (888.0000), OPNAME_IN (777.0000)
+        StockMovement::create([
+            'movement_id' => 'MOV-EX-05',
+            'reference_type' => 'App\Features\Inventory\Models\StockReceipt',
+            'reference_id' => 14,
+            'product_id' => $p->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::RECEIPT->value,
+            'quantity' => '20.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '20.0000',
+            'created_by' => $this->admin->id,
+            'occurred_at' => now(),
+        ]);
+        StockMovement::create([
+            'movement_id' => 'MOV-EX-06',
+            'reference_type' => 'App\Features\Inventory\Models\StockTransfer',
+            'reference_id' => 15,
+            'product_id' => $p->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::TRANSFER_IN->value,
+            'quantity' => '999.0000',
+            'quantity_before' => '0.0000',
+            'quantity_after' => '999.0000',
+            'created_by' => $this->admin->id,
+            'occurred_at' => now(),
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/dashboard');
+        $response->assertOk();
+
+        $topIssued = $response->json('data.top_issued_products');
+        $topReceived = $response->json('data.top_received_products');
+
+        $this->assertCount(1, $topIssued);
+        $this->assertSame('10.0000', $topIssued[0]['total_quantity']);
+        $this->assertSame(1, $topIssued[0]['movement_count']);
+
+        $this->assertCount(1, $topReceived);
+        $this->assertSame('20.0000', $topReceived[0]['total_quantity']);
+        $this->assertSame(1, $topReceived[0]['movement_count']);
+    }
 }

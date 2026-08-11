@@ -4,7 +4,10 @@
       <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
         <!-- Location Dropdown -->
         <div class="w-full sm:w-64">
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">
+          <label
+            for="dashboard-location-filter"
+            class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider"
+          >
             Lokasi Persediaan
           </label>
           <select
@@ -65,7 +68,7 @@
           id="refresh-dashboard-btn"
           type="button"
           :disabled="loading"
-          class="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+          class="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           @click="$emit('refresh')"
         >
           <svg

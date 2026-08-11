@@ -26,9 +26,14 @@
 
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       <!-- Receipt Drafts -->
-      <div
-        class="bg-gray-50 dark:bg-gray-900/50 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 rounded-lg p-3 transition-all cursor-pointer group"
-        @click="navigateTo('/stock-receipts')"
+      <component
+        :is="canNavigate('stock_receipts.view') ? 'button' : 'div'"
+        type="button"
+        :class="[
+          'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-left transition-all',
+          canNavigate('stock_receipts.view') ? 'hover:bg-blue-50/50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500' : ''
+        ]"
+        @click="canNavigate('stock_receipts.view') && navigateTo('inventory.receipts')"
       >
         <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate">Draft Penerimaan</span>
         <div class="mt-2 flex items-baseline justify-between">
@@ -36,14 +41,22 @@
             id="queue-receipt-draft-count"
             class="text-xl font-bold text-gray-900 dark:text-white"
           >{{ data.receipt_draft_count || 0 }}</span>
-          <span class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          <span
+            v-if="canNavigate('stock_receipts.view')"
+            class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold group-hover:translate-x-0.5 transition-transform"
+          >&rarr;</span>
         </div>
-      </div>
+      </component>
 
       <!-- Issue Drafts -->
-      <div
-        class="bg-gray-50 dark:bg-gray-900/50 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 rounded-lg p-3 transition-all cursor-pointer group"
-        @click="navigateTo('/stock-issues')"
+      <component
+        :is="canNavigate('stock_issues.view') ? 'button' : 'div'"
+        type="button"
+        :class="[
+          'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-left transition-all',
+          canNavigate('stock_issues.view') ? 'hover:bg-blue-50/50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500' : ''
+        ]"
+        @click="canNavigate('stock_issues.view') && navigateTo('inventory.issues')"
       >
         <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate">Draft Pengeluaran</span>
         <div class="mt-2 flex items-baseline justify-between">
@@ -51,14 +64,22 @@
             id="queue-issue-draft-count"
             class="text-xl font-bold text-gray-900 dark:text-white"
           >{{ data.issue_draft_count || 0 }}</span>
-          <span class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          <span
+            v-if="canNavigate('stock_issues.view')"
+            class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold group-hover:translate-x-0.5 transition-transform"
+          >&rarr;</span>
         </div>
-      </div>
+      </component>
 
       <!-- Transfer Awaiting Receipt -->
-      <div
-        class="bg-gray-50 dark:bg-gray-900/50 hover:bg-amber-50/50 dark:hover:bg-amber-900/20 border border-gray-200 dark:border-gray-700 hover:border-amber-300 dark:hover:border-amber-700 rounded-lg p-3 transition-all cursor-pointer group"
-        @click="navigateTo('/stock-transfers')"
+      <component
+        :is="canNavigate('stock_transfers.view') ? 'button' : 'div'"
+        type="button"
+        :class="[
+          'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-left transition-all',
+          canNavigate('stock_transfers.view') ? 'hover:bg-amber-50/50 dark:hover:bg-amber-900/20 hover:border-amber-300 dark:hover:border-amber-700 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-amber-500' : ''
+        ]"
+        @click="canNavigate('stock_transfers.view') && navigateTo('inventory.transfers')"
       >
         <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate">Transfer Transit</span>
         <div class="mt-2 flex items-baseline justify-between">
@@ -66,14 +87,22 @@
             id="queue-transfer-awaiting-receipt-count"
             class="text-xl font-bold text-gray-900 dark:text-white"
           >{{ data.transfer_awaiting_receipt_count || 0 }}</span>
-          <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          <span
+            v-if="canNavigate('stock_transfers.view')"
+            class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold group-hover:translate-x-0.5 transition-transform"
+          >&rarr;</span>
         </div>
-      </div>
+      </component>
 
       <!-- Adjustment Pending -->
-      <div
-        class="bg-gray-50 dark:bg-gray-900/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 rounded-lg p-3 transition-all cursor-pointer group"
-        @click="navigateTo('/stock-adjustments')"
+      <component
+        :is="canNavigate('stock_adjustments.view') ? 'button' : 'div'"
+        type="button"
+        :class="[
+          'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-left transition-all',
+          canNavigate('stock_adjustments.view') ? 'hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 hover:border-indigo-300 dark:hover:border-indigo-700 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-indigo-500' : ''
+        ]"
+        @click="canNavigate('stock_adjustments.view') && navigateTo('inventory.adjustments')"
       >
         <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate">Draft Penyesuaian</span>
         <div class="mt-2 flex items-baseline justify-between">
@@ -81,14 +110,22 @@
             id="queue-adjustment-pending-count"
             class="text-xl font-bold text-gray-900 dark:text-white"
           >{{ data.adjustment_pending_count || 0 }}</span>
-          <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          <span
+            v-if="canNavigate('stock_adjustments.view')"
+            class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold group-hover:translate-x-0.5 transition-transform"
+          >&rarr;</span>
         </div>
-      </div>
+      </component>
 
       <!-- Opname In Progress -->
-      <div
-        class="bg-gray-50 dark:bg-gray-900/50 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 rounded-lg p-3 transition-all cursor-pointer group"
-        @click="navigateTo('/stock-opnames')"
+      <component
+        :is="canNavigate('stock_opnames.view') ? 'button' : 'div'"
+        type="button"
+        :class="[
+          'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-left transition-all',
+          canNavigate('stock_opnames.view') ? 'hover:bg-purple-50/50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-700 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-purple-500' : ''
+        ]"
+        @click="canNavigate('stock_opnames.view') && navigateTo('stockOpnames')"
       >
         <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate">Opname Berlangsung</span>
         <div class="mt-2 flex items-baseline justify-between">
@@ -96,30 +133,42 @@
             id="queue-opname-in-progress-count"
             class="text-xl font-bold text-gray-900 dark:text-white"
           >{{ data.opname_in_progress_count || 0 }}</span>
-          <span class="text-[10px] text-purple-600 dark:text-purple-400 font-semibold group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          <span
+            v-if="canNavigate('stock_opnames.view')"
+            class="text-[10px] text-purple-600 dark:text-purple-400 font-semibold group-hover:translate-x-0.5 transition-transform"
+          >&rarr;</span>
         </div>
-      </div>
+      </component>
 
       <!-- Opname Awaiting Post -->
-      <div
-        class="bg-gray-50 dark:bg-gray-900/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 border border-gray-200 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700 rounded-lg p-3 transition-all cursor-pointer group"
-        @click="navigateTo('/stock-opnames')"
+      <component
+        :is="canNavigate('stock_opnames.view') ? 'button' : 'div'"
+        type="button"
+        :class="[
+          'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-left transition-all',
+          canNavigate('stock_opnames.view') ? 'hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-emerald-500' : ''
+        ]"
+        @click="canNavigate('stock_opnames.view') && navigateTo('stockOpnames')"
       >
-        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate">Opname Tuntas Dihitung</span>
+        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate">Opname Menunggu Post</span>
         <div class="mt-2 flex items-baseline justify-between">
           <span
             id="queue-opname-awaiting-post-count"
             class="text-xl font-bold text-gray-900 dark:text-white"
           >{{ data.opname_awaiting_post_count || 0 }}</span>
-          <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          <span
+            v-if="canNavigate('stock_opnames.view')"
+            class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold group-hover:translate-x-0.5 transition-transform"
+          >&rarr;</span>
         </div>
-      </div>
+      </component>
     </div>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../auth/stores/use_auth_store';
 
 defineProps({
   data: {
@@ -136,10 +185,15 @@ defineProps({
 });
 
 const router = useRouter();
+const authStore = useAuthStore();
 
-const navigateTo = (path) => {
-  if (router) {
-    router.push(path);
+const canNavigate = (permission) => {
+  return authStore && authStore.hasPermission ? authStore.hasPermission(permission) : false;
+};
+
+const navigateTo = (routeName) => {
+  if (router && routeName) {
+    router.push({ name: routeName });
   }
 };
 </script>

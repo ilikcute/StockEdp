@@ -11,6 +11,7 @@ class OperationalDashboardResource extends JsonResource
     {
         return [
             'filters' => $this->resource['filters'],
+            'filter_options' => $this->resource['filter_options'] ?? ['locations' => []],
             'inventory_health' => $this->resource['inventory_health'],
             'operational_queue' => $this->resource['operational_queue'],
             'period_activity' => $this->resource['period_activity'],

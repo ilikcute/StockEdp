@@ -13,17 +13,25 @@
           Pusat pemantauan kesehatan persediaan, antrean operasional, dan peringatan real-time.
         </p>
       </div>
+
+      <div
+        v-if="dashboardData?.generated_at"
+        class="text-xs text-gray-500 dark:text-gray-400 text-right bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 self-start sm:self-auto"
+      >
+        <span class="text-gray-400">Terakhir diperbarui:</span>
+        <span class="font-medium text-gray-700 dark:text-gray-200 ml-1">{{ formatTimestamp(dashboardData.generated_at) }}</span>
+      </div>
     </div>
 
     <!-- Filter Bar -->
     <DashboardFilterBar
       v-model:location-id="filters.location_id"
       v-model:period="filters.period"
-      :locations="locations"
+      :locations="dashboardData?.filter_options?.locations || []"
       :loading="loading"
       :date-from="dashboardData?.filters?.date_from"
       :date-to="dashboardData?.filters?.date_to"
-      @refresh="loadAll"
+      @refresh="fetchDashboard"
       @update:location-id="onFilterChange"
       @update:period="onFilterChange"
     />
@@ -52,7 +60,7 @@
       <button
         type="button"
         class="underline font-semibold hover:text-rose-900"
-        @click="loadAll"
+        @click="fetchDashboard"
       >
         Coba Lagi
       </button>
@@ -81,59 +89,59 @@
       <!-- 2. Operational Queue Cards -->
       <OperationalQueueCards :data="dashboardData.operational_queue" />
 
-      <!-- 3. Computed Alert Center -->
+      <!-- 3. Period Activity Cards -->
+      <PeriodActivityCards :data="dashboardData.period_activity" />
+
+      <!-- 4. Computed Alert Center -->
       <DashboardAlertList :alerts="dashboardData.alerts" />
 
-      <!-- 4. Top Movement Products Grid -->
+      <!-- 5. Top Movement Products Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <TopIssuedProducts :products="dashboardData.top_issued_products" />
         <TopReceivedProducts :products="dashboardData.top_received_products" />
       </div>
 
-      <!-- 5. Recent Inventory Activity Table -->
+      <!-- 6. Recent Inventory Activity Table -->
       <RecentInventoryActivity :activities="dashboardData.recent_activity" />
     </template>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import apiClient from '@/shared/api/api_client';
+import { onMounted } from 'vue';
 import { useDashboard } from '../composables/use_dashboard';
 import DashboardFilterBar from '../components/DashboardFilterBar.vue';
 import InventoryHealthCards from '../components/InventoryHealthCards.vue';
 import OperationalQueueCards from '../components/OperationalQueueCards.vue';
+import PeriodActivityCards from '../components/PeriodActivityCards.vue';
 import DashboardAlertList from '../components/DashboardAlertList.vue';
 import RecentInventoryActivity from '../components/RecentInventoryActivity.vue';
 import TopIssuedProducts from '../components/TopIssuedProducts.vue';
 import TopReceivedProducts from '../components/TopReceivedProducts.vue';
 
-const locations = ref([]);
 const { loading, error, dashboardData, filters, fetchDashboard } = useDashboard();
-
-const fetchLocations = async () => {
-  try {
-    const res = await apiClient.get('/locations', { params: { is_active: 1, per_page: 200 } });
-    if (res?.data?.success) {
-      locations.value = res.data.data?.data || res.data.data || [];
-    }
-  } catch (err) {
-    console.error('Failed to load locations for dashboard filter:', err);
-  }
-};
-
-const loadAll = async () => {
-  await Promise.all([
-    fetchLocations(),
-    fetchDashboard(),
-  ]);
-};
 
 const onFilterChange = () => {
   fetchDashboard();
 };
 
+const formatTimestamp = (isoString) => {
+  if (!isoString) return '-';
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }) + ' WIB';
+  } catch {
+    return isoString;
+  }
+};
+
 onMounted(() => {
-  loadAll();
+  fetchDashboard();
 });
 </script>

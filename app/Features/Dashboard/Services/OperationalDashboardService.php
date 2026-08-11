@@ -25,6 +25,7 @@ class OperationalDashboardService
         $recentActivity = $this->repository->getRecentActivity($allowedLocationIds, $locationId);
         $topIssued = $this->repository->getTopIssuedProducts($allowedLocationIds, $locationId, $dateFrom, $dateTo);
         $topReceived = $this->repository->getTopReceivedProducts($allowedLocationIds, $locationId, $dateFrom, $dateTo);
+        $filterOptions = $this->repository->getFilterOptions($allowedLocationIds);
 
         $alerts = $this->computeAlerts($inventoryHealth, $operationalQueue);
 
@@ -35,6 +36,7 @@ class OperationalDashboardService
                 'date_to' => $dateTo,
                 'location_id' => $locationId,
             ],
+            'filter_options' => $filterOptions,
             'inventory_health' => $inventoryHealth,
             'operational_queue' => $operationalQueue,
             'period_activity' => $periodActivity,
@@ -69,8 +71,8 @@ class OperationalDashboardService
                 'title' => 'Stok Habis Membutuhkan Penanganan',
                 'message' => "Terdapat {$health['out_of_stock_count']} item persediaan dengan stok 0.",
                 'count' => $health['out_of_stock_count'],
-                'route_name' => 'inventory-balances.index',
-                'permission' => PermissionCode::INVENTORY_BALANCES_VIEW->value,
+                'route_name' => 'reports.inventory-balances',
+                'permission' => PermissionCode::REPORTS_INVENTORY_BALANCE_VIEW->value,
             ];
         }
 
@@ -95,7 +97,7 @@ class OperationalDashboardService
                 'title' => 'Transfer Stok Menunggu Penerimaan',
                 'message' => "Terdapat {$queue['transfer_awaiting_receipt_count']} dokumen transfer status Dikirim yang belum diterima.",
                 'count' => $queue['transfer_awaiting_receipt_count'],
-                'route_name' => 'stock-transfers.index',
+                'route_name' => 'inventory.transfers',
                 'permission' => PermissionCode::STOCK_TRANSFERS_VIEW->value,
             ];
         }
@@ -108,7 +110,7 @@ class OperationalDashboardService
                 'title' => 'Draft Penyesuaian Stok Menunggu Posting',
                 'message' => "Terdapat {$queue['adjustment_pending_count']} draft penyesuaian stok yang belum diposting.",
                 'count' => $queue['adjustment_pending_count'],
-                'route_name' => 'stock-adjustments.index',
+                'route_name' => 'inventory.adjustments',
                 'permission' => PermissionCode::STOCK_ADJUSTMENTS_VIEW->value,
             ];
         }
@@ -121,7 +123,7 @@ class OperationalDashboardService
                 'title' => 'Stock Opname Sedang Berlangsung',
                 'message' => "Terdapat {$queue['opname_in_progress_count']} proses stock opname yang sedang dihitung.",
                 'count' => $queue['opname_in_progress_count'],
-                'route_name' => 'stock-opnames.index',
+                'route_name' => 'stockOpnames',
                 'permission' => PermissionCode::STOCK_OPNAMES_VIEW->value,
             ];
         }
@@ -134,7 +136,7 @@ class OperationalDashboardService
                 'title' => 'Hasil Stock Opname Menunggu Posting',
                 'message' => "Terdapat {$queue['opname_awaiting_post_count']} stock opname selesai dihitung dan menunggu posting.",
                 'count' => $queue['opname_awaiting_post_count'],
-                'route_name' => 'stock-opnames.index',
+                'route_name' => 'stockOpnames',
                 'permission' => PermissionCode::STOCK_OPNAMES_VIEW->value,
             ];
         }

@@ -262,3 +262,12 @@ Pertahankan kondisi ini pada perubahan berikutnya.
   - `components/`: Modular UI (`MasterDataImportModal.vue` orchestrator, `MasterDataImportInstructions.vue`, `MasterDataImportUploader.vue`, `MasterDataImportSummary.vue`, `MasterDataImportPreviewTable.vue`, `MasterDataImportErrorTable.vue`).
 - Integrasi tombol: Terintegrasi pada halaman master `CategoryPage.vue`, `UnitPage.vue`, `LocationPage.vue`, dan `ProductPage.vue` dengan proteksi permission granular (`{type}.import`).
 
+## 17. Operational Dashboard (Fase 12A)
+
+- Lokasi feature: `resources/js/features/dashboard/`
+  - `api/dashboard_api.js`: API helper untuk `GET /api/v1/dashboard`.
+  - `composables/use_dashboard.js`: Composable state `dashboardData`, `filters`, `loading`, `error`.
+  - `pages/DashboardPage.vue`: Orchestrator (0 direct HTTP/apiClient calls).
+  - `components/`: `DashboardFilterBar.vue` (assignment-scoped options), `InventoryHealthCards.vue`, `OperationalQueueCards.vue`, `PeriodActivityCards.vue`, `DashboardAlertList.vue` (permission-aware buttons), `RecentInventoryActivity.vue`, `TopIssuedProducts.vue`, `TopReceivedProducts.vue`.
+- Quantity display: 0 `parseFloat`, 0 `Number()`, 0 `toFixed()`. Direct decimal string display (`item.quantity ?? '0.0000'`).
+- Quick navigation: Semantic `<button>` / `<router-link>` dengan focus state & keyboard support, terproteksi `authStore.hasPermission(permission)`.

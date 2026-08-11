@@ -16,6 +16,9 @@ use App\Features\Inventory\Models\StockMovement;
 use App\Features\Inventory\Models\StockOpname;
 use App\Features\Inventory\Models\StockReceipt;
 use App\Features\Inventory\Models\StockTransfer;
+use App\Features\Location\Models\Location;
+use App\Features\Reporting\Helpers\DecimalQuantity;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class OperationalDashboardRepository implements OperationalDashboardRepositoryInterface
@@ -165,24 +168,31 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         }
 
         $targetLocationIds = $locationId !== null ? [$locationId] : $allowedLocationIds;
-        $startDateTime = $dateFrom.' 00:00:00';
-        $endDateTime = $dateTo.' 23:59:59';
+        $startDateTime = CarbonImmutable::parse($dateFrom, 'Asia/Jakarta')->startOfDay();
+        $endNextDateTime = CarbonImmutable::parse($dateTo, 'Asia/Jakarta')->addDay()->startOfDay();
 
-        $postedReceiptCount = StockReceipt::query()
-            ->where('status', ReceiptStatus::POSTED->value)
-            ->whereBetween('date', [$dateFrom, $dateTo])
-            ->whereHas('items', fn ($q) => $q->whereIn('location_id', $targetLocationIds))
-            ->count();
+        $postedReceiptCount = StockMovement::query()
+            ->whereIn('location_id', $targetLocationIds)
+            ->where('movement_type', MovementType::RECEIPT->value)
+            ->where('reference_type', StockReceipt::class)
+            ->where('created_at', '>=', $startDateTime)
+            ->where('created_at', '<', $endNextDateTime)
+            ->distinct()
+            ->count('reference_id');
 
-        $postedIssueCount = StockIssue::query()
-            ->where('status', IssueStatus::POSTED->value)
-            ->whereBetween('date', [$dateFrom, $dateTo])
-            ->whereHas('items', fn ($q) => $q->whereIn('location_id', $targetLocationIds))
-            ->count();
+        $postedIssueCount = StockMovement::query()
+            ->whereIn('location_id', $targetLocationIds)
+            ->where('movement_type', MovementType::ISSUE->value)
+            ->where('reference_type', StockIssue::class)
+            ->where('created_at', '>=', $startDateTime)
+            ->where('created_at', '<', $endNextDateTime)
+            ->distinct()
+            ->count('reference_id');
 
         $receivedTransferCount = StockTransfer::query()
             ->where('status', TransferStatus::RECEIVED->value)
-            ->whereBetween('transfer_date', [$dateFrom, $dateTo])
+            ->where('received_at', '>=', $startDateTime)
+            ->where('received_at', '<', $endNextDateTime)
             ->where(function ($q) use ($targetLocationIds) {
                 $q->whereIn('origin_location_id', $targetLocationIds)
                     ->orWhereIn('destination_location_id', $targetLocationIds);
@@ -191,7 +201,8 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
 
         $movementCount = StockMovement::query()
             ->whereIn('location_id', $targetLocationIds)
-            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->where('created_at', '>=', $startDateTime)
+            ->where('created_at', '<', $endNextDateTime)
             ->count();
 
         return [
@@ -228,7 +239,7 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
                 'unit_symbol' => $m->product?->unit?->symbol ?? $m->product?->unit?->name ?? '',
                 'location_code' => $m->location?->code ?? '',
                 'location_name' => $m->location?->name ?? '',
-                'quantity' => (string) $m->quantity,
+                'quantity' => DecimalQuantity::normalize((string) $m->quantity),
                 'performed_by' => $m->creator?->name ?? 'System',
             ];
         })->all();
@@ -241,20 +252,16 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         }
 
         $targetLocationIds = $locationId !== null ? [$locationId] : $allowedLocationIds;
-        $startDateTime = $dateFrom.' 00:00:00';
-        $endDateTime = $dateTo.' 23:59:59';
+        $startDateTime = CarbonImmutable::parse($dateFrom, 'Asia/Jakarta')->startOfDay();
+        $endNextDateTime = CarbonImmutable::parse($dateTo, 'Asia/Jakarta')->addDay()->startOfDay();
 
         $results = DB::table('stock_movements')
             ->join('products', 'products.id', '=', 'stock_movements.product_id')
             ->leftJoin('units', 'units.id', '=', 'products.unit_id')
             ->whereIn('stock_movements.location_id', $targetLocationIds)
-            ->whereIn('stock_movements.movement_type', [
-                MovementType::ISSUE->value,
-                MovementType::TRANSFER_OUT->value,
-                MovementType::ADJUSTMENT_OUT->value,
-                MovementType::OPNAME_OUT->value,
-            ])
-            ->whereBetween('stock_movements.created_at', [$startDateTime, $endDateTime])
+            ->where('stock_movements.movement_type', '=', MovementType::ISSUE->value)
+            ->where('stock_movements.created_at', '>=', $startDateTime)
+            ->where('stock_movements.created_at', '<', $endNextDateTime)
             ->select([
                 'products.id as product_id',
                 'products.sku',
@@ -275,7 +282,7 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
                 'sku' => $row->sku,
                 'name' => $row->product_name,
                 'unit_symbol' => $row->unit_symbol ?: ($row->unit_name ?: ''),
-                'total_quantity' => (string) sprintf('%.4f', $row->total_quantity),
+                'total_quantity' => DecimalQuantity::normalize((string) $row->total_quantity),
                 'movement_count' => (int) $row->movement_count,
             ];
         })->all();
@@ -288,20 +295,16 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         }
 
         $targetLocationIds = $locationId !== null ? [$locationId] : $allowedLocationIds;
-        $startDateTime = $dateFrom.' 00:00:00';
-        $endDateTime = $dateTo.' 23:59:59';
+        $startDateTime = CarbonImmutable::parse($dateFrom, 'Asia/Jakarta')->startOfDay();
+        $endNextDateTime = CarbonImmutable::parse($dateTo, 'Asia/Jakarta')->addDay()->startOfDay();
 
         $results = DB::table('stock_movements')
             ->join('products', 'products.id', '=', 'stock_movements.product_id')
             ->leftJoin('units', 'units.id', '=', 'products.unit_id')
             ->whereIn('stock_movements.location_id', $targetLocationIds)
-            ->whereIn('stock_movements.movement_type', [
-                MovementType::RECEIPT->value,
-                MovementType::TRANSFER_IN->value,
-                MovementType::ADJUSTMENT_IN->value,
-                MovementType::OPNAME_IN->value,
-            ])
-            ->whereBetween('stock_movements.created_at', [$startDateTime, $endDateTime])
+            ->where('stock_movements.movement_type', '=', MovementType::RECEIPT->value)
+            ->where('stock_movements.created_at', '>=', $startDateTime)
+            ->where('stock_movements.created_at', '<', $endNextDateTime)
             ->select([
                 'products.id as product_id',
                 'products.sku',
@@ -322,9 +325,33 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
                 'sku' => $row->sku,
                 'name' => $row->product_name,
                 'unit_symbol' => $row->unit_symbol ?: ($row->unit_name ?: ''),
-                'total_quantity' => (string) sprintf('%.4f', $row->total_quantity),
+                'total_quantity' => DecimalQuantity::normalize((string) $row->total_quantity),
                 'movement_count' => (int) $row->movement_count,
             ];
         })->all();
+    }
+
+    public function getFilterOptions(array $allowedLocationIds): array
+    {
+        if (empty($allowedLocationIds)) {
+            return ['locations' => []];
+        }
+
+        $locations = Location::query()
+            ->whereIn('id', $allowedLocationIds)
+            ->where('is_active', true)
+            ->orderBy('code')
+            ->select(['id', 'code', 'name'])
+            ->get()
+            ->map(fn ($loc) => [
+                'id' => $loc->id,
+                'code' => $loc->code,
+                'name' => $loc->name,
+            ])
+            ->all();
+
+        return [
+            'locations' => $locations,
+        ];
     }
 }

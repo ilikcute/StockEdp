@@ -251,15 +251,18 @@ Important discovery:
 - `DatabaseSeeder` historically creates an admin factory user with test default password, so `migrate:fresh --seed` is not release bootstrap;
 - release bootstrap uses `migrate`, `RoleAndPermissionSeeder`, then `app:create-initial-admin`.
 
-## Fase 11A — Master Data Bulk Import
+## Fase 11A — Master Data Bulk Import (Products, Categories, Units & Locations)
 
-Import massal produk, kategori, satuan, dan lokasi persediaan via CSV template validation, preview, & commit transaction.
+- Implemented bulk import for 4 master entities: Categories, Units, Locations, Products.
+- Full cycle: Template download → CSV Upload & Native Parsing (`SplFileObject`) → Backend Validation & Preview (max 20 rows) / Error Table → Transactional Commit (CREATE ONLY, All-or-Nothing, SHA256 checksum verification).
+- Reusable Vue 3 modal component `MasterDataImportModal.vue` integrated into 4 master pages with granular permissions (`{type}.import`).
+- `LocationObserver` triggered automatically to create `inventory_location_locks` without automatic `user_locations` assignment.
+- Product barcode leading zeros preserved as strings; Product `minimum_stock` maintained as 2-decimal strings (`DECIMAL(12,2)`) with 0 PHP float.
+- 0 stock movements or balance records mutated.
 
 ## Fase 12A — Operational Inventory Dashboard & Computed Alert Center
 
-Read-only Operational Dashboard & Computed Alert Center.
-- `GET /api/v1/dashboard` read-only (`delta = 0`).
-- Real-time computed alerts (zero notification tables).
-- RBAC `dashboard.view` & location scoping via `$user->getAllowedLocationIds()`.
-- Inventory Health, Operational Queue, Recent Activity (Max 10), dan Top Movement Products.
+- Read-only (`delta = 0`), location-scoped (`$user->getAllowedLocationIds()`), computed alerts, inventory health, operational queue, recent movement activity (max 10, created_at DESC), top issued/received products (max 10, ISSUE/RECEIPT only), period activity event-time basis, assignment-scoped filter options.
 - 100% Low Stock Count Parity dengan canonical Low Stock Report.
+- Zero PHP float quantity arithmetic; Zero JS Number quantity conversion on Vue UI.
+- All quick navigation buttons & alert action links permission-aware with semantic HTML focus/keyboard support.

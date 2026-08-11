@@ -312,3 +312,11 @@ Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang waj
 - Product import: resolusi kode kategori & satuan secara batch, preservasi barcode string (termasuk leading zero), minimum stock decimal 2 digit (DECIMAL(12,2)) dinormalisasi murni string/BCMath tanpa float.
 - Tidak ada mutasi persediaan atau perubahan saldo stok yang terjadi.
 
+## 17. Operational Dashboard (Fase 12A)
+
+- Endpoint `GET /api/v1/dashboard` read-only (`delta = 0`).
+- RBAC: `dashboard.view`. Location-scoped: `$user->getAllowedLocationIds()`. Unpermitted `location_id` returns `403`.
+- Computed Alerts (zero notification tables): `OUT_OF_STOCK` (`CRITICAL`), `LOW_STOCK` (`WARNING`), `TRANSFER_AWAITING_RECEIPT`, `ADJUSTMENT_PENDING`, `OPNAME_IN_PROGRESS`, `OPNAME_AWAITING_POST`, `FROZEN_LOCATION` (`INFO`).
+- Period Activity: Half-open interval `[start_of_day, start_of_next_day)` in `Asia/Jakarta`. Receipts & Issues use `created_at` posting timestamp basis; Transfers use `received_at` basis.
+- Top Issued: `MovementType::ISSUE` ONLY. Top Received: `MovementType::RECEIPT` ONLY.
+- Decimal Safety: 0 PHP float quantity arithmetic. `DecimalQuantity::normalize(...)` used for output formatting.

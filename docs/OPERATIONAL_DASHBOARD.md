@@ -70,8 +70,8 @@ Dokumentasi arsitektur, kontrak API, dan pedoman penggunaan untuk **Operational 
         "title": "Stok Habis Membutuhkan Penanganan",
         "message": "Terdapat 1 item persediaan dengan stok 0.",
         "count": 1,
-        "route_name": "inventory-balances.index",
-        "permission": "inventory_balances.view"
+        "route_name": "reports.inventory-balances",
+        "permission": "reports.inventory_balance.view"
       },
       {
         "type": "LOW_STOCK",

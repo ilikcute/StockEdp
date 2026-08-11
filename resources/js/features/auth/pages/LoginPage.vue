@@ -118,8 +118,8 @@ async function handleSubmit() {
         });
 
         if (success) {
-            // Redirect ke halaman yang dituju sebelumnya, atau default ke home/profile
-            const redirectPath = route.query.redirect ?? '/profile';
+            // Redirect ke halaman yang dituju sebelumnya, atau default ke /dashboard
+            const redirectPath = route.query.redirect ?? '/dashboard';
             router.push(redirectPath);
         }
     } catch {

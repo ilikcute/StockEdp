@@ -98,7 +98,7 @@
               <span class="font-semibold">{{ item.location_code }}</span> — {{ item.location_name }}
             </td>
             <td class="py-2.5 px-3 text-right font-mono font-bold text-gray-900 dark:text-white whitespace-nowrap">
-              {{ formatQuantity(item.quantity) }} {{ item.unit_symbol }}
+              {{ item.quantity ?? '0.0000' }} {{ item.unit_symbol }}
             </td>
             <td class="py-2.5 px-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
               {{ item.performed_by || 'System' }}
@@ -131,13 +131,6 @@ const formatDate = (isoString) => {
   } catch {
     return isoString;
   }
-};
-
-const formatQuantity = (qty) => {
-  if (qty === null || qty === undefined) return '0.0000';
-  const num = parseFloat(qty);
-  if (isNaN(num)) return String(qty);
-  return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 4 });
 };
 
 const formatTypeLabel = (type) => {

@@ -82,9 +82,9 @@
         </div>
 
         <button
-          v-if="alert.route_name"
+          v-if="alert.route_name && canNavigate(alert.permission)"
           type="button"
-          class="self-end sm:self-center px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-xs font-medium rounded-md shadow-sm transition-colors flex-shrink-0"
+          class="self-end sm:self-center px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-xs font-medium rounded-md shadow-sm transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
           @click="navigateToRoute(alert.route_name)"
         >
           Tindak Lanjuti &rarr;
@@ -96,6 +96,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../auth/stores/use_auth_store';
 
 defineProps({
   alerts: {
@@ -105,20 +106,16 @@ defineProps({
 });
 
 const router = useRouter();
+const authStore = useAuthStore();
+
+const canNavigate = (permission) => {
+  if (!permission) return true;
+  return authStore && authStore.hasPermission ? authStore.hasPermission(permission) : false;
+};
 
 const navigateToRoute = (routeName) => {
   if (router && routeName) {
-    // Map backend route_name hint to Vue router path if needed
-    const routeMap = {
-      'inventory-balances.index': '/inventory-balances',
-      'reports.low-stock': '/reports/low-stock',
-      'stock-transfers.index': '/stock-transfers',
-      'stock-adjustments.index': '/stock-adjustments',
-      'stock-opnames.index': '/stock-opnames',
-      'locations.index': '/locations',
-    };
-    const targetPath = routeMap[routeName] || `/${routeName.replace('.index', '')}`;
-    router.push(targetPath);
+    router.push({ name: routeName });
   }
 };
 

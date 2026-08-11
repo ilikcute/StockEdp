@@ -19,7 +19,7 @@
           Top 10 Produk Paling Banyak Dikeluarkan
         </h3>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-          Ringkasan total kuantitas barang keluar dalam periode terpilih.
+          Ringkasan total kuantitas barang keluar (Pengeluaran Stok) dalam periode terpilih.
         </p>
       </div>
     </div>
@@ -72,7 +72,7 @@
               </div>
             </td>
             <td class="py-2 px-2.5 text-right font-mono font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">
-              {{ formatQuantity(item.total_quantity) }} {{ item.unit_symbol }}
+              {{ item.total_quantity ?? '0.0000' }} {{ item.unit_symbol }}
             </td>
             <td class="py-2 px-2.5 text-center text-gray-500 dark:text-gray-400 font-mono text-[11px]">
               {{ item.movement_count }}x
@@ -91,11 +91,4 @@ defineProps({
     default: () => [],
   },
 });
-
-const formatQuantity = (qty) => {
-  if (qty === null || qty === undefined) return '0.0000';
-  const num = parseFloat(qty);
-  if (isNaN(num)) return String(qty);
-  return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 4 });
-};
 </script>

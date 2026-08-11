@@ -33,4 +33,9 @@ interface OperationalDashboardRepositoryInterface
      * Get top 10 received products in period.
      */
     public function getTopReceivedProducts(array $allowedLocationIds, ?int $locationId, string $dateFrom, string $dateTo): array;
+
+    /**
+     * Get assignment-scoped location filter options for dashboard.
+     */
+    public function getFilterOptions(array $allowedLocationIds): array;
 }
