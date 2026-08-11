@@ -169,7 +169,7 @@
             :key="item.id"
           >
             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-              {{ (store.transfers?.meta?.from ? store.transfers.meta.from + index : ((currentPage - 1) * 15) + index + 1) }}
+              {{ (store.transfers?.meta?.from ? store.transfers.meta.from + index : index + 1) }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
               {{ item.transfer_number }}

@@ -178,7 +178,7 @@
             :class="{ 'bg-gray-50': !item.is_active }"
           >
             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-              {{ (categoryStore.pagination?.from ? categoryStore.pagination.from + index : ((currentPage - 1) * 15) + index + 1) }}
+              {{ (categoryStore.pagination?.from ? categoryStore.pagination.from + index : index + 1) }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
               {{ item.code }}

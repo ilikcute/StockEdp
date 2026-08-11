@@ -124,7 +124,7 @@
             :key="item.id"
           >
             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-              {{ (inventoryStore.movements?.meta?.from ? inventoryStore.movements.meta.from + index : ((page - 1) * 15) + index + 1) }}
+              {{ (inventoryStore.movements?.meta?.from ? inventoryStore.movements.meta.from + index : index + 1) }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
               {{ new Date(item.occurred_at).toLocaleString('id-ID') }}

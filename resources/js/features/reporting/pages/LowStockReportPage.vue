@@ -285,7 +285,7 @@
                   class="hover:bg-gray-50"
                 >
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-                    {{ (store.pagination?.from ? store.pagination.from + index : ((filters.page - 1) * filters.per_page) + index + 1) }}
+                    {{ (store.pagination?.from ? store.pagination.from + index : index + 1) }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm">
                     <div class="font-medium text-gray-900">

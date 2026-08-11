@@ -124,7 +124,7 @@
             :key="item.id"
           >
             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-              {{ (store.receipts?.meta?.from ? store.receipts.meta.from + index : ((page - 1) * 15) + index + 1) }}
+              {{ (store.receipts?.meta?.from ? store.receipts.meta.from + index : index + 1) }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
               {{ item.receipt_number }}
