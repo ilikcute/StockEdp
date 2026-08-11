@@ -133,54 +133,21 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="store.opnames.meta && store.opnames.meta.total > 0"
-      class="mt-4 flex items-center justify-between"
-    >
-      <p class="text-sm text-gray-700">
-        Menampilkan
-        <span class="font-medium">{{ pageStart }}</span>
-        sampai
-        <span class="font-medium">{{ pageEnd }}</span>
-        dari
-        <span class="font-medium">{{ store.opnames.meta.total }}</span>
-        data
-      </p>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="currentPage === 1"
-          @click="changePage(currentPage - 1)"
-        >
-          &laquo;
-        </button>
-        <button
-          v-for="page in pageNumbers"
-          :key="page"
-          class="px-3 py-1 text-sm rounded border"
-          :class="page === currentPage ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'"
-          @click="changePage(page)"
-        >
-          {{ page }}
-        </button>
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="currentPage === store.opnames.meta.last_page"
-          @click="changePage(currentPage + 1)"
-        >
-          &raquo;
-        </button>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.opnames.meta"
+      :loading="store.isLoading"
+      @change="changePage"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useStockOpnameStore } from '../stores/useStockOpnameStore';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import StockOpnameStatusBadge from '../components/StockOpnameStatusBadge.vue';
 import StockOpnameFilters from '../components/StockOpnameFilters.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import apiClient from '@/shared/api/api_client';
 
 const store = useStockOpnameStore();
@@ -189,23 +156,6 @@ const authStore = useAuthStore();
 const locations = ref([]);
 const currentPage = ref(1);
 const activeFilters = ref({});
-
-const pageStart = computed(() => {
-    const meta = store.opnames.meta;
-    if (!meta?.per_page) return 1;
-    return (meta.current_page - 1) * meta.per_page + 1;
-});
-
-const pageEnd = computed(() => {
-    const meta = store.opnames.meta;
-    if (!meta?.per_page) return 0;
-    return Math.min(meta.current_page * meta.per_page, meta.total);
-});
-
-const pageNumbers = computed(() => {
-    const last = store.opnames.meta?.last_page ?? 1;
-    return Array.from({ length: last }, (_, i) => i + 1);
-});
 
 function hasPermission(permission) {
     return authStore.hasPermission(permission);

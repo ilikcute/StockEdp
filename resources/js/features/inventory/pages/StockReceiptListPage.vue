@@ -152,45 +152,11 @@
       </table>
     </div>
 
-    <div
-      v-if="store.receipts?.meta && store.receipts.meta.total > 0"
-      class="mt-4 flex items-center justify-between"
-    >
-      <p class="text-sm text-gray-700">
-        Menampilkan
-        <span class="font-medium">{{ ((store.receipts.meta.current_page || 1) - 1) * (store.receipts.meta.per_page || 15) + 1 }}</span>
-        sampai
-        <span class="font-medium">{{ Math.min((store.receipts.meta.current_page || 1) * (store.receipts.meta.per_page || 15), store.receipts.meta.total || 0) }}</span>
-        dari
-        <span class="font-medium">{{ store.receipts.meta.total || 0 }}</span>
-        data
-      </p>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.receipts.meta.current_page === 1"
-          @click="changePage(store.receipts.meta.current_page - 1)"
-        >
-          &laquo;
-        </button>
-        <button
-          v-for="page in store.receipts.meta.last_page"
-          :key="page"
-          class="px-3 py-1 text-sm rounded border"
-          :class="page === store.receipts.meta.current_page ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'"
-          @click="changePage(page)"
-        >
-          {{ page }}
-        </button>
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.receipts.meta.current_page === store.receipts.meta.last_page"
-          @click="changePage(store.receipts.meta.current_page + 1)"
-        >
-          &raquo;
-        </button>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.receipts?.meta"
+      :loading="store.isLoading"
+      @change="changePage"
+    />
   </div>
 </template>
 
@@ -198,6 +164,7 @@
 import { onMounted, ref, watch } from 'vue';
 import { useStockReceiptStore } from '../stores/useStockReceiptStore';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
+import BasePagination from '@/shared/components/BasePagination.vue';
 
 const store = useStockReceiptStore();
 const authStore = useAuthStore();

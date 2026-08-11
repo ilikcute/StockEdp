@@ -163,25 +163,14 @@
 
       <!-- Pagination -->
       <div
-        v-if="categoryStore.pagination && categoryStore.pagination.last_page > 1"
-        class="flex items-center justify-between px-6 py-3 border-t border-gray-100"
+        v-if="categoryStore.pagination && categoryStore.pagination.total > 0"
+        class="px-6 py-3 border-t border-gray-100"
       >
-        <span class="text-sm text-gray-500">
-          {{ categoryStore.pagination.total }} kategori
-        </span>
-        <div class="flex gap-1">
-          <button
-            v-for="page in categoryStore.pagination.last_page"
-            :key="page"
-            class="px-3 py-1 text-sm rounded-md transition-colors"
-            :class="page === categoryStore.pagination.current_page
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-600 hover:bg-gray-100'"
-            @click="goToPage(page)"
-          >
-            {{ page }}
-          </button>
-        </div>
+        <BasePagination
+          :pagination="categoryStore.pagination"
+          :loading="categoryStore.isLoading"
+          @change="goToPage"
+        />
       </div>
     </div>
 
@@ -200,7 +189,6 @@
       :category="statusCategory"
       :loading="categoryStore.isLoading"
       @confirm="handleStatusConfirm"
-      @cancel="showStatusModal = false"
     />
 
     <MasterDataImportModal
@@ -218,6 +206,7 @@ import { ref, computed, onMounted } from 'vue';
 import BaseLoading from '@shared/components/BaseLoading.vue';
 import BaseError from '@shared/components/BaseError.vue';
 import BaseEmpty from '@shared/components/BaseEmpty.vue';
+import BasePagination from '@shared/components/BasePagination.vue';
 import CategoryFormModal from '../components/CategoryFormModal.vue';
 import CategoryStatusModal from '../components/CategoryStatusModal.vue';
 import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';

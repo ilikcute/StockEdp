@@ -169,25 +169,14 @@
 
       <!-- Pagination -->
       <div
-        v-if="unitStore.pagination && unitStore.pagination.last_page > 1"
-        class="flex items-center justify-between px-6 py-3 border-t border-gray-100"
+        v-if="unitStore.pagination && unitStore.pagination.total > 0"
+        class="px-6 py-3 border-t border-gray-100"
       >
-        <span class="text-sm text-gray-500">
-          {{ unitStore.pagination.total }} satuan
-        </span>
-        <div class="flex gap-1">
-          <button
-            v-for="page in unitStore.pagination.last_page"
-            :key="page"
-            class="px-3 py-1 text-sm rounded-md transition-colors cursor-pointer"
-            :class="page === unitStore.pagination.current_page
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-600 hover:bg-gray-100'"
-            @click="goToPage(page)"
-          >
-            {{ page }}
-          </button>
-        </div>
+        <BasePagination
+          :pagination="unitStore.pagination"
+          :loading="unitStore.isLoading"
+          @change="goToPage"
+        />
       </div>
     </div>
 
@@ -224,6 +213,7 @@ import { ref, computed, onMounted } from 'vue';
 import BaseLoading from '@shared/components/BaseLoading.vue';
 import BaseError from '@shared/components/BaseError.vue';
 import BaseEmpty from '@shared/components/BaseEmpty.vue';
+import BasePagination from '@shared/components/BasePagination.vue';
 import UnitFormModal from '../components/UnitFormModal.vue';
 import UnitStatusModal from '../components/UnitStatusModal.vue';
 import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';

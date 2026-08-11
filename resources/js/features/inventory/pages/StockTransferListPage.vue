@@ -205,51 +205,11 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="store.transfers.meta && store.transfers.meta.total > 0"
-      class="mt-4 flex items-center justify-between"
-    >
-      <p class="text-sm text-gray-700">
-        Menampilkan
-        <span class="font-medium">{{ (store.transfers.meta.current_page - 1) * store.transfers.meta.per_page + 1 }}</span>
-        sampai
-        <span class="font-medium">{{ Math.min(store.transfers.meta.current_page * store.transfers.meta.per_page, store.transfers.meta.total) }}</span>
-        dari
-        <span class="font-medium">{{ store.transfers.meta.total }}</span>
-        data
-      </p>
-      <div class="flex gap-2">
-        <button
-          type="button"
-          aria-label="Halaman Sebelumnya"
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.transfers.meta.current_page === 1"
-          @click="changePage(store.transfers.meta.current_page - 1)"
-        >
-          &laquo;
-        </button>
-        <button
-          v-for="page in store.transfers.meta.last_page"
-          :key="page"
-          type="button"
-          :aria-label="`Halaman ${page}`"
-          class="px-3 py-1 text-sm rounded border"
-          :class="page === store.transfers.meta.current_page ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'"
-          @click="changePage(page)"
-        >
-          {{ page }}
-        </button>
-        <button
-          type="button"
-          aria-label="Halaman Selanjutnya"
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="store.transfers.meta.current_page === store.transfers.meta.last_page"
-          @click="changePage(store.transfers.meta.current_page + 1)"
-        >
-          &raquo;
-        </button>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.transfers.meta"
+      :loading="store.isLoading"
+      @change="changePage"
+    />
   </div>
 </template>
 
@@ -257,6 +217,7 @@
 import { onMounted, ref, watch } from 'vue';
 import { useStockTransferStore } from '../stores/useStockTransferStore';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
+import BasePagination from '@/shared/components/BasePagination.vue';
 
 const store = useStockTransferStore();
 const authStore = useAuthStore();

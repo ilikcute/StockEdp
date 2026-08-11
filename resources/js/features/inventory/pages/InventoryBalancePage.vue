@@ -134,51 +134,18 @@
       </table>
     </div>
 
-    <div
-      v-if="inventoryStore.balances.meta && inventoryStore.balances.meta.total > 0"
-      class="mt-4 flex items-center justify-between"
-    >
-      <p class="text-sm text-gray-700">
-        Menampilkan
-        <span class="font-medium">{{ (inventoryStore.balances.meta.current_page - 1) * inventoryStore.balances.meta.per_page + 1 }}</span>
-        sampai
-        <span class="font-medium">{{ Math.min(inventoryStore.balances.meta.current_page * inventoryStore.balances.meta.per_page, inventoryStore.balances.meta.total) }}</span>
-        dari
-        <span class="font-medium">{{ inventoryStore.balances.meta.total }}</span>
-        data
-      </p>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="inventoryStore.balances.meta.current_page === 1"
-          @click="changePage(inventoryStore.balances.meta.current_page - 1)"
-        >
-          &laquo;
-        </button>
-        <button
-          v-for="page in inventoryStore.balances.meta.last_page"
-          :key="page"
-          class="px-3 py-1 text-sm rounded border"
-          :class="page === inventoryStore.balances.meta.current_page ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'"
-          @click="changePage(page)"
-        >
-          {{ page }}
-        </button>
-        <button
-          class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
-          :disabled="inventoryStore.balances.meta.current_page === inventoryStore.balances.meta.last_page"
-          @click="changePage(inventoryStore.balances.meta.current_page + 1)"
-        >
-          &raquo;
-        </button>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="inventoryStore.balances.meta"
+      :loading="inventoryStore.isLoading"
+      @change="changePage"
+    />
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useInventoryStore } from '../stores/useInventoryStore';
+import BasePagination from '@/shared/components/BasePagination.vue';
 
 const inventoryStore = useInventoryStore();
 
