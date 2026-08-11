@@ -4,7 +4,7 @@
       <label class="block text-xs font-medium text-gray-700">Urutkan Berdasarkan</label>
       <select
         :value="sortBy"
-        class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emit('update:sortBy', $event.target.value)"
       >
         <option
@@ -21,7 +21,7 @@
       <label class="block text-xs font-medium text-gray-700">Arah Urutan</label>
       <select
         :value="sortOrder"
-        class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emit('update:sortOrder', $event.target.value)"
       >
         <option value="desc">
@@ -37,7 +37,7 @@
       <label class="block text-xs font-medium text-gray-700">Per Halaman</label>
       <select
         :value="perPage"
-        class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emit('update:perPage', $event.target.value)"
       >
         <option value="15">

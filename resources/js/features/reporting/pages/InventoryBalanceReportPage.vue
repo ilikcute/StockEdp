@@ -32,7 +32,7 @@
             id="search"
             v-model="filters.search"
             type="text"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3"
+            class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             placeholder="Cari SKU atau Nama Produk..."
           >
         </div>
@@ -41,7 +41,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
           <select
             v-model="filters.location_id"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">
               Semua Lokasi
@@ -60,7 +60,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
           <select
             v-model="filters.category_id"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">
               Semua Kategori
@@ -79,7 +79,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
           <select
             v-model="filters.unit_id"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">
               Semua Unit
@@ -100,7 +100,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Status Produk</label>
           <select
             v-model="filters.is_active"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">
               Semua
@@ -136,7 +136,7 @@
         <div class="flex gap-2 w-full sm:w-auto ml-auto">
           <select
             v-model="filters.sort_by"
-            class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="id">
               ID
@@ -156,7 +156,7 @@
           </select>
           <select
             v-model="filters.sort_order"
-            class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="desc">
               Menurun (Desc)
@@ -167,7 +167,7 @@
           </select>
           <select
             v-model="filters.per_page"
-            class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="15">
               15 Baris
@@ -198,7 +198,7 @@
           </div>
           <div class="mt-4">
             <button
-              class="text-sm font-medium text-red-800 hover:text-red-900 bg-red-100 px-3 py-1.5 rounded-md"
+              class="text-sm font-medium text-red-800 hover:text-red-900 bg-red-100 px-3 py-1.5 rounded-md cursor-pointer"
               @click="fetchData(1)"
             >
               Coba Lagi
@@ -212,7 +212,7 @@
     <div class="mt-6 flex flex-col relative">
       <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <div class="overflow-hidden shadow-sm border border-gray-300 md:rounded-lg">
             <div
               v-if="store.loading"
               class="absolute inset-0 bg-white/50 z-10 flex items-center justify-center"
@@ -224,25 +224,25 @@
                 <tr>
                   <th
                     scope="col"
-                    class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                    class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
                   >
                     SKU / Produk
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Kategori / Unit
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Lokasi
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Stok Posisi
                   </th>

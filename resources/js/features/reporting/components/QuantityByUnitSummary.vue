@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="summary"
-    class="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm"
+    class="bg-gray-50 p-4 rounded-lg border border-gray-300 shadow-sm"
   >
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
       <div v-if="summary.total_rows !== undefined">
@@ -16,7 +16,7 @@
     </div>
     <div
       v-if="summary.quantity_by_unit && summary.quantity_by_unit.length > 0"
-      class="mt-3 pt-3 border-t border-gray-200"
+      class="mt-3 pt-3 border-t border-gray-300"
     >
       <span class="block text-xs text-gray-500 mb-2">Total Kuantitas per Satuan</span>
       <div class="flex flex-wrap gap-3">

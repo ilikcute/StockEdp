@@ -69,7 +69,7 @@
         <span>Total filtered item: {{ store.pagination?.total || 0 }}</span>
       </div>
 
-      <div class="rounded-lg bg-white shadow overflow-hidden">
+      <div class="rounded-lg bg-white shadow-sm border border-gray-300 overflow-hidden">
         <StockReceiptReportTable :items="store.data" />
       </div>
 

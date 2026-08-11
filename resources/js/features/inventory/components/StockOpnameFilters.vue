@@ -4,7 +4,7 @@
     <div>
       <label
         for="opname-search"
-        class="block text-xs font-medium text-gray-600 mb-1"
+        class="block text-xs font-medium text-gray-700 mb-1"
       >
         Nomor Opname
       </label>
@@ -13,7 +13,7 @@
         v-model="localFilters.search"
         type="text"
         placeholder="Cari nomor..."
-        class="block w-44 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="block w-44 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @input="emitFilters"
       >
     </div>
@@ -22,14 +22,14 @@
     <div>
       <label
         for="opname-status"
-        class="block text-xs font-medium text-gray-600 mb-1"
+        class="block text-xs font-medium text-gray-700 mb-1"
       >
         Status
       </label>
       <select
         id="opname-status"
         v-model="localFilters.status"
-        class="block rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
         <option value="">
@@ -57,14 +57,14 @@
     <div>
       <label
         for="opname-location"
-        class="block text-xs font-medium text-gray-600 mb-1"
+        class="block text-xs font-medium text-gray-700 mb-1"
       >
         Lokasi
       </label>
       <select
         id="opname-location"
         v-model="localFilters.location_id"
-        class="block rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
         <option value="">
@@ -84,7 +84,7 @@
     <div>
       <label
         for="opname-start-date"
-        class="block text-xs font-medium text-gray-600 mb-1"
+        class="block text-xs font-medium text-gray-700 mb-1"
       >
         Tanggal Dari
       </label>
@@ -92,7 +92,7 @@
         id="opname-start-date"
         v-model="localFilters.start_date"
         type="date"
-        class="block rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
     </div>
@@ -101,7 +101,7 @@
     <div>
       <label
         for="opname-end-date"
-        class="block text-xs font-medium text-gray-600 mb-1"
+        class="block text-xs font-medium text-gray-700 mb-1"
       >
         Tanggal Hingga
       </label>
@@ -109,7 +109,7 @@
         id="opname-end-date"
         v-model="localFilters.end_date"
         type="date"
-        class="block rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
     </div>
@@ -117,7 +117,7 @@
     <!-- Reset -->
     <button
       type="button"
-      class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+      class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
       @click="resetFilters"
     >
       Reset

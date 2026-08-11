@@ -15,7 +15,7 @@
     <div class="flex flex-wrap gap-2 items-center">
       <button
         type="button"
-        class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+        class="px-3 py-1 text-sm rounded-md border border-gray-300 bg-white hover:bg-gray-50 shadow-xs disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
         :disabled="pagination.current_page <= 1 || loading"
         @click="emitPage(1)"
       >
@@ -23,7 +23,7 @@
       </button>
       <button
         type="button"
-        class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+        class="px-3 py-1 text-sm rounded-md border border-gray-300 bg-white hover:bg-gray-50 shadow-xs disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
         :disabled="pagination.current_page <= 1 || loading"
         @click="emitPage(pagination.current_page - 1)"
       >
@@ -35,10 +35,10 @@
       >
         <button
           type="button"
-          class="px-3 py-1 text-sm rounded border"
+          class="px-3 py-1 text-sm rounded-md border shadow-xs cursor-pointer"
           :class="page === pagination.current_page
             ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-medium'
-            : 'border-gray-300 hover:bg-gray-50'"
+            : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'"
           :disabled="loading"
           @click="emitPage(page)"
         >
@@ -47,7 +47,7 @@
       </template>
       <button
         type="button"
-        class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+        class="px-3 py-1 text-sm rounded-md border border-gray-300 bg-white hover:bg-gray-50 shadow-xs disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
         :disabled="pagination.current_page >= pagination.last_page || loading"
         @click="emitPage(pagination.current_page + 1)"
       >
@@ -55,7 +55,7 @@
       </button>
       <button
         type="button"
-        class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+        class="px-3 py-1 text-sm rounded-md border border-gray-300 bg-white hover:bg-gray-50 shadow-xs disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
         :disabled="pagination.current_page >= pagination.last_page || loading"
         @click="emitPage(pagination.last_page)"
       >

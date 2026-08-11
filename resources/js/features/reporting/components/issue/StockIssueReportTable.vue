@@ -5,61 +5,61 @@
         <tr>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             No. Pengeluaran
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Tgl Dokumen
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Waktu Posting
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Lokasi
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Tujuan / Purpose
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Produk
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Kategori / Unit
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Quantity
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Posted By
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Notes
           </th>

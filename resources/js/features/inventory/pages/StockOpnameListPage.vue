@@ -32,7 +32,7 @@
     <!-- Error -->
     <div
       v-if="store.error"
-      class="mt-4 rounded-md bg-red-50 p-4"
+      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
     >
       <p class="text-sm font-medium text-red-800">
         {{ store.error }}
@@ -40,43 +40,43 @@
     </div>
 
     <!-- Table -->
-    <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+    <div class="mt-8 overflow-hidden shadow-sm border border-gray-300 md:rounded-lg">
       <table class="min-w-full divide-y divide-gray-300">
         <thead class="bg-gray-50">
           <tr>
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
             >
               Nomor Opname
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
             >
               Lokasi
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
             >
               Tanggal
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
             >
               Status
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
             >
               Dibuat Oleh
             </th>
             <th
               scope="col"
-              class="relative py-3.5 pl-3 pr-4 sm:pr-6"
+              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
             >
               <span class="sr-only">Aksi</span>
             </th>

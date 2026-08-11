@@ -138,25 +138,25 @@
         <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">
           Item Pengeluaran
         </h3>
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+        <div class="overflow-hidden shadow-sm border border-gray-300 md:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300">
             <thead class="bg-gray-50">
               <tr>
                 <th
                   scope="col"
-                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300"
                 >
                   Produk
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Lokasi Gudang
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
+                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Kuantitas
                 </th>

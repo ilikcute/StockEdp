@@ -5,61 +5,61 @@
         <tr>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             No. Opname
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Tgl Dokumen
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Waktu Posting
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Lokasi
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Produk
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Snapshot
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Fisik (Counted)
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Signed Variance
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Movement / Status
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Hitung / Post By
           </th>

@@ -5,55 +5,55 @@
         <tr>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             No. Transfer
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Tgl Dokumen
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Status
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Asal → Tujuan
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Produk
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Quantity
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Pengiriman
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Penerimaan
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900"
+            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
           >
             Durasi Transit
           </th>

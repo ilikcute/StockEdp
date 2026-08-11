@@ -1,11 +1,11 @@
 <template>
-  <div class="rounded-lg bg-white p-4 shadow mb-6">
+  <div class="rounded-lg bg-white p-4 border border-gray-300 shadow-sm mb-6">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       <div>
         <label class="block text-xs font-medium text-gray-700">Direction</label>
         <select
           :value="filters.direction"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @change="emit('update:filter', 'direction', $event.target.value)"
         >
           <option value="">
@@ -23,7 +23,7 @@
         <label class="block text-xs font-medium text-gray-700">Alasan / Reason Code</label>
         <select
           :value="filters.reason_code"
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @change="emit('update:filter', 'reason_code', $event.target.value)"
         >
           <option value="">
@@ -58,7 +58,7 @@
           :value="filters.search"
           type="text"
           placeholder="Cari nomor, notes..."
-          class="mt-1 block w-full rounded-md border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @input="emit('update:filter', 'search', $event.target.value)"
         >
       </div>
@@ -111,7 +111,7 @@
       <div class="flex items-end">
         <button
           type="button"
-          class="w-full rounded-md bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200"
+          class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @click="emit('reset')"
         >
           Reset Filter

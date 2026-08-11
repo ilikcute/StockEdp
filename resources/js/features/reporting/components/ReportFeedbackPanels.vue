@@ -3,7 +3,7 @@
     <!-- 1. Forbidden 403 -->
     <div
       v-if="feedbackState === 'forbidden'"
-      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+      class="mt-4 rounded-md bg-red-50 p-4 border border-red-300"
     >
       <h3 class="text-sm font-medium text-red-800">
         Akses Ditolak
@@ -16,7 +16,7 @@
     <!-- 2. Validation Errors (422, Local, or Backend Validation Errors) -->
     <div
       v-else-if="feedbackState === 'validation'"
-      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200 space-y-2"
+      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-300 space-y-2"
     >
       <p
         v-if="localValidationError"
@@ -41,7 +41,7 @@
     <!-- 3. Error / Network / Server (500, Network Failure) -->
     <div
       v-else-if="feedbackState === 'error'"
-      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+      class="mt-4 rounded-md bg-red-50 p-4 border border-red-300"
     >
       <h3 class="text-sm font-medium text-red-800">
         Gagal Memuat Data
@@ -52,14 +52,14 @@
       <div class="mt-4 flex gap-2">
         <button
           type="button"
-          class="text-sm font-medium text-red-800 hover:text-red-900 bg-red-100 px-3 py-1.5 rounded-md"
+          class="text-sm font-medium text-red-800 hover:text-red-900 bg-red-100 px-3 py-1.5 rounded-md cursor-pointer border border-red-200"
           @click="emit('retry')"
         >
           Coba Lagi
         </button>
         <button
           type="button"
-          class="text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-md"
+          class="text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-md cursor-pointer border border-gray-300"
           @click="emit('reset-filters')"
         >
           Reset Filter
@@ -81,7 +81,7 @@
     <!-- 5. Empty Result State -->
     <div
       v-else-if="feedbackState === 'empty'"
-      class="mt-4 rounded-md bg-gray-50 p-8 text-center border border-gray-200"
+      class="mt-4 rounded-md bg-gray-50 p-8 text-center border border-gray-300"
     >
       <p class="text-sm text-gray-500">
         {{ emptyMessage }}

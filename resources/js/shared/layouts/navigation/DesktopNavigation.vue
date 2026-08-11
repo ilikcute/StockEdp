@@ -53,7 +53,7 @@
 
       <div
         v-if="isInventoryOpen"
-        class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1"
+        class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white border border-gray-300 z-50 py-1"
       >
         <template
           v-for="item in inventoryNavLinks"
@@ -101,7 +101,7 @@
 
       <div
         v-if="isReportOpen"
-        class="absolute left-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1"
+        class="absolute left-0 mt-2 w-64 rounded-md shadow-lg bg-white border border-gray-300 z-50 py-1"
       >
         <div
           v-if="hasInventoryReportPermission"
