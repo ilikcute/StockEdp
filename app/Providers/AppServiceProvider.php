@@ -6,6 +6,8 @@ use App\Features\Auth\Enums\PermissionCode;
 use App\Features\Auth\Enums\RoleCode;
 use App\Features\Category\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Features\Category\Repositories\Eloquent\CategoryRepository;
+use App\Features\Dashboard\Repositories\Contracts\OperationalDashboardRepositoryInterface;
+use App\Features\Dashboard\Repositories\Eloquent\OperationalDashboardRepository;
 use App\Features\Inventory\Repositories\Contracts\InventoryBalanceRepositoryInterface;
 use App\Features\Inventory\Repositories\Contracts\StockAdjustmentRepositoryInterface;
 use App\Features\Inventory\Repositories\Contracts\StockIssueRepositoryInterface;
@@ -47,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(OperationalDashboardRepositoryInterface::class, OperationalDashboardRepository::class);
         $this->app->bind(ReportingRepositoryInterface::class, ReportingRepository::class);
 
         $this->app->bind(

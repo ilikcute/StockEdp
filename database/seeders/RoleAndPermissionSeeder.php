@@ -96,6 +96,9 @@ class RoleAndPermissionSeeder extends Seeder
 
             PermissionCode::INVENTORY_OPNAME->value => 'Stock Opname',
 
+            // Dashboard
+            PermissionCode::DASHBOARD_VIEW->value => 'Melihat Dashboard Operasional',
+
             // Reports & Users
             PermissionCode::REPORTS_VIEW->value => 'Melihat Laporan',
             PermissionCode::REPORTS_INVENTORY_BALANCE_VIEW->value => 'Melihat Laporan Saldo Stok',
@@ -125,6 +128,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         // Petugas Gudang
         $warehousePermissions = [
+            PermissionCode::DASHBOARD_VIEW->value,
             PermissionCode::PRODUCTS_VIEW->value,
             PermissionCode::CATEGORIES_VIEW->value,
             PermissionCode::UNITS_VIEW->value,
@@ -174,6 +178,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         // Supervisor Inventory
         $supervisorPermissions = [
+            PermissionCode::DASHBOARD_VIEW->value,
             PermissionCode::PRODUCTS_VIEW->value,
             PermissionCode::CATEGORIES_VIEW->value,
             PermissionCode::UNITS_VIEW->value,

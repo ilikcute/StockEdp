@@ -1,5 +1,15 @@
 <template>
   <nav class="hidden lg:flex items-center space-x-1">
+    <!-- Dashboard -->
+    <router-link
+      v-if="authStore.hasPermission('dashboard.view')"
+      to="/dashboard"
+      class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+      active-class="text-blue-600 bg-blue-50/50 font-semibold"
+    >
+      Dashboard
+    </router-link>
+
     <!-- Profil -->
     <router-link
       to="/profile"

@@ -11,6 +11,39 @@ Keputusan terbaru harus diletakkan paling atas.
 
 ---
 
+## 2026-08-11 — Keputusan Arsitektur Operational Inventory Dashboard & Alert Center (Fase 12A)
+
+**Keputusan:**
+
+### 1. Invarian Read-Only & Zero Delta
+- Endpoint `/api/v1/dashboard` bersifat **100% Read-Only** (`GET`).
+- Permintaan ke endpoint ini **TIDAK BOLEH** mengubah saldo (`inventory_balances`), pergerakan stok (`stock_movements`), atau status dokumen transaksi (`delta = 0`).
+
+### 2. On-Demand Computed Alerts
+- Tidak membuat atau menggunakan tabel alert/notifikasi terpisah (`notifications`, `alerts`, `dashboard_snapshots`).
+- Seluruh alert dihitung secara real-time saat endpoint diminta berdasarkan kondisi terkini persediaan dan antrean dokumen operasional.
+
+### 3. Canonical Parity & String Decimal Safety
+- Perhitungan `low_stock_count` pada dashboard **wajib 100% identik** dengan hasil query Laporan Stok Minimum (`/api/v1/reports/low-stock`) untuk lokasi dan kriteria yang sama.
+- Seluruh data kuantitas persediaan dipertahankan sebagai representasi desimal presisi tinggi (`0.0000`) tanpa pemotongan casting float/number.
+
+### 4. RBAC & Location Scoping
+- Menggunakan permission code `dashboard.view` yang diberikan kepada role `ADMIN`, `WAREHOUSE_OFFICER`, dan `INVENTORY_SUPERVISOR`.
+- Pemfilteran lokasi dilakukan secara ketat berdasarkan `$user->getAllowedLocationIds()`. Akses ke `location_id` di luar hak akses dikembalikan sebagai `403 Forbidden`.
+
+**Alasan:**
+- Menghindari overhead penyimpanan database dan isu sinkronisasi tabel snapshot/notifikasi.
+- Menjamin integritas data dan konsistensi penuh antara tampilan dashboard dan laporan operasional persediaan.
+
+**Alternatif yang ditolak:**
+- Persistent Notification / Alert Table: Berpotensi menimbulkan penumpukan data historis dan kerumitan manajemen state baca/belum-baca.
+- Client-side calculation: Berisiko bocor data atau ketidaksesuaian logika dengan backend.
+
+**Tinjau kembali jika:**
+- Diperlukan fitur riwayat alert historis atau pengiriman notifikasi push/email terjadwal ke pengawas gudang.
+
+---
+
 ## Format Keputusan
 
 ## [YYYY-MM-DD] — [Judul singkat]

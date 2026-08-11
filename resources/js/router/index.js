@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import NotFoundPage from '@shared/pages/NotFoundPage.vue';
 import { authRoutes } from '../features/auth/router/auth_routes.js';
+import { dashboardRoutes } from '../features/dashboard/router/dashboard_routes.js';
 import { categoryRoutes } from '../features/category/router/category_routes.js';
 import { unitRoutes } from '../features/unit/router/unit_routes.js';
 import { supplierRoutes } from '../features/supplier/router/supplier_routes.js';
@@ -14,6 +15,7 @@ const router = createRouter({
     routes: [
         // Rute fitur
         ...authRoutes,
+        ...dashboardRoutes,
         ...categoryRoutes,
         ...unitRoutes,
         ...supplierRoutes,
@@ -31,10 +33,10 @@ const router = createRouter({
             }),
         },
 
-        // Fallback default redirect / ke /profile
+        // Fallback default redirect / ke /dashboard
         {
             path: '/',
-            redirect: '/profile',
+            redirect: '/dashboard',
         },
 
         // Catchall 404
@@ -61,7 +63,7 @@ router.beforeEach(async (to, from, next) => {
 
     // 2. Cek Route Guard untuk Guest-Only Pages (misal: /login)
     if (to.meta.requiresGuest && isAuthenticated) {
-        return next('/profile');
+        return next('/dashboard');
     }
 
     // 3. Cek Route Guard untuk Protected Pages (misal: /profile)

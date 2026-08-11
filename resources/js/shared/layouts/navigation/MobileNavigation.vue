@@ -4,11 +4,20 @@
     id="mobile-navigation"
     class="lg:hidden border-b border-gray-200 bg-white px-4 pt-2 pb-4 space-y-4 max-h-[85vh] overflow-y-auto shadow-lg"
   >
-    <!-- Profil -->
+    <!-- Profil & Dashboard -->
     <div class="space-y-1">
       <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-2">
-        Pengguna
+        Utama
       </div>
+      <router-link
+        v-if="authStore.hasPermission('dashboard.view')"
+        to="/dashboard"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+        active-class="bg-blue-50 text-blue-600 font-semibold"
+        @click="emit('close')"
+      >
+        Dashboard
+      </router-link>
       <router-link
         to="/profile"
         class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
