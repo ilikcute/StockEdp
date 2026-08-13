@@ -26,6 +26,11 @@ class LocationRepository implements LocationRepositoryInterface
             $query->where('is_active', filter_var($filters['is_active'], FILTER_VALIDATE_BOOLEAN));
         }
 
+        if (isset($filters['assigned_only']) && filter_var($filters['assigned_only'], FILTER_VALIDATE_BOOLEAN)) {
+            $allowedLocationIds = $filters['allowed_location_ids'] ?? [];
+            $query->whereIn('id', $allowedLocationIds);
+        }
+
         $sortBy = $filters['sort_by'] ?? 'created_at';
         $sortOrder = strtolower($filters['sort_order'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
 

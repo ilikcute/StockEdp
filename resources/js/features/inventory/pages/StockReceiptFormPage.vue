@@ -241,7 +241,7 @@
                     inputmode="decimal"
                     class="block w-full text-right font-mono rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500"
                     required
-                    @blur="item.quantity = normalizeDecimal4String(item.quantity)"
+                    @blur="handleQtyBlur(item)"
                   >
                 </td>
                 <td class="py-2.5 px-3 text-center">
@@ -278,7 +278,13 @@ import { supplierApi } from '@/features/supplier/api/supplier_api.js';
 import { productApi } from '@/features/product/api/product_api.js';
 import { locationApi } from '@/features/location/api/location_api.js';
 import BarcodeScannerPanel from '../scanner/components/BarcodeScannerPanel.vue';
-import { addDecimal4Strings, normalizeDecimal4String } from '../scanner/utils/decimal_string.js';
+import {
+  addDecimal4Strings,
+  normalizeDecimal4String,
+  tryNormalizeDecimal4String,
+  isValidDecimal4String,
+  compareDecimal4Strings,
+} from '../scanner/utils/decimal_string.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -305,7 +311,7 @@ const fetchDependencies = async () => {
     const [supRes, prodRes, locRes] = await Promise.all([
       supplierApi.getAll({ is_active: 1, per_page: 100 }),
       productApi.getAll({ is_active: 1, per_page: 1000 }),
-      locationApi.getAll({ is_active: 1, per_page: 100 }),
+      locationApi.getAll({ is_active: 1, assigned_only: 1, per_page: 200 }),
     ]);
 
     suppliers.value = supRes.data?.data?.data || supRes.data?.data || [];
@@ -343,6 +349,13 @@ const loadReceipt = async () => {
   }
 };
 
+const handleQtyBlur = (item) => {
+  const norm = tryNormalizeDecimal4String(item.quantity);
+  if (norm !== null) {
+    item.quantity = norm;
+  }
+};
+
 const handleProductScanned = (scannedProduct) => {
   if (!scanLocationId.value) {
     errorMsg.value = 'Pilih lokasi scan terlebih dahulu.';
@@ -353,6 +366,17 @@ const handleProductScanned = (scannedProduct) => {
   const existsInProducts = products.value.some((p) => p.id === scannedProduct.id);
   if (!existsInProducts) {
     products.value.push(scannedProduct);
+  }
+
+  // Canonical replacement: if form currently has exactly 1 unselected placeholder item, replace it!
+  if (form.value.items.length === 1 && !form.value.items[0].product_id) {
+    form.value.items[0] = {
+      product_id: scannedProduct.id,
+      location_id: scanLocationId.value,
+      quantity: '1.0000',
+    };
+    errorMsg.value = '';
+    return;
   }
 
   // Check if item combination (product_id + location_id) already exists in form.items
@@ -394,11 +418,15 @@ const submitForm = async () => {
     return;
   }
 
-  // Duplicate validation
+  // Duplicate validation and strict decimal validation
   const combos = new Set();
   for (const item of form.value.items) {
     if (!item.product_id || !item.location_id) {
       errorMsg.value = 'Semua baris item harus memilih produk dan lokasi.';
+      return;
+    }
+    if (!isValidDecimal4String(item.quantity) || compareDecimal4Strings(item.quantity, '0.0000') <= 0) {
+      errorMsg.value = 'Kuantitas item harus berupa angka positif valid dengan maksimal 4 desimal.';
       return;
     }
     const key = `${item.product_id}-${item.location_id}`;

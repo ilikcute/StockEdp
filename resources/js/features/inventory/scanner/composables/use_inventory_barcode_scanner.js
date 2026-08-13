@@ -1,28 +1,35 @@
 import { ref } from 'vue';
 import { productApi } from '@/features/product/api/product_api.js';
 
-export function useInventoryBarcodeScanner(onProductFound) {
+export function useInventoryBarcodeScanner(onProductFound, onScanComplete) {
     const scanInput = ref('');
     const status = ref('READY'); // READY | SCANNING | FOUND | NOT_FOUND | INACTIVE | ERROR
     const statusMessage = ref('');
     const lastScannedProduct = ref(null);
     const isProcessing = ref(false);
+    const queueLength = ref(0);
 
-    // Rapid Scan Queue
+    // Rapid Scan Queue (FIFO)
     const scanQueue = [];
 
     const processQueue = async () => {
         if (isProcessing.value || scanQueue.length === 0) return;
 
         isProcessing.value = true;
+        queueLength.value = scanQueue.length;
         const rawBarcode = scanQueue.shift();
+        queueLength.value = scanQueue.length;
         const barcode = String(rawBarcode || '').trim();
 
         if (!barcode) {
             status.value = 'ERROR';
             statusMessage.value = 'Barcode tidak boleh kosong.';
             isProcessing.value = false;
-            processQueue();
+            if (scanQueue.length > 0) {
+                processQueue();
+            } else if (typeof onScanComplete === 'function') {
+                onScanComplete();
+            }
             return;
         }
 
@@ -38,7 +45,7 @@ export function useInventoryBarcodeScanner(onProductFound) {
             lastScannedProduct.value = product;
 
             if (typeof onProductFound === 'function') {
-                onProductFound(product);
+                await onProductFound(product);
             }
         } catch (err) {
             const errCode = err.response?.data?.code;
@@ -56,6 +63,7 @@ export function useInventoryBarcodeScanner(onProductFound) {
             }
         } finally {
             isProcessing.value = false;
+            queueLength.value = scanQueue.length;
 
             // Trigger haptic feedback if available (progressive enhancement)
             if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
@@ -70,9 +78,11 @@ export function useInventoryBarcodeScanner(onProductFound) {
                 }
             }
 
-            // Process next in queue
+            // Process next in queue sequentially
             if (scanQueue.length > 0) {
                 processQueue();
+            } else if (typeof onScanComplete === 'function') {
+                onScanComplete();
             }
         }
     };
@@ -80,6 +90,7 @@ export function useInventoryBarcodeScanner(onProductFound) {
     const enqueueScan = (barcode) => {
         if (!barcode) return;
         scanQueue.push(barcode);
+        queueLength.value = scanQueue.length;
         processQueue();
     };
 
@@ -94,6 +105,7 @@ export function useInventoryBarcodeScanner(onProductFound) {
         statusMessage,
         lastScannedProduct,
         isProcessing,
+        queueLength,
         enqueueScan,
         resetStatus,
     };

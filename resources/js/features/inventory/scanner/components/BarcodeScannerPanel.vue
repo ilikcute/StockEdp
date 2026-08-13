@@ -3,12 +3,21 @@
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
       <!-- Input Section -->
       <div class="flex-1 relative">
-        <label
-          for="barcode-scanner-input"
-          class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1"
-        >
-          {{ label }}
-        </label>
+        <div class="flex items-center justify-between mb-1">
+          <label
+            for="barcode-scanner-input"
+            class="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+          >
+            {{ label }}
+          </label>
+          <span
+            v-if="queueLength > 0"
+            class="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping" />
+            Antrean: {{ queueLength }} scan
+          </span>
+        </div>
         <div class="relative flex items-center">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             <svg
@@ -34,7 +43,7 @@
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
-            :disabled="disabled || isProcessing"
+            :disabled="disabled"
             :placeholder="placeholder"
             class="block w-full pl-10 pr-10 py-2.5 text-sm font-mono bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 min-h-[44px]"
             @keydown.enter.prevent="handleScan"
@@ -56,12 +65,12 @@
         <button
           id="btn-submit-scan"
           type="button"
-          :disabled="disabled || isProcessing || !scanInput.trim()"
+          :disabled="disabled || !scanInput.trim()"
           class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] cursor-pointer"
           @click="handleScan"
         >
           <svg
-            v-if="isProcessing"
+            v-if="isProcessing && !scanInput.trim()"
             class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
             fill="none"
             viewBox="0 0 24 24"
@@ -80,7 +89,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span v-else>🔍 Scan / Cari</span>
+          <span>🔍 Scan / Cari</span>
         </button>
       </div>
     </div>
@@ -133,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue';
+import { ref, computed, nextTick, watch } from 'vue';
 import { useInventoryBarcodeScanner } from '../composables/use_inventory_barcode_scanner';
 
 const props = defineProps({
@@ -147,16 +156,39 @@ const emit = defineEmits(['scan-success', 'scan-error']);
 
 const inputRef = ref(null);
 
+const focusInput = () => {
+  nextTick(() => {
+    if (inputRef.value && !props.disabled) {
+      inputRef.value.focus();
+    }
+  });
+};
+
 const {
   scanInput,
   status,
   statusMessage,
   isProcessing,
+  queueLength,
   enqueueScan,
   resetStatus,
-} = useInventoryBarcodeScanner((product) => {
-  emit('scan-success', product);
-});
+} = useInventoryBarcodeScanner(
+  async (product) => {
+    emit('scan-success', product);
+  },
+  () => {
+    focusInput();
+  }
+);
+
+watch(
+  () => isProcessing.value,
+  (busy) => {
+    if (!busy) {
+      focusInput();
+    }
+  }
+);
 
 const statusClasses = computed(() => {
   switch (status.value) {
@@ -175,14 +207,6 @@ const statusClasses = computed(() => {
   }
 });
 
-const focusInput = () => {
-  nextTick(() => {
-    if (inputRef.value) {
-      inputRef.value.focus();
-    }
-  });
-};
-
 const handleScan = () => {
   if (!props.locationSelected) {
     emit('scan-error', 'Lokasi belum dipilih.');
@@ -192,8 +216,8 @@ const handleScan = () => {
   const code = scanInput.value.trim();
   if (!code) return;
 
-  enqueueScan(code);
   scanInput.value = '';
+  enqueueScan(code);
   focusInput();
 };
 

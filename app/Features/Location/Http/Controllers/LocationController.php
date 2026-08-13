@@ -28,6 +28,10 @@ class LocationController extends Controller
         $this->authorize('locations.view');
 
         $filters = $request->only(['search', 'is_active', 'sort_by', 'sort_order']);
+        if ($request->has('assigned_only')) {
+            $filters['assigned_only'] = filter_var($request->get('assigned_only'), FILTER_VALIDATE_BOOLEAN);
+            $filters['allowed_location_ids'] = $request->user()?->getAllowedLocationIds() ?? [];
+        }
         $perPage = max(1, min(100, (int) $request->get('per_page', 15)));
 
         $locations = $this->repository->getPaginated($filters, $perPage);

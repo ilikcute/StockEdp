@@ -412,7 +412,7 @@ import { useStockOpnameStore } from '../stores/useStockOpnameStore';
 import { productApi } from '@/features/product/api/product_api.js';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import BarcodeScannerPanel from '../scanner/components/BarcodeScannerPanel.vue';
-import { normalizeDecimal4String } from '../scanner/utils/decimal_string.js';
+import { normalizeDecimal4String, tryNormalizeDecimal4String } from '../scanner/utils/decimal_string.js';
 
 const route = useRoute();
 const store = useStockOpnameStore();
@@ -509,13 +509,19 @@ const handleProductScanned = (scannedProduct) => {
 
 const handleCountBlur = (itemId) => {
   if (countInputs[itemId]) {
-    countInputs[itemId] = normalizeDecimal4String(countInputs[itemId]);
+    const norm = tryNormalizeDecimal4String(countInputs[itemId]);
+    if (norm !== null) {
+      countInputs[itemId] = norm;
+    }
   }
 };
 
 const handleUnexpectedBlur = () => {
   if (unexpectedForm.counted_quantity) {
-    unexpectedForm.counted_quantity = normalizeDecimal4String(unexpectedForm.counted_quantity);
+    const norm = tryNormalizeDecimal4String(unexpectedForm.counted_quantity);
+    if (norm !== null) {
+      unexpectedForm.counted_quantity = norm;
+    }
   }
 };
 

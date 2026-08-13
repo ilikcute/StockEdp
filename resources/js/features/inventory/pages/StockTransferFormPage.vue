@@ -237,7 +237,7 @@
                     inputmode="decimal"
                     class="block w-full text-right font-mono rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500"
                     required
-                    @blur="item.quantity = normalizeDecimal4String(item.quantity)"
+                    @blur="handleQtyBlur(item)"
                   >
                 </td>
                 <td class="py-2.5 px-3 text-center">
@@ -273,7 +273,13 @@ import { useStockTransferStore } from '../stores/useStockTransferStore';
 import { locationApi } from '@features/location/api/location_api.js';
 import { productApi } from '@features/product/api/product_api.js';
 import BarcodeScannerPanel from '../scanner/components/BarcodeScannerPanel.vue';
-import { addDecimal4Strings, normalizeDecimal4String } from '../scanner/utils/decimal_string.js';
+import {
+  addDecimal4Strings,
+  normalizeDecimal4String,
+  tryNormalizeDecimal4String,
+  isValidDecimal4String,
+  compareDecimal4Strings,
+} from '../scanner/utils/decimal_string.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -310,6 +316,13 @@ const validateLocations = () => {
 
 const isProductSelectedInOtherRow = (productId, currentRowIndex) => {
   return form.items.some((item, index) => index !== currentRowIndex && item.product_id === productId);
+};
+
+const handleQtyBlur = (item) => {
+  const norm = tryNormalizeDecimal4String(item.quantity);
+  if (norm !== null) {
+    item.quantity = norm;
+  }
 };
 
 const handleProductScanned = (scannedProduct) => {
@@ -357,12 +370,13 @@ const removeItemRow = (index) => {
 
 const loadMasterData = async () => {
   try {
-    const [locRes, prodRes] = await Promise.all([
-      locationApi.getAll({ is_active: true, per_page: 100 }),
-      productApi.getAll({ is_active: true, per_page: 100 }),
+    const [userLocRes, allLocRes, prodRes] = await Promise.all([
+      locationApi.getAll({ is_active: true, assigned_only: 1, per_page: 200 }),
+      locationApi.getAll({ is_active: true, per_page: 200 }),
+      productApi.getAll({ is_active: true, per_page: 1000 }),
     ]);
-    allLocations.value = locRes.data?.data?.data || locRes.data?.data || [];
-    userLocations.value = allLocations.value;
+    userLocations.value = userLocRes.data?.data?.data || userLocRes.data?.data || [];
+    allLocations.value = allLocRes.data?.data?.data || allLocRes.data?.data || [];
     products.value = prodRes.data?.data?.data || prodRes.data?.data || [];
   } catch {
     store.error = 'Gagal memuat data master lokasi atau produk.';
@@ -372,6 +386,17 @@ const loadMasterData = async () => {
 const submitForm = async () => {
   validateLocations();
   if (locationError.value) return;
+
+  for (const item of form.items) {
+    if (!item.product_id) {
+      store.error = 'Semua baris item harus memilih produk.';
+      return;
+    }
+    if (!isValidDecimal4String(item.quantity) || compareDecimal4Strings(item.quantity, '0.0000') <= 0) {
+      store.error = 'Kuantitas item harus berupa angka positif valid dengan maksimal 4 desimal.';
+      return;
+    }
+  }
 
   try {
     const payload = {

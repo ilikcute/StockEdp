@@ -146,7 +146,11 @@ class ProductBarcodeLookupTest extends TestCase
         $res100 = $this->actingAs($this->authorizedUser)->getJson('/api/v1/products/barcode-lookup?barcode='.$barcode100);
         $res100->assertOk();
 
-        // 101 chars -> 422 Unprocessable Entity
+        // 100 chars with surrounding whitespace (102 chars raw) -> trimmed before validation -> valid 200
+        $resPadded100 = $this->actingAs($this->authorizedUser)->getJson('/api/v1/products/barcode-lookup?barcode=%20'.$barcode100.'%20');
+        $resPadded100->assertOk()->assertJsonPath('data.barcode', $barcode100);
+
+        // 101 chars trimmed -> 422 Unprocessable Entity
         $res101 = $this->actingAs($this->authorizedUser)->getJson('/api/v1/products/barcode-lookup?barcode='.$barcode101);
         $res101->assertUnprocessable();
     }

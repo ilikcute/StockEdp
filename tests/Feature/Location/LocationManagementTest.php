@@ -172,4 +172,22 @@ class LocationManagementTest extends TestCase
             'is_active' => false,
         ]);
     }
+
+    public function test_assigned_only_filter_returns_only_user_assigned_locations(): void
+    {
+        $loc1 = Location::factory()->create(['name' => 'Lokasi Ditugaskan', 'is_active' => true]);
+        $loc2 = Location::factory()->create(['name' => 'Lokasi Lain', 'is_active' => true]);
+
+        $this->viewerUser->locations()->attach($loc1->id);
+
+        // Without assigned_only -> returns both locations
+        $resAll = $this->actingAs($this->viewerUser)->getJson('/api/v1/locations?is_active=1');
+        $resAll->assertOk()->assertJsonCount(2, 'data');
+
+        // With assigned_only=1 -> returns only loc1
+        $resAssigned = $this->actingAs($this->viewerUser)->getJson('/api/v1/locations?is_active=1&assigned_only=1');
+        $resAssigned->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $loc1->id);
+    }
 }
