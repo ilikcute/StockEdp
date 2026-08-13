@@ -64,10 +64,16 @@ class ProductBarcodePerformanceBenchmarkTest extends TestCase
             $durMs = round(($t1 - $t0) * 1000, 2);
             $durations[] = $durMs;
 
+            fwrite(STDOUT, "\nRequest {$req} : {$durMs} ms HTTP 200");
             $this->assertLessThan(1000.0, $durMs, "Barcode lookup Request {$req} exceeded 1000ms threshold");
         }
 
+        $minMs = min($durations);
         $maxMs = max($durations);
+        $avgMs = round(array_sum($durations) / count($durations), 2);
+
+        fwrite(STDOUT, "\nMIN     : {$minMs} ms\nMAX     : {$maxMs} ms\nAVERAGE : {$avgMs} ms\n");
+
         $this->assertLessThan(1000.0, $maxMs);
     }
 }
