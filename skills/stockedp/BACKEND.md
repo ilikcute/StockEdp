@@ -320,3 +320,13 @@ Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang waj
 - Period Activity: Half-open interval `[start_of_day, start_of_next_day)` in `Asia/Jakarta`. Receipts & Issues use `created_at` posting timestamp basis; Transfers use `received_at` basis.
 - Top Issued: `MovementType::ISSUE` ONLY. Top Received: `MovementType::RECEIPT` ONLY.
 - Decimal Safety: 0 PHP float quantity arithmetic. `DecimalQuantity::normalize(...)` used for output formatting.
+
+## 18. Barcode Lookup & Mobile Backend (Fase 12B)
+
+- Endpoint: `GET /api/v1/products/barcode-lookup?barcode=...`
+- Route Ordering: Didaftarkan sebelum `products/{product}` untuk mencegah tabrakan route-model binding.
+- RBAC: `products.view`.
+- Data Contract: Barcode string eksak (max 100). Leading zero dipertahankan utuh.
+- Semantik Status: `404 BARCODE_NOT_FOUND` jika barcode tidak ada, `409 PRODUCT_INACTIVE` jika produk nonaktif, `200` dengan Product data jika aktif.
+- Invariant Read-Only: 0 mutasi pada balances/movements (`delta = 0`).
+- Performa: Menggunakan index `products.barcode` bawaan, respons endpoint < 1.000 ms.

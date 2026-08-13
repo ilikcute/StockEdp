@@ -3,8 +3,10 @@
 namespace App\Features\Product\Http\Controllers;
 
 use App\Features\Product\Actions\CreateProductAction;
+use App\Features\Product\Actions\LookupProductByBarcodeAction;
 use App\Features\Product\Actions\SetProductStatusAction;
 use App\Features\Product\Actions\UpdateProductAction;
+use App\Features\Product\Http\Requests\ProductBarcodeLookupRequest;
 use App\Features\Product\Http\Requests\StoreProductRequest;
 use App\Features\Product\Http\Requests\UpdateProductRequest;
 use App\Features\Product\Http\Resources\ProductResource;
@@ -92,6 +94,34 @@ class ProductController extends Controller
             'success' => true,
             'message' => "Produk berhasil {$status}.",
             'data' => new ProductResource($updatedProduct),
+        ]);
+    }
+
+    public function barcodeLookup(
+        ProductBarcodeLookupRequest $request,
+        LookupProductByBarcodeAction $action
+    ): JsonResponse {
+        $result = $action->execute((string) $request->validated('barcode'));
+
+        if ($result['status'] === 'BARCODE_NOT_FOUND') {
+            return response()->json([
+                'success' => false,
+                'code' => 'BARCODE_NOT_FOUND',
+                'message' => 'Barcode tidak ditemukan.',
+            ], 404);
+        }
+
+        if ($result['status'] === 'PRODUCT_INACTIVE') {
+            return response()->json([
+                'success' => false,
+                'code' => 'PRODUCT_INACTIVE',
+                'message' => 'Produk dengan barcode ini sudah tidak aktif.',
+            ], 409);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new ProductResource($result['product']),
         ]);
     }
 }

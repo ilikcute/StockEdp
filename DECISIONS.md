@@ -791,3 +791,30 @@ refresh.
 
 **Alasan:**  
 Menjaga konsistensi data master, mencegah race condition atau modifikasi file yang tidak disengaja, dan memastikan integritas saldo stok tetap terjaga tanpa efek samping.
+
+---
+
+## 2026-08-11 — Keputusan Desain Barcode Scanner & Warehouse Mobile UX (Fase 12B)
+
+**Keputusan:**
+
+1. **Hardware Scope (HID-First & Zero New Dependencies)**:
+   - Mendukung USB/Bluetooth Barcode Scanner berbasis Keyboard Wedge (karakter barcode + Enter) serta input manual.
+   - Pindai kamera berbasis library pihak ketiga (ZXing, Quagga, html5-qrcode) ditangguhkan (deferred) untuk menjaga `0` dependency baru pada Composer dan NPM.
+2. **Kontrak Data Barcode (Leading-Zero Safety)**:
+   - Barcode disimpan sebagai string eksak (max 100) dan leading zero (misal `"000123456789"`) tidak boleh hilang atau di-cast ke angka.
+   - Lookup barcode menggunakan perbandingan eksak (`=`), bukan substring atau fuzzy search.
+   - Produk nonaktif menghasilkan `409 PRODUCT_INACTIVE` dan barcode tidak dikenal menghasilkan `404 BARCODE_NOT_FOUND`.
+3. **Endpoint Barcode Lookup Read-Only**:
+   - `GET /api/v1/products/barcode-lookup?barcode=...` didaftarkan sebelum route parameter `products/{product}` untuk mencegah tabrakan route-model binding.
+   - Endpoint diproteksi permission `products.view` dan tidak melakukan mutasi inventaris (delta = 0).
+4. **Semantik Integrasi Transaksi**:
+   - **Receipt / Issue / Transfer**: Scan berulang pada kombinasi produk + lokasi yang sama akan menambah kuantitas secara atomik sebesar `+1.0000` menggunakan aritmatika string presisi 4 desimal tanpa `parseFloat`/`Number`.
+   - **Stock Opname**: Barcode scanning **TIDAK** menambah kuantitas secara otomatis (`≠ +1.0000`). Scan hanya menyoroti baris produk dan memfokuskan input hitung fisik. Jika produk tak terduga ditemukan dan user memiliki `can_add_item`, modal dibuka dengan produk terisi otomatis.
+5. **Mode Blind Count & State Invariant**:
+   - Fitur scanner pada Opname mempertahankan mode Blind Count (tidak menampilkan saldo sistem, snapshot, atau selisih) serta menjaga concurrency versioning dan location freeze.
+6. **Mobile UX**:
+   - Panel scanner responsif pada viewport mobile (`360x800`, `390x844`), tablet (`768x1024`, `1024x768`), dan desktop dengan touch target >= 44px dan autofocus berkelanjutan.
+
+**Alasan:**
+Mempercepat input fisik barang di lapangan tanpa membuka celah bypass pada maker-checker, optimistic concurrency, dan invariant ledger saldo persediaan.

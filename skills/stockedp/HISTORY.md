@@ -266,3 +266,15 @@ Important discovery:
 - 100% Low Stock Count Parity dengan canonical Low Stock Report.
 - Zero PHP float quantity arithmetic; Zero JS Number quantity conversion on Vue UI.
 - All quick navigation buttons & alert action links permission-aware with semantic HTML focus/keyboard support.
+
+## Fase 12B — Barcode Scanner & Warehouse Mobile UX
+
+- HID-first hardware support (USB/Bluetooth Keyboard Wedge scanner, manual keyboard/numpad). Zero new dependencies (`0` composer/npm packages added).
+- Exact Barcode Lookup API (`GET /api/v1/products/barcode-lookup?barcode=...`) with `products.view` RBAC, leading-zero preservation (pure string), and active-only product constraint (409 on inactive, 404 on unknown). Read-only invariant (`delta = 0`).
+- Frontend Barcode Scanner Architecture: `BarcodeScannerPanel.vue`, `use_inventory_barcode_scanner.js` (with rapid sequential scan queue), and `decimal_string.js` (exact 4-decimal string arithmetic without JS float/Number).
+- Transaction Workflow Integrations:
+  - Stock Receipt: Scan product adds or increments quantity (`+1.0000`) for `(product_id, location_id)`.
+  - Stock Issue: Requires scan location, adds/increments item (`+1.0000`), displays available stock warning without float arithmetic.
+  - Stock Transfer: Requires origin/destination locations, adds/increments item (`+1.0000`) per `product_id`.
+  - Stock Opname: Scan locates/scrolls/focuses item row without auto-increment (`≠ +1.0000`); opens unexpected product modal if permitted; preserves blind count mode (snapshot/system quantities hidden).
+- Frontend Layering & Mobile UX: Direct `apiClient` calls removed from touched Vue files; responsive mobile layout verified on 360x800, 390x844, 768x1024, 1024x768, 1280x800.

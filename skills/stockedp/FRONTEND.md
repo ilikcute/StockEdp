@@ -271,3 +271,16 @@ Pertahankan kondisi ini pada perubahan berikutnya.
   - `components/`: `DashboardFilterBar.vue` (assignment-scoped options), `InventoryHealthCards.vue`, `OperationalQueueCards.vue`, `PeriodActivityCards.vue`, `DashboardAlertList.vue` (permission-aware buttons), `RecentInventoryActivity.vue`, `TopIssuedProducts.vue`, `TopReceivedProducts.vue`.
 - Quantity display: 0 `parseFloat`, 0 `Number()`, 0 `toFixed()`. Direct decimal string display (`item.quantity ?? '0.0000'`).
 - Quick navigation: Semantic `<button>` / `<router-link>` dengan focus state & keyboard support, terproteksi `authStore.hasPermission(permission)`.
+
+## 18. Barcode Scanner & Mobile Warehouse UX (Fase 12B)
+
+- Lokasi scanner: `resources/js/features/inventory/scanner/`
+  - `components/BarcodeScannerPanel.vue`: Form input scanner responsif (touch target >= 44px, autofocus berulang, status badge, pencegahan form submit tidak sengaja).
+  - `composables/use_inventory_barcode_scanner.js`: Sequential scan queue untuk menangani rapid scans tanpa drop event.
+  - `utils/decimal_string.js`: Exact 4-decimal arithmetic (`normalizeDecimal4String`, `addDecimal4Strings`, `compareDecimal4Strings`) tanpa float/Number conversion.
+- Integrasi Halaman Transaksi Persediaan:
+  - `StockReceiptFormPage.vue`: Integrasi scanner, scan berulang menambah kuantitas `+1.0000` per `(product_id, location_id)`.
+  - `StockIssueFormPage.vue`: Integrasi scanner, warning stok tersedia tanpa float arithmetic.
+  - `StockTransferFormPage.vue`: Integrasi scanner, duplicate key `product_id`.
+  - `StockOpnameCountPage.vue`: Integrasi scanner sebagai locator produk (tidak auto-increment `≠ +1.0000`), blind count mode dipertahankan, unexpected product flow terintegrasi.
+- Layering & Responsive: 0 direct business `apiClient` pada seluruh file `.vue` yang disentuh. Responsif pada viewport `360x800`, `390x844`, `768x1024`, `1024x768`, `1280x800`.

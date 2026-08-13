@@ -31,6 +31,13 @@ Tujuannya: AI tidak perlu membaca ulang seluruh riwayat chat untuk memahami atur
 ### Fase 12A — Operational Inventory Dashboard & Computed Alert Center
 - Read-only (`delta = 0`), location-scoped (`$user->getAllowedLocationIds()`), computed alerts, inventory health, operational queue, period activity event-time basis, recent activity (max 10, created_at DESC), top issued/received products (max 10, ISSUE/RECEIPT only), assignment-scoped filter options.
 
+### Fase 12B — Barcode Scanner & Warehouse Mobile UX
+- HID-first hardware support (USB/Bluetooth Keyboard Wedge scanner, manual keyboard/numpad). Zero new dependencies (`0` composer/npm packages added).
+- Exact Barcode Lookup API (`GET /api/v1/products/barcode-lookup?barcode=...`) with `products.view` RBAC, leading-zero preservation (pure string), and active-only product constraint (409 on inactive, 404 on unknown). Read-only invariant (`delta = 0`).
+- Frontend Barcode Scanner Architecture: `BarcodeScannerPanel.vue`, `use_inventory_barcode_scanner.js` (with rapid sequential scan queue), and `decimal_string.js` (exact 4-decimal string arithmetic without JS float/Number).
+- Transaction Workflow Integrations: Receipt (+1.0000 per product+location), Issue (+1.0000 per product+location with stock check), Transfer (+1.0000 per product), Opname (product row locator/focus without auto-increment, blind count preserved, unexpected product flow integrated).
+- Layering & Responsive: 0 direct business `apiClient` in touched `.vue` files. Responsif pada viewport `360x800`, `390x844`, `768x1024`, `1024x768`, `1280x800`.
+
 Catatan: commit dokumentasi setelah SHA di atas boleh membuat HEAD bergerak. Jangan menganggap perubahan dokumentasi sebagai perubahan source aplikasi. Jika source/test/migration/dependency berubah setelah baseline ini, lakukan regression baru sebelum mempertahankan status release.
 
 ## 3. Baca File Sesuai Tugas

@@ -128,4 +128,8 @@ Pada Fase 11A, import masal master data difokuskan pada format CSV UTF-8 native 
 
 Persistent/realtime push notifications or alert history storage are not part of Fase 12A. Operational alerts are computed dynamically on-demand during `GET /api/v1/dashboard` requests without a persistent `notifications` table.
 
+## 11. Native Camera Barcode Scanning Deferred (Fase 12B)
+
+Fitur Barcode Scanner pada Fase 12B berfokus pada perangkat keras HID (Keyboard Wedge USB/Bluetooth Barcode Scanner) dan input manual tanpa menambahkan package kamera pihak ketiga (seperti ZXing, Quagga, atau html5-qrcode). Pindai kamera langsung via browser belum diimplementasikan secara default demi menjaga stabilitas zero-dependency.
+
 
