@@ -502,7 +502,15 @@ const handleProductScanned = (scannedProduct) => {
     if (abilities.value?.can_add_item) {
       showAddUnexpected.value = true;
       unexpectedForm.product_id = scannedProduct.id;
-      unexpectedForm.counted_quantity = '1.0000';
+      unexpectedForm.counted_quantity = '';
+
+      nextTick(() => {
+        const qtyEl = document.getElementById('unexpected-qty');
+        if (qtyEl) {
+          qtyEl.focus();
+          qtyEl.select();
+        }
+      });
     } else {
       store.error = `Produk ${scannedProduct.name} (${scannedProduct.sku}) ditemukan tetapi tidak termasuk dalam sesi opname ini. Anda tidak memiliki izin menambahkan produk tak terduga.`;
     }
@@ -545,10 +553,17 @@ async function saveCount(item) {
 
 async function submitUnexpected() {
   store.resetErrors();
-  if (!unexpectedForm.product_id || unexpectedForm.counted_quantity === '') return;
+  if (!unexpectedForm.product_id) {
+    store.error = 'Pilih produk terlebih dahulu.';
+    return;
+  }
+  if (unexpectedForm.counted_quantity === '' || unexpectedForm.counted_quantity === null || unexpectedForm.counted_quantity === undefined) {
+    store.error = 'Kuantitas fisik produk tak terduga wajib diisi.';
+    return;
+  }
 
-  if (!isValidDecimal4String(unexpectedForm.counted_quantity) || compareDecimal4Strings(unexpectedForm.counted_quantity, '0.0000') <= 0) {
-    store.error = `Kuantitas fisik produk tak terduga tidak valid (${unexpectedForm.counted_quantity}). Masukkan angka positif valid dengan maksimal 4 desimal.`;
+  if (!isValidDecimal4String(unexpectedForm.counted_quantity) || compareDecimal4Strings(unexpectedForm.counted_quantity, '0.0000') < 0) {
+    store.error = `Kuantitas fisik produk tak terduga tidak valid (${unexpectedForm.counted_quantity}). Masukkan angka non-negatif valid dengan maksimal 4 desimal.`;
     return;
   }
 
