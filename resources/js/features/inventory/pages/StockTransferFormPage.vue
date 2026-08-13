@@ -343,6 +343,10 @@ const handleProductScanned = (scannedProduct) => {
 
   if (existingIndex !== -1) {
     const currentQty = form.items[existingIndex].quantity;
+    if (!isValidDecimal4String(currentQty)) {
+      store.error = `Kuantitas saat ini pada baris produk "${scannedProduct.name}" (${currentQty}) tidak valid. Harap perbaiki kuantitas sebelum melakukan scan ulang.`;
+      return;
+    }
     form.items[existingIndex].quantity = addDecimal4Strings(currentQty, '1.0000');
   } else {
     // If first item in form is empty placeholder, replace it; otherwise push

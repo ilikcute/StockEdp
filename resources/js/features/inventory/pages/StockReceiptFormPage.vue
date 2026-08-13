@@ -385,8 +385,12 @@ const handleProductScanned = (scannedProduct) => {
   );
 
   if (existingItemIndex !== -1) {
-    // Increment existing quantity by exact "1.0000" using string arithmetic
     const currentQty = form.value.items[existingItemIndex].quantity;
+    if (!isValidDecimal4String(currentQty)) {
+      errorMsg.value = `Kuantitas saat ini pada baris produk "${scannedProduct.name}" (${currentQty}) tidak valid. Harap perbaiki kuantitas sebelum melakukan scan ulang.`;
+      return;
+    }
+    // Increment existing quantity by exact "1.0000" using string arithmetic
     form.value.items[existingItemIndex].quantity = addDecimal4Strings(currentQty, '1.0000');
   } else {
     // Add new item row with initial quantity "1.0000"

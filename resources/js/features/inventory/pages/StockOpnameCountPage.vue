@@ -412,7 +412,12 @@ import { useStockOpnameStore } from '../stores/useStockOpnameStore';
 import { productApi } from '@/features/product/api/product_api.js';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import BarcodeScannerPanel from '../scanner/components/BarcodeScannerPanel.vue';
-import { normalizeDecimal4String, tryNormalizeDecimal4String } from '../scanner/utils/decimal_string.js';
+import {
+  normalizeDecimal4String,
+  tryNormalizeDecimal4String,
+  isValidDecimal4String,
+  compareDecimal4Strings,
+} from '../scanner/utils/decimal_string.js';
 
 const route = useRoute();
 const store = useStockOpnameStore();
@@ -438,8 +443,9 @@ const filteredItems = computed(() => {
     const q = searchItem.value.trim().toLowerCase();
     result = result.filter(
       (i) =>
-        (i.product?.name || i.product_name || '').toLowerCase().includes(q) ||
-        (i.product?.sku || '').toLowerCase().includes(q)
+        i.product?.name?.toLowerCase().includes(q) ||
+        i.product?.sku?.toLowerCase().includes(q) ||
+        i.product?.barcode?.toLowerCase().includes(q)
     );
   }
   return result;
@@ -457,16 +463,15 @@ watch(
   items,
   (newItems) => {
     newItems.forEach((item) => {
-      if (item.is_counted && item.counted_quantity !== null && item.counted_quantity !== undefined) {
-        if (!(item.id in countInputs)) {
-          countInputs[item.id] = normalizeDecimal4String(item.counted_quantity);
-        }
-      } else if (!(item.id in countInputs)) {
-        countInputs[item.id] = '';
+      if (countInputs[item.id] === undefined) {
+        countInputs[item.id] =
+          item.counted_quantity !== null
+            ? normalizeDecimal4String(item.counted_quantity)
+            : '';
       }
     });
   },
-  { deep: true }
+  { immediate: true }
 );
 
 const unexpectedForm = reactive({
@@ -477,26 +482,23 @@ const unexpectedForm = reactive({
 const handleProductScanned = (scannedProduct) => {
   store.resetErrors();
 
-  // 1. Search in current opname items for matching product_id
-  const matchingItem = items.value.find(
+  const existingItem = items.value.find(
     (i) => i.product_id === scannedProduct.id || i.product?.id === scannedProduct.id
   );
 
-  if (matchingItem) {
-    // Clear search and filter to ensure matching row is visible
+  if (existingItem) {
     searchItem.value = '';
     showUncountedOnly.value = false;
 
-    // Focus input field count-${matchingItem.id} without saving count automatically
     nextTick(() => {
-      const el = document.getElementById(`count-${matchingItem.id}`);
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const inputEl = document.getElementById(`count-${existingItem.id}`);
+      if (inputEl) {
+        inputEl.focus();
+        inputEl.select();
+        inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     });
   } else {
-    // 2. Unexpected product handling
     if (abilities.value?.can_add_item) {
       showAddUnexpected.value = true;
       unexpectedForm.product_id = scannedProduct.id;
@@ -529,6 +531,11 @@ async function saveCount(item) {
   const raw = countInputs[item.id];
   if (raw === '' || raw === null || raw === undefined) return;
 
+  if (!isValidDecimal4String(raw) || compareDecimal4Strings(raw, '0.0000') < 0) {
+    store.error = `Kuantitas fisik untuk "${item.product?.name || 'produk'}" tidak valid (${raw}). Masukkan angka non-negatif valid dengan maksimal 4 desimal.`;
+    return;
+  }
+
   const normalized = normalizeDecimal4String(raw);
   await store.saveItemCount(route.params.id, item.id, {
     counted_quantity: normalized,
@@ -539,6 +546,11 @@ async function saveCount(item) {
 async function submitUnexpected() {
   store.resetErrors();
   if (!unexpectedForm.product_id || unexpectedForm.counted_quantity === '') return;
+
+  if (!isValidDecimal4String(unexpectedForm.counted_quantity) || compareDecimal4Strings(unexpectedForm.counted_quantity, '0.0000') <= 0) {
+    store.error = `Kuantitas fisik produk tak terduga tidak valid (${unexpectedForm.counted_quantity}). Masukkan angka positif valid dengan maksimal 4 desimal.`;
+    return;
+  }
 
   const normalized = normalizeDecimal4String(unexpectedForm.counted_quantity);
   await store.addUnexpectedProduct(route.params.id, {

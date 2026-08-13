@@ -354,7 +354,12 @@ const fetchStock = async (index) => {
 
 const isQuantityExceeding = (item) => {
   if (!item.available_stock || !item.quantity) return false;
-  return compareDecimal4Strings(item.quantity, item.available_stock) > 0;
+  if (!isValidDecimal4String(item.quantity) || !isValidDecimal4String(item.available_stock)) return false;
+  try {
+    return compareDecimal4Strings(item.quantity, item.available_stock) > 0;
+  } catch {
+    return false;
+  }
 };
 
 const loadIssue = async () => {
@@ -422,8 +427,12 @@ const handleProductScanned = async (scannedProduct) => {
   );
 
   if (existingItemIndex !== -1) {
-    // Increment existing quantity by exact "1.0000" using string arithmetic
     const currentQty = form.value.items[existingItemIndex].quantity;
+    if (!isValidDecimal4String(currentQty)) {
+      errorMsg.value = `Kuantitas saat ini pada baris produk "${scannedProduct.name}" (${currentQty}) tidak valid. Harap perbaiki kuantitas sebelum melakukan scan ulang.`;
+      return;
+    }
+    // Increment existing quantity by exact "1.0000" using string arithmetic
     form.value.items[existingItemIndex].quantity = addDecimal4Strings(currentQty, '1.0000');
     await fetchStock(existingItemIndex);
   } else {
