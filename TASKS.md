@@ -389,3 +389,4 @@ Sebuah tugas hanya boleh ditandai selesai jika:
 - [x] Fase 11A — Master Data Bulk Import (Products, Categories, Units & Locations: Template → Validate → Preview → Import)
 - [x] Fase 12A — Operational Inventory Dashboard & Computed Alert Center (Read-only Dashboard, Computed Alerts, Location Scoping, Inventory Health & Operational Queue)
 - [x] Fase 12B — Barcode Scanner & Warehouse Mobile UX (HID/Manual Barcode Scanner, Exact Lookup, Receipt/Issue/Transfer Scanning, Opname Item Locator, Blind Count Preservation, Zero Dependency)
+- [x] Fase 12C — Reorder & Replenishment Recommendation Center (Live Decision Support, Canonical Low Stock Reuse, Pending Inbound In-Transit, Safe Source Surplus, Frozen Location Safety, Deterministic Greedy Allocation, Transfer Prefill Ergonomics)

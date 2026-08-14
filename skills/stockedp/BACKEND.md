@@ -330,3 +330,16 @@ Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang waj
 - Semantik Status: `404 BARCODE_NOT_FOUND` jika barcode tidak ada, `409 PRODUCT_INACTIVE` jika produk nonaktif, `200` dengan Product data jika aktif.
 - Invariant Read-Only: 0 mutasi pada balances/movements (`delta = 0`).
 - Performa: Menggunakan index `products.barcode` bawaan, respons endpoint < 1.000 ms.
+
+## 19. Reorder & Replenishment Recommendation Center (Fase 12C)
+
+- Endpoint: `GET /api/v1/replenishment-recommendations` dan `GET /api/v1/replenishment-recommendations/filter-options`.
+- RBAC: `replenishment.view`. Diberikan ke `ADMIN`, `WAREHOUSE_OFFICER`, dan `INVENTORY_SUPERVISOR`.
+- Invarian Read-Only: Strictly read-only (`delta = 0`), 0 persistent recommendation tables, 0 auto-generated transactions.
+- Canonical Low Stock: Menggunakan query kanonikal low stock (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
+- Inbound Tracking: Hanya menghitung `TransferStatus::SENT` inbound ke gudang target; mengurangi kebutuhan bersih (`net_replenishment_need = MAX(gross_shortage - pending_inbound, 0)`). Jika tertutup penuh $\to$ `INBOUND_COVERED`.
+- Source Surplus: Gudang sumber wajib mempertahankan `minimum_stock` miliknya (`surplus = MAX(source_on_hand - source_min_stock, 0)`).
+- Frozen Location Safety: Gudang sumber beku (`is_frozen = true`) dieliminasi dari alokasi; target beku diset `actionable = false` dengan `blocked_reason = TARGET_LOCATION_FROZEN`.
+- Alokasi Deterministik: Greedy allocation (`available_surplus DESC`, `location_id ASC`).
+- Security IDOR: Membatasi target dan kandidat sumber hanya pada `$user->getAllowedLocationIds()`.
+- Decimal Arithmetic: 0 PHP float. Semua perhitungan kuantitas menggunakan BCMath scale 4.

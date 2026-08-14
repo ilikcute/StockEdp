@@ -278,3 +278,12 @@ Important discovery:
   - Stock Transfer: Requires origin/destination locations, adds/increments item (`+1.0000`) per `product_id`.
   - Stock Opname: Scan locates/scrolls/focuses item row without auto-increment (`≠ +1.0000`); opens unexpected product modal if permitted; preserves blind count mode (snapshot/system quantities hidden).
 - Frontend Layering & Mobile UX: Direct `apiClient` calls removed from touched Vue files; responsive mobile layout verified on 360x800, 390x844, 768x1024, 1024x768, 1280x800.
+
+## Fase 12C — Reorder & Replenishment Recommendation Center
+
+- Live Decision Support System (`/api/v1/replenishment-recommendations`), strictly read-only (`delta = 0`), 0 persistent recommendation tables.
+- Canonical low-stock query reuse (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
+- Pending inbound tracking (`TransferStatus::SENT` destined for target location reduces net replenishment need).
+- Safe internal source surplus allocation (`surplus = MAX(source_on_hand - source_min_stock, 0)`). Sources retain their minimum stock.
+- Frozen location safety (frozen source warehouses excluded from allocations; frozen target marks recommendations non-actionable).
+- Deterministic greedy allocation (`available_surplus DESC, location_id ASC`), location IDOR protection, string decimal safety (BCMath scale 4), and transfer form prefill ergonomics.

@@ -132,4 +132,8 @@ Persistent/realtime push notifications or alert history storage are not part of 
 
 Fitur Barcode Scanner pada Fase 12B berfokus pada perangkat keras HID (Keyboard Wedge USB/Bluetooth Barcode Scanner) dan input manual tanpa menambahkan package kamera pihak ketiga (seperti ZXing, Quagga, atau html5-qrcode). Pindai kamera langsung via browser belum diimplementasikan secara default demi menjaga stabilitas zero-dependency.
 
+## 12. Purchasing / Supplier Optimization Deferred (Fase 12C)
+
+Modul Rekomendasi Reorder & Replenishment (Fase 12C) bertindak murni sebagai Decision Support System (DSS) berbasis stok saat ini, in-transit transfers, dan surplus gudang internal. Modul ini tidak mengasumsikan preferred supplier, lead time demand, safety-stock forecasting, ataupun pembuatan otomatis purchase request / purchase order (ditangguhkan ke Fase 14 Purchasing).
+
 

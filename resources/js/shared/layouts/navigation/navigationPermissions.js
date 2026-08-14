@@ -11,6 +11,7 @@ export const inventoryNavLinks = [
     { to: '/inventory/receipts', label: 'Penerimaan Stok', permission: 'stock_receipts.view' },
     { to: '/inventory/issues', label: 'Pengeluaran Stok', permission: 'stock_issues.view' },
     { to: '/inventory/transfers', label: 'Transfer Stok', permission: 'stock_transfers.view' },
+    { to: '/inventory/replenishment', label: 'Rekomendasi Reorder', permission: 'replenishment.view' },
     { to: '/inventory/adjustments', label: 'Penyesuaian Stok', permission: 'stock_adjustments.view' },
     { to: '/inventory/opnames', label: 'Stock Opname', permission: 'stock_opnames.view' },
 ];

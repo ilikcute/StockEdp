@@ -284,3 +284,20 @@ Pertahankan kondisi ini pada perubahan berikutnya.
   - `StockTransferFormPage.vue`: Integrasi scanner, duplicate key `product_id`.
   - `StockOpnameCountPage.vue`: Integrasi scanner sebagai locator produk (tidak auto-increment `≠ +1.0000`), blind count mode dipertahankan, unexpected product flow terintegrasi.
 - Layering & Responsive: 0 direct business `apiClient` pada seluruh file `.vue` yang disentuh. Responsif pada viewport `360x800`, `390x844`, `768x1024`, `1024x768`, `1280x800`.
+
+## 19. Reorder & Replenishment Center (Fase 12C)
+
+- Lokasi feature: `resources/js/features/replenishment/`
+  - `api/replenishment_api.js`: API helper untuk `GET /api/v1/replenishment-recommendations` dan `filter-options`.
+  - `composables/use_replenishment.js`: Composable state, reactive filters, pagination, summary metrics.
+  - `components/`:
+    - `ReplenishmentFilterBar.vue`: Location selector (assigned locations only), search, category/unit dropdowns, recommendation type & priority dropdowns, refresh button, timestamp.
+    - `ReplenishmentSummaryCards.vue`: Product count summary cards (Low Stock, Inbound Covered, Internal Transfer, Mixed, External Reorder, Critical).
+    - `ReplenishmentStatusBadge.vue`: Visual status badges for recommendation types and priorities.
+    - `SourceAllocationList.vue`: Breakdown per sister warehouse with current stock, minimum stock, surplus, suggested transfer, and "Siapkan Transfer" action.
+    - `ReplenishmentRecommendationTable.vue`: Data table displaying product, target stock, minimum, gross shortage, inbound, net need, recommendation type, source allocations, and actions.
+  - `pages/ReplenishmentPage.vue`: Orchestrator (0 direct `apiClient` in `.vue`).
+- Transfer Prefill:
+  - Form `StockTransferFormPage.vue` menangkap query parameter (`origin_location_id`, `destination_location_id`, `product_id`, `quantity`, `source=replenishment`) saat mount dalam mode create.
+  - Tidak melakukan auto-save atau mutasi otomatis.
+- Quantity display: 0 `parseFloat`, 0 `Number()`, 0 `toFixed()`. Direct decimal string display.

@@ -448,6 +448,25 @@ onMounted(async () => {
     } catch {
       // Handled by store
     }
+  } else if (route.query.source === 'replenishment') {
+    const originId = parseInt(route.query.origin_location_id, 10);
+    const destId = parseInt(route.query.destination_location_id, 10);
+    const prodId = parseInt(route.query.product_id, 10);
+    const rawQty = route.query.quantity;
+
+    if (originId && userLocations.value.some((l) => l.id === originId)) {
+      form.origin_location_id = originId;
+    }
+    if (destId && allLocations.value.some((l) => l.id === destId && l.id !== originId)) {
+      form.destination_location_id = destId;
+    }
+    if (prodId && products.value.some((p) => p.id === prodId)) {
+      const validQty = isValidDecimal4String(rawQty) && compareDecimal4Strings(rawQty, '0.0000') > 0
+        ? normalizeDecimal4String(rawQty)
+        : '1.0000';
+      form.items = [{ product_id: prodId, quantity: validQty }];
+    }
+    validateLocations();
   }
 });
 </script>

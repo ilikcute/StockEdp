@@ -70,8 +70,9 @@ enum PermissionCode: string
 
     case INVENTORY_OPNAME = 'inventory.opname';
 
-    // Dashboard
+    // Dashboard & Replenishment
     case DASHBOARD_VIEW = 'dashboard.view';
+    case REPLENISHMENT_VIEW = 'replenishment.view';
 
     // Reports & Users
     case REPORTS_VIEW = 'reports.view';

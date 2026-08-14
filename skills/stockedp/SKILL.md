@@ -38,6 +38,14 @@ Tujuannya: AI tidak perlu membaca ulang seluruh riwayat chat untuk memahami atur
 - Transaction Workflow Integrations: Receipt (+1.0000 per product+location), Issue (+1.0000 per product+location with stock check), Transfer (+1.0000 per product), Opname (product row locator/focus without auto-increment, blind count preserved, unexpected product flow integrated).
 - Layering & Responsive: 0 direct business `apiClient` in touched `.vue` files. Responsif pada viewport `360x800`, `390x844`, `768x1024`, `1024x768`, `1280x800`.
 
+### Fase 12C — Reorder & Replenishment Recommendation Center
+- Live Decision Support System (`/api/v1/replenishment-recommendations`), strictly read-only (`delta = 0`), 0 persistent recommendation tables.
+- Canonical low-stock query reuse (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
+- Pending inbound tracking (`TransferStatus::SENT` destined for target location reduces net replenishment need).
+- Safe internal source surplus allocation (`surplus = MAX(source_on_hand - source_min_stock, 0)`). Sources retain their minimum stock.
+- Frozen location safety (frozen source warehouses excluded from allocations; frozen target marks recommendations non-actionable).
+- Deterministic greedy allocation (`available_surplus DESC, location_id ASC`), location IDOR protection, string decimal safety (BCMath scale 4), and transfer form prefill ergonomics.
+
 Catatan: commit dokumentasi setelah SHA di atas boleh membuat HEAD bergerak. Jangan menganggap perubahan dokumentasi sebagai perubahan source aplikasi. Jika source/test/migration/dependency berubah setelah baseline ini, lakukan regression baru sebelum mempertahankan status release.
 
 ## 3. Baca File Sesuai Tugas

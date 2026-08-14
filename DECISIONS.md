@@ -11,6 +11,52 @@ Keputusan terbaru harus diletakkan paling atas.
 
 ---
 
+## 2026-08-13 — Keputusan Arsitektur Reorder & Replenishment Recommendation Center (Fase 12C)
+
+**Keputusan:**
+
+### 1. Live Decision Support & Invarian Read-Only
+- Modul Rekomendasi Reorder & Replenishment (`/api/v1/replenishment-recommendations`) bersifat **100% Read-Only** (`GET`).
+- Tidak membuat tabel rekomendasi persisten (`replenishment_recommendations`, `reorder_suggestions`). Seluruh rekomendasi dihitung secara live on-demand.
+- Tidak pernah melakukan mutasi transaksi otomatis, pembuatan movement, reservasi saldo, atau perubahan status dokumen (`delta = 0`).
+
+### 2. Reuse Canonical Low Stock & Formula Kekurangan Stok
+- Mempertahankan definisi kanonikal stok minimum: `products.is_active = true`, `products.minimum_stock > 0`, dan `on_hand < minimum_stock`.
+- `gross_shortage_quantity = MAX(minimum_stock - on_hand, 0)`.
+- Produk tanpa baris saldo di `inventory_balances` dianggap memiliki `on_hand = 0.0000`.
+
+### 3. Perhitungan Pending Inbound
+- Hanya memperhitungkan transfer berstatus `TransferStatus::SENT` menuju lokasi target.
+- Status `DRAFT`, `RECEIVED`, dan `CANCELED` tidak dihitung sebagai pending inbound.
+- `net_replenishment_need = MAX(gross_shortage_quantity - pending_inbound_quantity, 0)`.
+
+### 4. Perlindungan Stok Gudang Sumber & Eliminasi Lokasi Beku (Frozen)
+- Gudang sumber internal wajib mempertahankan `minimum_stock` miliknya (`surplus = MAX(source_on_hand - source_min_stock, 0)`).
+- Gudang sumber yang berstatus `is_frozen = true` di `inventory_location_locks` langsung dikeluarkan dari daftar kandidat alokasi.
+- Jika gudang target berstatus `is_frozen = true`, rekomendasi tetap dapat dilihat, namun status diset `actionable = false`, `blocked_reason = 'TARGET_LOCATION_FROZEN'`, dan aksi transfer dinonaktifkan.
+
+### 5. Algoritma Alokasi Deterministik & Keamanan IDOR
+- Kandidat gudang sumber diurutkan secara greedy: `available_surplus DESC`, kemudian `location_id ASC`.
+- Gudang di luar hak akses user (`$user->getAllowedLocationIds()`) tidak pernah dilibatkan maupun dibocorkan saldo/keberadaannya.
+
+### 6. Transfer Prefill Ergonomics
+- Tombol "Siapkan Transfer" membuka antarmuka Transfer Stok dengan query prefill tanpa melakukan auto-save atau mutasi data.
+
+### 7. Ketiadaan Asumsi Supplier & PO Otomatis
+- Kebutuhan reorder eksternal bersifat informasional murni tanpa rekomendasi preferred supplier fiktif atau purchase order otomatis (ditangguhkan ke Fase Purchasing).
+
+**Alasan:**
+- Menghadirkan dukungan keputusan yang akurat dan aman bagi operator tanpa risiko duplikasi transfer atau pembocoran data antar gudang.
+
+**Alternatif yang ditolak:**
+- Automated Transaction Execution: Berisiko memicu mutasi stok tak terkontrol tanpa verifikasi fisik petugas.
+- Persistent Recommendation Table: Berpotensi menyimpan data usang (stale data) saat saldo fisik berubah.
+
+**Tinjau kembali jika:**
+- Diimplementasikan modul Purchasing / Purchase Requisition pada fase lanjutan.
+
+---
+
 ## 2026-08-11 — Keputusan Arsitektur Operational Inventory Dashboard & Alert Center (Fase 12A)
 
 **Keputusan:**

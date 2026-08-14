@@ -28,6 +28,8 @@ use App\Features\MasterDataImport\Contracts\MasterDataImportReaderInterface;
 use App\Features\MasterDataImport\Readers\CsvMasterDataImportReader;
 use App\Features\Product\Repositories\Contracts\ProductRepositoryInterface;
 use App\Features\Product\Repositories\Eloquent\ProductRepository;
+use App\Features\Replenishment\Repositories\Contracts\ReplenishmentRepositoryInterface;
+use App\Features\Replenishment\Repositories\Eloquent\ReplenishmentRepository;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
 use App\Features\Reporting\Repositories\Eloquent\ReportingRepository;
 use App\Features\Supplier\Repositories\Contracts\SupplierRepositoryInterface;
@@ -51,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(OperationalDashboardRepositoryInterface::class, OperationalDashboardRepository::class);
         $this->app->bind(ReportingRepositoryInterface::class, ReportingRepository::class);
+        $this->app->bind(ReplenishmentRepositoryInterface::class, ReplenishmentRepository::class);
 
         $this->app->bind(
             CategoryRepositoryInterface::class,
