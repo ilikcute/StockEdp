@@ -36,6 +36,21 @@
       {{ store.error || locationError }}
     </div>
 
+    <!-- Warning Alert -->
+    <div
+      v-if="warningMessage"
+      class="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 flex items-center justify-between"
+    >
+      <span>{{ warningMessage }}</span>
+      <button
+        type="button"
+        class="text-xs font-semibold text-amber-900 hover:text-amber-700 ml-4 underline cursor-pointer"
+        @click="warningMessage = ''"
+      >
+        Tutup
+      </button>
+    </div>
+
     <!-- Barcode Scanner Section -->
     <div class="bg-white p-4 sm:p-6 shadow-xs rounded-xl border border-gray-200 space-y-4">
       <div class="flex items-center justify-between">
@@ -301,6 +316,7 @@ const userLocations = ref([]);
 const allLocations = ref([]);
 const products = ref([]);
 const locationError = ref('');
+const warningMessage = ref('');
 
 const availableDestinations = computed(() => {
   return allLocations.value.filter((loc) => loc.id !== form.origin_location_id);
@@ -454,17 +470,33 @@ onMounted(async () => {
     const prodId = parseInt(route.query.product_id, 10);
     const rawQty = route.query.quantity;
 
-    if (originId && userLocations.value.some((l) => l.id === originId)) {
-      form.origin_location_id = originId;
+    if (route.query.origin_location_id) {
+      if (originId && userLocations.value.some((l) => l.id === originId)) {
+        form.origin_location_id = originId;
+      } else {
+        warningMessage.value = 'Lokasi asal rekomendasi tidak valid atau di luar hak akses Anda.';
+      }
     }
-    if (destId && allLocations.value.some((l) => l.id === destId && l.id !== originId)) {
-      form.destination_location_id = destId;
+
+    if (route.query.destination_location_id) {
+      if (destId && allLocations.value.some((l) => l.id === destId && l.id !== originId)) {
+        form.destination_location_id = destId;
+      } else {
+        warningMessage.value = 'Lokasi tujuan rekomendasi tidak valid atau sama dengan lokasi asal.';
+      }
     }
-    if (prodId && products.value.some((p) => p.id === prodId)) {
-      const validQty = isValidDecimal4String(rawQty) && compareDecimal4Strings(rawQty, '0.0000') > 0
-        ? normalizeDecimal4String(rawQty)
-        : '1.0000';
-      form.items = [{ product_id: prodId, quantity: validQty }];
+
+    if (route.query.product_id) {
+      if (prodId && products.value.some((p) => p.id === prodId)) {
+        if (typeof rawQty === 'string' && isValidDecimal4String(rawQty) && compareDecimal4Strings(rawQty, '0.0000') > 0) {
+          form.items = [{ product_id: prodId, quantity: normalizeDecimal4String(rawQty) }];
+        } else {
+          form.items = [{ product_id: prodId, quantity: '' }];
+          warningMessage.value = 'Rekomendasi quantity tidak valid. Silakan isi quantity secara manual.';
+        }
+      } else {
+        warningMessage.value = 'Produk rekomendasi tidak valid atau tidak aktif.';
+      }
     }
     validateLocations();
   }

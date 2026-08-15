@@ -336,10 +336,12 @@ Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang waj
 - Endpoint: `GET /api/v1/replenishment-recommendations` dan `GET /api/v1/replenishment-recommendations/filter-options`.
 - RBAC: `replenishment.view`. Diberikan ke `ADMIN`, `WAREHOUSE_OFFICER`, dan `INVENTORY_SUPERVISOR`.
 - Invarian Read-Only: Strictly read-only (`delta = 0`), 0 persistent recommendation tables, 0 auto-generated transactions.
-- Canonical Low Stock: Menggunakan query kanonikal low stock (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
+- Canonical Shared Query: Memusatkan logika low stock pada `App\Features\Reporting\Queries\LowStockQuery::forLocation()`, dipakai bersama oleh Reporting dan Replenishment (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
 - Inbound Tracking: Hanya menghitung `TransferStatus::SENT` inbound ke gudang target; mengurangi kebutuhan bersih (`net_replenishment_need = MAX(gross_shortage - pending_inbound, 0)`). Jika tertutup penuh $\to$ `INBOUND_COVERED`.
 - Source Surplus: Gudang sumber wajib mempertahankan `minimum_stock` miliknya (`surplus = MAX(source_on_hand - source_min_stock, 0)`).
 - Frozen Location Safety: Gudang sumber beku (`is_frozen = true`) dieliminasi dari alokasi; target beku diset `actionable = false` dengan `blocked_reason = TARGET_LOCATION_FROZEN`.
+- Filter & Pagination Semantics: Kandidat base Low Stock diperkaya dalam bulk (0 N+1), kemudian rekomendasi diturunkan, difilter berdasarkan `recommendation_type`, diurutkan, dan dipaginasi dengan metadata yang merujuk tepat pada filtered dataset.
+- Summary Contract (Option A): Kartu metrik `summary` mengikuti filter basis aktif dan menampilkan total produk lintas seluruh tipe rekomendasi.
 - Alokasi Deterministik: Greedy allocation (`available_surplus DESC`, `location_id ASC`).
 - Security IDOR: Membatasi target dan kandidat sumber hanya pada `$user->getAllowedLocationIds()`.
 - Decimal Arithmetic: 0 PHP float. Semua perhitungan kuantitas menggunakan BCMath scale 4.

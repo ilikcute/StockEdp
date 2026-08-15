@@ -31,14 +31,49 @@ class ReplenishmentRecommendationService
             'name' => '',
         ];
 
-        $paginator = $this->repository->getPaginatedLowStock($allowedLocationIds, $filters);
-        $productIds = collect($paginator->items())->pluck('product_id')->map(fn ($id) => (int) $id)->all();
+        $candidates = $this->repository->getLowStockCandidates($allowedLocationIds, $filters);
 
+        if ($candidates->isEmpty()) {
+            return [
+                'data' => [],
+                'summary' => [
+                    'low_stock_product_count' => 0,
+                    'inbound_covered_count' => 0,
+                    'internal_transfer_count' => 0,
+                    'mixed_count' => 0,
+                    'external_reorder_count' => 0,
+                    'critical_product_count' => 0,
+                ],
+                'meta' => [
+                    'current_page' => $filters->page,
+                    'from' => null,
+                    'last_page' => 1,
+                    'per_page' => $filters->perPage,
+                    'to' => null,
+                    'total' => 0,
+                ],
+                'links' => [
+                    'first' => null,
+                    'last' => null,
+                    'prev' => null,
+                    'next' => null,
+                ],
+                'generated_at' => now()->toIso8601String(),
+            ];
+        }
+
+        $productIds = $candidates->pluck('product_id')->map(fn ($id) => (int) $id)->all();
         $pendingInbounds = $this->repository->getPendingInboundQuantities($filters->locationId, $productIds);
         $sourceBalances = $this->repository->getCandidateSourceBalances($filters->locationId, $allowedLocationIds, $productIds);
 
-        $data = [];
-        foreach ($paginator->items() as $item) {
+        $allRecommendations = [];
+        $criticalCount = 0;
+        $inboundCoveredCount = 0;
+        $internalTransferCount = 0;
+        $mixedCount = 0;
+        $externalReorderCount = 0;
+
+        foreach ($candidates as $item) {
             $productId = (int) $item->product_id;
 
             $onHandQuantity = bcadd((string) $item->on_hand_quantity, '0', 4);
@@ -51,16 +86,21 @@ class ReplenishmentRecommendationService
                 ? ReplenishmentPriority::CRITICAL->value
                 : ReplenishmentPriority::WARNING->value;
 
+            if ($priority === ReplenishmentPriority::CRITICAL->value) {
+                $criticalCount++;
+            }
+
             if (bccomp($pendingInboundQuantity, $grossShortageQuantity, 4) >= 0) {
                 $netReplenishmentNeed = '0.0000';
                 $recommendationType = ReplenishmentRecommendationType::INBOUND_COVERED->value;
                 $internalReplenishmentQuantity = '0.0000';
                 $externalReorderQuantity = '0.0000';
                 $sourceAllocations = [];
+                $inboundCoveredCount++;
             } else {
                 $netReplenishmentNeed = bcsub($grossShortageQuantity, $pendingInboundQuantity, 4);
 
-                $candidates = [];
+                $sourceCandidates = [];
                 $productSources = $sourceBalances[$productId] ?? [];
 
                 foreach ($productSources as $src) {
@@ -69,7 +109,7 @@ class ReplenishmentRecommendationService
 
                     if (bccomp($srcOnHand, $srcMin, 4) > 0) {
                         $surplus = bcsub($srcOnHand, $srcMin, 4);
-                        $candidates[] = [
+                        $sourceCandidates[] = [
                             'source_location_id' => (int) $src->location_id,
                             'source_location_code' => (string) $src->location_code,
                             'source_location_name' => (string) $src->location_name,
@@ -80,7 +120,7 @@ class ReplenishmentRecommendationService
                     }
                 }
 
-                usort($candidates, function ($a, $b) {
+                usort($sourceCandidates, function ($a, $b) {
                     $cmp = bccomp($b['available_surplus_quantity'], $a['available_surplus_quantity'], 4);
                     if ($cmp !== 0) {
                         return $cmp;
@@ -92,7 +132,7 @@ class ReplenishmentRecommendationService
                 $remainingNeed = $netReplenishmentNeed;
                 $sourceAllocations = [];
 
-                foreach ($candidates as $cand) {
+                foreach ($sourceCandidates as $cand) {
                     if (bccomp($remainingNeed, '0.0000', 4) <= 0) {
                         break;
                     }
@@ -112,18 +152,17 @@ class ReplenishmentRecommendationService
 
                 if (bccomp($externalReorderQuantity, '0.0000', 4) === 0) {
                     $recommendationType = ReplenishmentRecommendationType::INTERNAL_TRANSFER->value;
+                    $internalTransferCount++;
                 } elseif (bccomp($internalReplenishmentQuantity, '0.0000', 4) > 0) {
                     $recommendationType = ReplenishmentRecommendationType::MIXED->value;
+                    $mixedCount++;
                 } else {
                     $recommendationType = ReplenishmentRecommendationType::EXTERNAL_REORDER->value;
+                    $externalReorderCount++;
                 }
             }
 
-            if (! empty($filters->recommendationType) && $recommendationType !== $filters->recommendationType) {
-                continue;
-            }
-
-            $data[] = [
+            $allRecommendations[] = [
                 'product_id' => $productId,
                 'sku' => (string) $item->sku,
                 'barcode' => $item->barcode !== null ? (string) $item->barcode : null,
@@ -147,24 +186,108 @@ class ReplenishmentRecommendationService
             ];
         }
 
-        $summary = $this->repository->calculateSummaryCounts($filters->locationId, $allowedLocationIds, $filters);
+        $summary = [
+            'low_stock_product_count' => count($allRecommendations),
+            'inbound_covered_count' => $inboundCoveredCount,
+            'internal_transfer_count' => $internalTransferCount,
+            'mixed_count' => $mixedCount,
+            'external_reorder_count' => $externalReorderCount,
+            'critical_product_count' => $criticalCount,
+        ];
+
+        // Filter by recommendation_type if specified
+        $filtered = $allRecommendations;
+        if (! empty($filters->recommendationType)) {
+            $filtered = array_values(array_filter(
+                $allRecommendations,
+                fn ($row) => $row['recommendation_type'] === $filters->recommendationType
+            ));
+        }
+
+        // Apply sorting
+        $sortBy = $filters->sortBy;
+        $sortOrder = strtolower($filters->sortOrder) === 'asc' ? 'asc' : 'desc';
+
+        usort($filtered, function ($a, $b) use ($sortBy, $sortOrder) {
+            $cmp = 0;
+            switch ($sortBy) {
+                case 'gross_shortage_quantity':
+                case 'shortage_quantity':
+                    $cmp = bccomp($a['gross_shortage_quantity'], $b['gross_shortage_quantity'], 4);
+                    break;
+                case 'minimum_stock':
+                    $cmp = bccomp($a['minimum_stock'], $b['minimum_stock'], 4);
+                    break;
+                case 'on_hand_quantity':
+                    $cmp = bccomp($a['on_hand_quantity'], $b['on_hand_quantity'], 4);
+                    break;
+                case 'net_replenishment_need':
+                    $cmp = bccomp($a['net_replenishment_need'], $b['net_replenishment_need'], 4);
+                    break;
+                case 'product_name':
+                    $cmp = strcmp($a['product_name'], $b['product_name']);
+                    break;
+                case 'sku':
+                    $cmp = strcmp($a['sku'], $b['sku']);
+                    break;
+                default:
+                    $cmp = bccomp($a['gross_shortage_quantity'], $b['gross_shortage_quantity'], 4);
+                    break;
+            }
+
+            if ($cmp === 0) {
+                $cmp = $a['product_id'] <=> $b['product_id'];
+            }
+
+            return $sortOrder === 'asc' ? $cmp : -$cmp;
+        });
+
+        // Apply pagination on the filtered dataset
+        $total = count($filtered);
+        $perPage = max($filters->perPage, 1);
+        $page = max($filters->page, 1);
+        $lastPage = max((int) ceil($total / $perPage), 1);
+
+        $offset = ($page - 1) * $perPage;
+        $pagedData = array_slice($filtered, $offset, $perPage);
+        $from = $total > 0 && count($pagedData) > 0 ? $offset + 1 : null;
+        $to = $total > 0 && count($pagedData) > 0 ? $offset + count($pagedData) : null;
+
+        $baseUrl = url('/api/v1/replenishment-recommendations');
+        $queryParams = array_filter([
+            'location_id' => $filters->locationId,
+            'search' => $filters->search,
+            'category_id' => $filters->categoryId,
+            'unit_id' => $filters->unitId,
+            'recommendation_type' => $filters->recommendationType,
+            'priority' => $filters->priority,
+            'sort_by' => $filters->sortBy,
+            'sort_order' => $filters->sortOrder,
+            'per_page' => $perPage,
+        ]);
+
+        $makeUrl = function (int $targetPage) use ($baseUrl, $queryParams) {
+            $params = array_merge($queryParams, ['page' => $targetPage]);
+
+            return $baseUrl.'?'.http_build_query($params);
+        };
 
         return [
-            'data' => $data,
+            'data' => $pagedData,
             'summary' => $summary,
             'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'from' => $paginator->firstItem(),
-                'last_page' => $paginator->lastPage(),
-                'per_page' => $paginator->perPage(),
-                'to' => $paginator->lastItem(),
-                'total' => $paginator->total(),
+                'current_page' => $page,
+                'from' => $from,
+                'last_page' => $lastPage,
+                'per_page' => $perPage,
+                'to' => $to,
+                'total' => $total,
             ],
             'links' => [
-                'first' => $paginator->url(1),
-                'last' => $paginator->url($paginator->lastPage()),
-                'prev' => $paginator->previousPageUrl(),
-                'next' => $paginator->nextPageUrl(),
+                'first' => $total > 0 ? $makeUrl(1) : null,
+                'last' => $total > 0 ? $makeUrl($lastPage) : null,
+                'prev' => $page > 1 ? $makeUrl($page - 1) : null,
+                'next' => $page < $lastPage ? $makeUrl($page + 1) : null,
             ],
             'generated_at' => now()->toIso8601String(),
         ];

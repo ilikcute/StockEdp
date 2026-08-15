@@ -864,3 +864,37 @@ Menjaga konsistensi data master, mencegah race condition atau modifikasi file ya
 
 **Alasan:**
 Mempercepat input fisik barang di lapangan tanpa membuka celah bypass pada maker-checker, optimistic concurrency, dan invariant ledger saldo persediaan.
+
+---
+
+## 2026-08-14 — Keputusan Desain Reorder & Replenishment Recommendation Center (Fase 12C)
+
+**Keputusan:**
+
+1. **Single Canonical Low-Stock Query (`LowStockQuery`)**:
+   - Memusatkan seluruh query low-stock di `App\Features\Reporting\Queries\LowStockQuery::forLocation()`.
+   - Modul Reporting (`/api/v1/reports/low-stock`) dan Modul Replenishment (`/api/v1/replenishment-recommendations`) mengonsumsi query domain kanonikal yang sama untuk memastikan 100% string parity pada `on_hand_quantity`, `minimum_stock`, dan `shortage_quantity` / `gross_shortage_quantity`.
+2. **Strictly Read-Only Live Decision Support (Zero Database Mutations)**:
+   - Endpoint rekomendasi murni bersifat analitis tanpa membuat record persisten (`0` tabel baru), tanpa mengubah status stok, dan tanpa mutasi ledger saldo persediaan (`delta = 0`).
+3. **Pending Inbound Semantics**:
+   - Hanya transfer stok berstatus `TransferStatus::SENT` yang dihitung sebagai barang in-transit. Status `DRAFT`, `RECEIVED`, atau `CANCELED` tidak dihitung sebagai pending inbound.
+   - `net_replenishment_need = MAX(gross_shortage_quantity - pending_inbound_quantity, 0)`.
+4. **Source Minimum Retention & Surplus Safety**:
+   - Gudang sumber internal wajib mempertahankan `minimum_stock` miliknya sendiri.
+   - Surplus yang aman dialokasikan: `available_surplus = MAX(source_on_hand - source_minimum_stock, 0)`.
+5. **Frozen Location Awareness**:
+   - Gudang sumber yang berstatus `is_frozen = true` di `inventory_location_locks` langsung dikeluarkan dari kandidat alokasi.
+   - Jika gudang target dibekukan, rekomendasi tetap dapat dilihat untuk perencanaan, namun `actionable = false`, `blocked_reason = 'TARGET_LOCATION_FROZEN'`, dan tombol aksi transfer dinonaktifkan.
+6. **Recommendation Type Filter & Pagination Semantics**:
+   - Kandidat base Low Stock diperkaya dalam bulk (0 N+1), kemudian rekomendasi diturunkan dan difilter berdasarkan `recommendation_type`.
+   - Metadata pagination (`meta.total`, `meta.current_page`, `meta.last_page`, `meta.from`, `meta.to`) merujuk tepat pada dataset yang telah difilter.
+7. **Summary Filter Contract (Option A)**:
+   - Kartu ringkasan metrik (`summary`) mengikuti filter basis aktif (`location_id`, `search`, `category_id`, `unit_id`, `priority`) dan menampilkan distribusi jumlah produk lintas seluruh tipe rekomendasi.
+8. **Transfer Prefill Safety**:
+   - Kuantitas tidak valid (cth: `abc`, `1.23456`, `-1`, `0`) tidak diubah menjadi `1.0000`, melainkan kuantitas dikosongkan dan pesan peringatan terkontrol ditampilkan tanpa auto-save dan tanpa mutasi database.
+   - Kuantitas valid diprefill secara eksak sebagai string desimal 4 digit tanpa JS float.
+9. **String Decimal Safety**:
+   - Seluruh komputasi kuantitas persediaan menggunakan `BCMath` dengan skala 4 tanpa konversi float PHP atau JS float.
+
+**Alasan:**
+Memberikan rekomendasi pengisian stok yang akurat dan dapat ditindaklanjuti secara aman tanpa mengorbankan integritas data stok minimum gudang lain atau membocorkan data gudang di luar otorisasi pengguna.

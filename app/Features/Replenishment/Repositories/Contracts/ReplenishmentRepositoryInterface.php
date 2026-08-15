@@ -4,7 +4,7 @@ namespace App\Features\Replenishment\Repositories\Contracts;
 
 use App\Features\Location\Models\Location;
 use App\Features\Replenishment\DTOs\ReplenishmentFilterData;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 interface ReplenishmentRepositoryInterface
 {
@@ -12,10 +12,15 @@ interface ReplenishmentRepositoryInterface
 
     public function isLocationFrozen(int $locationId): bool;
 
-    public function getPaginatedLowStock(
+    /**
+     * Get all low-stock candidates matching base filters (using canonical LowStockQuery).
+     *
+     * @param  array<int>  $allowedLocationIds
+     */
+    public function getLowStockCandidates(
         array $allowedLocationIds,
         ReplenishmentFilterData $filters
-    ): LengthAwarePaginator;
+    ): Collection;
 
     /**
      * @param  array<int>  $productIds
@@ -35,16 +40,6 @@ interface ReplenishmentRepositoryInterface
         int $targetLocationId,
         array $allowedLocationIds,
         array $productIds
-    ): array;
-
-    /**
-     * @param  array<int>  $allowedLocationIds
-     * @return array<string, int>
-     */
-    public function calculateSummaryCounts(
-        int $targetLocationId,
-        array $allowedLocationIds,
-        ReplenishmentFilterData $filters
     ): array;
 
     /**

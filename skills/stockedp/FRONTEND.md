@@ -297,7 +297,12 @@ Pertahankan kondisi ini pada perubahan berikutnya.
     - `SourceAllocationList.vue`: Breakdown per sister warehouse with current stock, minimum stock, surplus, suggested transfer, and "Siapkan Transfer" action.
     - `ReplenishmentRecommendationTable.vue`: Data table displaying product, target stock, minimum, gross shortage, inbound, net need, recommendation type, source allocations, and actions.
   - `pages/ReplenishmentPage.vue`: Orchestrator (0 direct `apiClient` in `.vue`).
-- Transfer Prefill:
+- Transfer Prefill & Safety:
   - Form `StockTransferFormPage.vue` menangkap query parameter (`origin_location_id`, `destination_location_id`, `product_id`, `quantity`, `source=replenishment`) saat mount dalam mode create.
-  - Tidak melakukan auto-save atau mutasi otomatis.
+  - Kuantitas tidak valid (misal `abc`, `1.23456`, `-1`, `0`) tidak diubah ke `1.0000`, melainkan kuantitas dikosongkan dan peringatan terkontrol ditampilkan.
+  - Kuantitas valid diprefill sebagai string desimal 4 digit eksak tanpa float JS.
+  - ID lokasi/produk tidak sah diabaikan secara aman dengan banner peringatan terkontrol.
+  - Tidak melakukan auto-save atau mutasi otomatis (`delta = 0`).
+- Summary Semantics (Option A):
+  - Kartu metrik ringkasan menampilkan distribusi jumlah produk lintas seluruh tipe rekomendasi berdasarkan filter basis aktif (`location_id`, `search`, `category_id`, `unit_id`, `priority`).
 - Quantity display: 0 `parseFloat`, 0 `Number()`, 0 `toFixed()`. Direct decimal string display.

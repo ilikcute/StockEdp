@@ -22,6 +22,14 @@ class ReplenishmentLowStockParityTest extends TestCase
 
     private Location $targetLocation;
 
+    private Category $categoryA;
+
+    private Category $categoryB;
+
+    private Unit $unitA;
+
+    private Unit $unitB;
+
     private Product $productA;
 
     private Product $productB;
@@ -46,16 +54,18 @@ class ReplenishmentLowStockParityTest extends TestCase
         $this->admin->roles()->attach($adminRole);
         $this->admin->locations()->attach($this->targetLocation);
 
-        $cat = Category::create(['code' => 'CAT-01', 'name' => 'Kategori 1', 'is_active' => true]);
-        $unit = Unit::create(['code' => 'UNT-01', 'name' => 'PCS', 'symbol' => 'pcs', 'is_active' => true]);
+        $this->categoryA = Category::create(['code' => 'CAT-01', 'name' => 'Kategori Makanan', 'is_active' => true]);
+        $this->categoryB = Category::create(['code' => 'CAT-02', 'name' => 'Kategori Minuman', 'is_active' => true]);
+        $this->unitA = Unit::create(['code' => 'UNT-01', 'name' => 'PCS', 'symbol' => 'pcs', 'is_active' => true]);
+        $this->unitB = Unit::create(['code' => 'UNT-02', 'name' => 'BOX', 'symbol' => 'box', 'is_active' => true]);
 
-        // Product A: min 10, balance 4.5000 -> shortage 5.5000
+        // Product A: categoryA, unitA, min 10, balance 4.5000 -> shortage 5.5000
         $this->productA = Product::create([
             'sku' => 'PRD-PARITY-A',
-            'name' => 'Produk A',
-            'category_id' => $cat->id,
-            'unit_id' => $unit->id,
-            'minimum_stock' => '10.00',
+            'name' => 'Biskuit Cokelat',
+            'category_id' => $this->categoryA->id,
+            'unit_id' => $this->unitA->id,
+            'minimum_stock' => '10.0000',
             'is_active' => true,
         ]);
         InventoryBalance::create([
@@ -64,13 +74,13 @@ class ReplenishmentLowStockParityTest extends TestCase
             'quantity' => '4.5000',
         ]);
 
-        // Product B: min 20, balance 0.0000 -> shortage 20.0000 (Critical)
+        // Product B: categoryB, unitB, min 20, balance 0.0000 -> shortage 20.0000 (Critical)
         $this->productB = Product::create([
             'sku' => 'PRD-PARITY-B',
-            'name' => 'Produk B',
-            'category_id' => $cat->id,
-            'unit_id' => $unit->id,
-            'minimum_stock' => '20.00',
+            'name' => 'Sirup Manis',
+            'category_id' => $this->categoryB->id,
+            'unit_id' => $this->unitB->id,
+            'minimum_stock' => '20.0000',
             'is_active' => true,
         ]);
         InventoryBalance::create([
@@ -82,10 +92,10 @@ class ReplenishmentLowStockParityTest extends TestCase
         // Product without balance: min 15, no balance row -> on_hand 0.0000, shortage 15.0000
         $this->productWithoutBalance = Product::create([
             'sku' => 'PRD-PARITY-NOBAL',
-            'name' => 'Produk Tanpa Balance',
-            'category_id' => $cat->id,
-            'unit_id' => $unit->id,
-            'minimum_stock' => '15.00',
+            'name' => 'Kopi Bubuk',
+            'category_id' => $this->categoryA->id,
+            'unit_id' => $this->unitA->id,
+            'minimum_stock' => '15.0000',
             'is_active' => true,
         ]);
 
@@ -93,9 +103,9 @@ class ReplenishmentLowStockParityTest extends TestCase
         $this->inactiveProduct = Product::create([
             'sku' => 'PRD-PARITY-INACTIVE',
             'name' => 'Produk Inaktif',
-            'category_id' => $cat->id,
-            'unit_id' => $unit->id,
-            'minimum_stock' => '10.00',
+            'category_id' => $this->categoryA->id,
+            'unit_id' => $this->unitA->id,
+            'minimum_stock' => '10.0000',
             'is_active' => false,
         ]);
     }
@@ -132,6 +142,64 @@ class ReplenishmentLowStockParityTest extends TestCase
                 (string) $matchingRepl['on_hand_quantity'],
                 "On hand quantity must match exact string parity for product {$lsItem['product_id']}"
             );
+            $this->assertEquals(
+                (string) $lsItem['minimum_stock'],
+                (string) $matchingRepl['minimum_stock'],
+                "Minimum stock must match exact string parity for product {$lsItem['product_id']}"
+            );
+        }
+    }
+
+    public function test_filtered_parity_with_category_unit_and_search(): void
+    {
+        $testFilterCombinations = [
+            ['category_id' => $this->categoryA->id],
+            ['category_id' => $this->categoryB->id],
+            ['unit_id' => $this->unitA->id],
+            ['unit_id' => $this->unitB->id],
+            ['search' => 'Biskuit'],
+            ['search' => 'Sirup'],
+            ['search' => 'PRD-PARITY-NOBAL'],
+            ['category_id' => $this->categoryA->id, 'unit_id' => $this->unitA->id, 'search' => 'Kopi'],
+        ];
+
+        foreach ($testFilterCombinations as $filterParams) {
+            $queryStr = http_build_query(array_merge(['location_id' => $this->targetLocation->id, 'per_page' => 50], $filterParams));
+
+            $lsRes = $this->actingAs($this->admin, 'sanctum')
+                ->getJson("/api/v1/reports/low-stock?{$queryStr}")
+                ->assertStatus(200);
+
+            $replRes = $this->actingAs($this->admin, 'sanctum')
+                ->getJson("/api/v1/replenishment-recommendations?{$queryStr}")
+                ->assertStatus(200);
+
+            $lsItems = collect($lsRes->json('data.data'));
+            $replItems = collect($replRes->json('data.data'));
+
+            $this->assertEquals(
+                $lsItems->count(),
+                $replItems->count(),
+                'Count mismatch for filters: '.json_encode($filterParams)
+            );
+
+            foreach ($lsItems as $lsItem) {
+                $matchingRepl = $replItems->firstWhere('product_id', $lsItem['product_id']);
+                $this->assertNotNull($matchingRepl, 'Product missing in replenishment for filters: '.json_encode($filterParams));
+
+                $this->assertEquals(
+                    (string) $lsItem['shortage_quantity'],
+                    (string) $matchingRepl['gross_shortage_quantity']
+                );
+                $this->assertEquals(
+                    (string) $lsItem['on_hand_quantity'],
+                    (string) $matchingRepl['on_hand_quantity']
+                );
+                $this->assertEquals(
+                    (string) $lsItem['minimum_stock'],
+                    (string) $matchingRepl['minimum_stock']
+                );
+            }
         }
     }
 
@@ -157,6 +225,6 @@ class ReplenishmentLowStockParityTest extends TestCase
             ->assertStatus(200);
 
         $item = collect($response->json('data.data'))->firstWhere('product_id', $this->inactiveProduct->id);
-        $this->assertNull($item);
+        $this->assertNull($item, 'Inactive product must not appear in replenishment recommendations.');
     }
 }
