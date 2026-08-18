@@ -54,29 +54,29 @@ const badgeClass = computed(() => {
   if (props.type) {
     switch (props.type) {
       case 'INBOUND_COVERED':
-        return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800`;
+        return `${base} bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20`;
       case 'INTERNAL_TRANSFER':
-        return `${base} bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800`;
+        return `${base} bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20`;
       case 'MIXED':
-        return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800`;
+        return `${base} bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20`;
       case 'EXTERNAL_REORDER':
-        return `${base} bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800`;
+        return `${base} bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20`;
       default:
-        return `${base} bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300`;
+        return `${base} bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20`;
     }
   }
 
   if (props.priority) {
     switch (props.priority) {
       case 'CRITICAL':
-        return `${base} bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 font-bold border border-rose-300 dark:border-rose-700`;
+        return `${base} bg-rose-50 text-rose-700 font-bold ring-1 ring-inset ring-rose-600/30`;
       case 'WARNING':
-        return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800`;
+        return `${base} bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20`;
       default:
-        return `${base} bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300`;
+        return `${base} bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20`;
     }
   }
 
-  return `${base} bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300`;
+  return `${base} bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20`;
 });
 </script>

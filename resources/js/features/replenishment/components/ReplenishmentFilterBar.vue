@@ -1,18 +1,18 @@
 <template>
-  <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+  <div class="bg-white rounded-xl p-4 shadow-xs border border-gray-200 space-y-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       <!-- Target Location (Required) -->
       <div>
         <label
           for="filter-location"
-          class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+          class="block text-xs font-semibold text-gray-700 mb-1"
         >
           Lokasi Target <span class="text-rose-500">*</span>
         </label>
         <select
           id="filter-location"
           :value="filters.location_id"
-          class="w-full text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 shadow-xs"
           @change="onFilterChange('location_id', $event.target.value)"
         >
           <option
@@ -35,7 +35,7 @@
       <div>
         <label
           for="filter-search"
-          class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+          class="block text-xs font-semibold text-gray-700 mb-1"
         >
           Cari Produk / SKU / Barcode
         </label>
@@ -44,7 +44,7 @@
           :value="filters.search"
           type="text"
           placeholder="Ketik kata kunci..."
-          class="w-full text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
           @input="onFilterChange('search', $event.target.value)"
           @keyup.enter="$emit('search')"
         >
@@ -54,14 +54,14 @@
       <div>
         <label
           for="filter-category"
-          class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+          class="block text-xs font-semibold text-gray-700 mb-1"
         >
           Kategori
         </label>
         <select
           id="filter-category"
           :value="filters.category_id"
-          class="w-full text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 shadow-xs"
           @change="onFilterChange('category_id', $event.target.value)"
         >
           <option value="">
@@ -81,14 +81,14 @@
       <div>
         <label
           for="filter-unit"
-          class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+          class="block text-xs font-semibold text-gray-700 mb-1"
         >
           Satuan
         </label>
         <select
           id="filter-unit"
           :value="filters.unit_id"
-          class="w-full text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 shadow-xs"
           @change="onFilterChange('unit_id', $event.target.value)"
         >
           <option value="">
@@ -106,14 +106,14 @@
     </div>
 
     <!-- Secondary Filters & Actions Row -->
-    <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-700/60">
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-100">
       <div class="flex flex-wrap items-center gap-3">
         <!-- Recommendation Type Filter -->
-        <div class="w-48">
+        <div class="w-52">
           <select
             id="filter-recommendation-type"
             :value="filters.recommendation_type"
-            class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            class="block w-full rounded-md border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 shadow-xs"
             @change="onFilterChange('recommendation_type', $event.target.value)"
           >
             <option value="">
@@ -134,7 +134,7 @@
           <select
             id="filter-priority"
             :value="filters.priority"
-            class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            class="block w-full rounded-md border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 shadow-xs"
             @change="onFilterChange('priority', $event.target.value)"
           >
             <option value="">
@@ -151,27 +151,20 @@
         </div>
       </div>
 
-      <!-- Action Buttons & Timestamp -->
+      <!-- Action Buttons -->
       <div class="flex items-center gap-2 ml-auto">
-        <span
-          v-if="generatedAt"
-          class="text-xs text-slate-400 dark:text-slate-500 hidden sm:inline"
-        >
-          Terakhir diperbarui: {{ formatTime(generatedAt) }}
-        </span>
-
         <button
           type="button"
-          class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400"
+          class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
           @click="$emit('reset')"
         >
-          Reset
+          Reset Filter
         </button>
 
         <button
           type="button"
           :disabled="loading"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          class="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600 cursor-pointer"
           @click="$emit('refresh')"
         >
           <svg
@@ -226,15 +219,5 @@ const emit = defineEmits(['update:filter', 'search', 'reset', 'refresh']);
 
 const onFilterChange = (key, value) => {
   emit('update:filter', { key, value });
-};
-
-const formatTime = (isoString) => {
-  if (!isoString) return '-';
-  try {
-    const d = new Date(isoString);
-    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  } catch {
-    return isoString;
-  }
 };
 </script>
