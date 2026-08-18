@@ -318,3 +318,15 @@ Pertahankan kondisi ini pada perubahan berikutnya.
 - Zero Float Arithmetic:
   - 0 `parseFloat`, 0 `Number()`, 0 `toFixed()`, 0 `Math.*` pada seluruh display dan kalkulasi metrik kuantitas.
 
+## 21. User & Access Rights Management
+
+- Komponen & Halaman:
+  - `UserManagementPage.vue`: Halaman utama dengan Tab Switcher (Daftar Pengguna / Peran & Hak Akses), search input debounce, filter peran, filter lokasi gudang, dan filter status aktif.
+  - `UserTable.vue`: Tabel pengguna responsif dengan status badge, peran badge, penugasan lokasi gudang, tanggal login terakhir, tombol Edit, dan tombol toggle Aktif/Nonaktif.
+  - `UserFormModal.vue`: Modal responsif untuk Tambah / Edit Pengguna dengan validasi input, multi-checklist peran, multi-checklist lokasi gudang, dan toggle status aktif.
+  - `RolePermissionMatrix.vue`: Ringkasan kartu peran sistem dan matriks daftar hak akses terorganisir per kelompok domain fitur.
+- Rute & Navigasi:
+  - Rute `/users` terdaftar di router dengan proteksi `requiresAuth: true` dan `permission: 'users.manage'`.
+  - Menu navigasi "Pengguna" di `masterNavLinks` terproteksi izin `users.manage`.
+
+

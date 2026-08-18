@@ -4,6 +4,7 @@ export const masterNavLinks = [
     { to: '/units', label: 'Satuan', permission: 'units.view' },
     { to: '/suppliers', label: 'Supplier', permission: 'suppliers.view' },
     { to: '/locations', label: 'Lokasi', permission: 'locations.view' },
+    { to: '/users', label: 'Pengguna', permission: 'users.manage' },
 ];
 
 export const inventoryNavLinks = [

@@ -358,3 +358,14 @@ Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang waj
 - Security & IDOR: Query di-scope ketat ke `$user->getAllowedLocationIds()`.
 - Decimal Safety: 0 PHP float. Kuantitas dinormalisasi dengan 4 digit desimal via BCMath scale 4.
 
+## 21. User & Access Rights Management (RBAC)
+
+- Endpoint: `GET/POST /api/v1/users`, `GET /api/v1/users/form-options`, `GET/PUT /api/v1/users/{id}`, `PATCH /api/v1/users/{id}/status`, `GET /api/v1/roles`, `GET /api/v1/permissions`.
+- RBAC: `users.manage` (`PermissionCode::USERS_MANAGE`). Hanya diberikan kepada `ADMIN`.
+- Keamanan Akun Kritis:
+  - Self-Deactivation Guard: Menolak penonaktifan akun sendiri (`user_id === current_user_id`).
+  - Last Admin Guard: Menolak penonaktifan atau pencabutan peran Admin dari Administrator aktif terakhir di sistem.
+- Password Hashing: Password di-hash via `Hash::make` (bcrypt), minimal 8 karakter saat pembuatan, opsional saat pembaruan.
+- Location Scoping: Sinkronisasi penugasan lokasi gudang (`user_locations`) untuk membatasi visibilitas operasional persediaan.
+
+

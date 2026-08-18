@@ -11,6 +11,36 @@ Keputusan terbaru harus diletakkan paling atas.
 
 ---
 
+## 2026-08-18 — Keputusan Arsitektur Modul Pengelolaan Pengguna & Hak Akses (User & Access Rights Management)
+
+**Keputusan:**
+
+### 1. Otorisasi Ketat Berbasis RBAC (Role-Based Access Control)
+- Seluruh endpoint manajemen pengguna (`/api/v1/users`, `/api/v1/users/form-options`, `/api/v1/roles`, `/api/v1/permissions`) dan antarmuka `/users` dilindungi secara ketat oleh izin `users.manage` (`PermissionCode::USERS_MANAGE`).
+- Pengguna tanpa hak akses `users.manage` (seperti Petugas Gudang / Supervisor) ditolak dengan status `403 Forbidden`.
+
+### 2. Invarian Keamanan Akun Kritis (Security Guards)
+- **Pencegahan Self-Deactivation**: Pengguna tidak dapat menonaktifkan akun miliknya sendiri saat sedang login melalui endpoint update profil maupun toggle status.
+- **Pencegahan Penghapusan/Penonaktifan Admin Terakhir**: Sistem secara otomatis memvalidasi ketersediaan Administrator aktif lain sebelum menonaktifkan akun Admin atau mencabut peran Admin. Jika hanya tersisa satu Admin aktif, operasi ditolak dengan pesan kesalahan bisnis (HTTP 422).
+
+### 3. Penanganan Password Aman & Fleksibel
+- Password dienkripsi menggunakan `Hash::make` (bcrypt).
+- Wajib minimal 8 karakter saat pembuatan akun baru.
+- Pada form pembaruan data pengguna, field password bersifat opsional. Jika dikosongkan, password lama tetap dipertahankan tanpa perubahan hash.
+
+### 4. Penugasan Lokasi Gudang (User Location Scoping)
+- Pengguna dapat ditugaskan ke satu atau lebih lokasi gudang aktif (`user_locations`).
+- Jika penugasan lokasi dikosongkan, pengguna memiliki hak akses global ke seluruh lokasi (sesuai peran yang dimilikinya).
+
+### 5. Antarmuka Terpadu Dua Tab & Gaya Terstandarisasi
+- Antarmuka `/users` menyediakan dua tab terpadu: **Daftar Pengguna** (pencarian, filter peran, filter lokasi, filter status, edit, toggle status aktif) dan **Peran & Hak Akses** (ringkasan peran dan matriks izin per domain modul).
+- Mengadopsi tema terang konsisten selaras dengan Master Lokasi dan Stock Adjustment.
+
+**Alasan:**
+- Memungkinkan administrator mengelola personel operasional, mengatur tanggung jawab staf per lokasi gudang, dan memelihara keamanan akses data persediaan.
+
+---
+
 ## 2026-08-15 — Keputusan Arsitektur Dashboard Inventory Movement Intelligence (Slow & Fast Moving Items)
 
 **Keputusan:**
