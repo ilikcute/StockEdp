@@ -6,6 +6,7 @@
       to="/dashboard"
       class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
       active-class="text-blue-600 bg-blue-50/50 font-semibold"
+      @click="closeAllMenus"
     >
       Dashboard
     </router-link>
@@ -15,6 +16,7 @@
       to="/profile"
       class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
       active-class="text-blue-600 bg-blue-50/50"
+      @click="closeAllMenus"
     >
       Profil Saya
     </router-link>
@@ -29,6 +31,7 @@
         :to="item.to"
         class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
         active-class="text-blue-600 bg-blue-50/50"
+        @click="closeAllMenus"
       >
         {{ item.label }}
       </router-link>
@@ -37,17 +40,19 @@
     <!-- Dropdown Persediaan -->
     <div
       v-if="hasInventoryPermission"
+      ref="inventoryDropdownRef"
       class="relative"
     >
       <button
         type="button"
         class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
         :class="{ 'text-blue-600 bg-blue-50/50': isInventoryActive }"
-        @click="toggleInventoryMenu"
+        @click.stop="toggleInventoryMenu"
       >
         Persediaan
         <svg
-          class="ml-1 h-4 w-4"
+          class="ml-1 h-4 w-4 transition-transform duration-200"
+          :class="{ 'rotate-180': isInventoryOpen }"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -72,9 +77,9 @@
           <router-link
             v-if="authStore.hasPermission(item.permission)"
             :to="item.to"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             active-class="bg-gray-100 text-blue-600 font-medium"
-            @click="isInventoryOpen = false"
+            @click="closeAllMenus"
           >
             {{ item.label }}
           </router-link>
@@ -85,17 +90,19 @@
     <!-- Dropdown Laporan -->
     <div
       v-if="hasReportPermission"
+      ref="reportDropdownRef"
       class="relative"
     >
       <button
         type="button"
         class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
         :class="{ 'text-blue-600 bg-blue-50/50': isReportActive }"
-        @click="toggleReportMenu"
+        @click.stop="toggleReportMenu"
       >
         Laporan
         <svg
-          class="ml-1 h-4 w-4"
+          class="ml-1 h-4 w-4 transition-transform duration-200"
+          :class="{ 'rotate-180': isReportOpen }"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -126,9 +133,9 @@
           <router-link
             v-if="authStore.hasPermission(item.permission)"
             :to="item.to"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             active-class="bg-gray-100 text-blue-600 font-medium"
-            @click="isReportOpen = false"
+            @click="closeAllMenus"
           >
             {{ item.label }}
           </router-link>
@@ -151,9 +158,9 @@
           <router-link
             v-if="authStore.hasPermission(item.permission)"
             :to="item.to"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             active-class="bg-gray-100 text-blue-600 font-medium"
-            @click="isReportOpen = false"
+            @click="closeAllMenus"
           >
             {{ item.label }}
           </router-link>
@@ -164,7 +171,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import {
@@ -184,6 +191,8 @@ const route = useRoute();
 
 const isInventoryOpen = ref(false);
 const isReportOpen = ref(false);
+const inventoryDropdownRef = ref(null);
+const reportDropdownRef = ref(null);
 
 const hasInventoryPermission = computed(() => hasAnyPermission(authStore, inventoryPermissions));
 const hasReportPermission = computed(() => hasAnyPermission(authStore, reportPermissions));
@@ -192,6 +201,11 @@ const hasTransactionReportPermission = computed(() => hasAnyPermission(authStore
 
 const isInventoryActive = computed(() => route.path.startsWith('/inventory/'));
 const isReportActive = computed(() => route.path.startsWith('/reports/'));
+
+function closeAllMenus() {
+    isInventoryOpen.value = false;
+    isReportOpen.value = false;
+}
 
 function toggleInventoryMenu() {
     isInventoryOpen.value = !isInventoryOpen.value;
@@ -202,4 +216,39 @@ function toggleReportMenu() {
     isReportOpen.value = !isReportOpen.value;
     isInventoryOpen.value = false;
 }
+
+function handleClickOutside(event) {
+    if (
+        inventoryDropdownRef.value &&
+        !inventoryDropdownRef.value.contains(event.target)
+    ) {
+        isInventoryOpen.value = false;
+    }
+    if (
+        reportDropdownRef.value &&
+        !reportDropdownRef.value.contains(event.target)
+    ) {
+        isReportOpen.value = false;
+    }
+}
+
+function handleKeydown(event) {
+    if (event.key === 'Escape') {
+        closeAllMenus();
+    }
+}
+
+watch(() => route.fullPath, () => {
+    closeAllMenus();
+});
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener('keydown', handleKeydown);
+});
 </script>
