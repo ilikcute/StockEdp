@@ -3,6 +3,7 @@
 namespace App\Features\Reporting\Controllers;
 
 use App\Features\Reporting\Requests\InventoryBalanceReportRequest;
+use App\Features\Reporting\Requests\InventoryMovementReportRequest;
 use App\Features\Reporting\Requests\LowStockReportRequest;
 use App\Features\Reporting\Requests\StockAdjustmentReportRequest;
 use App\Features\Reporting\Requests\StockCardReportRequest;
@@ -32,6 +33,13 @@ class ReportExportController extends Controller
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
 
         return $this->exportService->exportLowStock($allowedLocationIds, $request->validated());
+    }
+
+    public function inventoryMovement(InventoryMovementReportRequest $request): StreamedResponse
+    {
+        $allowedLocationIds = $request->user()->getAllowedLocationIds();
+
+        return $this->exportService->exportInventoryMovement($allowedLocationIds, $request->validated());
     }
 
     public function stockCard(StockCardReportRequest $request): StreamedResponse

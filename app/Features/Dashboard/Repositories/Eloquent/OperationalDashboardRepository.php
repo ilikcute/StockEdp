@@ -18,6 +18,7 @@ use App\Features\Inventory\Models\StockReceipt;
 use App\Features\Inventory\Models\StockTransfer;
 use App\Features\Location\Models\Location;
 use App\Features\Reporting\Helpers\DecimalQuantity;
+use App\Features\Reporting\Queries\InventoryMovementIntelligenceQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -353,5 +354,14 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         return [
             'locations' => $locations,
         ];
+    }
+
+    public function getInventoryMovementSummary(array $allowedLocationIds, ?int $locationId = null, int $periodDays = 90): array
+    {
+        return InventoryMovementIntelligenceQuery::getSummary(
+            $allowedLocationIds,
+            $locationId,
+            $periodDays
+        );
     }
 }

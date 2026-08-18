@@ -1,4 +1,5 @@
 import InventoryBalanceReportPage from '../pages/InventoryBalanceReportPage.vue';
+import InventoryMovementReportPage from '../pages/InventoryMovementReportPage.vue';
 import LowStockReportPage from '../pages/LowStockReportPage.vue';
 import StockCardReportPage from '../pages/StockCardReportPage.vue';
 import StockReceiptReportPage from '../pages/StockReceiptReportPage.vue';
@@ -24,6 +25,15 @@ export const reportingRoutes = [
         meta: {
             requiresAuth: true,
             permission: 'reports.low_stock.view',
+        },
+    },
+    {
+        path: '/reports/inventory-movement',
+        name: 'reports.inventory-movement',
+        component: InventoryMovementReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.inventory_movement.view',
         },
     },
     {

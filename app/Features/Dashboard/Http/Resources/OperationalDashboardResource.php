@@ -13,6 +13,7 @@ class OperationalDashboardResource extends JsonResource
             'filters' => $this->resource['filters'],
             'filter_options' => $this->resource['filter_options'] ?? ['locations' => []],
             'inventory_health' => $this->resource['inventory_health'],
+            'inventory_movement' => $this->resource['inventory_movement'] ?? null,
             'operational_queue' => $this->resource['operational_queue'],
             'period_activity' => $this->resource['period_activity'],
             'alerts' => $this->resource['alerts'],

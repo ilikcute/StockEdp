@@ -86,22 +86,28 @@
       <!-- 1. Inventory Health Summary Cards -->
       <InventoryHealthCards :data="dashboardData.inventory_health" />
 
-      <!-- 2. Operational Queue Cards -->
+      <!-- 2. Inventory Movement Intelligence Cards -->
+      <InventoryIntelligenceCards
+        :movement-data="dashboardData.inventory_movement"
+        :location-id="filters.location_id"
+      />
+
+      <!-- 3. Operational Queue Cards -->
       <OperationalQueueCards :data="dashboardData.operational_queue" />
 
-      <!-- 3. Period Activity Cards -->
+      <!-- 4. Period Activity Cards -->
       <PeriodActivityCards :data="dashboardData.period_activity" />
 
-      <!-- 4. Computed Alert Center -->
+      <!-- 5. Computed Alert Center -->
       <DashboardAlertList :alerts="dashboardData.alerts" />
 
-      <!-- 5. Top Movement Products Grid -->
+      <!-- 6. Top Movement Products Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TopIssuedProducts :products="dashboardData.top_issued_products" />
         <TopReceivedProducts :products="dashboardData.top_received_products" />
       </div>
 
-      <!-- 6. Recent Inventory Activity Table -->
+      <!-- 7. Recent Inventory Activity Table -->
       <RecentInventoryActivity :activities="dashboardData.recent_activity" />
     </template>
   </div>
@@ -112,6 +118,7 @@ import { onMounted } from 'vue';
 import { useDashboard } from '../composables/use_dashboard';
 import DashboardFilterBar from '../components/DashboardFilterBar.vue';
 import InventoryHealthCards from '../components/InventoryHealthCards.vue';
+import InventoryIntelligenceCards from '../components/InventoryIntelligenceCards.vue';
 import OperationalQueueCards from '../components/OperationalQueueCards.vue';
 import PeriodActivityCards from '../components/PeriodActivityCards.vue';
 import DashboardAlertList from '../components/DashboardAlertList.vue';

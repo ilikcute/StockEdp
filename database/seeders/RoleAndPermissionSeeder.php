@@ -110,6 +110,7 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_STOCK_TRANSFERS_VIEW->value => 'Melihat Laporan Transfer Stok',
             PermissionCode::REPORTS_STOCK_ADJUSTMENTS_VIEW->value => 'Melihat Laporan Penyesuaian Stok',
             PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value => 'Melihat Laporan Stock Opname',
+            PermissionCode::REPORTS_INVENTORY_MOVEMENT_VIEW->value => 'Melihat Laporan Pergerakan Stok',
             PermissionCode::REPORTS_EXPORT->value => 'Mengekspor Laporan',
             PermissionCode::USERS_MANAGE->value => 'Mengelola Pengguna & Hak Akses',
         ];
@@ -173,6 +174,7 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_STOCK_TRANSFERS_VIEW->value,
             PermissionCode::REPORTS_STOCK_ADJUSTMENTS_VIEW->value,
             PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value,
+            PermissionCode::REPORTS_INVENTORY_MOVEMENT_VIEW->value,
         ];
         $warehouseRole->permissions()->sync(
             array_map(fn ($code) => $permissionModels[$code]->id, $warehousePermissions)
@@ -210,6 +212,7 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_STOCK_TRANSFERS_VIEW->value,
             PermissionCode::REPORTS_STOCK_ADJUSTMENTS_VIEW->value,
             PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value,
+            PermissionCode::REPORTS_INVENTORY_MOVEMENT_VIEW->value,
             PermissionCode::REPORTS_EXPORT->value,
         ];
         $supervisorRole->permissions()->sync(

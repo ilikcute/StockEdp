@@ -38,4 +38,9 @@ interface OperationalDashboardRepositoryInterface
      * Get assignment-scoped location filter options for dashboard.
      */
     public function getFilterOptions(array $allowedLocationIds): array;
+
+    /**
+     * Get inventory movement intelligence summary (Slow Moving and Fast Moving counts).
+     */
+    public function getInventoryMovementSummary(array $allowedLocationIds, ?int $locationId = null, int $periodDays = 90): array;
 }

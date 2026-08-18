@@ -54,12 +54,20 @@ export const reportingApi = {
         return apiClient.get('/reports/stock-opnames', { params });
     },
 
+    getInventoryMovement(params = {}) {
+        return apiClient.get('/reports/inventory-movement', { params });
+    },
+
     exportInventoryBalances(params = {}) {
         return apiClient.get('/reports/inventory-balances/export', csvRequestConfig(params));
     },
 
     exportLowStock(params = {}) {
         return apiClient.get('/reports/low-stock/export', csvRequestConfig(params));
+    },
+
+    exportInventoryMovement(params = {}) {
+        return apiClient.get('/reports/inventory-movement/export', csvRequestConfig(params));
     },
 
     exportStockCard(params = {}) {

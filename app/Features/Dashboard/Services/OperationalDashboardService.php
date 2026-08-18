@@ -4,6 +4,7 @@ namespace App\Features\Dashboard\Services;
 
 use App\Features\Auth\Enums\PermissionCode;
 use App\Features\Dashboard\Repositories\Contracts\OperationalDashboardRepositoryInterface;
+use App\Features\Reporting\Queries\InventoryMovementIntelligenceQuery;
 use Carbon\Carbon;
 
 class OperationalDashboardService
@@ -28,6 +29,7 @@ class OperationalDashboardService
         $filterOptions = $this->repository->getFilterOptions($allowedLocationIds);
 
         $alerts = $this->computeAlerts($inventoryHealth, $operationalQueue);
+        $movementSummary = $this->repository->getInventoryMovementSummary($allowedLocationIds, $locationId, 90);
 
         return [
             'filters' => [
@@ -38,6 +40,7 @@ class OperationalDashboardService
             ],
             'filter_options' => $filterOptions,
             'inventory_health' => $inventoryHealth,
+            'inventory_movement' => $movementSummary,
             'operational_queue' => $operationalQueue,
             'period_activity' => $periodActivity,
             'alerts' => $alerts,
@@ -46,6 +49,16 @@ class OperationalDashboardService
             'top_received_products' => $topReceived,
             'generated_at' => Carbon::now('Asia/Jakarta')->toIso8601String(),
         ];
+    }
+
+    public function getMovementSummary(array $allowedLocationIds, array $filters): array
+    {
+        $locationId = ! empty($filters['location_id']) ? (int) $filters['location_id'] : null;
+        $periodDays = isset($filters['period']) && in_array((int) $filters['period'], InventoryMovementIntelligenceQuery::ALLOWED_PERIODS, true)
+            ? (int) $filters['period']
+            : InventoryMovementIntelligenceQuery::DEFAULT_PERIOD;
+
+        return $this->repository->getInventoryMovementSummary($allowedLocationIds, $locationId, $periodDays);
     }
 
     private function calculatePeriodDates(string $period): array

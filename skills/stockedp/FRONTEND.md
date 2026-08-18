@@ -306,3 +306,15 @@ Pertahankan kondisi ini pada perubahan berikutnya.
 - Summary Semantics (Option A):
   - Kartu metrik ringkasan menampilkan distribusi jumlah produk lintas seluruh tipe rekomendasi berdasarkan filter basis aktif (`location_id`, `search`, `category_id`, `unit_id`, `priority`).
 - Quantity display: 0 `parseFloat`, 0 `Number()`, 0 `toFixed()`. Direct decimal string display.
+
+## 20. Inventory Movement Intelligence & Dashboard Integration
+
+- Komponen Dashboard:
+  - `resources/js/features/dashboard/components/InventoryIntelligenceCards.vue`: Menyajikan kartu interaktif Slow Moving dan Fast Moving dengan pemilih periode analisis lokal (30/60/90/120/180/365 hari), loading state, dan navigasi sekali klik menuju halaman laporan detail.
+- Komponen Reporting:
+  - `resources/js/features/reporting/pages/InventoryMovementReportPage.vue`: Halaman laporan pergerakan persediaan komprehensif dengan Filter Bar (periode, tipe pergerakan, lokasi terotorisasi, kategori, satuan, pencarian produk), Tab Switcher Slow Moving / Fast Moving, tabel data berpaginasi dengan pengurutan interaktif, dan ekspor CSV.
+- Navigasi & Permission:
+  - Menu Navigasi Laporan `Pergerakan Stok (Slow/Fast)` dengan izin `reports.inventory_movement.view`.
+- Zero Float Arithmetic:
+  - 0 `parseFloat`, 0 `Number()`, 0 `toFixed()`, 0 `Math.*` pada seluruh display dan kalkulasi metrik kuantitas.
+

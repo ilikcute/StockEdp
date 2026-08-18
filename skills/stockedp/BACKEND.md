@@ -345,3 +345,16 @@ Jika source/test berubah, angka dapat naik. Jangan memaksa count tetap; yang waj
 - Alokasi Deterministik: Greedy allocation (`available_surplus DESC`, `location_id ASC`).
 - Security IDOR: Membatasi target dan kandidat sumber hanya pada `$user->getAllowedLocationIds()`.
 - Decimal Arithmetic: 0 PHP float. Semua perhitungan kuantitas menggunakan BCMath scale 4.
+
+## 20. Inventory Movement Intelligence (Slow & Fast Moving Items)
+
+- Endpoint: `GET /api/v1/dashboard/inventory-movement-summary`, `GET /api/v1/reports/inventory-movement`, dan `GET /api/v1/reports/inventory-movement/export`.
+- RBAC: `reports.inventory_movement.view` (juga dapat diakses dengan `reports.view` / `dashboard.view` untuk summary). Diberikan ke `ADMIN`, `WAREHOUSE_OFFICER`, dan `INVENTORY_SUPERVISOR`.
+- Invarian Read-Only: Strictly read-only (`delta = 0`), zero database mutations, zero auto-actions.
+- Canonical Movement Query (`InventoryMovementIntelligenceQuery`):
+  - Slow Moving: `products.is_active = true` dengan `movement_count == 0` pada periode analisis (30, 60, 90, 120, 180, 365 hari). Menghitung `last_movement_at` dan `days_since_last_movement` berbasis tanggal server `Asia/Jakarta`.
+  - Fast Moving: `products.is_active = true` dengan transaksi pengeluaran aktual (`MovementType::ISSUE`). Menghitung `total_outbound_quantity`, `outbound_movement_count`, `average_daily_outbound`, `movement_days`, dan `velocity_score`.
+  - Internal transfer (`TRANSFER_IN`/`TRANSFER_OUT`), opname, penyesuaian, dan pembatalan tidak dihitung sebagai consumer demand.
+- Security & IDOR: Query di-scope ketat ke `$user->getAllowedLocationIds()`.
+- Decimal Safety: 0 PHP float. Kuantitas dinormalisasi dengan 4 digit desimal via BCMath scale 4.
+

@@ -29,4 +29,20 @@ class OperationalDashboardController extends Controller
             'Dashboard operational data loaded successfully.'
         );
     }
+
+    public function movementSummary(DashboardFilterRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $allowedLocationIds = $user ? $user->getAllowedLocationIds() : [];
+
+        $data = $this->service->getMovementSummary(
+            $allowedLocationIds,
+            $request->validated()
+        );
+
+        return response()->api(
+            $data,
+            'Ringkasan pergerakan persediaan berhasil dimuat.'
+        );
+    }
 }

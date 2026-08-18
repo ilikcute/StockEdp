@@ -5,6 +5,7 @@ namespace App\Features\Reporting\Services;
 use App\Features\Inventory\Enums\AdjustmentReason;
 use App\Features\Reporting\Exports\CsvStreamWriter;
 use App\Features\Reporting\Helpers\DecimalQuantity;
+use App\Features\Reporting\Queries\InventoryMovementIntelligenceQuery;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
 use Carbon\CarbonImmutable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -389,6 +390,126 @@ class ReportExportService
         };
 
         return $this->downloadStream('stock-opnames', $headers, $generator());
+    }
+
+    public function exportInventoryMovement(array $allowedLocationIds, array $filters): StreamedResponse
+    {
+        $type = ($filters['type'] ?? 'slow-moving') === 'fast-moving' ? 'fast-moving' : 'slow-moving';
+        $periodDays = isset($filters['period']) && in_array((int) $filters['period'], InventoryMovementIntelligenceQuery::ALLOWED_PERIODS, true)
+            ? (int) $filters['period']
+            : InventoryMovementIntelligenceQuery::DEFAULT_PERIOD;
+
+        $locationId = ! empty($filters['location_id']) ? (int) $filters['location_id'] : null;
+
+        if ($locationId !== null && ! in_array($locationId, $allowedLocationIds, true)) {
+            abort(403, 'Akses ke lokasi ini ditolak.');
+        }
+
+        $targetLocationIds = $locationId !== null ? [$locationId] : $allowedLocationIds;
+        $periodInfo = InventoryMovementIntelligenceQuery::calculatePeriodDates($periodDays);
+
+        if ($type === 'fast-moving') {
+            $query = InventoryMovementIntelligenceQuery::buildFastMovingBaseQuery($targetLocationIds, $periodInfo, $filters);
+            $query->select([
+                'products.sku',
+                'products.barcode',
+                'products.name as product_name',
+                'categories.name as category_name',
+                'units.symbol as unit_symbol',
+                'units.code as unit_code',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'inventory_balances.quantity as raw_current_stock',
+                'oa.total_outbound_quantity',
+                'oa.outbound_movement_count',
+                'oa.movement_days',
+                'oa.last_outbound_at',
+            ])->orderBy('oa.total_outbound_quantity', 'desc')->orderBy('products.id', 'asc');
+
+            $headers = [
+                'SKU', 'Barcode', 'Nama Produk', 'Kategori', 'Satuan',
+                'Kode Lokasi', 'Nama Lokasi', 'Stok Saat Ini', 'Total Kuantitas Keluar',
+                'Jumlah Transaksi Keluar', 'Hari Aktif Bergerak', 'Rata-rata Keluar Harian',
+                'Velocity Score', 'Pengeluaran Terakhir',
+            ];
+
+            $cursor = $query->cursor();
+            $generator = function () use ($cursor, $periodDays) {
+                foreach ($cursor as $item) {
+                    $totalOutbound = DecimalQuantity::normalize((string) $item->total_outbound_quantity);
+                    $avgDaily = bcdiv($totalOutbound, (string) $periodDays, 4);
+                    $lastOutbound = $item->last_outbound_at ? CarbonImmutable::parse($item->last_outbound_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
+
+                    yield [
+                        $item->sku ?? '',
+                        $item->barcode ?? '',
+                        $item->product_name ?? '',
+                        $item->category_name ?? '',
+                        $item->unit_symbol ?: ($item->unit_code ?: ''),
+                        $item->location_code ?? '',
+                        $item->location_name ?? '',
+                        DecimalQuantity::normalize((string) ($item->raw_current_stock ?? '0.0000')),
+                        $totalOutbound,
+                        (string) ($item->outbound_movement_count ?? 0),
+                        (string) ($item->movement_days ?? 0),
+                        $avgDaily,
+                        $avgDaily,
+                        $lastOutbound,
+                    ];
+                }
+            };
+
+            return $this->downloadStream("fast-moving-{$periodDays}d", $headers, $generator());
+        }
+
+        $query = InventoryMovementIntelligenceQuery::buildSlowMovingBaseQuery($targetLocationIds, $periodInfo, $filters);
+        $query->select([
+            'products.sku',
+            'products.barcode',
+            'products.name as product_name',
+            'categories.name as category_name',
+            'units.symbol as unit_symbol',
+            'units.code as unit_code',
+            'locations.code as location_code',
+            'locations.name as location_name',
+            'inventory_balances.quantity as raw_current_stock',
+            'lm.last_movement_at',
+        ])->orderByRaw('(lm.last_movement_at IS NULL) DESC, lm.last_movement_at ASC')->orderBy('products.name', 'asc');
+
+        $headers = [
+            'SKU', 'Barcode', 'Nama Produk', 'Kategori', 'Satuan',
+            'Kode Lokasi', 'Nama Lokasi', 'Stok Saat Ini', 'Pergerakan Terakhir',
+            'Hari Tidak Bergerak', 'Jumlah Mutasi',
+        ];
+
+        $cursor = $query->cursor();
+        $today = $periodInfo['today'];
+
+        $generator = function () use ($cursor, $today) {
+            foreach ($cursor as $item) {
+                $lastMovementAt = $item->last_movement_at !== null ? CarbonImmutable::parse($item->last_movement_at, 'Asia/Jakarta') : null;
+                $daysSince = $lastMovementAt !== null
+                    ? (string) abs((int) $today->startOfDay()->diffInDays($lastMovementAt->startOfDay(), false))
+                    : 'Tidak pernah';
+                $lastFormatted = $lastMovementAt ? $lastMovementAt->format('Y-m-d H:i:s') : 'Belum pernah';
+
+                yield [
+                    $item->sku ?? '',
+                    $item->barcode ?? '',
+                    $item->product_name ?? '',
+                    $item->category_name ?? '',
+                    $item->unit_symbol ?: ($item->unit_code ?: ''),
+                    $item->location_code ?? '',
+                    $item->location_name ?? '',
+                    DecimalQuantity::normalize((string) ($item->raw_current_stock ?? '0.0000')),
+                    $lastFormatted,
+                    $daysSince,
+                    '0',
+                ];
+            }
+        };
+
+        return $this->downloadStream("slow-moving-{$periodDays}d", $headers, $generator());
     }
 
     private function downloadStream(string $slug, array $headers, iterable $rows): StreamedResponse

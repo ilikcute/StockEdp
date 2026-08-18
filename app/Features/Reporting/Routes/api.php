@@ -1,6 +1,7 @@
 <?php
 
 use App\Features\Reporting\Controllers\InventoryBalanceReportController;
+use App\Features\Reporting\Controllers\InventoryMovementReportController;
 use App\Features\Reporting\Controllers\LowStockReportController;
 use App\Features\Reporting\Controllers\ReportExportController;
 use App\Features\Reporting\Controllers\ReportFilterOptionsController;
@@ -22,6 +23,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('reports/low-stock', [LowStockReportController::class, 'index']);
     Route::get('reports/low-stock/export', [ReportExportController::class, 'lowStock'])->name('reports.low-stock.export');
+
+    Route::get('reports/inventory-movement', [InventoryMovementReportController::class, 'index'])->name('reports.inventory-movement.index');
+    Route::get('reports/inventory-movement/export', [ReportExportController::class, 'inventoryMovement'])->name('reports.inventory-movement.export');
 
     Route::get('reports/stock-card', [StockCardReportController::class, 'index']);
     Route::get('reports/stock-card/export', [ReportExportController::class, 'stockCard'])->name('reports.stock-card.export');

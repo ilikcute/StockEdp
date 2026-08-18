@@ -11,6 +11,46 @@ Keputusan terbaru harus diletakkan paling atas.
 
 ---
 
+## 2026-08-15 — Keputusan Arsitektur Dashboard Inventory Movement Intelligence (Slow & Fast Moving Items)
+
+**Keputusan:**
+
+### 1. Invarian Read-Only & Zero-Mutation
+- Endpoint `GET /api/v1/dashboard/inventory-movement-summary`, `GET /api/v1/reports/inventory-movement`, dan `GET /api/v1/reports/inventory-movement/export` bersifat **100% Read-Only** (`GET`).
+- Tidak membuat transaksi, tidak mengubah saldo persediaan (`inventory_balances`), tidak membuat pergerakan stok (`stock_movements`), dan tidak memodifikasi kunci lokasi (`delta = 0`).
+
+### 2. Semantik Kanonikal Pergerakan Stok
+- **Slow Moving**:
+  - Didefinisikan secara ketat sebagai produk aktif (`products.is_active = true`) di lokasi terkait yang memiliki `movement_count == 0` pada seluruh pergerakan selama periode analisis (30, 60, 90, 120, 180, atau 365 hari).
+  - Menyajikan `last_movement_at` (sebelum periode atau `null` jika belum pernah bergerak) dan `days_since_last_movement` berbasis tanggal server `Asia/Jakarta`.
+  - Missing balance row pada `inventory_balances` diperlakukan aman sebagai saldo `0.0000`.
+- **Fast Moving**:
+  - Hanya transaksi pengeluaran aktual (`MovementType::ISSUE`) yang dihitung sebagai consumer demand / turnover.
+  - Relokasi stok internal (`TRANSFER_IN`, `TRANSFER_OUT`) tidak dihitung sebagai consumer demand ganda.
+  - Penyesuaian stok (`ADJUSTMENT_IN`/`OUT`), Opname (`OPNAME_IN`/`OUT`), dan Pembatalan (`REVERSAL`) tidak dihitung sebagai demand.
+  - Metrik dihitung dengan presisi desimal 4 digit (`BCMath` scale 4): `total_outbound_quantity`, `outbound_movement_count`, `average_daily_outbound`, `movement_days`, dan `velocity_score`.
+
+### 3. Arsitektur Dashboard & Summary Endpoint
+- Dashboard menyajikan 2 kartu interaktif (Slow Moving Card & Fast Moving Card) di bawah kartu kesehatan persediaan.
+- Menyediakan pemilih periode lokal (30/60/90/120/180/365 hari) yang memicu panggilan ringan ke `GET /api/v1/dashboard/inventory-movement-summary` tanpa me-reload seluruh komponen dashboard.
+- Navigasi sekali klik (*deep linking*) dari dashboard card menuju `/reports/inventory-movement?type={slow-moving|fast-moving}&period={period}` dengan menyertakan filter `location_id` bila aktif.
+
+### 4. Laporan Detail & Streaming Ekspor CSV
+- Antarmuka laporan detail komprehensif dengan filter Bar, Tab Switcher, pengurutan kolom interaktif, pagination responsif, dan tombol unduh CSV tanpa library eksternal via `CsvStreamWriter`.
+
+### 5. Keamanan & Pencegahan IDOR
+- Query terikat ketat pada `$user->getAllowedLocationIds()`.
+- Filter lokasi di luar hak akses menghasilkan `403 Forbidden`. User tanpa lokasi penugasan menerima respons kosong tanpa membocorkan data.
+
+**Alasan:**
+- Memberikan dukungan keputusan yang cepat, akurat, dan aman bagi operator gudang dan manajer persediaan untuk mendeteksi barang mati (*dead stock*) serta barang dengan permintaan tinggi (*high demand*).
+
+**Alternatif yang ditolak:**
+- Menghitung Transfer Keluar sebagai Fast Moving: Ditolak karena transfer antar gudang bukan konsumsi konsumen riil dan akan menggandakan hitungan penjualan.
+- Perhitungan float dalam metrik: Ditolak untuk mencegah kehilangan presisi desimal pada unit kecil atau kuantitas besar.
+
+---
+
 ## 2026-08-13 — Keputusan Arsitektur Reorder & Replenishment Recommendation Center (Fase 12C)
 
 **Keputusan:**

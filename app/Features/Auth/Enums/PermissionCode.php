@@ -84,6 +84,7 @@ enum PermissionCode: string
     case REPORTS_STOCK_TRANSFERS_VIEW = 'reports.stock_transfers.view';
     case REPORTS_STOCK_ADJUSTMENTS_VIEW = 'reports.stock_adjustments.view';
     case REPORTS_STOCK_OPNAMES_VIEW = 'reports.stock_opnames.view';
+    case REPORTS_INVENTORY_MOVEMENT_VIEW = 'reports.inventory_movement.view';
     case REPORTS_EXPORT = 'reports.export';
     case USERS_MANAGE = 'users.manage';
 

@@ -29,7 +29,7 @@ class DashboardFilterRequest extends FormRequest
     {
         return [
             'location_id' => ['nullable', 'integer', 'exists:locations,id'],
-            'period' => ['nullable', 'string', 'in:today,7d,30d'],
+            'period' => ['nullable', 'string', 'in:today,7d,30d,30,60,90,120,180,365,60d,90d,120d,180d,365d'],
         ];
     }
 }
