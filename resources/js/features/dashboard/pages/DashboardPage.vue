@@ -86,6 +86,9 @@
       <!-- 1. Inventory Health Summary Cards -->
       <InventoryHealthCards :data="dashboardData.inventory_health" />
 
+      <!-- 1b. Replenishment Action Center Widget -->
+      <ReplenishmentActionCard :location-id="filters.location_id" />
+
       <!-- 2. Inventory Movement Intelligence Cards -->
       <InventoryIntelligenceCards
         :movement-data="dashboardData.inventory_movement"
@@ -118,6 +121,7 @@ import { onMounted } from 'vue';
 import { useDashboard } from '../composables/use_dashboard';
 import DashboardFilterBar from '../components/DashboardFilterBar.vue';
 import InventoryHealthCards from '../components/InventoryHealthCards.vue';
+import ReplenishmentActionCard from '../components/ReplenishmentActionCard.vue';
 import InventoryIntelligenceCards from '../components/InventoryIntelligenceCards.vue';
 import OperationalQueueCards from '../components/OperationalQueueCards.vue';
 import PeriodActivityCards from '../components/PeriodActivityCards.vue';

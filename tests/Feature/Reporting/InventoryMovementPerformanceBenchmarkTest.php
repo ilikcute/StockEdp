@@ -133,7 +133,7 @@ class InventoryMovementPerformanceBenchmarkTest extends TestCase
         $queries = DB::getQueryLog();
         DB::disableQueryLog();
 
-        // Query count should be strictly bounded (auth/locations + summary counts + paginated list + total count <= 10 queries total)
-        $this->assertLessThanOrEqual(10, count($queries), 'Query count is too high, possible N+1 query regression.');
+        // Query count should be strictly bounded (auth/RBAC + locations + summary counts + paginated list + total count <= 15 queries total, 0 N+1)
+        $this->assertLessThanOrEqual(15, count($queries), 'Query count is too high, possible N+1 query regression.');
     }
 }

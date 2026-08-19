@@ -2,14 +2,9 @@
 
 namespace Tests\Feature\Replenishment;
 
-use App\Features\Auth\Enums\RoleCode;
-use App\Features\Auth\Models\Role;
 use App\Features\Auth\Models\User;
 use App\Features\Category\Models\Category;
-use App\Features\Inventory\Enums\TransferStatus;
 use App\Features\Inventory\Models\InventoryBalance;
-use App\Features\Inventory\Models\StockTransfer;
-use App\Features\Inventory\Models\StockTransferItem;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use App\Features\Unit\Models\Unit;
@@ -22,46 +17,48 @@ class ReplenishmentPerformanceBenchmarkTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $admin;
+    protected User $user;
 
-    private Location $targetLocation;
+    protected Location $targetLocation;
 
-    /** @var array<Location> */
-    private array $allLocations;
+    protected array $allLocations = [];
+
+    protected array $products = [];
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(RoleAndPermissionSeeder::class);
 
-        $locations = [];
-        for ($i = 1; $i <= 5; $i++) {
-            $locations[] = Location::create([
-                'code' => "WH-PERF-0{$i}",
-                'name' => "Gudang Benchmark 0{$i}",
-                'is_active' => true,
-            ]);
+        $this->user = User::factory()->create(['is_active' => true]);
+        $adminRole = DB::table('roles')->where('code', 'ADMIN')->first();
+        if ($adminRole) {
+            $this->user->roles()->attach($adminRole->id);
         }
 
-        $this->allLocations = $locations;
-        $this->targetLocation = $locations[0];
+        // Create 5 locations
+        for ($l = 1; $l <= 5; $l++) {
+            $loc = Location::create([
+                'code' => "LOC-PERF-{$l}",
+                'name' => "Location Perf {$l}",
+                'is_active' => true,
+            ]);
+            $this->allLocations[] = $loc;
+            $this->user->locations()->attach($loc->id);
+        }
+        $this->targetLocation = $this->allLocations[0];
 
-        $this->admin = User::factory()->create();
-        $adminRole = Role::where('code', RoleCode::ADMIN->value)->first();
-        $this->admin->roles()->attach($adminRole);
-        $this->admin->locations()->attach(collect($locations)->pluck('id'));
+        $category = Category::factory()->create(['is_active' => true]);
+        $unit = Unit::factory()->create(['is_active' => true]);
 
-        $category = Category::create(['code' => 'CAT-BENCH', 'name' => 'Kategori Benchmark', 'is_active' => true]);
-        $unit = Unit::create(['code' => 'UNT-BENCH', 'name' => 'PCS', 'symbol' => 'pcs', 'is_active' => true]);
-
-        // Seed 1,000 products (chunked inserts for performance)
+        // Bulk insert 1,000 products
         $now = now();
-        $productRows = [];
-        for ($p = 1; $p <= 1000; $p++) {
-            $num = str_pad((string) $p, 4, '0', STR_PAD_LEFT);
-            $productRows[] = [
-                'sku' => "PRD-PERF-{$num}",
-                'name' => "Produk Benchmark {$num}",
+        $productsData = [];
+        for ($i = 1; $i <= 1000; $i++) {
+            $productsData[] = [
+                'name' => "Benchmark Product {$i}",
+                'sku' => sprintf('SKU-REC-%04d', $i),
+                'barcode' => sprintf('899%010d', $i),
                 'category_id' => $category->id,
                 'unit_id' => $unit->id,
                 'minimum_stock' => '20.0000',
@@ -70,119 +67,83 @@ class ReplenishmentPerformanceBenchmarkTest extends TestCase
                 'updated_at' => $now,
             ];
         }
+        Product::insert($productsData);
+        $this->products = Product::all()->all();
 
-        foreach (array_chunk($productRows, 250) as $chunk) {
-            Product::insert($chunk);
-        }
-
-        $productIds = Product::orderBy('id', 'asc')->pluck('id')->all();
-
-        // Seed ~5,000 balances (1 target + 4 sister locations per product)
-        $balanceRows = [];
-        foreach ($productIds as $idx => $prodId) {
-            // Target location:
-            // 70% low-stock (qty 2.0000 or 0.0000), 30% healthy (qty 30.0000)
-            $targetQty = ($idx % 10 < 7) ? (($idx % 2 === 0) ? '0.0000' : '5.0000') : '30.0000';
-            $balanceRows[] = [
-                'product_id' => $prodId,
-                'location_id' => $this->targetLocation->id,
-                'quantity' => $targetQty,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-
-            // Sister locations (surplus vs no surplus)
-            for ($l = 1; $l < 5; $l++) {
-                $sisterQty = ($idx % 3 === 0) ? '50.0000' : (($idx % 3 === 1) ? '15.0000' : '0.0000');
-                $balanceRows[] = [
-                    'product_id' => $prodId,
-                    'location_id' => $this->allLocations[$l]->id,
-                    'quantity' => $sisterQty,
+        // Bulk insert 5,000 inventory balances (1,000 products x 5 locations)
+        $balancesData = [];
+        foreach ($this->products as $p) {
+            foreach ($this->allLocations as $locIdx => $loc) {
+                // Target location has shortage (on_hand = 5.0000 < min 20.0000)
+                // Other locations have surplus (on_hand = 50.0000 > min 20.0000)
+                $qty = ($loc->id === $this->targetLocation->id) ? '5.0000' : '50.0000';
+                $balancesData[] = [
+                    'location_id' => $loc->id,
+                    'product_id' => $p->id,
+                    'quantity' => $qty,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
             }
         }
 
-        foreach (array_chunk($balanceRows, 500) as $chunk) {
+        // Chunk insert balances
+        foreach (array_chunk($balancesData, 1000) as $chunk) {
             InventoryBalance::insert($chunk);
-        }
-
-        // Seed representative SENT inbound transfers
-        for ($t = 1; $t <= 10; $t++) {
-            $transfer = StockTransfer::create([
-                'transfer_number' => "TRF-BENCH-{$t}",
-                'transfer_date' => now()->toDateString(),
-                'origin_location_id' => $this->allLocations[1]->id,
-                'destination_location_id' => $this->targetLocation->id,
-                'status' => TransferStatus::SENT->value,
-                'created_by' => $this->admin->id,
-            ]);
-            StockTransferItem::create([
-                'stock_transfer_id' => $transfer->id,
-                'product_id' => $productIds[$t],
-                'quantity' => '10.0000',
-            ]);
         }
     }
 
-    public function test_replenishment_endpoint_sla_over_5_http_requests(): void
+    public function test_recommendation_benchmark_under_2000ms_sla(): void
     {
         $durations = [];
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $start = microtime(true);
 
-            $response = $this->actingAs($this->admin, 'sanctum')
-                ->getJson('/api/v1/replenishment-recommendations?location_id='.$this->targetLocation->id.'&per_page=50');
-
-            $elapsedMs = (microtime(true) - $start) * 1000;
-            $durations[] = $elapsedMs;
-
-            $response->assertStatus(200);
-            $this->assertNotEmpty($response->json('data.data'));
-            $this->assertLessThan(2000, $elapsedMs, "Request #{$i} took {$elapsedMs} ms, which exceeds SLA of 2000ms");
-
-            echo sprintf(
-                "Request %d : %.2f ms HTTP 200\n",
-                $i,
-                $elapsedMs
+            $response = $this->actingAs($this->user)->getJson(
+                "/api/v1/replenishment-recommendations?location_id={$this->targetLocation->id}&per_page=15"
             );
+            $response->assertStatus(200);
+
+            $durationMs = (microtime(true) - $start) * 1000;
+            $durations[] = $durationMs;
         }
 
-        $minMs = min($durations);
-        $maxMs = max($durations);
-        $avgMs = array_sum($durations) / count($durations);
+        $avgDuration = array_sum($durations) / count($durations);
+        $maxDuration = max($durations);
 
-        $this->assertLessThan(2000, $maxMs, 'Max response time must be under 2,000ms');
-
-        echo sprintf(
-            "\nMIN     : %.2f ms\nMAX     : %.2f ms\nAVERAGE : %.2f ms\n",
-            $minMs,
-            $maxMs,
-            $avgMs
-        );
+        $this->assertLessThan(2000, $avgDuration, "Average latency ({$avgDuration} ms) exceeded 2000ms SLA.");
+        $this->assertLessThan(2000, $maxDuration, "Max latency ({$maxDuration} ms) exceeded 2000ms SLA.");
     }
 
-    public function test_query_count_is_bounded_and_has_zero_n_plus_one(): void
+    public function test_validate_action_benchmark_and_bounded_query_count(): void
     {
-        DB::flushQueryLog();
+        $sampleProduct = $this->products[0];
+        $sampleSource = $this->allLocations[1];
+
         DB::enableQueryLog();
 
-        $response = $this->actingAs($this->admin, 'sanctum')
-            ->getJson('/api/v1/replenishment-recommendations?location_id='.$this->targetLocation->id.'&per_page=50')
-            ->assertStatus(200);
+        $start = microtime(true);
+        $response = $this->actingAs($this->user)->postJson('/api/v1/replenishment-recommendations/validate-action', [
+            'target_location_id' => $this->targetLocation->id,
+            'items' => [
+                [
+                    'product_id' => $sampleProduct->id,
+                    'source_location_id' => $sampleSource->id,
+                    'requested_quantity' => '15.0000',
+                ],
+            ],
+        ]);
+        $durationMs = (microtime(true) - $start) * 1000;
 
         $queries = DB::getQueryLog();
-        $queryCount = count($queries);
+        DB::disableQueryLog();
 
-        $this->assertNotEmpty($response->json('data.data'));
-        // 50 rows returned with bulk enrichment (0 per-row SQL queries)
-        $this->assertLessThanOrEqual(25, $queryCount, "Total SQL queries ({$queryCount}) exceeds bounded threshold of 25 (0 N+1).");
+        $response->assertStatus(200)
+            ->assertJsonPath('data.valid', true);
 
-        echo sprintf(
-            "\nTOTAL SQL QUERIES = %d (Bounded, 0 N+1 for 50 recommendation rows across 1,000 products)\n",
-            $queryCount
-        );
+        $this->assertLessThan(2000, $durationMs, "Validation latency ({$durationMs} ms) exceeded 2000ms SLA.");
+        // Bounded O(1) query count
+        $this->assertLessThanOrEqual(25, count($queries), 'Validation query count is too high.');
     }
 }

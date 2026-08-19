@@ -8,6 +8,13 @@ export function useReplenishment() {
   const recommendations = ref([]);
   const generatedAt = ref('');
 
+  // Action Center & Review Modal State
+  const isReviewModalOpen = ref(false);
+  const reviewItems = ref([]);
+  const validatingAction = ref(false);
+  const conflictError = ref(null);
+  const generalError = ref(null);
+
   const summary = reactive({
     low_stock_product_count: 0,
     inbound_covered_count: 0,
@@ -124,6 +131,51 @@ export function useReplenishment() {
     }
   };
 
+  const openReviewModal = (items) => {
+    reviewItems.value = Array.isArray(items) ? items : [items];
+    conflictError.value = null;
+    generalError.value = null;
+    isReviewModalOpen.value = true;
+  };
+
+  const closeReviewModal = () => {
+    isReviewModalOpen.value = false;
+    reviewItems.value = [];
+    conflictError.value = null;
+    generalError.value = null;
+  };
+
+  const validateAction = async (payload) => {
+    validatingAction.value = true;
+    conflictError.value = null;
+    generalError.value = null;
+
+    try {
+      const res = await replenishmentApi.validateAction(payload);
+      return {
+        success: true,
+        data: res.data?.data || res.data,
+      };
+    } catch (err) {
+      const status = err.response?.status;
+      const msg = err.response?.data?.message || 'Gagal memvalidasi aksi transfer persediaan.';
+
+      if (status === 409) {
+        conflictError.value = msg;
+      } else {
+        generalError.value = msg;
+      }
+
+      return {
+        success: false,
+        status,
+        message: msg,
+      };
+    } finally {
+      validatingAction.value = false;
+    }
+  };
+
   const changePage = (newPage) => {
     filters.page = newPage;
     fetchRecommendations();
@@ -151,8 +203,16 @@ export function useReplenishment() {
     meta,
     filterOptions,
     filters,
+    isReviewModalOpen,
+    reviewItems,
+    validatingAction,
+    conflictError,
+    generalError,
     fetchFilterOptions,
     fetchRecommendations,
+    openReviewModal,
+    closeReviewModal,
+    validateAction,
     changePage,
     resetFilters,
   };

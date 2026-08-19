@@ -4,10 +4,10 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-          Pusat Rekomendasi Reorder & Replenishment
+          Pusat Rekomendasi Reorder & Action Center
         </h1>
         <p class="mt-1 text-sm text-gray-600">
-          Analisis kekurangan stok, transfer in-transit, dan alokasi surplus gudang internal untuk dukungan keputusan reorder.
+          Analisis kekurangan stok, transfer in-transit, dan alokasi surplus gudang internal untuk dukungan keputusan reorder dan persiapan transfer.
         </p>
       </div>
 
@@ -94,12 +94,13 @@
       :items="recommendations"
       :target-location-id="filters.location_id"
       :loading="loading"
+      @review-transfer-items="openReviewModal"
     />
 
     <!-- 7. Pagination & Informational Disclaimer -->
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 text-xs text-gray-500">
       <div class="italic max-w-lg">
-        Rekomendasi dihitung dari kondisi stok saat ini. Validasi stok final tetap dilakukan saat transaksi Transfer diproses.
+        Rekomendasi dihitung dari kondisi stok saat ini. Validasi stok final tetap dilakukan secara live sebelum formulir transfer disiapkan.
       </div>
 
       <!-- Pagination Controls -->
@@ -134,15 +135,32 @@
         </button>
       </div>
     </div>
+
+    <!-- 8. Action Review Modal -->
+    <ReplenishmentActionReviewModal
+      :is-open="isReviewModalOpen"
+      :review-items="reviewItems"
+      :target-location-id="Number(filters.location_id)"
+      :validating="validatingAction"
+      :conflict-error="conflictError"
+      :general-error="generalError"
+      @close="closeReviewModal"
+      @validate-and-proceed="handleValidateAndProceedTransfer"
+      @refresh-data="fetchRecommendations"
+    />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useReplenishment } from '../composables/use_replenishment.js';
 import ReplenishmentSummaryCards from '../components/ReplenishmentSummaryCards.vue';
 import ReplenishmentFilterBar from '../components/ReplenishmentFilterBar.vue';
 import ReplenishmentRecommendationTable from '../components/ReplenishmentRecommendationTable.vue';
+import ReplenishmentActionReviewModal from '../components/ReplenishmentActionReviewModal.vue';
+
+const router = useRouter();
 
 const {
   loading,
@@ -154,8 +172,16 @@ const {
   meta,
   filterOptions,
   filters,
+  isReviewModalOpen,
+  reviewItems,
+  validatingAction,
+  conflictError,
+  generalError,
   fetchFilterOptions,
   fetchRecommendations,
+  openReviewModal,
+  closeReviewModal,
+  validateAction,
   changePage,
   resetFilters,
 } = useReplenishment();
@@ -179,6 +205,36 @@ const handleFilterChange = () => {
   fetchRecommendations();
 };
 
+const handleValidateAndProceedTransfer = async (payload) => {
+  const res = await validateAction({
+    target_location_id: payload.target_location_id,
+    items: payload.items,
+  });
+
+  if (res.success) {
+    closeReviewModal();
+    const firstItem = payload.items[0];
+
+    // Navigate to transfer create form with safe prefill parameters and history state
+    router.push({
+      path: '/inventory/transfers/create',
+      query: {
+        source: 'replenishment',
+        origin_location_id: firstItem.source_location_id,
+        destination_location_id: payload.target_location_id,
+        product_id: firstItem.product_id,
+        quantity: firstItem.requested_quantity,
+      },
+      state: {
+        replenishment_items: payload.items.map((i) => ({
+          product_id: i.product_id,
+          quantity: i.requested_quantity,
+        })),
+      },
+    });
+  }
+};
+
 const formatTimestamp = (isoString) => {
   if (!isoString) return '';
   const date = new Date(isoString);
@@ -194,8 +250,8 @@ const formatTimestamp = (isoString) => {
 
 onMounted(async () => {
   await fetchFilterOptions();
-  if (filterOptions.value.locations?.length > 0 && !filters.location_id) {
-    filters.location_id = filterOptions.value.locations[0].id;
+  if (filterOptions.locations?.length > 0 && !filters.location_id) {
+    filters.location_id = filterOptions.locations[0].id;
     await fetchRecommendations();
   }
 });

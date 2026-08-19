@@ -21,22 +21,14 @@
       </div>
 
       <div class="flex items-center justify-end pt-1.5 border-t border-gray-200">
-        <router-link
+        <button
           v-if="canCreateTransfer && actionable"
-          :to="{
-            path: '/inventory/transfers/create',
-            query: {
-              origin_location_id: alloc.source_location_id,
-              destination_location_id: targetLocationId,
-              product_id: productId,
-              quantity: alloc.suggested_transfer_quantity,
-              source: 'replenishment',
-            },
-          }"
+          type="button"
           class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer"
+          @click="$emit('review-transfer', alloc)"
         >
-          Siapkan Transfer
-        </router-link>
+          Review & Siapkan Transfer
+        </button>
         <span
           v-else-if="!actionable"
           class="text-[11px] text-amber-600 italic font-medium"
@@ -70,6 +62,8 @@ defineProps({
     default: true,
   },
 });
+
+defineEmits(['review-transfer']);
 
 const authStore = useAuthStore();
 const canCreateTransfer = computed(() => authStore.hasPermission('stock_transfers.create'));

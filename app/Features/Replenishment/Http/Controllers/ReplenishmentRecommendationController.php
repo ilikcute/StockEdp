@@ -5,6 +5,7 @@ namespace App\Features\Replenishment\Http\Controllers;
 use App\Features\Replenishment\DTOs\ReplenishmentFilterData;
 use App\Features\Replenishment\Http\Requests\ReplenishmentFilterOptionsRequest;
 use App\Features\Replenishment\Http\Requests\ReplenishmentRecommendationRequest;
+use App\Features\Replenishment\Http\Requests\ValidateReplenishmentActionRequest;
 use App\Features\Replenishment\Services\ReplenishmentRecommendationService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +41,22 @@ class ReplenishmentRecommendationController extends Controller
         return response()->api(
             $options,
             'Opsi filter rekomendasi reorder berhasil dimuat.'
+        );
+    }
+
+    public function validateAction(ValidateReplenishmentActionRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $allowedLocationIds = $user ? $user->getAllowedLocationIds() : [];
+
+        $targetLocationId = (int) $request->validated('target_location_id');
+        $items = $request->validated('items');
+
+        $result = $this->service->validateAction($allowedLocationIds, $targetLocationId, $items);
+
+        return response()->api(
+            $result,
+            $result['message'] ?? 'Aksi rekomendasi valid.'
         );
     }
 }

@@ -8,4 +8,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->name('replenishment-recommendations.filter-options');
     Route::get('replenishment-recommendations', [ReplenishmentRecommendationController::class, 'index'])
         ->name('replenishment-recommendations.index');
+    Route::post('replenishment-recommendations/validate-action', [ReplenishmentRecommendationController::class, 'validateAction'])
+        ->name('replenishment-recommendations.validate-action');
 });

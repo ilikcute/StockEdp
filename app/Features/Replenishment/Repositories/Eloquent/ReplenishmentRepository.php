@@ -5,6 +5,7 @@ namespace App\Features\Replenishment\Repositories\Eloquent;
 use App\Features\Category\Models\Category;
 use App\Features\Inventory\Enums\TransferStatus;
 use App\Features\Location\Models\Location;
+use App\Features\Product\Models\Product;
 use App\Features\Replenishment\DTOs\ReplenishmentFilterData;
 use App\Features\Replenishment\Enums\ReplenishmentPriority;
 use App\Features\Replenishment\Enums\ReplenishmentRecommendationType;
@@ -17,6 +18,11 @@ use Illuminate\Support\Facades\DB;
 class ReplenishmentRepository implements ReplenishmentRepositoryInterface
 {
     public function getTargetLocation(int $locationId): ?Location
+    {
+        return Location::find($locationId);
+    }
+
+    public function getLocation(int $locationId): ?Location
     {
         return Location::find($locationId);
     }
@@ -171,5 +177,20 @@ class ReplenishmentRepository implements ReplenishmentRepositoryInterface
             'recommendation_types' => $recommendationTypes,
             'priorities' => $priorities,
         ];
+    }
+
+    public function getProducts(array $productIds): Collection
+    {
+        return Product::whereIn('id', $productIds)->get();
+    }
+
+    public function getInventoryBalanceQuantity(int $locationId, int $productId): string
+    {
+        $qty = DB::table('inventory_balances')
+            ->where('location_id', $locationId)
+            ->where('product_id', $productId)
+            ->value('quantity');
+
+        return $qty !== null ? (string) $qty : '0.0000';
     }
 }

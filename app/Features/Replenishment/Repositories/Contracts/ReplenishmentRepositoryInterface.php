@@ -10,6 +10,8 @@ interface ReplenishmentRepositoryInterface
 {
     public function getTargetLocation(int $locationId): ?Location;
 
+    public function getLocation(int $locationId): ?Location;
+
     public function isLocationFrozen(int $locationId): bool;
 
     /**
@@ -44,7 +46,13 @@ interface ReplenishmentRepositoryInterface
 
     /**
      * @param  array<int>  $allowedLocationIds
-     * @return array<string, mixed>
      */
     public function getFilterOptions(array $allowedLocationIds): array;
+
+    /**
+     * @param  array<int>  $productIds
+     */
+    public function getProducts(array $productIds): Collection;
+
+    public function getInventoryBalanceQuantity(int $locationId, int $productId): string;
 }

@@ -486,7 +486,28 @@ onMounted(async () => {
       }
     }
 
-    if (route.query.product_id) {
+    let prefillItems = [];
+    if (window.history.state && Array.isArray(window.history.state.replenishment_items)) {
+      prefillItems = window.history.state.replenishment_items;
+    }
+
+    if (prefillItems.length > 0) {
+      const parsedItems = [];
+      prefillItems.forEach((it) => {
+        const pid = parseInt(it.product_id, 10);
+        const qty = it.quantity || it.requested_quantity;
+        if (pid && products.value.some((p) => p.id === pid)) {
+          if (typeof qty === 'string' && isValidDecimal4String(qty) && compareDecimal4Strings(qty, '0.0000') > 0) {
+            parsedItems.push({ product_id: pid, quantity: normalizeDecimal4String(qty) });
+          } else {
+            parsedItems.push({ product_id: pid, quantity: '' });
+          }
+        }
+      });
+      if (parsedItems.length > 0) {
+        form.items = parsedItems;
+      }
+    } else if (route.query.product_id) {
       if (prodId && products.value.some((p) => p.id === prodId)) {
         if (typeof rawQty === 'string' && isValidDecimal4String(rawQty) && compareDecimal4Strings(rawQty, '0.0000') > 0) {
           form.items = [{ product_id: prodId, quantity: normalizeDecimal4String(rawQty) }];

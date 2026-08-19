@@ -11,6 +11,37 @@ Keputusan terbaru harus diletakkan paling atas.
 
 ---
 
+## 2026-08-19 — Keputusan Arsitektur Fase 12D: Inventory Action Center & Replenishment Execution Workflow
+
+**Keputusan:**
+
+### 1. Model Decision Support & Zero Autonomous Mutation
+- Fase 12D menjembatani rekomendasi reorder (Fase 12C) menuju eksekusi operasional tanpa pernah melakukan mutasi saldo atau auto-save transaksi secara sepihak.
+- Seluruh tindakan harus melalui konfirmasi eksplisit operator (*Human-in-the-loop verification*).
+- Status transfer tetap mematuhi mesin status kanonikal: `DRAFT -> SENT -> RECEIVED / CANCELLED`.
+
+### 2. Live Revalidation & Perlindungan Rekomendasi Kadaluarsa (Stale Protection)
+- Endpoint `POST /api/v1/replenishment-recommendations/validate-action` mengevaluasi kondisi aktual saldo sumber, saldo target, stok minimum, dan transfer in-transit (`SENT`) secara real-time.
+- Jika kondisi persediaan berubah sejak rekomendasi dimuat (misal surplus sumber telah berkurang atau kebutuhan target telah terpenuhi), sistem menolak eksekusi dan mengembalikan status **HTTP 409 Conflict** (`REPLENISHMENT_RECOMMENDATION_STALE`).
+- Frontend merespons kode 409 dengan menampilkan alert konflik data dan menyediakan tombol instan untuk memuat ulang data rekomendasi terbaru.
+
+### 3. Perlindungan Lokasi Beku (Frozen Location Guard)
+- Gudang sumber yang berstatus beku (`is_frozen = true`) ditolak dengan error 409 (`SOURCE_LOCATION_FROZEN`).
+- Gudang target yang berstatus beku diblokir dari aksi transfer dengan error 409 (`TARGET_LOCATION_FROZEN`).
+
+### 4. Otorisasi Lokasi Ketat (Anti-IDOR & Location Scoping)
+- Operator hanya dapat memvalidasi dan mempersiapkan transfer untuk lokasi gudang yang berada dalam cakupan `$user->getAllowedLocationIds()`.
+- Request dengan lokasi gudang di luar izin ditolak dengan status `403 Forbidden`.
+
+### 5. Keamanan Desimal & Integritas Read-Only
+- Seluruh input dan parameter kuantitas diverifikasi ketat berbasis `DECIMAL(14,4)` (skala 4, `BCMath` di backend, integer-scaled `decimal_string.js` di frontend).
+- Endpoint validasi bersifat murni read-only (`delta = 0`).
+
+**Alasan:**
+- Menjamin integritas persediaan, mencegah *double fulfillment*, dan mematuhi prinsip Maker-Checker tanpa menciptakan bypass logika bisnis.
+
+---
+
 ## 2026-08-18 — Keputusan Arsitektur Modul Pengelolaan Pengguna & Hak Akses (User & Access Rights Management)
 
 **Keputusan:**
