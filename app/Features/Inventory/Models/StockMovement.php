@@ -5,7 +5,7 @@ namespace App\Features\Inventory\Models;
 use App\Features\Auth\Models\User;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
-use Database\Factories\Features\Inventory\Models\StockMovementFactory;
+use Database\Factories\Features\Inventory\StockMovementFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

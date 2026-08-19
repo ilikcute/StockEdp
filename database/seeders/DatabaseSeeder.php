@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Features\Auth\Enums\RoleCode;
+use App\Features\Auth\Models\Role;
 use App\Features\Auth\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,10 +20,20 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleAndPermissionSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Admin User',
-            'username' => 'admin',
-            'email' => 'admin@example.com',
-        ]);
+        $admin = User::firstOrCreate(
+            ['username' => 'admin'],
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $adminRole = Role::where('code', RoleCode::ADMIN->value)->first();
+        if ($adminRole && ! $admin->roles()->where('roles.id', $adminRole->id)->exists()) {
+            $admin->roles()->attach($adminRole->id);
+        }
     }
 }

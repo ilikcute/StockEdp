@@ -1,15 +1,17 @@
 <?php
 
-namespace Database\Factories\Features\Inventory\Models;
+namespace Database\Factories\Features\Inventory;
 
-use App\Features\Inventory\Models\InventoryBalance;
+use App\Features\Inventory\Models\StockMovement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<InventoryBalance>
+ * @extends Factory<StockMovement>
  */
-class InventoryBalanceFactory extends Factory
+class StockMovementFactory extends Factory
 {
+    protected $model = StockMovement::class;
+
     /**
      * Define the model's default state.
      *
