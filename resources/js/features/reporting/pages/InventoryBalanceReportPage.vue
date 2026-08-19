@@ -212,7 +212,7 @@
     <div class="mt-6 flex flex-col relative">
       <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow-sm border border-gray-300 md:rounded-lg">
+          <div class="overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
             <div
               v-if="store.loading"
               class="absolute inset-0 bg-white/50 z-10 flex items-center justify-center"

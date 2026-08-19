@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto touch-scroll">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-gray-200 bg-gray-50 text-xs font-semibold text-gray-700 uppercase tracking-wider">

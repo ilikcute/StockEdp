@@ -7,3 +7,47 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Smooth Touch & Mobile Scroll Utilities */
+html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+}
+
+.touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+}
+
+/* Safe Area Inset Helpers for Notched Screens & iOS PWA */
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+.mb-safe {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Subtle, Modern Scrollbar for Wide Data Tables */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

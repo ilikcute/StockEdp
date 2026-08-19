@@ -112,9 +112,9 @@
     <!-- Table -->
     <div
       v-else
-      class="mt-8 overflow-hidden shadow-sm border border-gray-300 md:rounded-lg"
+      class="mt-6 overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white"
     >
-      <table class="min-w-full divide-y divide-gray-300">
+      <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
             <th
