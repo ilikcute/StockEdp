@@ -29,6 +29,10 @@ export const userApi = {
         return apiClient.get('/roles');
     },
 
+    updateRolePermissions(roleId, permissionIds) {
+        return apiClient.put(`/roles/${roleId}/permissions`, { permission_ids: permissionIds });
+    },
+
     getPermissions() {
         return apiClient.get('/permissions');
     },

@@ -21,6 +21,7 @@ class RoleResource extends JsonResource
                 'name' => $perm->name,
                 'group' => $perm->group,
             ]),
+            'permission_ids' => $this->permissions->pluck('id')->values()->all(),
         ];
     }
 }

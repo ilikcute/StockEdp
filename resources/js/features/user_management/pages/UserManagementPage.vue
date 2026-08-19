@@ -242,6 +242,7 @@
         :roles="roleListWithPermissions"
         :all-permissions="allPermissions"
         :loading="rolesLoading"
+        @edit-role-permissions="openRolePermissionsModal"
       />
     </div>
 
@@ -257,6 +258,17 @@
       @close="closeFormModal"
       @save="saveUser"
     />
+
+    <!-- Edit Role Permissions Modal -->
+    <RolePermissionsModal
+      :is-open="isRoleModalOpen"
+      :role="editingRole"
+      :all-permissions="allPermissions"
+      :saving="roleSaving"
+      :error="roleError"
+      @close="closeRolePermissionsModal"
+      @save="saveRolePermissions"
+    />
   </div>
 </template>
 
@@ -267,6 +279,7 @@ import { useUserManagement } from '../composables/use_user_management.js';
 import UserTable from '../components/UserTable.vue';
 import UserFormModal from '../components/UserFormModal.vue';
 import RolePermissionMatrix from '../components/RolePermissionMatrix.vue';
+import RolePermissionsModal from '../components/RolePermissionsModal.vue';
 
 const authStore = useAuthStore();
 const hasPermission = (permission) => authStore.hasPermission(permission);
@@ -282,10 +295,14 @@ const {
   loading,
   rolesLoading,
   saving,
+  roleSaving,
   error,
+  roleError,
   formErrors,
   isFormModalOpen,
+  isRoleModalOpen,
   editingUser,
+  editingRole,
   activeTab,
   fetchUsers,
   fetchFormOptions,
@@ -293,7 +310,10 @@ const {
   openCreateModal,
   openEditModal,
   closeFormModal,
+  openRolePermissionsModal,
+  closeRolePermissionsModal,
   saveUser,
+  saveRolePermissions,
   toggleUserStatus,
   changePage,
   resetFilters,

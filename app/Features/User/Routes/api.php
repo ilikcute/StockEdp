@@ -10,5 +10,6 @@ Route::middleware(['auth:sanctum', 'permission:users.manage'])->group(function (
     Route::apiResource('users', UserController::class);
 
     Route::get('/roles', [RolePermissionController::class, 'roles'])->name('roles.index');
+    Route::put('/roles/{role}/permissions', [RolePermissionController::class, 'updatePermissions'])->name('roles.update-permissions');
     Route::get('/permissions', [RolePermissionController::class, 'permissions'])->name('permissions.index');
 });

@@ -5,44 +5,71 @@
       <div
         v-for="role in roles"
         :key="role.id"
-        :class="[
-          'rounded-xl p-5 border shadow-xs transition-all',
-          selectedRoleId === role.id
-            ? 'bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-500'
-            : 'bg-white border-gray-200 hover:border-gray-300'
-        ]"
+        class="rounded-xl p-5 border border-gray-200 bg-white shadow-xs flex flex-col justify-between"
       >
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-sm font-bold text-gray-900">
-                {{ role.name }}
-              </h3>
-              <span
-                :class="[
-                  'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold ring-1 ring-inset',
-                  role.code === 'ADMIN'
-                    ? 'bg-purple-50 text-purple-700 ring-purple-600/20'
-                    : role.code === 'INVENTORY_SUPERVISOR'
-                      ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
-                      : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
-                ]"
-              >
-                {{ role.code }}
-              </span>
+        <div>
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-bold text-gray-900">
+                  {{ role.name }}
+                </h3>
+                <span
+                  :class="[
+                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold ring-1 ring-inset',
+                    role.code === 'ADMIN'
+                      ? 'bg-purple-50 text-purple-700 ring-purple-600/20'
+                      : role.code === 'INVENTORY_SUPERVISOR'
+                        ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
+                        : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
+                  ]"
+                >
+                  {{ role.code }}
+                </span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ role.description || 'Peran otorisasi sistem persediaan.' }}
+              </p>
             </div>
-            <p class="text-xs text-gray-500 mt-1">
-              {{ role.description || 'Peran otorisasi sistem persediaan.' }}
-            </p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+            <span class="text-gray-500">
+              Total Pengguna: <strong class="text-gray-800">{{ role.users_count ?? 0 }}</strong>
+            </span>
+            <span class="text-gray-500">
+              Hak Akses: <strong class="text-indigo-600">{{ role.code === 'ADMIN' ? 'Semua (Penuh)' : (role.permissions?.length ?? 0) }}</strong>
+            </span>
           </div>
         </div>
 
-        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-          <span class="text-gray-500">
-            Total Pengguna: <strong class="text-gray-800">{{ role.users_count ?? 0 }}</strong>
-          </span>
-          <span class="text-gray-500">
-            Hak Akses: <strong class="text-indigo-600">{{ role.permissions?.length ?? 0 }}</strong> izin
+        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-end">
+          <button
+            v-if="role.code !== 'ADMIN'"
+            type="button"
+            class="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+            @click="$emit('edit-role-permissions', role)"
+          >
+            <svg
+              class="w-3.5 h-3.5 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+            Edit Hak Akses
+          </button>
+          <span
+            v-else
+            class="text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded ring-1 ring-inset ring-purple-600/20"
+          >
+            Akses Penuh Permanen
           </span>
         </div>
       </div>
@@ -146,8 +173,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-
 const props = defineProps({
   roles: {
     type: Array,
@@ -163,7 +188,7 @@ const props = defineProps({
   },
 });
 
-const selectedRoleId = ref(null);
+defineEmits(['edit-role-permissions']);
 
 const groupLabels = {
   products: 'Master Data Produk',

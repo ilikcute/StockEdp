@@ -32,11 +32,15 @@ export function useUserManagement() {
     const optionsLoading = ref(false);
     const rolesLoading = ref(false);
     const saving = ref(false);
+    const roleSaving = ref(false);
     const error = ref(null);
+    const roleError = ref(null);
     const formErrors = ref({});
 
     const isFormModalOpen = ref(false);
+    const isRoleModalOpen = ref(false);
     const editingUser = ref(null);
+    const editingRole = ref(null);
     const activeTab = ref('users'); // 'users' | 'roles'
 
     const fetchUsers = async () => {
@@ -113,6 +117,18 @@ export function useUserManagement() {
         formErrors.value = {};
     };
 
+    const openRolePermissionsModal = (role) => {
+        editingRole.value = { ...role };
+        roleError.value = null;
+        isRoleModalOpen.value = true;
+    };
+
+    const closeRolePermissionsModal = () => {
+        isRoleModalOpen.value = false;
+        editingRole.value = null;
+        roleError.value = null;
+    };
+
     const saveUser = async (formData) => {
         saving.value = true;
         formErrors.value = {};
@@ -134,6 +150,24 @@ export function useUserManagement() {
             return false;
         } finally {
             saving.value = false;
+        }
+    };
+
+    const saveRolePermissions = async ({ roleId, permissionIds }) => {
+        roleSaving.value = true;
+        roleError.value = null;
+
+        try {
+            await userApi.updateRolePermissions(roleId, permissionIds);
+            closeRolePermissionsModal();
+            await fetchRolesAndPermissions();
+            return true;
+        } catch (err) {
+            const normalized = normalizeApiError(err);
+            roleError.value = normalized.message;
+            return false;
+        } finally {
+            roleSaving.value = false;
         }
     };
 
@@ -189,10 +223,14 @@ export function useUserManagement() {
         optionsLoading,
         rolesLoading,
         saving,
+        roleSaving,
         error,
+        roleError,
         formErrors,
         isFormModalOpen,
+        isRoleModalOpen,
         editingUser,
+        editingRole,
         activeTab,
         fetchUsers,
         fetchFormOptions,
@@ -200,7 +238,10 @@ export function useUserManagement() {
         openCreateModal,
         openEditModal,
         closeFormModal,
+        openRolePermissionsModal,
+        closeRolePermissionsModal,
         saveUser,
+        saveRolePermissions,
         toggleUserStatus,
         changePage,
         resetFilters,
