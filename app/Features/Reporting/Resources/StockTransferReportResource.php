@@ -12,9 +12,9 @@ class StockTransferReportResource extends JsonResource
     {
         $status = is_object($this->transfer?->status)
             ? $this->transfer->status->value
-            : (string) ($this->transfer?->status ?? 'SENT');
+            : (string) ($this->transfer?->status ?? 'IN_TRANSIT');
 
-        $isInTransit = ($status === 'SENT');
+        $isInTransit = ($status === 'IN_TRANSIT');
 
         $sentAt = $this->transfer?->sent_at;
         $receivedAt = $this->transfer?->received_at;

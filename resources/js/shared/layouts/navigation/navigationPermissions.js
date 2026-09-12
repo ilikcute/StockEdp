@@ -4,11 +4,13 @@ export const masterNavLinks = [
     { to: '/units', label: 'Satuan', permission: 'units.view' },
     { to: '/suppliers', label: 'Supplier', permission: 'suppliers.view' },
     { to: '/locations', label: 'Lokasi', permission: 'locations.view' },
+    { to: '/stores', label: 'Toko', permission: 'stores.view' },
     { to: '/users', label: 'Pengguna', permission: 'users.manage' },
 ];
 
 export const inventoryNavLinks = [
     { to: '/inventory/movements', label: 'Riwayat Pergerakan', permission: 'inventory.movements.view' },
+    { to: '/inventory/store-allocations', label: 'Alokasi Toko', permission: 'store_allocations.view' },
     { to: '/inventory/receipts', label: 'Penerimaan Stok', permission: 'stock_receipts.view' },
     { to: '/inventory/issues', label: 'Pengeluaran Stok', permission: 'stock_issues.view' },
     { to: '/inventory/transfers', label: 'Transfer Stok', permission: 'stock_transfers.view' },
@@ -19,12 +21,14 @@ export const inventoryNavLinks = [
 
 export const inventoryReportNavLinks = [
     { to: '/reports/inventory-balances', label: 'Saldo Stok', permission: 'reports.inventory_balance.view' },
+    { to: '/reports/field-balances', label: 'Saldo Teknisi Lapangan', permission: 'reports.field_balances.view' },
     { to: '/reports/low-stock', label: 'Stok Minimum', permission: 'reports.low_stock.view' },
     { to: '/reports/inventory-movement', label: 'Pergerakan Stok (Slow/Fast)', permission: 'reports.inventory_movement.view' },
     { to: '/reports/stock-card', label: 'Kartu Stok', permission: 'reports.stock_card.view' },
 ];
 
 export const transactionReportNavLinks = [
+    { to: '/reports/store-allocations', label: 'Histori Kerusakan & Alokasi Toko', permission: 'reports.store_allocations.view' },
     { to: '/reports/stock-receipts', label: 'Penerimaan Stok', permission: 'reports.stock_receipts.view' },
     { to: '/reports/stock-issues', label: 'Pengeluaran Stok', permission: 'reports.stock_issues.view' },
     { to: '/reports/stock-transfers', label: 'Transfer Stok', permission: 'reports.stock_transfers.view' },

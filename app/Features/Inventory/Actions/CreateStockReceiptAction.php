@@ -23,7 +23,9 @@ class CreateStockReceiptAction
         return DB::transaction(function () use ($data, $userId) {
             $receiptData = [
                 'receipt_number' => $this->repository->generateReceiptNumber(),
-                'supplier_id' => $data['supplier_id'],
+                'memo_number' => $data['memo_number'] ?? null,
+                'source_type' => $data['source_type'] ?? 'GA_PROCUREMENT',
+                'supplier_id' => $data['supplier_id'] ?? null,
                 'date' => $data['date'],
                 'notes' => $data['notes'] ?? null,
                 'status' => ReceiptStatus::DRAFT,

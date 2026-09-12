@@ -54,6 +54,14 @@ export const reportingApi = {
         return apiClient.get('/reports/stock-opnames', { params });
     },
 
+    getStoreAllocations(params = {}) {
+        return apiClient.get('/reports/store-allocations', { params });
+    },
+
+    getFieldBalances(params = {}) {
+        return apiClient.get('/reports/field-balances', { params });
+    },
+
     getInventoryMovement(params = {}) {
         return apiClient.get('/reports/inventory-movement', { params });
     },
@@ -72,6 +80,14 @@ export const reportingApi = {
 
     exportStockCard(params = {}) {
         return apiClient.get('/reports/stock-card/export', csvRequestConfig(params));
+    },
+
+    exportStoreAllocations(params = {}) {
+        return apiClient.get('/reports/store-allocations/export', csvRequestConfig(params));
+    },
+
+    exportFieldBalances(params = {}) {
+        return apiClient.get('/reports/field-balances/export', csvRequestConfig(params));
     },
 
     exportStockReceipts(params = {}) {

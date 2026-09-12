@@ -8,13 +8,14 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryBalanceRepository implements InventoryBalanceRepositoryInterface
 {
-    public function lockBalanceForUpdate(int $productId, int $locationId): InventoryBalance
+    public function lockBalanceForUpdate(int $productId, int $locationId, string $condition = 'GOOD'): InventoryBalance
     {
         // insertOrIgnore prevents race condition errors on first balance creation.
         // It's atomic in MySQL and safely ignores duplicate key errors.
         DB::table('inventory_balances')->insertOrIgnore([
             'product_id' => $productId,
             'location_id' => $locationId,
+            'condition' => $condition,
             'quantity' => '0.0000',
             'created_at' => now(),
             'updated_at' => now(),
@@ -22,14 +23,16 @@ class InventoryBalanceRepository implements InventoryBalanceRepositoryInterface
 
         return InventoryBalance::where('product_id', $productId)
             ->where('location_id', $locationId)
+            ->where('condition', $condition)
             ->lockForUpdate()
             ->first();
     }
 
-    public function getBalance(int $productId, int $locationId): ?InventoryBalance
+    public function getBalance(int $productId, int $locationId, string $condition = 'GOOD'): ?InventoryBalance
     {
         return InventoryBalance::where('product_id', $productId)
             ->where('location_id', $locationId)
+            ->where('condition', $condition)
             ->first();
     }
 
@@ -46,6 +49,10 @@ class InventoryBalanceRepository implements InventoryBalanceRepositoryInterface
 
         if (! empty($filters['location_id'])) {
             $query->where('location_id', $filters['location_id']);
+        }
+
+        if (! empty($filters['condition'])) {
+            $query->where('condition', $filters['condition']);
         }
 
         if (! empty($filters['search'])) {

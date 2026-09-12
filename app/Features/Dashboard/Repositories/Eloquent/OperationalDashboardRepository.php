@@ -121,9 +121,9 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
             })
             ->count();
 
-        // Transfer Awaiting Receipt (Status SENT)
+        // Transfer Awaiting Receipt (Status IN_TRANSIT)
         $transferAwaitingReceiptCount = StockTransfer::query()
-            ->where('status', TransferStatus::SENT->value)
+            ->where('status', TransferStatus::IN_TRANSIT->value)
             ->where(function ($q) use ($targetLocationIds) {
                 $q->whereIn('origin_location_id', $targetLocationIds)
                     ->orWhereIn('destination_location_id', $targetLocationIds);

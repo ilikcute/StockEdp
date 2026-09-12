@@ -129,7 +129,7 @@ watch(() => ({ ...filters }), debouncedFetch, { deep: true });
 
 watch(() => filters.date_basis, (newBasis) => {
     if (newBasis === 'RECEIVED_AT') {
-        if (filters.status === 'SENT') {
+        if (filters.status === 'IN_TRANSIT') {
             filters.status = '';
         }
         if (filters.sort_by === 'sent_at') {

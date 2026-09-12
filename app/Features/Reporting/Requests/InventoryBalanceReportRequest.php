@@ -23,6 +23,7 @@ class InventoryBalanceReportRequest extends FormRequest
             'positive_stock' => 'nullable|in:0,1',
             'zero_stock' => 'nullable|in:0,1',
             'frozen_location' => 'nullable|in:0,1',
+            'condition' => 'nullable|string|in:GOOD,DEFECTIVE',
             'search' => 'nullable|string|max:100',
             'sort_by' => 'nullable|string|in:id,product_id,location_id,quantity,created_at',
             'sort_order' => 'nullable|string|in:asc,desc,ASC,DESC',

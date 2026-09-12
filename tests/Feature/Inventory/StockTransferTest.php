@@ -4,9 +4,12 @@ namespace Tests\Feature\Inventory;
 
 use App\Features\Auth\Enums\RoleCode;
 use App\Features\Auth\Models\User;
+use App\Features\Inventory\Enums\MovementType;
 use App\Features\Inventory\Enums\TransferStatus;
+use App\Features\Inventory\Enums\TransferType;
 use App\Features\Inventory\Models\StockTransfer;
 use App\Features\Inventory\Models\StockTransferItem;
+use App\Features\Location\Enums\LocationType;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -96,6 +99,7 @@ class StockTransferTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.status', TransferStatus::DRAFT->value)
+            ->assertJsonPath('data.transfer_type', TransferType::TRANSFER->value)
             ->assertJsonPath('data.items.0.quantity', '10.0000');
 
         $this->assertDatabaseHas('stock_transfers', [
@@ -167,7 +171,7 @@ class StockTransferTest extends TestCase
         $response->assertStatus(200);
 
         $transfer->refresh();
-        $this->assertEquals(TransferStatus::SENT, $transfer->status);
+        $this->assertEquals(TransferStatus::IN_TRANSIT, $transfer->status);
 
         // check stock movement
         $this->assertDatabaseHas('stock_movements', [
@@ -181,7 +185,7 @@ class StockTransferTest extends TestCase
     {
         $transfer = StockTransfer::create([
             'transfer_number' => 'TRF-TEST-2',
-            'status' => TransferStatus::SENT,
+            'status' => TransferStatus::IN_TRANSIT,
             'origin_location_id' => $this->originLocation->id,
             'destination_location_id' => $this->destinationLocation->id,
             'transfer_date' => now()->format('Y-m-d'),
@@ -206,5 +210,94 @@ class StockTransferTest extends TestCase
             'location_id' => $this->destinationLocation->id,
             'quantity' => '10.0000',
         ]);
+    }
+
+    public function test_receive_with_partial_quantity_marks_discrepancy(): void
+    {
+        $transfer = StockTransfer::create([
+            'transfer_number' => 'TRF-TEST-3',
+            'status' => TransferStatus::IN_TRANSIT,
+            'origin_location_id' => $this->originLocation->id,
+            'destination_location_id' => $this->destinationLocation->id,
+            'transfer_date' => now()->format('Y-m-d'),
+            'created_by' => $this->user->id,
+        ]);
+        $item = StockTransferItem::create([
+            'stock_transfer_id' => $transfer->id,
+            'product_id' => $this->product->id,
+            'quantity' => 10,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson("/api/v1/stock-transfers/{$transfer->id}/receive", [
+            'items' => [
+                ['item_id' => $item->id, 'received_quantity' => 7],
+            ],
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.status', TransferStatus::DISCREPANCY->value);
+
+        $transfer->refresh();
+        $this->assertEquals(TransferStatus::DISCREPANCY, $transfer->status);
+        $this->assertEquals('7.0000', $item->refresh()->received_quantity);
+
+        $this->assertDatabaseHas('stock_movements', [
+            'product_id' => $this->product->id,
+            'location_id' => $this->destinationLocation->id,
+            'quantity' => '7.0000',
+        ]);
+    }
+
+    public function test_retur_transfer_uses_return_to_warehouse_movement(): void
+    {
+        $fieldLocation = Location::factory()->create(['type' => LocationType::FIELD_PERSONNEL->value, 'is_active' => true]);
+        $mainWarehouse = Location::factory()->create(['type' => LocationType::MAIN_WAREHOUSE->value, 'is_active' => true]);
+        $this->user->locations()->attach([$fieldLocation->id, $mainWarehouse->id]);
+
+        $transfer = StockTransfer::create([
+            'transfer_number' => 'TRF-RET-1',
+            'status' => TransferStatus::DRAFT,
+            'transfer_type' => TransferType::RETURN,
+            'origin_location_id' => $fieldLocation->id,
+            'destination_location_id' => $mainWarehouse->id,
+            'transfer_date' => now()->format('Y-m-d'),
+            'created_by' => $this->user->id,
+        ]);
+        StockTransferItem::create([
+            'stock_transfer_id' => $transfer->id,
+            'product_id' => $this->product->id,
+            'quantity' => 10,
+        ]);
+
+        DB::table('inventory_balances')->insert([
+            'location_id' => $fieldLocation->id,
+            'product_id' => $this->product->id,
+            'quantity' => 100,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($this->user)->postJson("/api/v1/stock-transfers/{$transfer->id}/send")->assertStatus(200);
+
+        $response = $this->actingAs($this->user)->postJson("/api/v1/stock-transfers/{$transfer->id}/receive");
+
+        $response->assertStatus(200);
+        $this->assertEquals(TransferStatus::RECEIVED, $transfer->refresh()->status);
+
+        $this->assertDatabaseHas('stock_movements', [
+            'movement_type' => MovementType::RETURN_TO_WAREHOUSE->value,
+            'location_id' => $mainWarehouse->id,
+            'quantity' => '10.0000',
+        ]);
+    }
+
+    public function test_cannot_create_retur_from_non_field_personnel_origin(): void
+    {
+        $data = $this->createTransferData();
+        $data['transfer_type'] = 'RETURN';
+
+        $response = $this->actingAs($this->user)->postJson('/api/v1/stock-transfers', $data);
+
+        $response->assertStatus(422);
     }
 }

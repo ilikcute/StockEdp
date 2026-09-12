@@ -75,7 +75,7 @@
                 Kekurangan
               </th>
               <th class="py-3 px-3 text-right font-mono">
-                Inbound SENT
+                Inbound IN_TRANSIT
               </th>
               <th class="py-3 px-3 text-right font-mono text-indigo-600">
                 Net Kebutuhan
@@ -207,7 +207,7 @@
                 {{ item.gross_shortage_quantity }}
               </td>
 
-              <!-- 5. Inbound SENT -->
+              <!-- 5. Inbound IN_TRANSIT -->
               <td class="py-3 px-3 text-right font-mono text-blue-600">
                 {{ item.pending_inbound_quantity }}
               </td>

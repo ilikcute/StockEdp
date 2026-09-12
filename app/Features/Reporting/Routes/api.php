@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\Reporting\Controllers\FieldBalanceReportController;
 use App\Features\Reporting\Controllers\InventoryBalanceReportController;
 use App\Features\Reporting\Controllers\InventoryMovementReportController;
 use App\Features\Reporting\Controllers\LowStockReportController;
@@ -11,6 +12,7 @@ use App\Features\Reporting\Controllers\StockIssueReportController;
 use App\Features\Reporting\Controllers\StockOpnameReportController;
 use App\Features\Reporting\Controllers\StockReceiptReportController;
 use App\Features\Reporting\Controllers\StockTransferReportController;
+use App\Features\Reporting\Controllers\StoreAllocationReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -21,6 +23,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('reports/inventory-balances', [InventoryBalanceReportController::class, 'index']);
     Route::get('reports/inventory-balances/export', [ReportExportController::class, 'inventoryBalances'])->name('reports.inventory-balances.export');
 
+    Route::get('reports/field-balances', FieldBalanceReportController::class);
+    Route::get('reports/field-balances/export', [ReportExportController::class, 'fieldBalances'])->name('reports.field-balances.export');
+
     Route::get('reports/low-stock', [LowStockReportController::class, 'index']);
     Route::get('reports/low-stock/export', [ReportExportController::class, 'lowStock'])->name('reports.low-stock.export');
 
@@ -29,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('reports/stock-card', [StockCardReportController::class, 'index']);
     Route::get('reports/stock-card/export', [ReportExportController::class, 'stockCard'])->name('reports.stock-card.export');
+
+    Route::get('reports/store-allocations', StoreAllocationReportController::class);
+    Route::get('reports/store-allocations/export', [ReportExportController::class, 'storeAllocations'])->name('reports.store-allocations.export');
 
     Route::get('reports/stock-receipts', StockReceiptReportController::class);
     Route::get('reports/stock-receipts/export', [ReportExportController::class, 'stockReceipts'])->name('reports.stock-receipts.export');

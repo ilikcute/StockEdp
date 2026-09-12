@@ -147,6 +147,10 @@ class ReportingRepository implements ReportingRepositoryInterface
             });
         }
 
+        if (! empty($filters['condition'])) {
+            $query->where('condition', $filters['condition']);
+        }
+
         if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->whereHas('product', function ($q) use ($search) {
@@ -539,7 +543,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         if ($dateBasis === 'RECEIVED_AT') {
             $query->where('stock_transfers.status', 'RECEIVED');
         } else {
-            $query->whereIn('stock_transfers.status', ['SENT', 'RECEIVED']);
+            $query->whereIn('stock_transfers.status', ['IN_TRANSIT', 'RECEIVED']);
         }
 
         $this->applyTransferFilters($query, $filters, $dateColumn);
@@ -566,7 +570,7 @@ class ReportingRepository implements ReportingRepositoryInterface
             return [
                 'total_rows' => 0,
                 'total_documents' => 0,
-                'status_counts' => ['SENT' => 0, 'RECEIVED' => 0],
+                'status_counts' => ['IN_TRANSIT' => 0, 'RECEIVED' => 0],
                 'in_transit_document_count' => 0,
                 'in_transit_item_count' => 0,
                 'quantity_by_unit' => [],
@@ -587,7 +591,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         if ($dateBasis === 'RECEIVED_AT') {
             $baseQuery->where('stock_transfers.status', 'RECEIVED');
         } else {
-            $baseQuery->whereIn('stock_transfers.status', ['SENT', 'RECEIVED']);
+            $baseQuery->whereIn('stock_transfers.status', ['IN_TRANSIT', 'RECEIVED']);
         }
 
         $this->applyTransferFilters($baseQuery, $filters, $dateColumn);
@@ -595,11 +599,11 @@ class ReportingRepository implements ReportingRepositoryInterface
         $totalRows = (clone $baseQuery)->count();
         $totalDocuments = (clone $baseQuery)->distinct()->count('stock_transfers.id');
 
-        $sentCount = (clone $baseQuery)->where('stock_transfers.status', 'SENT')->count();
+        $sentCount = (clone $baseQuery)->where('stock_transfers.status', 'IN_TRANSIT')->count();
         $receivedCount = (clone $baseQuery)->where('stock_transfers.status', 'RECEIVED')->count();
 
-        $inTransitItemCount = (clone $baseQuery)->where('stock_transfers.status', 'SENT')->count();
-        $inTransitDocCount = (clone $baseQuery)->where('stock_transfers.status', 'SENT')->distinct()->count('stock_transfers.id');
+        $inTransitItemCount = (clone $baseQuery)->where('stock_transfers.status', 'IN_TRANSIT')->count();
+        $inTransitDocCount = (clone $baseQuery)->where('stock_transfers.status', 'IN_TRANSIT')->distinct()->count('stock_transfers.id');
 
         $quantityByUnit = (clone $baseQuery)
             ->join('units', 'units.id', '=', 'products.unit_id')
@@ -622,7 +626,7 @@ class ReportingRepository implements ReportingRepositoryInterface
             'total_rows' => $totalRows,
             'total_documents' => $totalDocuments,
             'status_counts' => [
-                'SENT' => $sentCount,
+                'IN_TRANSIT' => $sentCount,
                 'RECEIVED' => $receivedCount,
             ],
             'in_transit_document_count' => $inTransitDocCount,
@@ -961,11 +965,16 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'locations.code as location_code',
                 'locations.name as location_name',
                 'inventory_balances.quantity',
+                'inventory_balances.condition',
                 'products.minimum_stock',
                 'products.is_active as is_product_active',
                 'inventory_location_locks.is_frozen',
             ])
             ->whereIn('inventory_balances.location_id', $allowedLocationIds);
+
+        if (! empty($filters['condition'])) {
+            $query->where('inventory_balances.condition', $filters['condition']);
+        }
 
         if (! empty($filters['location_id'])) {
             if (! in_array((int) $filters['location_id'], $allowedLocationIds, true)) {
@@ -1245,7 +1254,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         if ($dateBasis === 'RECEIVED_AT') {
             $query->where('stock_transfers.status', 'RECEIVED');
         } else {
-            $query->whereIn('stock_transfers.status', ['SENT', 'RECEIVED']);
+            $query->whereIn('stock_transfers.status', ['IN_TRANSIT', 'RECEIVED']);
         }
 
         $this->applyTransferFilters($query, $filters, $dateColumn);
@@ -1372,5 +1381,294 @@ class ReportingRepository implements ReportingRepositoryInterface
         return $query->orderBy($actualSortField, $sortDirection)
             ->orderBy('stock_opname_items.id', $sortDirection)
             ->cursor();
+    }
+
+    private function buildStoreAllocationReportQuery(array $allowedLocationIds, array $filters)
+    {
+        if (empty($allowedLocationIds)) {
+            return DB::table('store_allocation_items')->whereRaw('1 = 0');
+        }
+
+        $query = DB::table('store_allocation_items')
+            ->join('store_allocations', 'store_allocations.id', '=', 'store_allocation_items.store_allocation_id')
+            ->join('stores', 'stores.id', '=', 'store_allocations.store_id')
+            ->join('users as technicians', 'technicians.id', '=', 'store_allocations.technician_user_id')
+            ->join('locations', 'locations.id', '=', 'store_allocations.technician_location_id')
+            ->join('products', 'products.id', '=', 'store_allocation_items.product_id')
+            ->leftJoin('products as pulled_products', 'pulled_products.id', '=', 'store_allocation_items.pulled_product_id')
+            ->whereIn('store_allocations.technician_location_id', $allowedLocationIds);
+
+        if (! empty($filters['start_date'])) {
+            $query->where('store_allocations.allocated_at', '>=', $filters['start_date']);
+        }
+        if (! empty($filters['end_date'])) {
+            $query->where('store_allocations.allocated_at', '<=', $filters['end_date']);
+        }
+        if (! empty($filters['store_id'])) {
+            $query->where('store_allocations.store_id', $filters['store_id']);
+        }
+        if (! empty($filters['technician_id'])) {
+            $query->where('store_allocations.technician_user_id', $filters['technician_id']);
+        }
+        if (! empty($filters['technician_location_id'])) {
+            $query->where('store_allocations.technician_location_id', $filters['technician_location_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $prodId = $filters['product_id'];
+            $query->where(function ($q) use ($prodId) {
+                $q->where('store_allocation_items.product_id', $prodId)
+                    ->orWhere('store_allocation_items.pulled_product_id', $prodId);
+            });
+        }
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('store_allocations.allocation_number', 'like', "%{$search}%")
+                    ->orWhere('stores.name', 'like', "%{$search}%")
+                    ->orWhere('stores.code', 'like', "%{$search}%")
+                    ->orWhere('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%")
+                    ->orWhere('store_allocation_items.serial_number', 'like', "%{$search}%")
+                    ->orWhere('store_allocation_items.pulled_serial_number', 'like', "%{$search}%")
+                    ->orWhere('store_allocation_items.defective_reason', 'like', "%{$search}%");
+            });
+        }
+
+        return $query;
+    }
+
+    public function getPaginatedStoreAllocationReport(array $allowedLocationIds, array $filters, int $perPage = 15): LengthAwarePaginator
+    {
+        if (empty($allowedLocationIds)) {
+            return new ConcretePaginator([], 0, $perPage, 1);
+        }
+
+        $query = $this->buildStoreAllocationReportQuery($allowedLocationIds, $filters)
+            ->select([
+                'store_allocation_items.id',
+                'store_allocation_items.store_allocation_id',
+                'store_allocations.allocation_number',
+                'store_allocations.allocated_at',
+                'store_allocations.store_id',
+                'stores.name as store_name',
+                'stores.code as store_code',
+                'stores.address as store_address',
+                'technicians.name as technician_name',
+                'locations.name as technician_location_name',
+                'store_allocation_items.product_id',
+                'products.name as product_name',
+                'products.sku as product_sku',
+                'store_allocation_items.quantity',
+                'store_allocation_items.serial_number',
+                'store_allocation_items.pulled_product_id',
+                'pulled_products.name as pulled_product_name',
+                'pulled_products.sku as pulled_product_sku',
+                'store_allocation_items.pulled_quantity',
+                'store_allocation_items.pulled_serial_number',
+                'store_allocation_items.defective_reason',
+                'store_allocations.notes',
+            ]);
+
+        return $query->orderBy('store_allocations.allocated_at', 'desc')
+            ->orderBy('store_allocation_items.id', 'desc')
+            ->paginate($perPage);
+    }
+
+    public function getCursorStoreAllocationReport(array $allowedLocationIds, array $filters): LazyCollection
+    {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $query = $this->buildStoreAllocationReportQuery($allowedLocationIds, $filters)
+            ->select([
+                'store_allocation_items.id',
+                'store_allocation_items.store_allocation_id',
+                'store_allocations.allocation_number',
+                'store_allocations.allocated_at',
+                'stores.name as store_name',
+                'stores.code as store_code',
+                'stores.address as store_address',
+                'technicians.name as technician_name',
+                'locations.name as technician_location_name',
+                'products.name as product_name',
+                'products.sku as product_sku',
+                'store_allocation_items.quantity',
+                'store_allocation_items.serial_number',
+                'pulled_products.name as pulled_product_name',
+                'pulled_products.sku as pulled_product_sku',
+                'store_allocation_items.pulled_quantity',
+                'store_allocation_items.pulled_serial_number',
+                'store_allocation_items.defective_reason',
+                'store_allocations.notes',
+            ]);
+
+        return $query->orderBy('store_allocations.allocated_at', 'desc')
+            ->orderBy('store_allocation_items.id', 'desc')
+            ->cursor();
+    }
+
+    public function getStoreAllocationReportSummary(array $allowedLocationIds, array $filters): array
+    {
+        if (empty($allowedLocationIds)) {
+            return ['total_allocations' => 0, 'total_installed' => 0, 'total_pulled' => 0];
+        }
+
+        $base = $this->buildStoreAllocationReportQuery($allowedLocationIds, $filters);
+
+        $row = $base->selectRaw('
+            COUNT(DISTINCT store_allocations.id) as total_allocations,
+            COALESCE(SUM(store_allocation_items.quantity), 0) as total_installed,
+            COALESCE(SUM(store_allocation_items.pulled_quantity), 0) as total_pulled
+        ')->first();
+
+        return [
+            'total_allocations' => (int) ($row->total_allocations ?? 0),
+            'total_installed' => (float) ($row->total_installed ?? 0),
+            'total_pulled' => (float) ($row->total_pulled ?? 0),
+        ];
+    }
+
+    private function buildFieldBalancesQuery(array $allowedLocationIds, array $filters)
+    {
+        if (empty($allowedLocationIds)) {
+            return DB::table('inventory_balances')->whereRaw('1 = 0');
+        }
+
+        $query = DB::table('inventory_balances')
+            ->join('locations', 'locations.id', '=', 'inventory_balances.location_id')
+            ->leftJoin('users as technicians', 'technicians.id', '=', 'locations.user_id')
+            ->join('products', 'products.id', '=', 'inventory_balances.product_id')
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->leftJoin('units', 'units.id', '=', 'products.unit_id')
+            ->where('locations.type', 'FIELD_PERSONNEL')
+            ->whereIn('inventory_balances.location_id', $allowedLocationIds);
+
+        if (! empty($filters['technician_id'])) {
+            $query->where('locations.user_id', $filters['technician_id']);
+        }
+        if (! empty($filters['location_id'])) {
+            $query->where('locations.id', $filters['location_id']);
+        }
+        if (! empty($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
+        }
+        if (! empty($filters['product_id'])) {
+            $query->where('products.id', $filters['product_id']);
+        }
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%")
+                    ->orWhere('technicians.name', 'like', "%{$search}%")
+                    ->orWhere('locations.name', 'like', "%{$search}%");
+            });
+        }
+
+        return $query;
+    }
+
+    public function getPaginatedFieldBalances(array $allowedLocationIds, array $filters, int $perPage = 15): LengthAwarePaginator
+    {
+        if (empty($allowedLocationIds)) {
+            return new ConcretePaginator([], 0, $perPage, 1);
+        }
+
+        $query = $this->buildFieldBalancesQuery($allowedLocationIds, $filters)
+            ->groupBy([
+                'inventory_balances.location_id',
+                'inventory_balances.product_id',
+                'locations.code',
+                'locations.name',
+                'locations.user_id',
+                'technicians.name',
+                'technicians.email',
+                'products.id',
+                'products.sku',
+                'products.name',
+                'categories.name',
+                'units.name',
+            ])
+            ->select([
+                'inventory_balances.location_id',
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'locations.user_id as technician_id',
+                'technicians.name as technician_name',
+                'technicians.email as technician_email',
+                'products.id as product_id',
+                'products.sku as product_sku',
+                'products.name as product_name',
+                'categories.name as category_name',
+                'units.name as unit_name',
+                DB::raw("SUM(CASE WHEN inventory_balances.condition = 'GOOD' THEN inventory_balances.quantity ELSE 0 END) as good_quantity"),
+                DB::raw("SUM(CASE WHEN inventory_balances.condition = 'DEFECTIVE' THEN inventory_balances.quantity ELSE 0 END) as defective_quantity"),
+                DB::raw('SUM(inventory_balances.quantity) as total_quantity'),
+            ]);
+
+        return $query->orderBy('technicians.name')
+            ->orderBy('products.name')
+            ->paginate($perPage);
+    }
+
+    public function getCursorFieldBalances(array $allowedLocationIds, array $filters): LazyCollection
+    {
+        if (empty($allowedLocationIds)) {
+            return LazyCollection::empty();
+        }
+
+        $query = $this->buildFieldBalancesQuery($allowedLocationIds, $filters)
+            ->groupBy([
+                'inventory_balances.location_id',
+                'inventory_balances.product_id',
+                'locations.code',
+                'locations.name',
+                'locations.user_id',
+                'technicians.name',
+                'technicians.email',
+                'products.id',
+                'products.sku',
+                'products.name',
+                'categories.name',
+                'units.name',
+            ])
+            ->select([
+                'locations.code as location_code',
+                'locations.name as location_name',
+                'technicians.name as technician_name',
+                'products.sku as product_sku',
+                'products.name as product_name',
+                'categories.name as category_name',
+                'units.name as unit_name',
+                DB::raw("SUM(CASE WHEN inventory_balances.condition = 'GOOD' THEN inventory_balances.quantity ELSE 0 END) as good_quantity"),
+                DB::raw("SUM(CASE WHEN inventory_balances.condition = 'DEFECTIVE' THEN inventory_balances.quantity ELSE 0 END) as defective_quantity"),
+                DB::raw('SUM(inventory_balances.quantity) as total_quantity'),
+            ]);
+
+        return $query->orderBy('technicians.name')
+            ->orderBy('products.name')
+            ->cursor();
+    }
+
+    public function getFieldBalancesSummary(array $allowedLocationIds, array $filters): array
+    {
+        if (empty($allowedLocationIds)) {
+            return ['total_good' => 0, 'total_defective' => 0, 'total_units' => 0];
+        }
+
+        $base = $this->buildFieldBalancesQuery($allowedLocationIds, $filters);
+
+        $row = $base->selectRaw("
+            COALESCE(SUM(CASE WHEN inventory_balances.condition = 'GOOD' THEN inventory_balances.quantity ELSE 0 END), 0) as total_good,
+            COALESCE(SUM(CASE WHEN inventory_balances.condition = 'DEFECTIVE' THEN inventory_balances.quantity ELSE 0 END), 0) as total_defective,
+            COALESCE(SUM(inventory_balances.quantity), 0) as total_units
+        ")->first();
+
+        return [
+            'total_good' => (float) ($row->total_good ?? 0),
+            'total_defective' => (float) ($row->total_defective ?? 0),
+            'total_units' => (float) ($row->total_units ?? 0),
+        ];
     }
 }

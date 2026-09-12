@@ -114,7 +114,13 @@ class ReleaseDatasetIntegrityTest extends TestCase
 
         $expectedTypes = collect(MovementType::cases())
             ->map(fn (MovementType $m) => $m->value)
-            ->filter(fn (string $v) => $v !== 'REVERSAL')
+            ->filter(fn (string $v) => ! in_array($v, [
+                'REVERSAL',
+                'RECEIPT_GA',
+                'STORE_ALLOCATION',
+                'REPLACEMENT_PULL',
+                'RETURN_TO_WAREHOUSE',
+            ], true))
             ->sort()
             ->values();
 
@@ -699,7 +705,7 @@ class ReleaseDatasetIntegrityTest extends TestCase
         $this->assertTrue(str_starts_with($content, "\xEF\xBB\xBF"), 'CSV output must start with UTF-8 BOM');
 
         // Assert Canonical Header Row
-        $this->assertStringContainsString('SKU,"Nama Produk",Kategori,Satuan,"Kode Lokasi","Nama Lokasi",Saldo,"Stok Minimum","Status Produk","Status Lokasi"', $content);
+        $this->assertStringContainsString('SKU,"Nama Produk",Kategori,Satuan,"Kode Lokasi","Nama Lokasi",Kondisi,Saldo,"Stok Minimum","Status Produk","Status Lokasi"', $content);
 
         $this->assertStringContainsString("'=FORMULA Produk Kabel", $content);
         $this->assertStringContainsString($targetProduct->sku, $content);

@@ -115,7 +115,7 @@ class StockReceiptTest extends TestCase
         $this->assertDatabaseHas('stock_movements', [
             'product_id' => $this->product1->id,
             'location_id' => $this->location->id,
-            'movement_type' => 'RECEIPT',
+            'movement_type' => 'RECEIPT_GA',
             'quantity' => '5.0000',
             'reference_type' => 'App\Features\Inventory\Models\StockReceipt',
             'reference_id' => $receipt->id,

@@ -18,13 +18,16 @@ class ReceiveStockTransferAction
         private readonly StockMovementService $stockMovementService
     ) {}
 
-    public function execute(StockTransfer $transfer, ?int $userId = null): StockTransfer
+    /**
+     * @param  array<int, string|float|int>  $receivedQuantities  Map of stock_transfer_item id => received quantity.
+     */
+    public function execute(StockTransfer $transfer, ?int $userId = null, array $receivedQuantities = []): StockTransfer
     {
-        return DB::transaction(function () use ($transfer, $userId) {
+        return DB::transaction(function () use ($transfer, $userId, $receivedQuantities) {
             $lockedTransfer = StockTransfer::where('id', $transfer->id)->lockForUpdate()->first();
 
-            if (! $lockedTransfer->isSent()) {
-                throw new DomainException('Only SENT transfers can be received.', 409);
+            if (! $lockedTransfer->isInTransit()) {
+                throw new DomainException('Only IN_TRANSIT transfers can be received.', 409);
             }
 
             $lockedTransfer->load('items');
@@ -46,25 +49,54 @@ class ReceiveStockTransferAction
             // Product non-active allowed during Receive (DECISIONS.md #12)
             // No product active check here.
 
-            $dtos = [];
-            foreach ($lockedTransfer->items as $item) {
-                $dtos[] = new StockChangeDTO(
-                    productId: $item->product_id,
-                    locationId: $lockedTransfer->destination_location_id,
-                    quantity: (string) $item->quantity,
-                    movementType: MovementType::TRANSFER_IN,
-                    referenceType: 'App\\Features\\Inventory\\Models\\StockTransfer',
-                    referenceId: $lockedTransfer->id,
-                    referenceNumber: $lockedTransfer->transfer_number,
-                    userId: $userId ?? $lockedTransfer->created_by,
-                    occurredAt: now()
-                );
+            $movementType = ($lockedTransfer->transfer_type?->isReturn() ?? false)
+                ? MovementType::RETURN_TO_WAREHOUSE
+                : MovementType::TRANSFER_IN;
+
+            $receivedMap = [];
+            foreach ($receivedQuantities as $itemId => $quantity) {
+                $receivedMap[(int) $itemId] = (string) $quantity;
             }
 
-            $this->stockMovementService->recordMultipleMovements($dtos);
+            $dtos = [];
+            $hasDiscrepancy = false;
+
+            foreach ($lockedTransfer->items as $item) {
+                $sent = (string) $item->quantity;
+                $received = array_key_exists($item->id, $receivedMap) ? $receivedMap[$item->id] : $sent;
+
+                if (bccomp($received, '0', 4) < 0) {
+                    throw new DomainException('Jumlah diterima tidak boleh negatif.', 422);
+                }
+
+                if (bccomp($received, $sent, 4) !== 0) {
+                    $hasDiscrepancy = true;
+                }
+
+                $item->update(['received_quantity' => $received]);
+
+                if (bccomp($received, '0', 4) > 0) {
+                    $dtos[] = new StockChangeDTO(
+                        productId: $item->product_id,
+                        locationId: $lockedTransfer->destination_location_id,
+                        quantity: $received,
+                        movementType: $movementType,
+                        referenceType: 'App\\Features\\Inventory\\Models\\StockTransfer',
+                        referenceId: $lockedTransfer->id,
+                        referenceNumber: $lockedTransfer->transfer_number,
+                        userId: $userId ?? $lockedTransfer->created_by,
+                        occurredAt: now(),
+                        condition: $item->condition?->value ?? 'GOOD'
+                    );
+                }
+            }
+
+            if (! empty($dtos)) {
+                $this->stockMovementService->recordMultipleMovements($dtos);
+            }
 
             $lockedTransfer->update([
-                'status' => TransferStatus::RECEIVED,
+                'status' => $hasDiscrepancy ? TransferStatus::DISCREPANCY : TransferStatus::RECEIVED,
                 'received_by' => $userId,
                 'received_at' => now(),
             ]);

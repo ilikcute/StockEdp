@@ -13,6 +13,7 @@ class InventoryBalanceResource extends JsonResource
             'id' => $this->id,
             'product_id' => $this->product_id,
             'location_id' => $this->location_id,
+            'condition' => $this->condition?->value ?? 'GOOD',
             'quantity' => $this->quantity,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

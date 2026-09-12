@@ -4,6 +4,7 @@ namespace App\Features\Inventory\Models;
 
 use App\Features\Auth\Models\User;
 use App\Features\Inventory\Enums\TransferStatus;
+use App\Features\Inventory\Enums\TransferType;
 use App\Features\Location\Models\Location;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,6 +15,7 @@ class StockTransfer extends Model
         'origin_location_id',
         'destination_location_id',
         'status',
+        'transfer_type',
         'transfer_date',
         'notes',
         'created_by',
@@ -28,6 +30,7 @@ class StockTransfer extends Model
 
     protected $casts = [
         'status' => TransferStatus::class,
+        'transfer_type' => TransferType::class,
         'transfer_date' => 'date',
         'sent_at' => 'datetime',
         'received_at' => 'datetime',
@@ -69,8 +72,8 @@ class StockTransfer extends Model
         return $this->status === TransferStatus::DRAFT;
     }
 
-    public function isSent(): bool
+    public function isInTransit(): bool
     {
-        return $this->status === TransferStatus::SENT;
+        return $this->status === TransferStatus::IN_TRANSIT;
     }
 }

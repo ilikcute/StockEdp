@@ -147,14 +147,17 @@ Negative zero harus dinormalisasi ke:
 
 ## 7. Inventory Balance & Movement Invariant
 
+Keseimbangan saldo dipisahkan secara ketat per kondisi (`GOOD` vs `DEFECTIVE`):
+`UNIQUE(product_id, location_id, condition)`
+
 Mutasi stok harus atomic:
 
 ```text
 lock location/freeze state
 → lock document
-→ lock inventory balance
+→ lock inventory balance (by product, location, condition)
 → validate
-→ write stock movement
+→ write stock movement (with condition & reference)
 → update balance
 → commit
 ```
@@ -162,7 +165,7 @@ lock location/freeze state
 Invariant ledger:
 
 ```text
-quantity_after = quantity_before + signed_delta
+quantity_after = quantity_before + signed_delta (per condition)
 ```
 
 Setiap movement harus traceable melalui minimal:

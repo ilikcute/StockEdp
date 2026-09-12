@@ -30,28 +30,28 @@ Dokumen ini ditujukan untuk petugas operasional gudang dan supervisor persediaan
 
 ## 3. Alur Kerja Transaksi Utama
 
-### A. Penerimaan Stok (Stock Receipt)
+### A. Penerimaan Stok dari General Affair (GA Inflow)
 1. Pilih menu **Transaksi > Penerimaan Stok**, klik **Buat Penerimaan Baru**.
-2. Pilih Supplier, Tanggal Penerimaan, Lokasi Gudang, serta daftar Produk dan Kuantitas.
-3. Simpan sebagai **Draft** jika belum final, atau klik **Post** untuk memperbarui saldo stok secara langsung.
+2. Masukkan Nomor Memo / SPB GA, Tanggal Penerimaan, Lokasi Gudang Induk, Sumber Barang (`GA_PROCUREMENT` atau `GA_SERVICED`), serta daftar Produk dan Kuantitas.
+3. Klik **Post** untuk memperbarui saldo stok `GOOD` secara langsung.
 
-### B. Pengeluaran Stok (Stock Issue)
-1. Pilih menu **Transaksi > Pengeluaran Stok**, klik **Buat Pengeluaran Baru**.
-2. Pilih Tujuan Pengeluaran, Tanggal, Lokasi Gudang, Produk, dan Kuantitas.
-3. Klik **Post**. *Sistem akan otomatis menolak transaksi jika kuantitas barang yang dikeluarkan melebihi saldo stok yang tersedia.*
+### B. Transfer Handshake & Retur Unit Rusak
+1. **Pengiriman (*Dispatch*)**: Petugas Gudang memilih lokasi asal dan lokasi teknisi tujuan, lalu klik **Kirim**. Stok berpindah status menjadi `IN_TRANSIT`.
+2. **Penerimaan (*Handshake*)**: Teknisi memeriksa fisik barang dan menekan tombol **Terima** pada perangkatnya untuk memasukkan barang ke saldo aktif lokasi teknisi.
+3. **Retur Barang Rusak**: Teknisi membuat transfer dari lokasi pribadinya dengan kondisi barang `DEFECTIVE` menuju Gudang Afkir atau Gudang Induk.
 
-### C. Transfer Stok (Stock Transfer)
-1. Pilih menu **Transaksi > Transfer Stok**, klik **Buat Transfer Baru**.
-2. Pilih Lokasi Asal dan Lokasi Tujuan (lokasi asal dan tujuan tidak boleh sama).
-3. Klik **Kirim (Send)** untuk menandai status *IN_TRANSIT* (`TRANSFER_OUT`).
-4. Pada lokasi penerima, klik **Terima (Receive)** untuk menyelesaikan transfer (`TRANSFER_IN`).
+### C. Alokasi Penggantian Unit Toko (Store Asset Replacement)
+1. Teknisi di lokasi toko membuka menu **Alokasi Toko > Catat Penggantian**.
+2. Pilih Toko Target (Kode / Nama Toko).
+3. Pilih Barang Pasang (otomatis memotong stok `GOOD` milik teknisi).
+4. Masukkan data Barang Tarik / Bongkar (jika ada unit rusak yang dicopot), serta alasan kerusakan. Sistem otomatis menambahkan unit bekas tersebut ke saldo `DEFECTIVE` teknisi.
+5. Klik **Simpan Transaksi**. Histori pergantian unit toko langsung tercatat.
 
-### D. Stock Opname
-1. Supervisor/Petugas membuat dokumen Opname untuk lokasi tertentu.
-2. Klik **Mulai Opname** untuk melakukan snapshot kuantitas buku dan pembekuan transaksi lokasi.
+### D. Stock Opname & Penyesuaian
+1. Supervisor/Petugas membuat dokumen Opname untuk lokasi gudang atau tas/kendaraan teknisi.
+2. Klik **Mulai Opname** untuk snapshot kuantitas buku dan pembekuan transaksi lokasi.
 3. Petugas menginput hasil perhitungan fisik (*Count*).
-4. Klik **Selesaikan Perhitungan (Complete)**.
-5. Supervisor melakukan peninjauan variansi (surplus/shortage) dan klik **Post** untuk menyelaraskan saldo fisik dengan buku.
+4. Supervisor meninjau selisih dan memposting rekonsiliasi stok.
 
 ---
 

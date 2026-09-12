@@ -6,6 +6,7 @@ use App\Features\Category\Models\Category;
 use App\Features\Location\Models\Location;
 use App\Features\MasterDataImport\Enums\MasterDataImportType;
 use App\Features\Product\Models\Product;
+use App\Features\Store\Models\Store;
 use App\Features\Unit\Models\Unit;
 
 class MasterDataImportValidationService
@@ -66,6 +67,7 @@ class MasterDataImportValidationService
             MasterDataImportType::CATEGORIES => $this->validateCategories($rows),
             MasterDataImportType::UNITS => $this->validateUnits($rows),
             MasterDataImportType::LOCATIONS => $this->validateLocations($rows),
+            MasterDataImportType::STORES => $this->validateStores($rows),
             MasterDataImportType::PRODUCTS => $this->validateProducts($rows),
         };
     }
@@ -395,6 +397,118 @@ class MasterDataImportValidationService
                 'code' => $code,
                 'name' => $name,
                 'description' => $desc !== '' ? $desc : null,
+                'address' => $addr !== '' ? $addr : null,
+                'phone' => $phone !== '' ? $phone : null,
+                'is_valid' => empty($rowErrors),
+                'row_errors' => $rowErrors,
+            ];
+
+            $normalizedRows[] = $normalizedRow;
+            foreach ($rowErrors as $err) {
+                $errors[] = $err;
+            }
+        }
+
+        return $this->formatResult($normalizedRows, $errors);
+    }
+
+    /**
+     * Validate Stores rows.
+     */
+    private function validateStores(array $rows): array
+    {
+        $errors = [];
+        $normalizedRows = [];
+        $seenCodesInFile = [];
+        $allCodes = [];
+
+        foreach ($rows as $item) {
+            $code = isset($item['data']['code']) ? strtoupper(trim((string) $item['data']['code'])) : '';
+            if ($code !== '') {
+                $allCodes[] = $code;
+            }
+        }
+
+        $existingDbCodes = ! empty($allCodes)
+            ? Store::whereIn('code', array_unique($allCodes))->pluck('code')->all()
+            : [];
+        $existingDbCodesMap = array_fill_keys(array_map('strtoupper', $existingDbCodes), true);
+
+        foreach ($rows as $item) {
+            $rowNum = $item['row_number'];
+            $data = $item['data'];
+            $rowErrors = [];
+
+            $code = isset($data['code']) ? strtoupper(trim((string) $data['code'])) : '';
+            $name = isset($data['name']) ? trim((string) $data['name']) : '';
+            $addr = isset($data['address']) ? trim((string) $data['address']) : null;
+            $phone = isset($data['phone']) ? trim((string) $data['phone']) : null;
+
+            if ($code === '') {
+                $rowErrors[] = [
+                    'row' => $rowNum,
+                    'field' => 'code',
+                    'code' => 'REQUIRED_FIELD_MISSING',
+                    'message' => 'Kode toko wajib diisi.',
+                ];
+            } elseif (strlen($code) > 50) {
+                $rowErrors[] = [
+                    'row' => $rowNum,
+                    'field' => 'code',
+                    'code' => 'FIELD_TOO_LONG',
+                    'message' => 'Kode toko maksimal 50 karakter.',
+                ];
+            } else {
+                if (isset($seenCodesInFile[$code])) {
+                    $rowErrors[] = [
+                        'row' => $rowNum,
+                        'field' => 'code',
+                        'code' => 'DUPLICATE_CODE_IN_FILE',
+                        'message' => "Kode toko '{$code}' duplikat dalam file CSV (sebelumnya pada baris {$seenCodesInFile[$code]}).",
+                    ];
+                } else {
+                    $seenCodesInFile[$code] = $rowNum;
+                }
+
+                if (isset($existingDbCodesMap[$code])) {
+                    $rowErrors[] = [
+                        'row' => $rowNum,
+                        'field' => 'code',
+                        'code' => 'DUPLICATE_CODE_IN_DB',
+                        'message' => "Kode toko '{$code}' sudah ada di database.",
+                    ];
+                }
+            }
+
+            if ($name === '') {
+                $rowErrors[] = [
+                    'row' => $rowNum,
+                    'field' => 'name',
+                    'code' => 'REQUIRED_FIELD_MISSING',
+                    'message' => 'Nama toko wajib diisi.',
+                ];
+            } elseif (strlen($name) > 150) {
+                $rowErrors[] = [
+                    'row' => $rowNum,
+                    'field' => 'name',
+                    'code' => 'FIELD_TOO_LONG',
+                    'message' => 'Nama toko maksimal 150 karakter.',
+                ];
+            }
+
+            if ($phone !== null && strlen($phone) > 50) {
+                $rowErrors[] = [
+                    'row' => $rowNum,
+                    'field' => 'phone',
+                    'code' => 'FIELD_TOO_LONG',
+                    'message' => 'Nomor telepon toko maksimal 50 karakter.',
+                ];
+            }
+
+            $normalizedRow = [
+                'row_number' => $rowNum,
+                'code' => $code,
+                'name' => $name,
                 'address' => $addr !== '' ? $addr : null,
                 'phone' => $phone !== '' ? $phone : null,
                 'is_valid' => empty($rowErrors),

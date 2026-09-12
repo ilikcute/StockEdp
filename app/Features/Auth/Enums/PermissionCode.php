@@ -29,10 +29,20 @@ enum PermissionCode: string
     case LOCATIONS_UPDATE = 'locations.update';
     case LOCATIONS_CHANGE_STATUS = 'locations.change_status';
     case LOCATIONS_IMPORT = 'locations.import';
+    case STORES_VIEW = 'stores.view';
+    case STORES_CREATE = 'stores.create';
+    case STORES_UPDATE = 'stores.update';
+    case STORES_CHANGE_STATUS = 'stores.change_status';
+    case STORES_IMPORT = 'stores.import';
 
     // Transactions
     case INVENTORY_BALANCES_VIEW = 'inventory.balances.view';
     case INVENTORY_MOVEMENTS_VIEW = 'inventory.movements.view';
+
+    case STORE_ALLOCATIONS_VIEW = 'store_allocations.view';
+    case STORE_ALLOCATIONS_CREATE = 'store_allocations.create';
+    case STORE_ALLOCATIONS_POST = 'store_allocations.post';
+    case STORE_ALLOCATIONS_CANCEL = 'store_allocations.cancel';
 
     case STOCK_RECEIPTS_VIEW = 'stock_receipts.view';
     case STOCK_RECEIPTS_CREATE = 'stock_receipts.create';
@@ -85,6 +95,8 @@ enum PermissionCode: string
     case REPORTS_STOCK_ADJUSTMENTS_VIEW = 'reports.stock_adjustments.view';
     case REPORTS_STOCK_OPNAMES_VIEW = 'reports.stock_opnames.view';
     case REPORTS_INVENTORY_MOVEMENT_VIEW = 'reports.inventory_movement.view';
+    case REPORTS_STORE_ALLOCATIONS_VIEW = 'reports.store_allocations.view';
+    case REPORTS_FIELD_BALANCES_VIEW = 'reports.field_balances.view';
     case REPORTS_EXPORT = 'reports.export';
     case USERS_MANAGE = 'users.manage';
 

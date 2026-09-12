@@ -41,7 +41,7 @@ Tujuannya: AI tidak perlu membaca ulang seluruh riwayat chat untuk memahami atur
 ### Fase 12C — Reorder & Replenishment Recommendation Center
 - Live Decision Support System (`/api/v1/replenishment-recommendations`), strictly read-only (`delta = 0`), 0 persistent recommendation tables.
 - Canonical low-stock query reuse (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
-- Pending inbound tracking (`TransferStatus::SENT` destined for target location reduces net replenishment need).
+- Pending inbound tracking (`TransferStatus::IN_TRANSIT` destined for target location reduces net replenishment need).
 - Safe internal source surplus allocation (`surplus = MAX(source_on_hand - source_min_stock, 0)`). Sources retain their minimum stock.
 - Frozen location safety (frozen source warehouses excluded from allocations; frozen target marks recommendations non-actionable).
 - Deterministic greedy allocation (`available_surplus DESC, location_id ASC`), location IDOR protection, string decimal safety (BCMath scale 4), and transfer form prefill ergonomics.
@@ -79,25 +79,27 @@ Dokumen root tetap sumber detail utama bila dibutuhkan:
 14. Jangan melemahkan test untuk membuat implementasi PASS.
 15. Update `DECISIONS.md` bila keputusan arsitektur/domain berubah.
 
-## 5. Domain Inventory Inti
+## 5. Domain Inventory Inti (PRD V1 Field Allocation)
 
-Movement canonical minimal:
+Movement canonical:
 
-- `RECEIPT`
-- `ISSUE`
-- `TRANSFER_OUT`
-- `TRANSFER_IN`
-- `ADJUSTMENT_IN`
-- `ADJUSTMENT_OUT`
-- `OPNAME_IN`
-- `OPNAME_OUT`
+- `RECEIPT_GA`: Penerimaan barang dari GA ke Gudang Induk (kondisi GOOD).
+- `TRANSFER_OUT`: Pengiriman barang ke lokasi tujuan (status IN_TRANSIT).
+- `TRANSFER_IN`: Penerimaan konfirmasi transfer di lokasi tujuan.
+- `STORE_ALLOCATION`: Pemasangan barang GOOD di toko (memotong saldo teknisi).
+- `REPLACEMENT_PULL`: Penarikan barang rusak/bekas dari toko (menambah saldo DEFECTIVE teknisi).
+- `RETURN_TO_WAREHOUSE`: Retur barang sisa/rusak dari teknisi ke Gudang Induk/Afkir.
+- `ADJUSTMENT_IN`: Penyesuaian masuk bertambah hasil approval supervisor.
+- `ADJUSTMENT_OUT`: Penyesuaian keluar berkurang hasil approval supervisor.
+- `OPNAME_RECONCILE`: Rekonsiliasi selisih hasil stock opname.
 
 Invariant utama:
 
-`quantity_after = quantity_before + signed_delta`
+`quantity_after = quantity_before + signed_delta` (terisolasi per `condition` GOOD atau DEFECTIVE)
 
 - Stok negatif tidak diizinkan pada flow normal.
 - Transfer harus menjaga konservasi quantity global.
+- Pemisahan fisik: Barang `DEFECTIVE` tidak dapat dipasang sebagai alokasi penggantian toko.
 - Transfer asal dan tujuan harus berbeda.
 - Double-submit/double-transition tidak boleh membuat movement atau delta ganda.
 - Failed mutation harus rollback seluruh balance/movement/status terkait.

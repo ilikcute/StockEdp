@@ -65,7 +65,7 @@ class DashboardReadOnlyIntegrityTest extends TestCase
             'date' => now()->toDateString(),
             'origin_location_id' => $location->id,
             'destination_location_id' => $loc2->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->admin->id,
         ]);
         $adjustment = StockAdjustment::create([
@@ -101,7 +101,7 @@ class DashboardReadOnlyIntegrityTest extends TestCase
 
         $this->assertSame(ReceiptStatus::DRAFT->value, $receipt->fresh()->status->value);
         $this->assertSame(IssueStatus::DRAFT->value, $issue->fresh()->status->value);
-        $this->assertSame(TransferStatus::SENT->value, $transfer->fresh()->status->value);
+        $this->assertSame(TransferStatus::IN_TRANSIT->value, $transfer->fresh()->status->value);
         $this->assertSame(AdjustmentStatus::DRAFT->value, $adjustment->fresh()->status->value);
         $this->assertSame(OpnameStatus::IN_PROGRESS->value, $opname->fresh()->status->value);
     }

@@ -25,7 +25,7 @@ class ReportExportService
 
         $headers = [
             'SKU', 'Nama Produk', 'Kategori', 'Satuan',
-            'Kode Lokasi', 'Nama Lokasi', 'Saldo', 'Stok Minimum',
+            'Kode Lokasi', 'Nama Lokasi', 'Kondisi', 'Saldo', 'Stok Minimum',
             'Status Produk', 'Status Lokasi',
         ];
 
@@ -38,6 +38,7 @@ class ReportExportService
                     $item->unit_name ?? '',
                     $item->location_code ?? '',
                     $item->location_name ?? '',
+                    ($item->condition ?? 'GOOD') === 'DEFECTIVE' ? 'RUSAK (DEFECTIVE)' : 'BAGUS (GOOD)',
                     DecimalQuantity::normalize($item->quantity),
                     DecimalQuantity::normalize($item->minimum_stock ?? 0),
                     ($item->is_product_active ?? true) ? 'Aktif' : 'Nonaktif',
@@ -258,7 +259,7 @@ class ReportExportService
                 $receivedAt = $item->received_at ? CarbonImmutable::parse($item->received_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
                 $docDate = $item->transfer_date ? CarbonImmutable::parse($item->transfer_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
 
-                $isInTransit = ($item->status === 'SENT');
+                $isInTransit = ($item->status === 'IN_TRANSIT');
                 $transitSeconds = null;
                 if ($item->sent_at) {
                     $start = CarbonImmutable::parse($item->sent_at);
@@ -516,6 +517,73 @@ class ReportExportService
         };
 
         return $this->downloadStream("slow-moving-{$periodDays}d", $headers, $generator());
+    }
+
+    public function exportStoreAllocations(array $allowedLocationIds, array $filters): StreamedResponse
+    {
+        $cursor = $this->repository->getCursorStoreAllocationReport($allowedLocationIds, $filters);
+
+        $headers = [
+            'Nomor Alokasi', 'Tanggal Alokasi', 'Nama Toko', 'Kode Toko', 'Alamat Toko',
+            'Teknisi', 'Lokasi Teknisi', 'Produk Dipasang', 'SKU Dipasang', 'Qty Pasang', 'S/N Baru',
+            'Produk Ditarik', 'SKU Ditarik', 'Qty Ditarik', 'S/N Ditarik', 'Alasan Kerusakan', 'Catatan',
+        ];
+
+        $generator = function () use ($cursor) {
+            foreach ($cursor as $item) {
+                yield [
+                    $item->allocation_number ?? '',
+                    $item->allocated_at ?? '',
+                    $item->store_name ?? '',
+                    $item->store_code ?? '',
+                    $item->store_address ?? '',
+                    $item->technician_name ?? '',
+                    $item->technician_location_name ?? '',
+                    $item->product_name ?? '',
+                    $item->product_sku ?? '',
+                    DecimalQuantity::normalize($item->quantity),
+                    $item->serial_number ?? '',
+                    $item->pulled_product_name ?? '',
+                    $item->pulled_product_sku ?? '',
+                    $item->pulled_quantity !== null ? DecimalQuantity::normalize($item->pulled_quantity) : '',
+                    $item->pulled_serial_number ?? '',
+                    $item->defective_reason ?? '',
+                    $item->notes ?? '',
+                ];
+            }
+        };
+
+        return $this->downloadStream('laporan-alokasi-toko', $headers, $generator());
+    }
+
+    public function exportFieldBalances(array $allowedLocationIds, array $filters): StreamedResponse
+    {
+        $cursor = $this->repository->getCursorFieldBalances($allowedLocationIds, $filters);
+
+        $headers = [
+            'Teknisi', 'Kode Lokasi', 'Nama Lokasi',
+            'SKU', 'Nama Produk', 'Kategori', 'Satuan',
+            'Siap Pasang (GOOD)', 'Rusak Lapangan (DEFECTIVE)', 'Total Saldo Lapangan',
+        ];
+
+        $generator = function () use ($cursor) {
+            foreach ($cursor as $item) {
+                yield [
+                    $item->technician_name ?? '',
+                    $item->location_code ?? '',
+                    $item->location_name ?? '',
+                    $item->product_sku ?? '',
+                    $item->product_name ?? '',
+                    $item->category_name ?? '',
+                    $item->unit_name ?? '',
+                    DecimalQuantity::normalize($item->good_quantity),
+                    DecimalQuantity::normalize($item->defective_quantity),
+                    DecimalQuantity::normalize($item->total_quantity),
+                ];
+            }
+        };
+
+        return $this->downloadStream('laporan-saldo-teknisi-lapangan', $headers, $generator());
     }
 
     private function downloadStream(string $slug, array $headers, iterable $rows): StreamedResponse

@@ -34,6 +34,8 @@ class StockTransferItemResource extends JsonResource
                 ] : null,
             ]),
             'quantity' => $this->quantity,
+            'received_quantity' => $this->received_quantity,
+            'condition' => $this->condition?->value ?? 'GOOD',
         ];
     }
 }

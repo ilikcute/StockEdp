@@ -22,6 +22,8 @@ class UpdateLocationRequest extends FormRequest
                 Rule::unique('locations')->ignore($this->route('location')),
             ],
             'name' => ['required', 'string', 'max:100'],
+            'type' => ['sometimes', 'required', 'string', Rule::in(['MAIN_WAREHOUSE', 'FIELD_PERSONNEL', 'DAMAGED_STORAGE'])],
+            'user_id' => ['nullable', 'integer', 'exists:users,id', 'required_if:type,FIELD_PERSONNEL'],
             'description' => ['nullable', 'string', 'max:1000'],
             'address' => ['nullable', 'string', 'max:1000'],
             'phone' => ['nullable', 'string', 'max:50'],

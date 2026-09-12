@@ -162,4 +162,16 @@ interface ReportingRepositoryInterface
     ): LazyCollection;
 
     public function getStockOpnameReportSummary(array $allowedLocationIds, array $filters): array;
+
+    public function getPaginatedStoreAllocationReport(array $allowedLocationIds, array $filters, int $perPage = 15): LengthAwarePaginator;
+
+    public function getCursorStoreAllocationReport(array $allowedLocationIds, array $filters): LazyCollection;
+
+    public function getStoreAllocationReportSummary(array $allowedLocationIds, array $filters): array;
+
+    public function getPaginatedFieldBalances(array $allowedLocationIds, array $filters, int $perPage = 15): LengthAwarePaginator;
+
+    public function getCursorFieldBalances(array $allowedLocationIds, array $filters): LazyCollection;
+
+    public function getFieldBalancesSummary(array $allowedLocationIds, array $filters): array;
 }

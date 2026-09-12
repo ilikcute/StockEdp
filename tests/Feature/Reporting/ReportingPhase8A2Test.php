@@ -194,7 +194,7 @@ class ReportingPhase8A2Test extends TestCase
             'origin_location_id' => $this->loc1->id,
             'destination_location_id' => $this->loc2->id,
             'transfer_date' => '2026-08-01',
-            'status' => 'SENT',
+            'status' => 'IN_TRANSIT',
             'sent_at' => now(),
             'sent_by' => $this->admin->id,
             'created_by' => $this->admin->id,
@@ -212,7 +212,7 @@ class ReportingPhase8A2Test extends TestCase
 
         $this->assertEquals(1, count($response->json('data')));
         $this->assertEquals('10.0000', $response->json('data.0.quantity'));
-        $this->assertEquals('SENT', $response->json('data.0.status'));
+        $this->assertEquals('IN_TRANSIT', $response->json('data.0.status'));
     }
 
     public function test_returns_adjustment_report_correctly()

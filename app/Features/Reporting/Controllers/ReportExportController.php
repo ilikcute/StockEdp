@@ -2,6 +2,7 @@
 
 namespace App\Features\Reporting\Controllers;
 
+use App\Features\Reporting\Requests\FieldBalanceReportRequest;
 use App\Features\Reporting\Requests\InventoryBalanceReportRequest;
 use App\Features\Reporting\Requests\InventoryMovementReportRequest;
 use App\Features\Reporting\Requests\LowStockReportRequest;
@@ -11,6 +12,7 @@ use App\Features\Reporting\Requests\StockIssueReportRequest;
 use App\Features\Reporting\Requests\StockOpnameReportRequest;
 use App\Features\Reporting\Requests\StockReceiptReportRequest;
 use App\Features\Reporting\Requests\StockTransferReportRequest;
+use App\Features\Reporting\Requests\StoreAllocationReportRequest;
 use App\Features\Reporting\Services\ReportExportService;
 use App\Http\Controllers\Controller;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -87,5 +89,19 @@ class ReportExportController extends Controller
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
 
         return $this->exportService->exportStockOpnames($allowedLocationIds, $request->validated());
+    }
+
+    public function storeAllocations(StoreAllocationReportRequest $request): StreamedResponse
+    {
+        $allowedLocationIds = $request->user()->getAllowedLocationIds();
+
+        return $this->exportService->exportStoreAllocations($allowedLocationIds, $request->validated());
+    }
+
+    public function fieldBalances(FieldBalanceReportRequest $request): StreamedResponse
+    {
+        $allowedLocationIds = $request->user()->getAllowedLocationIds();
+
+        return $this->exportService->exportFieldBalances($allowedLocationIds, $request->validated());
     }
 }

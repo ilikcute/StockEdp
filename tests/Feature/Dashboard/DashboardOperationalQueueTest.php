@@ -118,7 +118,7 @@ class DashboardOperationalQueueTest extends TestCase
             'date' => now()->toDateString(),
             'origin_location_id' => $this->location->id,
             'destination_location_id' => $loc2->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->admin->id,
         ]);
         StockTransfer::create([

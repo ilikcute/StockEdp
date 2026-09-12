@@ -77,8 +77,8 @@ export const inventoryApi = {
         return apiClient.post(`/stock-transfers/${id}/send`);
     },
 
-    receiveTransfer(id) {
-        return apiClient.post(`/stock-transfers/${id}/receive`);
+    receiveTransfer(id, data = {}) {
+        return apiClient.post(`/stock-transfers/${id}/receive`, data);
     },
 
     cancelTransfer(id) {

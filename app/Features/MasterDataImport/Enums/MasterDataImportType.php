@@ -10,6 +10,7 @@ enum MasterDataImportType: string
     case CATEGORIES = 'categories';
     case UNITS = 'units';
     case LOCATIONS = 'locations';
+    case STORES = 'stores';
 
     /**
      * Get the canonical template filename.
@@ -21,6 +22,7 @@ enum MasterDataImportType: string
             self::CATEGORIES => 'template_categories.csv',
             self::UNITS => 'template_units.csv',
             self::LOCATIONS => 'template_locations.csv',
+            self::STORES => 'template_stores.csv',
         };
     }
 
@@ -35,6 +37,7 @@ enum MasterDataImportType: string
             self::CATEGORIES => ['code', 'name', 'description'],
             self::UNITS => ['code', 'name', 'symbol', 'description'],
             self::LOCATIONS => ['code', 'name', 'description', 'address', 'phone'],
+            self::STORES => ['code', 'name', 'address', 'phone'],
             self::PRODUCTS => ['sku', 'barcode', 'name', 'description', 'category_code', 'unit_code', 'minimum_stock'],
         };
     }
@@ -70,6 +73,7 @@ enum MasterDataImportType: string
             self::CATEGORIES => PermissionCode::CATEGORIES_IMPORT,
             self::UNITS => PermissionCode::UNITS_IMPORT,
             self::LOCATIONS => PermissionCode::LOCATIONS_IMPORT,
+            self::STORES => PermissionCode::STORES_IMPORT,
         };
     }
 
@@ -83,6 +87,7 @@ enum MasterDataImportType: string
             self::CATEGORIES => 'Kategori',
             self::UNITS => 'Satuan',
             self::LOCATIONS => 'Lokasi',
+            self::STORES => 'Toko',
         };
     }
 }

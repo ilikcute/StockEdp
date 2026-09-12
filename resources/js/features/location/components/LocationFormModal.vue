@@ -64,6 +64,67 @@
 
           <div>
             <label
+              for="type"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >Tipe Lokasi <span class="text-red-500">*</span></label>
+            <select
+              id="type"
+              v-model="form.type"
+              class="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              :class="store.validationErrors?.type ? 'border-red-500' : 'border-gray-300'"
+              required
+            >
+              <option value="MAIN_WAREHOUSE">
+                Gudang Induk (Penerimaan GA & Retur)
+              </option>
+              <option value="FIELD_PERSONNEL">
+                Teknisi Lapangan (Unit Bagasi/Mobil Teknisi)
+              </option>
+              <option value="DAMAGED_STORAGE">
+                Gudang Afkir (Barang Rusak)
+              </option>
+            </select>
+            <p
+              v-if="store.validationErrors?.type"
+              class="mt-1 text-xs text-red-600"
+            >
+              {{ store.validationErrors.type[0] }}
+            </p>
+          </div>
+
+          <div v-if="form.type === 'FIELD_PERSONNEL'">
+            <label
+              for="user_id"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >Teknisi Penanggung Jawab <span class="text-red-500">*</span></label>
+            <select
+              id="user_id"
+              v-model="form.user_id"
+              class="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              :class="store.validationErrors?.user_id ? 'border-red-500' : 'border-gray-300'"
+              required
+            >
+              <option :value="null">
+                -- Pilih Teknisi --
+              </option>
+              <option
+                v-for="user in usersList"
+                :key="user.id"
+                :value="user.id"
+              >
+                {{ user.name }} ({{ user.email }})
+              </option>
+            </select>
+            <p
+              v-if="store.validationErrors?.user_id"
+              class="mt-1 text-xs text-red-600"
+            >
+              {{ store.validationErrors.user_id[0] }}
+            </p>
+          </div>
+
+          <div>
+            <label
               for="phone"
               class="block text-sm font-medium text-gray-700 mb-1"
             >Telepon</label>
@@ -146,8 +207,9 @@
 </template>
 
 <script setup>
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useLocationStore } from '../stores/use_location_store';
+import { userApi } from '@/features/user_management/api/user_api';
 
 const props = defineProps({
     isOpen: {
@@ -162,29 +224,52 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved']);
 const store = useLocationStore();
+const usersList = ref([]);
 
 const isEditing = computed(() => !!props.location);
 
 const form = reactive({
     code: '',
     name: '',
+    type: 'MAIN_WAREHOUSE',
+    user_id: null,
     description: '',
     address: '',
     phone: '',
 });
 
-watch(() => props.isOpen, (newVal) => {
+const loadUsers = async () => {
+    try {
+        const res = await userApi.getUsers({ per_page: 100, is_active: true });
+        usersList.value = res.data?.data || [];
+    } catch {
+        usersList.value = [];
+    }
+};
+
+watch(() => form.type, (newType) => {
+    if (newType !== 'FIELD_PERSONNEL') {
+        form.user_id = null;
+    }
+});
+
+watch(() => props.isOpen, async (newVal) => {
     if (newVal) {
         store.clearMessages();
+        loadUsers();
         if (props.location) {
             form.code = props.location.code;
             form.name = props.location.name;
+            form.type = props.location.type || 'MAIN_WAREHOUSE';
+            form.user_id = props.location.user_id || null;
             form.description = props.location.description || '';
             form.address = props.location.address || '';
             form.phone = props.location.phone || '';
         } else {
             form.code = '';
             form.name = '';
+            form.type = 'MAIN_WAREHOUSE';
+            form.user_id = null;
             form.description = '';
             form.address = '';
             form.phone = '';
@@ -193,9 +278,14 @@ watch(() => props.isOpen, (newVal) => {
 });
 
 const handleSubmit = async () => {
+    const payload = { ...form };
+    if (payload.type !== 'FIELD_PERSONNEL') {
+        payload.user_id = null;
+    }
+
     const success = isEditing.value 
-        ? await store.updateLocation(props.location.id, form)
-        : await store.createLocation(form);
+        ? await store.updateLocation(props.location.id, payload)
+        : await store.createLocation(payload);
         
     if (success) {
         emit('saved');

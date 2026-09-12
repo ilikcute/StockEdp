@@ -1,6 +1,6 @@
 # Replenishment & Reorder Recommendation Center
 
-Pusat Rekomendasi Reorder & Replenishment (Fase 12C) adalah modul **Decision Support System (DSS)** yang menganalisis kekurangan stok pada gudang target secara live, memperhitungkan transfer stok in-transit (`TransferStatus::SENT`), mengevaluasi ketersediaan surplus aman di gudang internal lain, serta menghasilkan rekomendasi transfer internal maupun reorder eksternal.
+Pusat Rekomendasi Reorder & Replenishment (Fase 12C) adalah modul **Decision Support System (DSS)** yang menganalisis kekurangan stok pada gudang target secara live, memperhitungkan transfer stok in-transit (`TransferStatus::IN_TRANSIT`), mengevaluasi ketersediaan surplus aman di gudang internal lain, serta menghasilkan rekomendasi transfer internal maupun reorder eksternal.
 
 ---
 
@@ -15,7 +15,7 @@ Pusat Rekomendasi Reorder & Replenishment (Fase 12C) adalah modul **Decision Sup
    - `gross_shortage_quantity = shortage_quantity = GREATEST(products.minimum_stock - on_hand, 0.0000)`.
    - Produk tanpa baris saldo di `inventory_balances` dianggap memiliki `on_hand = 0.0000` dan `gross_shortage = minimum_stock`.
 3. **Pending Inbound (Transfer In-Transit)**:
-   - Hanya transfer berstatus `TransferStatus::SENT` yang dihitung sebagai barang dalam perjalanan.
+   - Hanya transfer berstatus `TransferStatus::IN_TRANSIT` yang dihitung sebagai barang dalam perjalanan.
    - Dokumen `DRAFT`, `RECEIVED`, atau `CANCELED` tidak dihitung sebagai pending inbound.
    - `net_replenishment_need = MAX(gross_shortage_quantity - pending_inbound_quantity, 0)`.
 4. **Perlindungan Stok Minimum Gudang Sumber (Source Surplus)**:

@@ -70,11 +70,14 @@
           <option value="DRAFT">
             Draft
           </option>
-          <option value="SENT">
+          <option value="IN_TRANSIT">
             Dikirim (In-Transit)
           </option>
           <option value="RECEIVED">
             Diterima
+          </option>
+          <option value="DISCREPANCY">
+            Selisih (Discrepancy)
           </option>
           <option value="CANCELED">
             Dibatalkan
@@ -188,12 +191,13 @@
                 class="px-2 py-1 text-xs font-semibold rounded-full"
                 :class="{
                   'bg-yellow-100 text-yellow-800': item.status === 'DRAFT',
-                  'bg-blue-100 text-blue-800': item.status === 'SENT',
+                  'bg-blue-100 text-blue-800': item.status === 'IN_TRANSIT',
                   'bg-green-100 text-green-800': item.status === 'RECEIVED',
+                  'bg-orange-100 text-orange-800': item.status === 'DISCREPANCY',
                   'bg-gray-100 text-gray-800': item.status === 'CANCELED'
                 }"
               >
-                {{ item.status === 'SENT' ? 'Dikirim (In-Transit)' : item.status }}
+                {{ ({ DRAFT: 'Draft', 'IN_TRANSIT': 'Dikirim (In-Transit)', RECEIVED: 'Diterima', DISCREPANCY: 'Selisih (Discrepancy)', CANCELED: 'Dibatalkan' })[item.status] || item.status }}
               </span>
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -239,7 +243,7 @@ const activeTab = ref('ALL');
 const tabs = [
   { name: 'Semua', value: 'ALL' },
   { name: 'Draft', value: 'DRAFT' },
-  { name: 'Dikirim / In-Transit', value: 'SENT' },
+  { name: 'Dikirim / In-Transit', value: 'IN_TRANSIT' },
   { name: 'Diterima', value: 'RECEIVED' },
   { name: 'Dibatalkan', value: 'CANCELED' },
 ];

@@ -28,6 +28,11 @@ class RoleAndPermissionSeeder extends Seeder
             ['name' => RoleCode::INVENTORY_SUPERVISOR->label(), 'description' => 'Supervisor pemeriksaan & rekonsiliasi stok']
         );
 
+        $technicianRole = Role::updateOrCreate(
+            ['code' => RoleCode::FIELD_TECHNICIAN->value],
+            ['name' => RoleCode::FIELD_TECHNICIAN->label(), 'description' => 'Teknisi lapangan (alokasi & penggantian unit toko)']
+        );
+
         // 2. Buat Permissions
         $permissions = [
             // Master Data
@@ -55,10 +60,19 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::LOCATIONS_UPDATE->value => 'Mengubah Lokasi',
             PermissionCode::LOCATIONS_CHANGE_STATUS->value => 'Mengubah Status Lokasi',
             PermissionCode::LOCATIONS_IMPORT->value => 'Mengimpor Lokasi Secara Masal',
+            PermissionCode::STORES_VIEW->value => 'Melihat Toko',
+            PermissionCode::STORES_CREATE->value => 'Membuat Toko',
+            PermissionCode::STORES_UPDATE->value => 'Mengubah Toko',
+            PermissionCode::STORES_CHANGE_STATUS->value => 'Mengubah Status Toko',
+            PermissionCode::STORES_IMPORT->value => 'Mengimpor Toko Secara Masal',
 
             // Transactions
             PermissionCode::INVENTORY_BALANCES_VIEW->value => 'Melihat Saldo Stok',
             PermissionCode::INVENTORY_MOVEMENTS_VIEW->value => 'Melihat Pergerakan Stok',
+            PermissionCode::STORE_ALLOCATIONS_VIEW->value => 'Melihat Alokasi Toko',
+            PermissionCode::STORE_ALLOCATIONS_CREATE->value => 'Membuat Alokasi Toko',
+            PermissionCode::STORE_ALLOCATIONS_POST->value => 'Memposting Alokasi Toko',
+            PermissionCode::STORE_ALLOCATIONS_CANCEL->value => 'Membatalkan Alokasi Toko',
             PermissionCode::STOCK_RECEIPTS_VIEW->value => 'Melihat Penerimaan Stok',
             PermissionCode::STOCK_RECEIPTS_CREATE->value => 'Membuat Draft Penerimaan Stok',
             PermissionCode::STOCK_RECEIPTS_UPDATE->value => 'Mengubah Draft Penerimaan Stok',
@@ -111,6 +125,8 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_STOCK_ADJUSTMENTS_VIEW->value => 'Melihat Laporan Penyesuaian Stok',
             PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value => 'Melihat Laporan Stock Opname',
             PermissionCode::REPORTS_INVENTORY_MOVEMENT_VIEW->value => 'Melihat Laporan Pergerakan Stok',
+            PermissionCode::REPORTS_STORE_ALLOCATIONS_VIEW->value => 'Melihat Laporan Alokasi Penggantian Toko',
+            PermissionCode::REPORTS_FIELD_BALANCES_VIEW->value => 'Melihat Laporan Persediaan Lapangan Teknisi',
             PermissionCode::REPORTS_EXPORT->value => 'Mengekspor Laporan',
             PermissionCode::USERS_MANAGE->value => 'Mengelola Pengguna & Hak Akses',
         ];
@@ -137,6 +153,10 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::UNITS_VIEW->value,
             PermissionCode::SUPPLIERS_VIEW->value,
             PermissionCode::LOCATIONS_VIEW->value,
+            PermissionCode::STORES_VIEW->value,
+            PermissionCode::STORES_CREATE->value,
+            PermissionCode::STORES_UPDATE->value,
+            PermissionCode::STORE_ALLOCATIONS_VIEW->value,
             PermissionCode::INVENTORY_BALANCES_VIEW->value,
             PermissionCode::INVENTORY_MOVEMENTS_VIEW->value,
             PermissionCode::STOCK_RECEIPTS_VIEW->value,
@@ -175,6 +195,8 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_STOCK_ADJUSTMENTS_VIEW->value,
             PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value,
             PermissionCode::REPORTS_INVENTORY_MOVEMENT_VIEW->value,
+            PermissionCode::REPORTS_STORE_ALLOCATIONS_VIEW->value,
+            PermissionCode::REPORTS_FIELD_BALANCES_VIEW->value,
         ];
         $warehouseRole->permissions()->sync(
             array_map(fn ($code) => $permissionModels[$code]->id, $warehousePermissions)
@@ -189,6 +211,8 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::UNITS_VIEW->value,
             PermissionCode::SUPPLIERS_VIEW->value,
             PermissionCode::LOCATIONS_VIEW->value,
+            PermissionCode::STORES_VIEW->value,
+            PermissionCode::STORE_ALLOCATIONS_VIEW->value,
             PermissionCode::INVENTORY_BALANCES_VIEW->value,
             PermissionCode::INVENTORY_MOVEMENTS_VIEW->value,
             PermissionCode::STOCK_RECEIPTS_VIEW->value,
@@ -213,10 +237,34 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_STOCK_ADJUSTMENTS_VIEW->value,
             PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value,
             PermissionCode::REPORTS_INVENTORY_MOVEMENT_VIEW->value,
+            PermissionCode::REPORTS_STORE_ALLOCATIONS_VIEW->value,
+            PermissionCode::REPORTS_FIELD_BALANCES_VIEW->value,
             PermissionCode::REPORTS_EXPORT->value,
         ];
         $supervisorRole->permissions()->sync(
             array_map(fn ($code) => $permissionModels[$code]->id, $supervisorPermissions)
+        );
+
+        // Teknisi Lapangan (Field Personnel)
+        $technicianPermissions = [
+            PermissionCode::DASHBOARD_VIEW->value,
+            PermissionCode::PRODUCTS_VIEW->value,
+            PermissionCode::LOCATIONS_VIEW->value,
+            PermissionCode::STORES_VIEW->value,
+            PermissionCode::INVENTORY_BALANCES_VIEW->value,
+            PermissionCode::INVENTORY_MOVEMENTS_VIEW->value,
+            PermissionCode::STOCK_TRANSFERS_VIEW->value,
+            PermissionCode::STOCK_TRANSFERS_CREATE->value,
+            PermissionCode::STOCK_TRANSFERS_UPDATE->value,
+            PermissionCode::STOCK_TRANSFERS_SEND->value,
+            PermissionCode::STOCK_TRANSFERS_RECEIVE->value,
+            PermissionCode::STOCK_TRANSFERS_CANCEL->value,
+            PermissionCode::STORE_ALLOCATIONS_VIEW->value,
+            PermissionCode::STORE_ALLOCATIONS_CREATE->value,
+            PermissionCode::STORE_ALLOCATIONS_POST->value,
+        ];
+        $technicianRole->permissions()->sync(
+            array_map(fn ($code) => $permissionModels[$code]->id, $technicianPermissions)
         );
     }
 }

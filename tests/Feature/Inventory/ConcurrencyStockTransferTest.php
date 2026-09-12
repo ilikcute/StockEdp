@@ -75,11 +75,11 @@ class ConcurrencyStockTransferTest extends TestCase
         $exit1 = $process1->getExitCode();
         $exit2 = $process2->getExitCode();
 
-        // Exactly one worker must succeed, one must fail because status changed to SENT
+        // Exactly one worker must succeed, one must fail because status changed to IN_TRANSIT
         $this->assertTrue(($exit1 === 0 && $exit2 !== 0) || ($exit1 !== 0 && $exit2 === 0));
 
         $transfer->refresh();
-        $this->assertEquals(TransferStatus::SENT, $transfer->status);
+        $this->assertEquals(TransferStatus::IN_TRANSIT, $transfer->status);
 
         $balanceOrigin = InventoryBalance::where('location_id', $origin->id)->where('product_id', $product->id)->first();
         $this->assertEquals(30, $balanceOrigin->quantity);
@@ -103,7 +103,7 @@ class ConcurrencyStockTransferTest extends TestCase
             'transfer_number' => 'TRF-CONC-002',
             'origin_location_id' => $origin->id,
             'destination_location_id' => $destination->id,
-            'status' => TransferStatus::SENT,
+            'status' => TransferStatus::IN_TRANSIT,
             'transfer_date' => now(),
             'created_by' => $user->id,
         ]);
@@ -166,6 +166,6 @@ class ConcurrencyStockTransferTest extends TestCase
         $this->assertTrue(($exit1 === 0 && $exit2 !== 0) || ($exit1 !== 0 && $exit2 === 0));
 
         $transfer->refresh();
-        $this->assertTrue(in_array($transfer->status, [TransferStatus::SENT, TransferStatus::CANCELED]));
+        $this->assertTrue(in_array($transfer->status, [TransferStatus::IN_TRANSIT, TransferStatus::CANCELED]));
     }
 }

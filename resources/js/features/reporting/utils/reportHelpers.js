@@ -130,7 +130,7 @@ export function getDateBasisDescription(dateBasis) {
 }
 
 export function getTransferStatusLabel(status) {
-    if (status === 'SENT') return 'Dikirim';
+    if (status === 'IN_TRANSIT') return 'Dikirim';
     if (status === 'RECEIVED') return 'Diterima';
     return status;
 }

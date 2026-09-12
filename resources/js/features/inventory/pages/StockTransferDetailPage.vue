@@ -44,7 +44,7 @@
         </button>
 
         <button
-          v-if="transfer?.status === 'SENT' && hasPermission('stock_transfers.receive')"
+          v-if="transfer?.status === 'IN_TRANSIT' && hasPermission('stock_transfers.receive')"
           :disabled="store.loadingAction"
           class="block rounded-md bg-green-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-500 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
           @click="openConfirmModal('receive')"
@@ -99,13 +99,22 @@
                   class="px-2 py-1 text-xs font-semibold rounded-full"
                   :class="{
                     'bg-yellow-100 text-yellow-800': transfer.status === 'DRAFT',
-                    'bg-blue-100 text-blue-800': transfer.status === 'SENT',
+                    'bg-blue-100 text-blue-800': transfer.status === 'IN_TRANSIT',
                     'bg-green-100 text-green-800': transfer.status === 'RECEIVED',
+                    'bg-orange-100 text-orange-800': transfer.status === 'DISCREPANCY',
                     'bg-gray-100 text-gray-800': transfer.status === 'CANCELED'
                   }"
                 >
-                  {{ transfer.status === 'SENT' ? 'Dikirim (In-Transit)' : transfer.status }}
+                  {{ ({ DRAFT: 'Draft', 'IN_TRANSIT': 'Dikirim (In-Transit)', RECEIVED: 'Diterima', DISCREPANCY: 'Selisih (Discrepancy)', CANCELED: 'Dibatalkan' })[transfer.status] || transfer.status }}
                 </span>
+              </dd>
+            </div>
+            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">
+                Jenis Transfer
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                {{ transfer.transfer_type === 'RETURN' ? 'Retur ke Gudang' : 'Transfer Stok' }}
               </dd>
             </div>
             <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -153,7 +162,7 @@
               class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
               <dt class="text-sm font-medium text-gray-500">
-                Waktu Pengiriman (Sent)
+                Waktu Pengiriman (Dikirim)
               </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                 {{ transfer.sent_at }}
@@ -228,9 +237,21 @@
                 </th>
                 <th
                   scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                >
+                  Kondisi
+                </th>
+                <th
+                  scope="col"
                   class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
                 >
                   Jumlah (Quantity)
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                >
+                  Diterima
                 </th>
                 <th
                   scope="col"
@@ -260,8 +281,21 @@
                 <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-right text-gray-700">
                   {{ formatRupiah(item.unit_price ?? item.product?.unit_price ?? item.product_unit_price ?? 0) }}
                 </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-center text-gray-600">
+                  <span
+                    class="px-2 py-1 text-xs rounded-full"
+                    :class="(item.condition || 'GOOD') === 'DEFECTIVE'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-emerald-100 text-emerald-800'"
+                  >
+                    {{ (item.condition || 'GOOD') === 'DEFECTIVE' ? 'RUSAK' : 'BAGUS' }}
+                  </span>
+                </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900">
                   {{ formatQuantity(item.quantity) }}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900">
+                  {{ item.received_quantity != null ? formatQuantity(item.received_quantity) : '-' }}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right font-medium text-gray-900 sm:pr-6">
                   {{ formatRupiah(item.subtotal ?? (Number(item.quantity || 0) * Number(item.unit_price ?? item.product?.unit_price ?? item.product_unit_price ?? 0))) }}
@@ -274,7 +308,7 @@
             >
               <tr>
                 <td
-                  colspan="6"
+                  colspan="8"
                   class="px-4 py-3 text-right text-sm"
                 >
                   Grand Total Nilai Transfer:
@@ -334,6 +368,48 @@
                 {{ confirmDescription }}
               </p>
             </div>
+
+            <div
+              v-if="confirmActionType === 'receive' && transfer?.items?.length"
+              class="mt-4 divide-y divide-gray-200 border border-gray-200 rounded-lg"
+            >
+              <div class="px-4 py-3 bg-gray-50 text-left">
+                <p class="text-sm font-semibold text-gray-700">
+                  Cocokkan / Hitung Jumlah Diterima
+                </p>
+                <p class="text-xs text-gray-500">
+                  Isi jumlah yang benar-benar diterima. Selisih dengan jumlah dikirim akan menandai transaksi sebagai Discrepancy.
+                </p>
+              </div>
+              <div
+                v-for="item in transfer.items"
+                :key="item.id"
+                class="px-4 py-3 flex items-center justify-between gap-4"
+              >
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-gray-900">
+                    {{ item.product?.name || item.product_name || '-' }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    SKU: {{ item.product?.sku || item.product_sku || '-' }} &middot; Dikirim: {{ formatQuantity(item.quantity) }}
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <label
+                    :for="`received-${item.id}`"
+                    class="text-xs text-gray-500"
+                  >Diterima</label>
+                  <input
+                    :id="`received-${item.id}`"
+                    v-model.number="receivedQuantities[item.id]"
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    class="block w-28 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
@@ -390,6 +466,16 @@ const grandTotal = computed(() => {
 });
 
 const confirmActionType = ref(null);
+const receivedQuantities = ref({});
+
+const resetReceivedQuantities = () => {
+  receivedQuantities.value = {};
+  if (transfer.value?.items) {
+    transfer.value.items.forEach((item) => {
+      receivedQuantities.value[item.id] = Number(item.quantity) || 0;
+    });
+  }
+};
 
 const confirmTitle = computed(() => {
   if (confirmActionType.value === 'send') return 'Pengiriman Stok';
@@ -420,6 +506,9 @@ const confirmButtonText = computed(() => {
 
 const openConfirmModal = (type) => {
   confirmActionType.value = type;
+  if (type === 'receive') {
+    resetReceivedQuantities();
+  }
 };
 
 const closeConfirmModal = () => {
@@ -437,7 +526,11 @@ const executeAction = async () => {
     if (actionType === 'send') {
       await store.sendTransfer(id);
     } else if (actionType === 'receive') {
-      await store.receiveTransfer(id);
+      const items = Object.entries(receivedQuantities.value).map(([itemId, qty]) => ({
+        item_id: Number(itemId),
+        received_quantity: Number(qty),
+      }));
+      await store.receiveTransfer(id, items);
     } else if (actionType === 'cancel') {
       await store.cancelTransfer(id);
     }

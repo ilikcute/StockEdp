@@ -2,6 +2,7 @@
 
 namespace App\Features\Inventory\Models;
 
+use App\Features\Inventory\Enums\StockCondition;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,10 @@ class InventoryBalance extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'condition' => StockCondition::class,
+    ];
 
     public function product()
     {

@@ -7,6 +7,8 @@ import StockIssueReportPage from '../pages/StockIssueReportPage.vue';
 import StockTransferReportPage from '../pages/StockTransferReportPage.vue';
 import StockAdjustmentReportPage from '../pages/StockAdjustmentReportPage.vue';
 import StockOpnameReportPage from '../pages/StockOpnameReportPage.vue';
+import StoreAllocationReportPage from '../pages/StoreAllocationReportPage.vue';
+import FieldBalanceReportPage from '../pages/FieldBalanceReportPage.vue';
 
 export const reportingRoutes = [
     {
@@ -16,6 +18,24 @@ export const reportingRoutes = [
         meta: {
             requiresAuth: true,
             permission: 'reports.inventory_balance.view',
+        },
+    },
+    {
+        path: '/reports/field-balances',
+        name: 'reports.field-balances',
+        component: FieldBalanceReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.field_balances.view',
+        },
+    },
+    {
+        path: '/reports/store-allocations',
+        name: 'reports.store-allocations',
+        component: StoreAllocationReportPage,
+        meta: {
+            requiresAuth: true,
+            permission: 'reports.store_allocations.view',
         },
     },
     {

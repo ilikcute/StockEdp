@@ -9,6 +9,7 @@ use App\Features\MasterDataImport\Contracts\MasterDataImportReaderInterface;
 use App\Features\MasterDataImport\Enums\MasterDataImportType;
 use App\Features\MasterDataImport\Services\MasterDataImportValidationService;
 use App\Features\Product\Actions\CreateProductAction;
+use App\Features\Store\Actions\CreateStoreAction;
 use App\Features\Unit\Actions\CreateUnitAction;
 use App\Shared\Exceptions\DomainException;
 use Illuminate\Http\UploadedFile;
@@ -23,6 +24,7 @@ class CommitMasterDataImportAction
         protected CreateCategoryAction $createCategoryAction,
         protected CreateUnitAction $createUnitAction,
         protected CreateLocationAction $createLocationAction,
+        protected CreateStoreAction $createStoreAction,
         protected CreateProductAction $createProductAction
     ) {}
 
@@ -89,7 +91,14 @@ class CommitMasterDataImportAction
                     MasterDataImportType::LOCATIONS => $this->createLocationAction->execute([
                         'code' => $row['code'],
                         'name' => $row['name'],
+                        'type' => $row['type'] ?? 'MAIN_WAREHOUSE',
                         'description' => $row['description'],
+                        'address' => $row['address'],
+                        'phone' => $row['phone'],
+                    ], $validUserId),
+                    MasterDataImportType::STORES => $this->createStoreAction->execute([
+                        'code' => $row['code'],
+                        'name' => $row['name'],
                         'address' => $row['address'],
                         'phone' => $row['phone'],
                     ], $validUserId),

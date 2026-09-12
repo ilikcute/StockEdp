@@ -37,7 +37,7 @@ class InventoryMovementLocationScopeTest extends TestCase
         $this->product = Product::factory()->create(['is_active' => true]);
 
         $this->user = User::factory()->create();
-        $this->user->roles()->attach(Role::where('code', RoleCode::ADMIN->value)->first()->id);
+        $this->user->roles()->attach(Role::where('code', RoleCode::WAREHOUSE_OFFICER->value)->first()->id);
         $this->user->locations()->attach($this->allowedLocation->id);
     }
 
@@ -58,7 +58,7 @@ class InventoryMovementLocationScopeTest extends TestCase
     public function test_user_without_assigned_locations_gets_empty_report(): void
     {
         $userWithoutLoc = User::factory()->create();
-        $userWithoutLoc->roles()->attach(Role::where('code', RoleCode::ADMIN->value)->first()->id);
+        $userWithoutLoc->roles()->attach(Role::where('code', RoleCode::WAREHOUSE_OFFICER->value)->first()->id);
 
         $response = $this->actingAs($userWithoutLoc)->getJson('/api/v1/reports/inventory-movement');
         $response->assertStatus(200)

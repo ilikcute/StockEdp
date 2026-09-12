@@ -41,11 +41,7 @@ class User extends Authenticatable
 
     public function hasGlobalLocationAccess(): bool
     {
-        if ($this->hasRole(RoleCode::ADMIN)) {
-            return true;
-        }
-
-        return $this->locations()->count() === 0;
+        return $this->hasRole(RoleCode::ADMIN);
     }
 
     public function getAllowedLocationIds(): array

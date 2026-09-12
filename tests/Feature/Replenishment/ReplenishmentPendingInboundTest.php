@@ -114,7 +114,7 @@ class ReplenishmentPendingInboundTest extends TestCase
             'transfer_date' => now()->toDateString(),
             'origin_location_id' => $this->originLocation->id,
             'destination_location_id' => $this->targetLocation->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->admin->id,
         ]);
         StockTransferItem::create([
@@ -128,7 +128,7 @@ class ReplenishmentPendingInboundTest extends TestCase
             'transfer_date' => now()->toDateString(),
             'origin_location_id' => $this->originLocation->id,
             'destination_location_id' => $this->targetLocation->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->admin->id,
         ]);
         StockTransferItem::create([
@@ -142,7 +142,7 @@ class ReplenishmentPendingInboundTest extends TestCase
             'transfer_date' => now()->toDateString(),
             'origin_location_id' => $this->originLocation->id,
             'destination_location_id' => $this->targetLocation->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->admin->id,
         ]);
         StockTransferItem::create([
@@ -169,7 +169,7 @@ class ReplenishmentPendingInboundTest extends TestCase
             'transfer_date' => now()->toDateString(),
             'origin_location_id' => $this->originLocation->id,
             'destination_location_id' => $this->targetLocation->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->admin->id,
         ]);
         StockTransferItem::create([

@@ -3,6 +3,7 @@
 namespace App\Features\Inventory\Models;
 
 use App\Features\Auth\Models\User;
+use App\Features\Inventory\Enums\StockCondition;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use Database\Factories\Features\Inventory\StockMovementFactory;
@@ -15,6 +16,10 @@ class StockMovement extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'condition' => StockCondition::class,
+    ];
 
     public function product()
     {

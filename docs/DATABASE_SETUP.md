@@ -49,3 +49,14 @@ php artisan db:seed --class=RoleAndPermissionSeeder --force
    - Class `ReleaseVerificationSeeder` dirancang **khusus** untuk pengujian rilis dan benchmark pada lingkungan `local` atau `testing`.
    - Class ini secara otomatis menolak dieksekusi pada lingkungan `production`.
    - Dilarang memasukkan `ReleaseVerificationSeeder` ke dalam `DatabaseSeeder.php` utama.
+
+---
+
+## 5. Skema Inti Basis Data (PRD V1 Model)
+
+Sistem mengadopsi struktur tabel terintegrasi untuk mendukung operasional lapangan:
+- **`stores`**: Master data toko target penggantian unit (kode toko, nama toko, alamat).
+- **`locations`**: Multi-tipe lokasi (`MAIN_WAREHOUSE`, `FIELD_PERSONNEL`, `DAMAGED_STORAGE`) dengan binding `user_id` untuk teknisi.
+- **`inventory_balances`**: Menyimpan saldo kuantitas per produk, per lokasi, dan per kondisi (`GOOD` vs `DEFECTIVE`).
+- **`store_allocations` & `store_allocation_items`**: Transaksi pencatatan alokasi unit pasang dan penarikan unit rusak di toko.
+- **`stock_movements`**: Buku besar mutasi stok immutable dengan pencatatan kondisi (`condition`) dan tipe mutasi operasional GA/teknisi.

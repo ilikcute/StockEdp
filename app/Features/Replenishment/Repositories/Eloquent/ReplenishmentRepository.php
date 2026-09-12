@@ -59,7 +59,7 @@ class ReplenishmentRepository implements ReplenishmentRepositoryInterface
 
         $results = DB::table('stock_transfer_items')
             ->join('stock_transfers', 'stock_transfers.id', '=', 'stock_transfer_items.stock_transfer_id')
-            ->where('stock_transfers.status', TransferStatus::SENT->value)
+            ->where('stock_transfers.status', TransferStatus::IN_TRANSIT->value)
             ->where('stock_transfers.destination_location_id', $targetLocationId)
             ->whereIn('stock_transfer_items.product_id', $productIds)
             ->groupBy('stock_transfer_items.product_id')

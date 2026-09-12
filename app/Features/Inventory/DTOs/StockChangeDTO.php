@@ -16,5 +16,6 @@ readonly class StockChangeDTO
         public ?string $referenceNumber = null,
         public ?int $userId = null,
         public ?string $occurredAt = null,
+        public string $condition = 'GOOD',
     ) {}
 }

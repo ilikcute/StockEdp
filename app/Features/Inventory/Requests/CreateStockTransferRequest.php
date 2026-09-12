@@ -22,6 +22,7 @@ class CreateStockTransferRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'transfer_type' => ['sometimes', 'nullable', 'string', Rule::in(['TRANSFER', 'RETURN'])],
             'origin_location_id' => [
                 'required',
                 'integer',

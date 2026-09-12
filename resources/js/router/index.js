@@ -6,6 +6,7 @@ import { categoryRoutes } from '../features/category/router/category_routes.js';
 import { unitRoutes } from '../features/unit/router/unit_routes.js';
 import { supplierRoutes } from '../features/supplier/router/supplier_routes.js';
 import { locationRoutes } from '../features/location/router/location_routes.js';
+import { storeRoutes } from '../features/store/router/store_routes.js';
 import { productRoutes } from '../features/product/router/product_routes.js';
 import { inventoryRoutes } from '../features/inventory/routes/index.js';
 import { replenishmentRoutes } from '../features/replenishment/router/replenishment_routes.js';
@@ -22,6 +23,7 @@ const router = createRouter({
         ...unitRoutes,
         ...supplierRoutes,
         ...locationRoutes,
+        ...storeRoutes,
         ...productRoutes,
         ...userRoutes,
         ...inventoryRoutes,

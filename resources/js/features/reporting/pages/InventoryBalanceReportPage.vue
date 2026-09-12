@@ -114,6 +114,24 @@
           </select>
         </div>
 
+        <div class="w-full sm:w-auto min-w-[150px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Stok</label>
+          <select
+            v-model="filters.condition"
+            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Kondisi
+            </option>
+            <option value="GOOD">
+              Bagus (GOOD)
+            </option>
+            <option value="DEFECTIVE">
+              Rusak (DEFECTIVE)
+            </option>
+          </select>
+        </div>
+
         <div class="flex gap-4">
           <label class="flex items-center gap-2">
             <input
@@ -248,6 +266,12 @@
                   </th>
                   <th
                     scope="col"
+                    class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  >
+                    Kondisi
+                  </th>
+                  <th
+                    scope="col"
                     class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
                     Harga Satuan
@@ -269,7 +293,7 @@
               <tbody class="divide-y divide-gray-200 bg-white">
                 <tr v-if="!store.loading && store.data.length === 0">
                   <td
-                    colspan="7"
+                    colspan="8"
                     class="py-10 text-center text-sm text-gray-500"
                   >
                     Tidak ada data saldo stok yang ditemukan.
@@ -305,6 +329,14 @@
                       {{ item.location_name || item.location?.name }}
                     </span>
                     <span v-else>-</span>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                      :class="item.condition === 'DEFECTIVE' ? 'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-600/20' : 'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-600/20'"
+                    >
+                      {{ item.condition === 'DEFECTIVE' ? 'RUSAK' : 'BAGUS' }}
+                    </span>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-900">
                     {{ formatRupiah(item.unit_price || item.product?.unit_price || 0) }}
@@ -387,6 +419,7 @@ const filters = reactive({
     location_id: '',
     category_id: '',
     unit_id: '',
+    condition: '',
     is_active: '',
     positive_stock: false,
     zero_stock: false,

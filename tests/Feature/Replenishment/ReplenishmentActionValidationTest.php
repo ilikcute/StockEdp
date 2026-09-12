@@ -152,7 +152,7 @@ class ReplenishmentActionValidationTest extends TestCase
             'transfer_date' => '2026-08-19',
             'origin_location_id' => $this->sourceLocation->id,
             'destination_location_id' => $this->targetLocation->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->user->id,
         ]);
 

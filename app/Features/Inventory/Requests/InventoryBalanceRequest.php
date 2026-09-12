@@ -16,10 +16,11 @@ class InventoryBalanceRequest extends FormRequest
         return [
             'product_id' => 'nullable|integer|exists:products,id',
             'location_id' => 'nullable|integer|exists:locations,id',
+            'condition' => 'nullable|string|in:GOOD,DEFECTIVE',
             'search' => 'nullable|string|max:100',
             'sort_by' => 'nullable|string|in:id,quantity,product_id,location_id,created_at',
             'sort_order' => 'nullable|string|in:asc,desc',
-            'per_page' => 'nullable|integer|min:1|max:100',
+            'per_page' => 'nullable|integer|min:1|max:500',
         ];
     }
 }

@@ -27,10 +27,10 @@
             Semua Status
           </option>
           <option
-            value="SENT"
+            value="IN_TRANSIT"
             :disabled="filters.date_basis === 'RECEIVED_AT'"
           >
-            SENT (Dikirim)
+            IN_TRANSIT (Dikirim)
           </option>
           <option value="RECEIVED">
             RECEIVED (Diterima)

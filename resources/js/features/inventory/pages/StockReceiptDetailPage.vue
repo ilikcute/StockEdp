@@ -95,10 +95,31 @@
             </div>
             <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">
+                No. SPB / Memo GA
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-medium">
+                {{ doc.memo_number || '-' }}
+              </dd>
+            </div>
+            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">
+                Sumber Barang
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  :class="doc.source_type === 'GA_SERVICED' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'"
+                >
+                  {{ doc.source_type === 'GA_SERVICED' ? 'Hasil Servis GA' : 'Pengadaan Baru GA' }}
+                </span>
+              </dd>
+            </div>
+            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">
                 Supplier
               </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ doc.supplier?.name }} ({{ doc.supplier?.code }})
+                {{ doc.supplier?.name ? `${doc.supplier.name} (${doc.supplier.code || ''})` : 'Tanpa Supplier / Internal GA' }}
               </dd>
             </div>
             <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

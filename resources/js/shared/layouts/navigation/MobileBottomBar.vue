@@ -32,7 +32,7 @@
       <router-link
         to="/products"
         class="flex flex-col items-center justify-center py-1 text-[10px] font-medium transition-colors"
-        :class="isRouteActive(['/products', '/categories', '/units', '/suppliers', '/locations']) ? 'text-indigo-600 font-bold' : 'text-gray-500 hover:text-gray-900'"
+        :class="isRouteActive(['/products', '/categories', '/units', '/suppliers', '/locations', '/stores']) ? 'text-indigo-600 font-bold' : 'text-gray-500 hover:text-gray-900'"
       >
         <svg
           class="w-5 h-5 mb-0.5"
@@ -55,7 +55,7 @@
       <router-link
         to="/inventory/transfers"
         class="flex flex-col items-center justify-center py-1 text-[10px] font-medium transition-colors"
-        :class="isRouteActive(['/inventory/receipts', '/inventory/issues', '/inventory/transfers', '/inventory/adjustments', '/inventory/opnames', '/inventory/replenishment']) ? 'text-indigo-600 font-bold' : 'text-gray-500 hover:text-gray-900'"
+        :class="isRouteActive(['/inventory/receipts', '/inventory/issues', '/inventory/transfers', '/inventory/adjustments', '/inventory/opnames', '/inventory/replenishment', '/inventory/store-allocations', '/inventory/movements']) ? 'text-indigo-600 font-bold' : 'text-gray-500 hover:text-gray-900'"
       >
         <svg
           class="w-5 h-5 mb-0.5"

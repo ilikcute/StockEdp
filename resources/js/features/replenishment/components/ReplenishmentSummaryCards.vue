@@ -22,7 +22,7 @@
         {{ summary.inbound_covered_count || 0 }}
       </div>
       <div class="text-[11px] text-blue-600 font-medium mt-0.5">
-        Transfer SENT aktif
+        Transfer IN_TRANSIT aktif
       </div>
     </div>
 

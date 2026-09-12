@@ -9,12 +9,12 @@ interface InventoryBalanceRepositoryInterface
     /**
      * Get or create balance and lock for update.
      */
-    public function lockBalanceForUpdate(int $productId, int $locationId): InventoryBalance;
+    public function lockBalanceForUpdate(int $productId, int $locationId, string $condition = 'GOOD'): InventoryBalance;
 
     /**
      * Get balance without locking.
      */
-    public function getBalance(int $productId, int $locationId): ?InventoryBalance;
+    public function getBalance(int $productId, int $locationId, string $condition = 'GOOD'): ?InventoryBalance;
 
     /**
      * Get paginated balances.

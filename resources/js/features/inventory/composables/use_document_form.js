@@ -33,6 +33,7 @@ export function useDocumentForm(config) {
         [headerKey]: '',
         date: new Date().toISOString().slice(0, 10),
         notes: '',
+        ...(config.extraFields || {}),
         items: [],
     });
 
@@ -75,10 +76,17 @@ export function useDocumentForm(config) {
                 router.push(`${basePath}/${route.params.id}`);
                 return;
             }
+            const extraValues = {};
+            if (config.extraFields) {
+                for (const key of Object.keys(config.extraFields)) {
+                    extraValues[key] = data[key] ?? config.extraFields[key];
+                }
+            }
             form.value = {
-                [headerKey]: data[headerKey],
+                [headerKey]: data[headerKey] ?? '',
                 date: data.date,
                 notes: data.notes || '',
+                ...extraValues,
                 items: data.items.map((i) => ({
                     product_id: i.product_id,
                     location_id: i.location_id,
@@ -271,11 +279,15 @@ export function useDocumentForm(config) {
         errorMsg.value = '';
 
         try {
+            const payload = { ...form.value };
+            if (payload.supplier_id === '') {
+                payload.supplier_id = null;
+            }
             if (isEdit) {
-                await store.update(route.params.id, form.value);
+                await store.update(route.params.id, payload);
                 router.push(`${basePath}/${route.params.id}`);
             } else {
-                const data = await store.create(form.value);
+                const data = await store.create(payload);
                 router.push(`${basePath}/${data.data.id}`);
             }
         } catch (e) {

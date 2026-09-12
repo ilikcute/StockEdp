@@ -28,8 +28,10 @@ class StockReceiptRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'memo_number' => 'nullable|string|max:100',
+            'source_type' => ['nullable', 'string', Rule::in(['GA_PROCUREMENT', 'GA_SERVICED'])],
             'supplier_id' => [
-                'required',
+                'nullable',
                 'integer',
                 Rule::exists('suppliers', 'id')->where('is_active', true),
             ],

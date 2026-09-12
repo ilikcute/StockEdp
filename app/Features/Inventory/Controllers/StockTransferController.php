@@ -10,6 +10,7 @@ use App\Features\Inventory\Actions\UpdateStockTransferAction;
 use App\Features\Inventory\Models\StockTransfer;
 use App\Features\Inventory\Repositories\Contracts\StockTransferRepositoryInterface;
 use App\Features\Inventory\Requests\CreateStockTransferRequest;
+use App\Features\Inventory\Requests\ReceiveStockTransferRequest;
 use App\Features\Inventory\Requests\UpdateStockTransferRequest;
 use App\Features\Inventory\Resources\StockTransferResource;
 use App\Http\Controllers\Controller;
@@ -105,7 +106,7 @@ class StockTransferController extends Controller
     public function receive(
         int $id,
         ReceiveStockTransferAction $action,
-        Request $request
+        ReceiveStockTransferRequest $request
     ): JsonResponse {
         $transfer = $this->transferRepository->findById($id);
 
@@ -115,7 +116,7 @@ class StockTransferController extends Controller
 
         $this->authorize('receive', $transfer);
 
-        $receivedTransfer = $action->execute($transfer, $request->user()->id);
+        $receivedTransfer = $action->execute($transfer, $request->user()->id, $request->receivedQuantities());
 
         return response()->api(new StockTransferResource($receivedTransfer), 'Transfer stok berhasil diterima.');
     }

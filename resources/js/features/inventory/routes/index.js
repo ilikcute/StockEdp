@@ -6,8 +6,38 @@ export const inventoryRoutes = [
         meta: {
             title: 'Riwayat Pergerakan Stok',
             requiresAuth: true,
-            permission: 'inventory.movements.view'
-        }
+            permission: 'inventory.movements.view',
+        },
+    },
+    {
+        path: '/inventory/store-allocations',
+        name: 'inventory.store-allocations',
+        component: () => import('../pages/StoreAllocationListPage.vue'),
+        meta: {
+            title: 'Alokasi Toko',
+            requiresAuth: true,
+            permission: 'store_allocations.view',
+        },
+    },
+    {
+        path: '/inventory/store-allocations/create',
+        name: 'inventory.store-allocations.create',
+        component: () => import('../pages/StoreAllocationFormPage.vue'),
+        meta: {
+            title: 'Catat Alokasi Toko',
+            requiresAuth: true,
+            permission: 'store_allocations.create',
+        },
+    },
+    {
+        path: '/inventory/store-allocations/:id',
+        name: 'inventory.store-allocations.detail',
+        component: () => import('../pages/StoreAllocationDetailPage.vue'),
+        meta: {
+            title: 'Detail Alokasi Toko',
+            requiresAuth: true,
+            permission: 'store_allocations.view',
+        },
     },
     {
         path: '/inventory/receipts',

@@ -30,6 +30,7 @@ class InventoryBalanceReportResource extends JsonResource
             'available_quantity' => $onHand,
             'total_value' => (float) bcmul((string) $this->quantity, (string) ($this->product?->unit_price ?? '0'), 2),
             'minimum_stock' => $minStockFormatted,
+            'condition' => $this->condition ?? 'GOOD',
             'is_below_minimum' => $isBelowMin,
             'is_product_active' => (bool) ($this->product?->is_active ?? false),
             'is_location_frozen' => (bool) ($this->location?->operationLock?->is_frozen ?? false),

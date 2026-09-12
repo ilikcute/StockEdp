@@ -35,7 +35,7 @@ class StockMovementService
             $this->freezeService->lockAndValidateLocations([$dto->locationId], $allowedOpnameId);
 
             // Step 4 Global Lock Order: Lock balance for update
-            $balance = $this->balanceRepository->lockBalanceForUpdate($dto->productId, $dto->locationId);
+            $balance = $this->balanceRepository->lockBalanceForUpdate($dto->productId, $dto->locationId, $dto->condition);
 
             $quantityBefore = $balance->quantity;
             $changeAmount = $dto->quantity;
@@ -60,6 +60,7 @@ class StockMovementService
                 'movement_id' => Str::uuid()->toString(),
                 'product_id' => $dto->productId,
                 'location_id' => $dto->locationId,
+                'condition' => $dto->condition,
                 'movement_type' => $dto->movementType->value,
                 'quantity' => $changeAmount,
                 'quantity_before' => $quantityBefore,
@@ -87,9 +88,13 @@ class StockMovementService
         // Extract all location IDs
         $locationIds = array_column($dtos, 'locationId');
 
-        // Sort DTOs by product_id and location_id ascending before balance locking
+        // Sort DTOs by product_id, location_id, and condition ascending before balance locking
         usort($dtos, function (StockChangeDTO $a, StockChangeDTO $b) {
             if ($a->productId === $b->productId) {
+                if ($a->locationId === $b->locationId) {
+                    return strcmp($a->condition, $b->condition);
+                }
+
                 return $a->locationId <=> $b->locationId;
             }
 
@@ -116,7 +121,7 @@ class StockMovementService
             throw new \InvalidArgumentException('Quantity must be greater than zero.');
         }
 
-        $balance = $this->balanceRepository->lockBalanceForUpdate($dto->productId, $dto->locationId);
+        $balance = $this->balanceRepository->lockBalanceForUpdate($dto->productId, $dto->locationId, $dto->condition);
 
         $quantityBefore = $balance->quantity;
         $changeAmount = $dto->quantity;
@@ -138,6 +143,7 @@ class StockMovementService
             'movement_id' => Str::uuid()->toString(),
             'product_id' => $dto->productId,
             'location_id' => $dto->locationId,
+            'condition' => $dto->condition,
             'movement_type' => $dto->movementType->value,
             'quantity' => $changeAmount,
             'quantity_before' => $quantityBefore,

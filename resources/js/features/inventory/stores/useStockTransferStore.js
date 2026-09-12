@@ -136,11 +136,11 @@ export const useStockTransferStore = defineStore('stockTransfer', {
             }
         },
 
-        async receiveTransfer(id) {
+        async receiveTransfer(id, receivedItems = []) {
             this.loadingAction = true;
             this.error = null;
             try {
-                const response = await inventoryApi.receiveTransfer(id);
+                const response = await inventoryApi.receiveTransfer(id, { items: receivedItems });
                 await this.fetchTransferById(id);
                 return response.data;
             } catch (error) {

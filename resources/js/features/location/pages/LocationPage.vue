@@ -105,6 +105,12 @@
                     scope="col"
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
                   >
+                    Tipe Lokasi
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  >
                     Alamat & Telp
                   </th>
                   <th
@@ -124,7 +130,7 @@
               <tbody class="divide-y divide-gray-200 bg-white">
                 <tr v-if="store.isLoading && store.items.length === 0">
                   <td
-                    colspan="6"
+                    colspan="7"
                     class="py-10 text-center text-sm text-gray-500"
                   >
                     Memuat data...
@@ -132,7 +138,7 @@
                 </tr>
                 <tr v-else-if="store.items.length === 0">
                   <td
-                    colspan="6"
+                    colspan="7"
                     class="py-10 text-center text-sm text-gray-500"
                   >
                     Tidak ada data lokasi yang ditemukan.
@@ -146,14 +152,34 @@
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
                     {{ rowNumber(store.pagination, index) }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-gray-900">
                     {{ location.code }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
                     {{ location.name }}
                   </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-700">
+                    <span
+                      v-if="location.type === 'FIELD_PERSONNEL'"
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      Teknisi: {{ location.user_name || 'Belum ditugaskan' }}
+                    </span>
+                    <span
+                      v-else-if="location.type === 'DAMAGED_STORAGE'"
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800"
+                    >
+                      Gudang Afkir
+                    </span>
+                    <span
+                      v-else
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                    >
+                      Gudang Induk
+                    </span>
+                  </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    {{ location.address }} <span v-if="location.phone">({{ location.phone }})</span>
+                    {{ location.address || '-' }} <span v-if="location.phone">({{ location.phone }})</span>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     <span

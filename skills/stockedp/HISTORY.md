@@ -283,7 +283,7 @@ Important discovery:
 
 - Live Decision Support System (`/api/v1/replenishment-recommendations`), strictly read-only (`delta = 0`), 0 persistent recommendation tables.
 - Canonical low-stock query reuse (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
-- Pending inbound tracking (`TransferStatus::SENT` destined for target location reduces net replenishment need).
+- Pending inbound tracking (`TransferStatus::IN_TRANSIT` destined for target location reduces net replenishment need).
 - Safe internal source surplus allocation (`surplus = MAX(source_on_hand - source_min_stock, 0)`). Sources retain their minimum stock.
 - Frozen location safety (frozen source warehouses excluded from allocations; frozen target marks recommendations non-actionable).
 - Deterministic greedy allocation (`available_surplus DESC, location_id ASC`), location IDOR protection, string decimal safety (BCMath scale 4), and transfer form prefill ergonomics.

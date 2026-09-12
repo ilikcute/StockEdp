@@ -16,7 +16,7 @@ class InventoryBalanceController extends Controller
 
     public function index(InventoryBalanceRequest $request): JsonResponse
     {
-        $filters = $request->only(['product_id', 'location_id', 'search']);
+        $filters = $request->only(['product_id', 'location_id', 'condition', 'search']);
         $sortField = $request->input('sort_by', 'id');
         $sortDirection = $request->input('sort_order', 'desc');
         $perPage = $request->input('per_page', 15);

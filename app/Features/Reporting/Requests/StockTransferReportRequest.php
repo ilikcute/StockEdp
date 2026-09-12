@@ -17,7 +17,7 @@ class StockTransferReportRequest extends FormRequest
     {
         return [
             'date_basis' => 'nullable|in:SENT_AT,RECEIVED_AT',
-            'status' => 'nullable|in:SENT,RECEIVED',
+            'status' => 'nullable|in:IN_TRANSIT,RECEIVED',
             'origin_location_id' => 'nullable|integer|exists:locations,id',
             'destination_location_id' => 'nullable|integer|exists:locations,id',
             'product_id' => 'nullable|integer|exists:products,id',
@@ -35,8 +35,8 @@ class StockTransferReportRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            if ($this->input('status') === 'SENT' && $this->input('date_basis') === 'RECEIVED_AT') {
-                $validator->errors()->add('date_basis', 'Status SENT tidak memiliki tanggal received_at. Pilih date_basis=SENT_AT.');
+            if ($this->input('status') === 'IN_TRANSIT' && $this->input('date_basis') === 'RECEIVED_AT') {
+                $validator->errors()->add('date_basis', 'Status IN_TRANSIT tidak memiliki tanggal received_at. Pilih date_basis=SENT_AT.');
             }
 
             if ($this->filled('start_date') && $this->filled('end_date')) {

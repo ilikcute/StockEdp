@@ -11,7 +11,7 @@ class LocationRepository implements LocationRepositoryInterface
 {
     public function getPaginated(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        $query = Location::with(['createdBy', 'updatedBy']);
+        $query = Location::with(['user', 'createdBy', 'updatedBy']);
 
         if (! empty($filters['search'])) {
             $search = $filters['search'];
@@ -46,7 +46,7 @@ class LocationRepository implements LocationRepositoryInterface
 
     public function findById(int $id): ?Location
     {
-        return Location::with(['createdBy', 'updatedBy'])->find($id);
+        return Location::with(['user', 'createdBy', 'updatedBy'])->find($id);
     }
 
     public function create(array $data): Location
@@ -62,13 +62,13 @@ class LocationRepository implements LocationRepositoryInterface
             'updated_at' => now(),
         ]);
 
-        return $location;
+        return $location->fresh(['user', 'createdBy', 'updatedBy']);
     }
 
     public function update(Location $location, array $data): Location
     {
         $location->update($data);
 
-        return $location->fresh(['createdBy', 'updatedBy']);
+        return $location->fresh(['user', 'createdBy', 'updatedBy']);
     }
 }

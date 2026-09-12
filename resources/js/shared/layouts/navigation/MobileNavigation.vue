@@ -211,9 +211,11 @@ const masterNavLinks = [
     { to: '/units', label: 'Satuan', permission: 'units.view' },
     { to: '/suppliers', label: 'Supplier', permission: 'suppliers.view' },
     { to: '/locations', label: 'Lokasi', permission: 'locations.view' },
+    { to: '/stores', label: 'Toko', permission: 'stores.view' },
 ];
 
 const inventoryNavLinks = [
+    { to: '/inventory/store-allocations', label: 'Alokasi Unit Toko', permission: 'store_allocations.view' },
     { to: '/inventory/receipts', label: 'Penerimaan Barang (Inbound)', permission: 'stock_receipts.view' },
     { to: '/inventory/issues', label: 'Pengeluaran Barang (Outbound)', permission: 'stock_issues.view' },
     { to: '/inventory/transfers', label: 'Transfer Stok Antar Gudang', permission: 'stock_transfers.view' },

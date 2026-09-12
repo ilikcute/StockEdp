@@ -32,6 +32,10 @@ use App\Features\Replenishment\Repositories\Contracts\ReplenishmentRepositoryInt
 use App\Features\Replenishment\Repositories\Eloquent\ReplenishmentRepository;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
 use App\Features\Reporting\Repositories\Eloquent\ReportingRepository;
+use App\Features\Store\Repositories\Contracts\StoreRepositoryInterface;
+use App\Features\Store\Repositories\Eloquent\StoreRepository;
+use App\Features\StoreAllocation\Repositories\Contracts\StoreAllocationRepositoryInterface;
+use App\Features\StoreAllocation\Repositories\Eloquent\StoreAllocationRepository;
 use App\Features\Supplier\Repositories\Contracts\SupplierRepositoryInterface;
 use App\Features\Supplier\Repositories\Eloquent\SupplierRepository;
 use App\Features\Unit\Repositories\Contracts\UnitRepositoryInterface;
@@ -73,6 +77,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             LocationRepositoryInterface::class,
             LocationRepository::class
+        );
+
+        $this->app->bind(
+            StoreRepositoryInterface::class,
+            StoreRepository::class
+        );
+
+        $this->app->bind(
+            StoreAllocationRepositoryInterface::class,
+            StoreAllocationRepository::class
         );
 
         $this->app->bind(

@@ -70,6 +70,14 @@ Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data m
 | `address` | Tidak | String | Alamat fisik lokasi |
 | `phone` | Tidak | String(50) | Nomor telepon kontak lokasi |
 
+### Toko (`template_stores.csv`)
+| Kolom | Wajib | Tipe / Panjang | Keterangan |
+|---|---|---|---|
+| `code` | Ya | String(50), Upper | Kode toko unik (e.g. `TK-001`) |
+| `name` | Ya | String(150) | Nama toko / unit kerja |
+| `address` | Tidak | String(1000) | Alamat fisik toko |
+| `phone` | Tidak | String(50) | Nomor telepon kontak toko |
+
 ### Produk (`template_products.csv`)
 | Kolom | Wajib | Tipe / Panjang | Keterangan |
 |---|---|---|---|
@@ -88,7 +96,7 @@ Fitur **Master Data Bulk Import** menyediakan fungsionalitas pengunggahan data m
 
 ### 1. Download Template
 - **Method / URI**: `GET /api/v1/master-data-import/{type}/template`
-- **Tipe didukung**: `products`, `categories`, `units`, `locations`
+- **Tipe didukung**: `products`, `categories`, `units`, `locations`, `stores`
 - **Permission**: `{type}.import`
 - **Response**: `200 OK` (Attachment `Content-Type: text/csv; charset=UTF-8` dengan filename `template_{type}.csv` dan UTF-8 BOM).
 

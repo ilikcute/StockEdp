@@ -16,6 +16,8 @@ const fallbackFilenames = {
     'stock-transfers': 'stock-transfers.csv',
     'stock-adjustments': 'stock-adjustments.csv',
     'stock-opnames': 'stock-opnames.csv',
+    'store-allocations': 'store-allocations.csv',
+    'field-balances': 'field-balances.csv',
 };
 
 const exportHandlers = {
@@ -27,6 +29,8 @@ const exportHandlers = {
     'stock-transfers': (params) => reportingApi.exportStockTransfers(params),
     'stock-adjustments': (params) => reportingApi.exportStockAdjustments(params),
     'stock-opnames': (params) => reportingApi.exportStockOpnames(params),
+    'store-allocations': (params) => reportingApi.exportStoreAllocations(params),
+    'field-balances': (params) => reportingApi.exportFieldBalances(params),
 };
 
 export const useReportCsvExportStore = defineStore('reportCsvExport', {

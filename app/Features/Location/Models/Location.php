@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[ObservedBy([LocationObserver::class])]
-#[Fillable(['code', 'name', 'description', 'address', 'phone', 'is_active', 'created_by', 'updated_by'])]
+#[Fillable(['code', 'name', 'type', 'user_id', 'description', 'address', 'phone', 'is_active', 'created_by', 'updated_by'])]
 class Location extends Model
 {
     use HasFactory;
@@ -24,6 +24,11 @@ class Location extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     protected static function newFactory(): LocationFactory
     {

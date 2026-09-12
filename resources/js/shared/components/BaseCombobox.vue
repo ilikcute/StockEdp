@@ -160,11 +160,20 @@
                 class="truncate text-xs text-gray-900"
                 v-html="highlightMatch(option.name)"
               />
-              <span class="text-gray-400 text-xs flex-shrink-0 ml-auto">-</span>
-              <!-- Price Badge -->
-              <span class="text-[11px] font-semibold text-gray-800 font-mono flex-shrink-0 pl-1">
-                {{ formatOptionPrice(option) }}
+              <!-- Stock or Price Badge -->
+              <span
+                v-if="option.stockText !== undefined"
+                class="text-[10px] font-bold font-mono flex-shrink-0 px-1.5 py-0.5 rounded ml-auto"
+                :class="option.hasStock ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+              >
+                Stok: {{ option.stockText }}
               </span>
+              <template v-else>
+                <span class="text-gray-400 text-xs flex-shrink-0 ml-auto">-</span>
+                <span class="text-[11px] font-semibold text-gray-800 font-mono flex-shrink-0 pl-1">
+                  {{ formatOptionPrice(option) }}
+                </span>
+              </template>
             </template>
 
             <!-- Other Options (e.g. Locations, Suppliers, etc.) -->
@@ -179,6 +188,17 @@
                 class="truncate"
                 v-html="highlightMatch(option.name || formatOptionLabel(option))"
               />
+              <span
+                v-if="option.type"
+                class="ml-auto flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                :class="{
+                  'bg-indigo-50 text-indigo-700 border border-indigo-200': option.type === 'MAIN_WAREHOUSE',
+                  'bg-blue-50 text-blue-700 border border-blue-200': option.type === 'FIELD_PERSONNEL',
+                  'bg-amber-50 text-amber-700 border border-amber-200': option.type === 'DAMAGED_STORAGE',
+                }"
+              >
+                {{ option.type === 'MAIN_WAREHOUSE' ? 'Gudang Induk' : option.type === 'FIELD_PERSONNEL' ? 'Teknisi' : 'Gudang Afkir' }}
+              </span>
             </template>
           </div>
           <!-- eslint-enable vue/no-v-html -->
@@ -316,6 +336,15 @@ const formatOptionLabel = (option) => {
     return `${codePrefix}${option.name} - ${priceFormatted}`;
   }
   if (option.code && option.name) {
+    if (option.type === 'MAIN_WAREHOUSE') {
+      return `${option.code} — ${option.name} (Gudang Induk)`;
+    }
+    if (option.type === 'FIELD_PERSONNEL') {
+      return `${option.code} — ${option.name} (Teknisi)`;
+    }
+    if (option.type === 'DAMAGED_STORAGE') {
+      return `${option.code} — ${option.name} (Gudang Afkir)`;
+    }
     return `${option.code} — ${option.name}`;
   }
   return option.name || option.label || option.code || String(option.id);

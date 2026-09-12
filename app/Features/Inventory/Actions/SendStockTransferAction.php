@@ -72,14 +72,15 @@ class SendStockTransferAction
                     referenceId: $lockedTransfer->id,
                     referenceNumber: $lockedTransfer->transfer_number,
                     userId: $userId ?? $lockedTransfer->created_by,
-                    occurredAt: now()
+                    occurredAt: now(),
+                    condition: $item->condition?->value ?? 'GOOD'
                 );
             }
 
             $this->stockMovementService->recordMultipleMovements($dtos);
 
             $lockedTransfer->update([
-                'status' => TransferStatus::SENT,
+                'status' => TransferStatus::IN_TRANSIT,
                 'sent_by' => $userId,
                 'sent_at' => now(),
             ]);

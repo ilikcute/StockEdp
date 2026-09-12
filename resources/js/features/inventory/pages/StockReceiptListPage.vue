@@ -122,13 +122,19 @@
               {{ rowNumber(store.receipts?.meta, index) }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
-              {{ item.receipt_number }}
+              <div>{{ item.receipt_number }}</div>
+              <div
+                v-if="item.memo_number"
+                class="text-xs text-gray-500 font-normal"
+              >
+                SPB: {{ item.memo_number }}
+              </div>
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
               {{ item.date }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              {{ item.supplier?.name }}
+              {{ item.supplier?.name || (item.source_type === 'GA_SERVICED' ? 'Hasil Servis GA' : 'Internal GA') }}
             </td>
             <td class="whitespace-nowrap px-3 py-4 text-sm">
               <DocumentStatusBadge :status="item.status" />

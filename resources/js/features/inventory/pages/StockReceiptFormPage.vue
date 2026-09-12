@@ -83,7 +83,7 @@
       @submit.prevent="submitForm"
     >
       <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 bg-white shadow-xs rounded-xl border border-gray-200 p-4 sm:p-6">
-        <div class="sm:col-span-3">
+        <div class="sm:col-span-2">
           <label
             for="date"
             class="block text-sm font-medium text-gray-700 mb-1"
@@ -97,22 +97,52 @@
           >
         </div>
 
+        <div class="sm:col-span-2">
+          <label
+            for="memo_number"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >No. SPB / Memo GA</label>
+          <input
+            id="memo_number"
+            v-model="form.memo_number"
+            type="text"
+            placeholder="Contoh: MEMO-GA/2026/09/001"
+            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+        </div>
+
+        <div class="sm:col-span-2">
+          <label
+            for="source_type"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >Sumber Barang *</label>
+          <select
+            id="source_type"
+            v-model="form.source_type"
+            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+            required
+          >
+            <option value="GA_PROCUREMENT">
+              Pengadaan Baru GA
+            </option>
+            <option value="GA_SERVICED">
+              Hasil Servis GA (Barang Bagus)
+            </option>
+          </select>
+        </div>
+
         <div class="sm:col-span-3">
           <label
             for="supplier"
             class="block text-sm font-medium text-gray-700 mb-1"
-          >Supplier *</label>
+          >Supplier (Opsional)</label>
           <select
             id="supplier"
             v-model="form.supplier_id"
             class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
           >
-            <option
-              value=""
-              disabled
-            >
-              Pilih Supplier
+            <option value="">
+              -- Tanpa Supplier / Internal GA --
             </option>
             <option
               v-for="sup in suppliers"
@@ -124,17 +154,18 @@
           </select>
         </div>
 
-        <div class="sm:col-span-6">
+        <div class="sm:col-span-3">
           <label
             for="notes"
             class="block text-sm font-medium text-gray-700 mb-1"
           >Catatan</label>
-          <textarea
+          <input
             id="notes"
             v-model="form.notes"
-            rows="2"
+            type="text"
+            placeholder="Keterangan tambahan..."
             class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+          >
         </div>
       </div>
 
@@ -320,5 +351,9 @@ const {
     headerKey: 'supplier_id',
     locationNoun: 'lokasi',
     hasStockColumn: false,
+    extraFields: {
+        memo_number: '',
+        source_type: 'GA_PROCUREMENT',
+    },
 });
 </script>

@@ -12,6 +12,8 @@ class StockReceiptResource extends JsonResource
         return [
             'id' => $this->id,
             'receipt_number' => $this->receipt_number,
+            'memo_number' => $this->memo_number,
+            'source_type' => $this->source_type ?? 'GA_PROCUREMENT',
             'supplier_id' => $this->supplier_id,
             'status' => $this->status,
             'date' => $this->date ? $this->date->format('Y-m-d') : null,

@@ -159,7 +159,7 @@ class DashboardPeriodActivityTest extends TestCase
             'date' => '2026-08-11',
             'origin_location_id' => $this->loc1->id,
             'destination_location_id' => $this->loc2->id,
-            'status' => TransferStatus::SENT->value,
+            'status' => TransferStatus::IN_TRANSIT->value,
             'created_by' => $this->admin->id,
             'received_at' => null,
         ]);

@@ -224,7 +224,7 @@ class FreezeInfrastructureTest extends TestCase
             'origin_location_id' => $this->locationA->id,
             'destination_location_id' => $this->locationB->id,
             'transfer_date' => now()->format('Y-m-d'),
-            'status' => TransferStatus::SENT,
+            'status' => TransferStatus::IN_TRANSIT,
             'created_by' => $this->user->id,
         ]);
         $transfer->items()->create(['product_id' => $this->product->id, 'quantity' => '10.0000']);

@@ -70,9 +70,11 @@ class PostStockReceiptAction
                 throw new DomainException('One or more locations in this document are no longer active.', 422);
             }
 
-            $supplier = Supplier::find($lockedReceipt->supplier_id);
-            if (! $supplier || ! $supplier->is_active) {
-                throw new DomainException('The supplier is no longer active.', 422);
+            if ($lockedReceipt->supplier_id) {
+                $supplier = Supplier::find($lockedReceipt->supplier_id);
+                if (! $supplier || ! $supplier->is_active) {
+                    throw new DomainException('The supplier is no longer active.', 422);
+                }
             }
 
             $dtos = [];
@@ -81,12 +83,13 @@ class PostStockReceiptAction
                     productId: $item->product_id,
                     locationId: $item->location_id,
                     quantity: (string) $item->quantity,
-                    movementType: MovementType::RECEIPT,
+                    movementType: MovementType::RECEIPT_GA,
                     referenceType: StockReceipt::class,
                     referenceId: $lockedReceipt->id,
                     referenceNumber: $lockedReceipt->receipt_number,
                     userId: $userId ?? $lockedReceipt->created_by,
-                    occurredAt: clone $lockedReceipt->date
+                    occurredAt: clone $lockedReceipt->date,
+                    condition: 'GOOD'
                 );
             }
 

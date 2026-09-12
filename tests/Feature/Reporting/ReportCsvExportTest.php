@@ -151,7 +151,7 @@ class ReportCsvExportTest extends TestCase
         $issue = StockIssue::create(['issue_number' => 'IS-001', 'date' => '2026-08-05', 'purpose' => 'Production', 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id]);
         StockIssueItem::create(['stock_issue_id' => $issue->id, 'product_id' => $this->product->id, 'location_id' => $this->loc1->id, 'quantity' => 10.0000]);
 
-        $transfer = StockTransfer::create(['transfer_number' => 'TR-001', 'origin_location_id' => $this->loc1->id, 'destination_location_id' => $this->loc2->id, 'status' => 'SENT', 'sent_at' => now(), 'created_by' => $this->admin->id, 'sent_by' => $this->admin->id, 'transfer_date' => now()->toDateString()]);
+        $transfer = StockTransfer::create(['transfer_number' => 'TR-001', 'origin_location_id' => $this->loc1->id, 'destination_location_id' => $this->loc2->id, 'status' => 'IN_TRANSIT', 'sent_at' => now(), 'created_by' => $this->admin->id, 'sent_by' => $this->admin->id, 'transfer_date' => now()->toDateString()]);
         StockTransferItem::create(['stock_transfer_id' => $transfer->id, 'product_id' => $this->product->id, 'quantity' => 20.0000]);
 
         $adj = StockAdjustment::create(['adjustment_number' => 'ADJ-001', 'adjustment_date' => '2026-08-05', 'location_id' => $this->loc1->id, 'direction' => 'INCREASE', 'reason_code' => 'FOUND', 'status' => 'POSTED', 'posted_at' => now(), 'created_by' => $this->admin->id, 'posted_by' => $this->admin->id]);
@@ -653,7 +653,7 @@ class ReportCsvExportTest extends TestCase
             'transfer_number' => 'TR-SENT-01',
             'origin_location_id' => $this->loc1->id,
             'destination_location_id' => $this->loc2->id,
-            'status' => 'SENT',
+            'status' => 'IN_TRANSIT',
             'sent_at' => '2026-08-05 10:00:00',
             'created_by' => $this->admin->id,
             'sent_by' => $this->admin->id,
@@ -675,9 +675,9 @@ class ReportCsvExportTest extends TestCase
         ]);
         StockTransferItem::create(['stock_transfer_id' => $transferRec->id, 'product_id' => $this->product->id, 'quantity' => 25.0000]);
 
-        // status=SENT & date_basis=SENT_AT -> 200
+        // status=IN_TRANSIT & date_basis=SENT_AT -> 200
         $resSent = $this->actingAs($this->staffLoc1, 'sanctum')
-            ->get('/api/v1/reports/stock-transfers/export?status=SENT&date_basis=SENT_AT')
+            ->get('/api/v1/reports/stock-transfers/export?status=IN_TRANSIT&date_basis=SENT_AT')
             ->assertStatus(200);
         $contentSent = $resSent->streamedContent();
         $this->assertStringContainsString('TR-SENT-01', $contentSent);
@@ -690,9 +690,9 @@ class ReportCsvExportTest extends TestCase
         $contentRec = $resRec->streamedContent();
         $this->assertStringContainsString('TR-REC-01', $contentRec);
 
-        // Invalid status=SENT & date_basis=RECEIVED_AT -> 422
+        // Invalid status=IN_TRANSIT & date_basis=RECEIVED_AT -> 422
         $this->actingAs($this->staffLoc1, 'sanctum')
-            ->getJson('/api/v1/reports/stock-transfers/export?status=SENT&date_basis=RECEIVED_AT')
+            ->getJson('/api/v1/reports/stock-transfers/export?status=IN_TRANSIT&date_basis=RECEIVED_AT')
             ->assertStatus(422);
     }
 
