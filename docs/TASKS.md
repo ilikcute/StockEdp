@@ -187,3 +187,21 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - npm run build: PASSED (built in 2.59s, 0 errors).
   - php artisan test: Berjalan.
 - **Status**: SELESAI.
+
+---
+
+### [2026-09-12] Penyempurnaan Unnesting Paginated Movement & Verifikasi Komprehensif
+- **Perbaikan Frontend**:
+  - `useInventoryStore.js`: Memperbaiki ekstraksi array paginasi `data.data` agar struktur payload `StockMovementResource` ter-unpack secara akurat sebagai array, bukan raw object.
+  - `StockMovementPage.vue`: Menambahkan pengamanan resolusi `item.id` sebelum memanggil `fetchMovementById`.
+- **Verifikasi Visual Browser (E2E)**:
+  - **Stock Movement Detail**: Tombol "Detail" pada baris pergerakan stok sukses membuka modal `StockMovementDetailModal` dengan data mutasi riil (Produk, Lokasi, Operator, Mutasi Stok Sebelum/Sesudah, Referensi Transaksi) tanpa error.
+  - **Health Indicator**: Badge status hijau "Sistem Normal" tampil di header dengan status polling aktif dan aksi refresh manual.
+  - **Dashboard Location**: Dropdown lokasi menampilkan format badge tipe lokasi (Gudang Induk, Teknisi, Gudang Afkir).
+  - **Category Edit**: Modal edit kategori memuat data langsung dari endpoint API `show`.
+- **Verifikasi Automated Test Suite**:
+  - 410+ tes fitur dan unit lulus 100% (Unit, Health, Category, User, Location, Product, Store, Supplier, Unit Feature, Dashboard, StoreAllocation, Auth, Security, Reporting, Shared, MasterDataImport, Replenishment, Integrity).
+- **Git**:
+  - Commit `65ee111`: `fix(inventory): unpack nested paginated movements data in useInventoryStore`.
+  - Pushed to `origin/main`.
+- **Status**: SELESAI & TERVERIFIKASI.
