@@ -49,9 +49,9 @@
             <option
               v-for="loc in masterStore.locations"
               :key="loc.id"
-              :value="loc.id"
+              :value="String(loc.id)"
             >
-              {{ loc.name }}
+              {{ loc.code ? loc.code + ' — ' : '' }}{{ loc.name }}
             </option>
           </select>
         </div>
@@ -358,40 +358,38 @@
     <!-- Pagination -->
     <div
       v-if="store.meta?.total > 0"
-      class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm"
+      class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2.5 sm:px-4 rounded-lg shadow-xs"
     >
-      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <p class="text-sm text-gray-700">
+          <p class="text-xs text-gray-700">
             Menampilkan
-            <span class="font-medium">{{ store.meta.from }}</span>
+            <span class="font-semibold text-gray-900">{{ store.meta.from }}</span>
             sampai
-            <span class="font-medium">{{ store.meta.to }}</span>
+            <span class="font-semibold text-gray-900">{{ store.meta.to }}</span>
             dari
-            <span class="font-medium">{{ store.meta.total }}</span>
-            hasil
+            <span class="font-semibold text-gray-900">{{ store.meta.total }}</span>
+            item persediaan
           </p>
         </div>
-        <div>
-          <nav
-            class="isolate inline-flex -space-x-px rounded-md shadow-sm"
-            aria-label="Pagination"
+        <div class="flex items-center gap-1.5 self-end sm:self-auto">
+          <button
+            :disabled="store.meta.current_page === 1"
+            class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium text-gray-700 bg-white ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            @click="changePage(store.meta.current_page - 1)"
           >
-            <button
-              :disabled="store.meta.current_page === 1"
-              class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-              @click="changePage(store.meta.current_page - 1)"
-            >
-              Previous
-            </button>
-            <button
-              :disabled="store.meta.current_page === store.meta.last_page"
-              class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 ml-2"
-              @click="changePage(store.meta.current_page + 1)"
-            >
-              Next
-            </button>
-          </nav>
+            &larr; Sebelumnya
+          </button>
+          <span class="text-xs text-gray-500 font-mono px-1.5">
+            Hal. {{ store.meta.current_page }} / {{ store.meta.last_page }}
+          </span>
+          <button
+            :disabled="store.meta.current_page === store.meta.last_page"
+            class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium text-gray-700 bg-white ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            @click="changePage(store.meta.current_page + 1)"
+          >
+            Berikutnya &rarr;
+          </button>
         </div>
       </div>
     </div>

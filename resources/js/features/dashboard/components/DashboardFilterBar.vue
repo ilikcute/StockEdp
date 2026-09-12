@@ -137,6 +137,7 @@ const findMainWarehouse = (locs) => {
 const handleLocationChange = (event) => {
   hasUserSelected.value = true;
   emit('update:locationId', event.target.value);
+  emit('update:location-id', event.target.value);
 };
 
 // Format location option label with type indicator
@@ -159,6 +160,7 @@ watch(
       const mainWarehouse = findMainWarehouse(newLocations);
       if (mainWarehouse) {
         emit('update:locationId', mainWarehouse.id);
+        emit('update:location-id', mainWarehouse.id);
       }
     }
   },

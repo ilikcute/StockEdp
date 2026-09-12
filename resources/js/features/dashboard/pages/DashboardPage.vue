@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useDashboard } from '../composables/use_dashboard';
 import DashboardFilterBar from '../components/DashboardFilterBar.vue';
 import InventoryHealthCards from '../components/InventoryHealthCards.vue';
@@ -141,6 +141,16 @@ const { loading, error, dashboardData, filters, fetchDashboard } = useDashboard(
 const onFilterChange = () => {
   fetchDashboard();
 };
+
+// Reaktif terhadap perubahan filters (misal ketika auto-select gudang induk aktif)
+watch(
+  () => [filters.location_id, filters.period],
+  (newVals, oldVals) => {
+    if (oldVals && (newVals[0] !== oldVals[0] || newVals[1] !== oldVals[1])) {
+      fetchDashboard();
+    }
+  }
+);
 
 const formatTimestamp = (isoString) => {
   if (!isoString) return '-';

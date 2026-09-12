@@ -212,6 +212,16 @@ const resetFilters = () => {
 };
 
 onMounted(async () => {
+    if (route.query.origin_location_id) {
+        filters.origin_location_id = String(route.query.origin_location_id);
+    }
+    if (route.query.destination_location_id) {
+        filters.destination_location_id = String(route.query.destination_location_id);
+    }
+    if (route.query.search) {
+        filters.search = String(route.query.search);
+    }
     await masterStore.fetchBaseOptions();
+    fetchData(1);
 });
 </script>

@@ -22,8 +22,17 @@ export const useLowStockReportStore = defineStore('lowStockReport', {
             try {
                 const response = await reportingApi.getLowStock(params);
                 if (requestId !== latestRequestId) return;
-                this.data = response.data.data;
-                this.meta = response.data.meta;
+                const payload = response.data;
+                if (payload?.data && Array.isArray(payload.data.data)) {
+                    this.data = payload.data.data;
+                    this.meta = payload.data.meta || null;
+                } else if (Array.isArray(payload?.data)) {
+                    this.data = payload.data;
+                    this.meta = payload.meta || null;
+                } else {
+                    this.data = [];
+                    this.meta = null;
+                }
                 this.status = response.status;
             } catch (error) {
                 if (requestId !== latestRequestId) return;

@@ -23,9 +23,20 @@ export const useStockCardReportStore = defineStore('stockCardReport', {
             try {
                 const response = await reportingApi.getStockCard(params);
                 if (requestId !== latestRequestId) return;
-                this.data = response.data.data;
-                this.meta = response.data.meta;
-                this.summary = response.data.summary;
+                const payload = response.data;
+                if (payload?.data && Array.isArray(payload.data.data)) {
+                    this.data = payload.data.data;
+                    this.meta = payload.data.meta || null;
+                    this.summary = payload.data.meta?.summary || payload.data.summary || null;
+                } else if (Array.isArray(payload?.data)) {
+                    this.data = payload.data;
+                    this.meta = payload.meta || null;
+                    this.summary = payload.meta?.summary || payload.summary || null;
+                } else {
+                    this.data = [];
+                    this.meta = null;
+                    this.summary = null;
+                }
                 this.status = response.status;
             } catch (error) {
                 if (requestId !== latestRequestId) return;
