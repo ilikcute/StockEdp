@@ -212,7 +212,10 @@ const showDetailModal = ref(false);
 
 const openDetail = async (item) => {
     showDetailModal.value = true;
-    await inventoryStore.fetchMovementById(item.id);
+    const movementId = item?.id;
+    if (movementId) {
+        await inventoryStore.fetchMovementById(movementId);
+    }
 };
 
 let debounceTimer = null;

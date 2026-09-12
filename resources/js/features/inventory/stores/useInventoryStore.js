@@ -19,8 +19,11 @@ export const useInventoryStore = defineStore('inventory', {
             this.error = null;
             try {
                 const response = await inventoryApi.getMovements(params);
-                const data = response.data?.data || [];
-                const meta = response.data?.meta || {};
+                const rawPayload = response.data?.data;
+                const data = Array.isArray(rawPayload)
+                    ? rawPayload
+                    : (Array.isArray(rawPayload?.data) ? rawPayload.data : []);
+                const meta = rawPayload?.meta || response.data?.meta || {};
                 const page = Number(meta.current_page) || Number(params.page) || 1;
                 const perPage = Number(meta.per_page) || Number(params.per_page) || 15;
                 const total = Number(meta.total) || data.length;
