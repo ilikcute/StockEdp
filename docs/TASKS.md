@@ -203,5 +203,7 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - 410+ tes fitur dan unit lulus 100% (Unit, Health, Category, User, Location, Product, Store, Supplier, Unit Feature, Dashboard, StoreAllocation, Auth, Security, Reporting, Shared, MasterDataImport, Replenishment, Integrity).
 - **Git**:
   - Commit `65ee111`: `fix(inventory): unpack nested paginated movements data in useInventoryStore`.
+  - Commit `cbd3112`: `docs: update task log with E2E browser verification and test suite results`.
+  - Commit `36c3f9c`: `fix(reporting,dashboard): unpack nested report pagination and support click-through filters`.
   - Pushed to `origin/main`.
 - **Status**: SELESAI & TERVERIFIKASI.
