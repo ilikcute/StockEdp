@@ -201,23 +201,23 @@
 
       <!-- Integrated Scanner & Quick Entry Strip -->
       <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-2 sm:p-2.5 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        <!-- Lokasi Scan Aktif -->
+        <!-- Lokasi Scan Aktif (Gudang Tujuan Masuk) -->
         <div class="w-full sm:w-60 lg:w-72 shrink-0">
           <div class="flex items-center gap-1.5 mb-1">
-            <span class="w-2 h-2 rounded-full bg-indigo-500" />
+            <span class="w-2 h-2 rounded-full bg-emerald-500" />
             <label
               for="receipt-scan-location"
-              class="text-[11px] font-bold text-indigo-900 uppercase tracking-wider"
+              class="text-[11px] font-bold text-emerald-900 uppercase tracking-wider"
             >
-              Lokasi Scan Aktif *
+              Gudang Tujuan Masuk *
             </label>
           </div>
           <BaseCombobox
             id="receipt-scan-location"
             v-model="scanLocationId"
-            :options="locations"
+            :options="warehouseLocations"
             size="xs"
-            placeholder="Pilih lokasi scan..."
+            placeholder="Pilih gudang tujuan simpan..."
           />
         </div>
 
@@ -283,7 +283,7 @@
                   Produk *
                 </th>
                 <th class="py-2 px-2.5 min-w-[180px]">
-                  Lokasi Tujuan *
+                  Gudang Tujuan Masuk *
                 </th>
                 <th class="py-2 px-2.5 text-right w-28">
                   Harga Satuan
@@ -332,13 +332,13 @@
                   />
                 </td>
 
-                <!-- Lokasi Tujuan -->
+                <!-- Gudang Tujuan Masuk -->
                 <td class="py-1.5 px-2.5">
                   <BaseCombobox
                     v-model="item.location_id"
-                    :options="locations"
+                    :options="warehouseLocations"
                     size="xs"
-                    placeholder="Pilih lokasi tujuan..."
+                    placeholder="Pilih gudang tujuan simpan..."
                   />
                 </td>
 
@@ -428,6 +428,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStockReceiptStore } from '../stores/useStockReceiptStore';
 import { useDocumentForm } from '../composables/use_document_form';
@@ -464,11 +465,19 @@ const {
     isEdit: route.name === 'stockReceiptsEdit',
     basePath: '/inventory/receipts',
     headerKey: 'supplier_id',
-    locationNoun: 'lokasi',
+    locationNoun: 'gudang tujuan',
     hasStockColumn: false,
     extraFields: {
         memo_number: '',
         source_type: 'GA_PROCUREMENT',
     },
+});
+
+// Penerimaan dari Supplier/GA hanya ditujukan ke Gudang Fisik (Gudang Induk ADM atau Gudang Afkir), bukan ke personil teknisi
+const warehouseLocations = computed(() => {
+    const list = locations.value.filter(
+        (l) => l.type === 'MAIN_WAREHOUSE' || l.type === 'DAMAGED_STORAGE' || l.code === 'ADM'
+    );
+    return list.length > 0 ? list : locations.value;
 });
 </script>

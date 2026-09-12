@@ -370,5 +370,60 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - `php artisan test tests/Feature/Inventory/`: 100% PASSED (InventoryApiTest & StockReceiptTest).
 - **Status**: SELESAI & TERVERIFIKASI.
 
+---
 
+### [2026-09-13] Penyempurnaan Konteks & Default Lokasi pada StockIssueFormPage dan StockReceiptFormPage
+- **Konteks & Kebutuhan Pengguna**:
+  1. Pada `StockIssueFormPage.vue`, saat pengguna mencoba simulasi alokasi barang, dropdown Lokasi Asal tidak memuat data atau tidak ter-default ke Gudang Induk.
+  2. Pada `StockReceiptFormPage.vue` (Penerimaan Barang), pengguna mempertanyakan keberadaan opsi lokasi karena barang yang masuk dari GA/Supplier semestinya langsung ditujukan ke Gudang Induk (bukan lokasi asal, dan tidak relevan jika menampilkan lokasi teknisi lapangan).
+- **Hasil Investigasi & Akar Masalah**:
+  1. **Otorisasi Lokasi Non-Admin**: Pada model `User.php`, method `getAllowedLocationIds()` sebelumnya hanya mengecek pivot `user_locations`. Karena pengguna teknisi/gudang belum di-assign spesifik di pivot (sesuai arahan UI "Kosongkan jika diizinkan akses seluruh lokasi"), pemanggilan API dengan filter `assigned_only=1` mengembalikan array kosong `[]`.
+  2. **Pengurutan Default Lokasi**: Backend `LocationRepository` mengurutkan lokasi `created_at desc`, sehingga elemen indeks 0 (`locations[0]`) yang diambil oleh composable form adalah `AFKIR` (Gudang Isolasi Afkir) alih-alih `ADM EDP` (Gudang Induk).
+  3. **Relevansi Lokasi Penerimaan**: Pada modul Penerimaan Stok (`StockReceipt`), barang pengadaan GA / supplier secara bisnis hanya masuk ke gudang fisik (`MAIN_WAREHOUSE` atau `DAMAGED_STORAGE`), sehingga memunculkan 12 nama teknisi lapangan di dropdown penerimaan menimbulkan kerancuan apakah itu lokasi asal atau tujuan.
+- **Pekerjaan yang Dilakukan**:
+  1. **Fallback Cerdas Akses Lokasi (`User.php`)**:
+     - Memperbarui `getAllowedLocationIds()`: Jika pivot `user_locations` belum di-set, sistem otomatis memberikan akses ke lokasi personal milik user (`user_id = $this->id`) ditambah Gudang Induk (`MAIN_WAREHOUSE`), atau seluruh lokasi aktif jika pengguna belum dibatasi.
+  2. **Prioritas Gudang Induk (`use_document_form.js`)**:
+     - Mengubah pemanggilan master lokasi dengan pengurutan `sort_by=id&sort_order=asc`.
+     - Mengunci default `scanLocationId` dan lokasi baris item baru ke lokasi bertipe `MAIN_WAREHOUSE` (`ADM EDP`).
+  3. **Penyempurnaan Form Penerimaan (`StockReceiptFormPage.vue`)**:
+     - Membuat computed `warehouseLocations` untuk memfilter opsi hanya lokasi gudang fisik (`MAIN_WAREHOUSE` dan `DAMAGED_STORAGE`), menyembunyikan lokasi teknisi yang tidak relevan untuk penerimaan dari supplier.
+     - Memperjelas label menjadi **"Gudang Tujuan Masuk *"** dan placeholder **"Pilih gudang tujuan simpan..."** baik pada Barcode Scanner maupun tabel item untuk menegaskan bahwa ini adalah lokasi penampungan barang masuk, bukan lokasi asal.
+- **Verifikasi**:
+  - `php artisan test tests/Feature/Location/LocationManagementTest.php`: 9 passed (30 assertions).
+  - `php artisan test tests/Feature/Inventory/StockIssueTest.php tests/Feature/Inventory/StockReceiptTest.php`: 14 passed (33 assertions).
+  - `npm run build`: PASSED (built in 5.24s, 0 errors).
+- **Status**: SELESAI & TERVERIFIKASI.
 
+### [2026-09-13] Standarisasi Tampilan Kompak & Ergonomis (Zero-Scroll Layout) Seluruh Form Transaksi Inventaris
+- **Konteks & Kebutuhan Pengguna**:
+  Menyusul keberhasilan refaktorisasi `StockReceiptFormPage.vue`, pengguna meminta perbaikan dan penyelarasan yang sama pada seluruh form operasional transaksi inventaris lainnya:
+  1. `StockIssueFormPage.vue` (Pengeluaran Stok)
+  2. `StockTransferFormPage.vue` (Transfer Stok Antar Gudang)
+  3. `StockAdjustmentFormPage.vue` (Penyesuaian Stok / Adjustment)
+  4. `StockOpnameFormPage.vue` (Inisiasi Sesi Stock Opname)
+  5. `StoreAllocationFormPage.vue` (Alokasi Penggantian Unit Toko)
+  6. `StockReceiptFormPage.vue` (Penerimaan Stok - dipastikan tetap konsisten)
+- **Pekerjaan yang Dilakukan**:
+  1. **Header Toolbar Terpadu & Ringkasan KPI Chips**:
+     - Setiap form dilengkapi header bar ramping dengan Judul Dokumen, Status Badge (`Draft Baru` / `Edit Draft` / `Unit Toko`), tombol Kembali, tombol Batal, serta tombol Simpan Utama bershortcut **F9** (`Simpan Draft` / `Simpan Alokasi Toko`).
+     - Menampilkan indikator performa utama (KPI Chips) secara real-time: Jumlah Item/Baris, Total Kuantitas (Qty), dan Total Estimasi Nominal Nilai (Rupiah).
+  2. **Metadata Strip 1-Baris**:
+     - Formulir header dokumen dipadatkan menjadi 1 baris grid horizontal fleksibel dengan micro-label (`text-[11px] font-semibold text-gray-600`) dan input/select berukuran ringkas (`py-1.5 px-2.5 text-xs`).
+  3. **Scanner & Fast Entry Terintegrasi (Shortcut F2)**:
+     - Mengintegrasikan `BarcodeScannerPanel` dengan prop `:compact="true"`, pemilih lokasi scan/teknisi aktif, dan tombol penambahan baris manual sebaris tepat di atas tabel item.
+     - Penekanan tombol keyboard **F2** otomatis mengarahkan fokus kursor ke input scanner.
+  4. **Tabel & Kontainer Berdensitas Tinggi (High-Density)**:
+     - `StockIssueFormPage`, `StockTransferFormPage`, dan `StockAdjustmentFormPage`: Menggunakan tabel responsif dengan sticky table header (`bg-gray-50/95 backdrop-blur-xs`), padding sel kompak (`py-1.5 px-2.5`), badge peringatan sisa stok, dan sticky table footer yang menampilkan Grand Total Qty & Rupiah.
+     - `StockOpnameFormPage`: Seluruh formulir inisiasi opname dan kotak informasi diringkas menjadi 1 tampilan berorientasi horizontal (~320px tinggi total) yang langsung tampak 100% tanpa perlu scroll.
+     - `StoreAllocationFormPage`: Kartu baris bertumpuk yang sebelumnya sangat boros ruang direfaktor menjadi strip dual-unit yang rapi: baris unit baru (GOOD) dan opsi toggle unit lama ditarik (DEFECTIVE) di dalam kontainer internal scrollable `max-h-[calc(100vh-310px)]`.
+- **Hasil Verifikasi**:
+  - **Pengujian Browser (Viewport Standar 1536x730)**:
+    - `StockIssueFormPage.vue`: `scrollHeight: 730px` (Zero-Scroll Viewport Alignment).
+    - `StockTransferFormPage.vue`: `scrollHeight: 730px` (Zero-Scroll Viewport Alignment).
+    - `StockAdjustmentFormPage.vue`: `scrollHeight: 730px` (Zero-Scroll Viewport Alignment).
+    - `StockOpnameFormPage.vue`: `scrollHeight: 730px` (Zero-Scroll Viewport Alignment).
+    - `StoreAllocationFormPage.vue`: `scrollHeight: 730px` (Zero-Scroll Viewport Alignment).
+  - **Frontend Compilation (`npm run build`)**: PASSED (built in 2.71s, 0 errors).
+  - **Backend Feature Tests (`php artisan test tests/Feature/Inventory/`)**: PASSED (79 tests passed, 213 assertions, 0 failures).
+- **Status**: SELESAI & TERVERIFIKASI LENGKAP.

@@ -45,7 +45,7 @@ export function useDocumentForm(config) {
         try {
             const tasks = [
                 productApi.getAll({ is_active: 1, per_page: 1000 }),
-                locationApi.getAll({ is_active: 1, assigned_only: 1, per_page: 1000 }),
+                locationApi.getAll({ is_active: 1, assigned_only: 1, per_page: 1000, sort_by: 'id', sort_order: 'asc' }),
             ];
             if (headerKey === 'supplier_id') {
                 tasks.unshift(supplierApi.getAll({ is_active: 1, per_page: 500 }));
@@ -59,7 +59,14 @@ export function useDocumentForm(config) {
             locations.value = locRes.data?.data?.data || locRes.data?.data || [];
 
             if (locations.value.length > 0) {
-                scanLocationId.value = locations.value[0].id;
+                const mainWarehouse = locations.value.find((l) => l.type === 'MAIN_WAREHOUSE' || l.code === 'ADM');
+                scanLocationId.value = mainWarehouse ? mainWarehouse.id : locations.value[0].id;
+                // Jika form items baru di-inisialisasi tanpa location_id, set ke Gudang Induk
+                form.value.items.forEach((item) => {
+                    if (!item.location_id) {
+                        item.location_id = scanLocationId.value;
+                    }
+                });
             }
         } catch {
             errorMsg.value = headerKey === 'supplier_id'

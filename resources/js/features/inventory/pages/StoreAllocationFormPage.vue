@@ -1,28 +1,90 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 space-y-6">
-    <div class="sm:flex sm:items-center justify-between">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Catat Alokasi Penggantian Unit Toko
-        </h1>
-        <p class="mt-1 text-sm text-gray-600">
-          Penggantian unit operasional toko: catat unit bagus yang dipasang dan penarikan unit rusak oleh teknisi.
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0 flex gap-2">
+  <div class="space-y-2.5">
+    <!-- Top Compact Header Bar & KPI Summary -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <!-- Left: Title & Status -->
+      <div class="flex items-center gap-2.5">
         <router-link
           to="/inventory/store-allocations"
-          class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 cursor-pointer"
+          class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+          title="Kembali ke daftar alokasi unit"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+        </router-link>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-gray-900 leading-tight">
+              Alokasi Penggantian Unit Toko
+            </h1>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-teal-50 text-teal-700 border border-teal-200 uppercase tracking-wide">
+              Unit Toko
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-500 hidden sm:block">
+            Pencatatan unit operasional toko (pemasangan unit bagus & penarikan unit rusak).
+          </p>
+        </div>
+      </div>
+
+      <!-- Middle: KPI Summary Chips -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+          <span class="text-gray-500 font-medium">Baris:</span>
+          <span class="font-bold text-gray-800 font-mono">{{ form.items.length }}</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
+          <span class="text-emerald-700 font-medium">Pasang (GOOD):</span>
+          <span class="font-black text-emerald-800 font-mono">{{ totalInstallQty }}</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg text-xs">
+          <span class="text-amber-700 font-medium">Tarik (DEFECTIVE):</span>
+          <span class="font-black text-amber-800 font-mono">{{ totalPullQty }}</span>
+        </div>
+      </div>
+
+      <!-- Right: Main Actions -->
+      <div class="flex items-center gap-2 self-end md:self-auto">
+        <router-link
+          to="/inventory/store-allocations"
+          class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 border border-gray-300 shadow-2xs hover:bg-gray-50 transition-colors cursor-pointer"
         >
           Batal
         </router-link>
         <button
+          id="btn-save-allocation"
           type="button"
           :disabled="isSubmitting"
-          class="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:opacity-50 cursor-pointer"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
+          title="Simpan Alokasi Toko (Shortcut: F9)"
           @click="submitAllocation"
         >
+          <svg
+            class="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+            />
+          </svg>
           <span>{{ isSubmitting ? 'Menyimpan...' : 'Simpan Alokasi Toko' }}</span>
+          <kbd class="hidden sm:inline-block font-mono text-[9px] bg-indigo-700/90 text-indigo-100 px-1 py-0.2 rounded border border-indigo-400 font-bold">F9</kbd>
         </button>
       </div>
     </div>
@@ -30,188 +92,278 @@
     <!-- Error Alert -->
     <div
       v-if="errorMsg"
-      class="rounded-lg bg-rose-50 border border-rose-200 p-4 text-sm text-rose-800"
+      class="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-800 flex items-center justify-between gap-2"
     >
-      {{ errorMsg }}
+      <div class="flex items-center gap-2">
+        <svg
+          class="w-4 h-4 text-rose-500 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{{ errorMsg }}</span>
+      </div>
+      <button
+        type="button"
+        class="text-rose-400 hover:text-rose-600 cursor-pointer"
+        @click="errorMsg = ''"
+      >
+        &times;
+      </button>
     </div>
 
-    <!-- Form Container -->
+    <!-- Form Section -->
     <form
-      class="space-y-6"
+      class="space-y-2.5"
       @submit.prevent="submitAllocation"
     >
-      <!-- Header Information -->
-      <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 bg-white shadow-xs rounded-xl border border-gray-200 p-4 sm:p-6">
-        <!-- Toko Tujuan -->
-        <div class="sm:col-span-3">
-          <label
-            for="store_id"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Toko Tujuan *
-          </label>
-          <BaseCombobox
-            id="store_id"
-            v-model="form.store_id"
-            :options="storeOptions"
-            :format-label="formatStoreLabel"
-            placeholder="Ketik kode atau nama toko (cth: T-001)..."
-            required
-          />
-        </div>
-
-        <!-- Lokasi Teknisi (Field Personnel) -->
-        <div class="sm:col-span-3">
-          <label
-            for="technician_location_id"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Teknisi / Lokasi Lapangan *
-          </label>
-          <BaseCombobox
-            id="technician_location_id"
-            v-model="form.technician_location_id"
-            :options="locationOptions"
-            placeholder="Pilih atau cari lokasi teknisi..."
-            required
-            @change="onLocationChanged"
-          />
-        </div>
-
-        <!-- Tanggal Alokasi -->
-        <div class="sm:col-span-2">
-          <label
-            for="allocated_at"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Tanggal Pemasangan *
-          </label>
-          <input
-            id="allocated_at"
-            v-model="form.allocated_at"
-            type="date"
-            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          >
-        </div>
-
-        <!-- Catatan -->
-        <div class="sm:col-span-4">
-          <label
-            for="notes"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Catatan Tambahan
-          </label>
-          <input
-            id="notes"
-            v-model="form.notes"
-            type="text"
-            placeholder="Keterangan alokasi/kondisi lapangan..."
-            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-        </div>
-      </div>
-
-      <!-- Barcode Scanner Section -->
-      <div class="bg-white p-4 sm:p-6 shadow-xs rounded-xl border border-gray-200 space-y-3">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <!-- Document Metadata Strip (Single Horizontal Grid) -->
+      <div class="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3 shadow-2xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <!-- Toko Tujuan -->
           <div>
-            <h2 class="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <span class="w-6 h-6 rounded bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">📷</span>
-              Barcode Scanner (Input Cepat Unit Pasang)
-            </h2>
-            <p class="text-xs text-gray-500">
-              Arahkan scanner barcode fisik atau ketik SKU / Barcode produk lalu tekan Enter [F2].
-            </p>
-          </div>
-          <div
-            v-if="isLoadingBalances"
-            class="flex items-center gap-1.5 text-xs text-indigo-600 font-medium"
-          >
-            <svg
-              class="animate-spin h-3.5 w-3.5 text-indigo-600"
-              fill="none"
-              viewBox="0 0 24 24"
+            <label
+              for="store_id"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
             >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              />
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8H4z"
-              />
-            </svg>
-            <span>Memperbarui saldo teknisi...</span>
+              Toko Tujuan *
+            </label>
+            <BaseCombobox
+              id="store_id"
+              v-model="form.store_id"
+              :options="storeOptions"
+              :format-label="formatStoreLabel"
+              size="xs"
+              placeholder="Cari kode/nama toko..."
+              required
+            />
+          </div>
+
+          <!-- Teknisi / Lokasi Lapangan -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label
+                for="technician_location_id"
+                class="block text-[11px] font-semibold text-gray-600"
+              >
+                Teknisi / Lokasi Lapangan *
+              </label>
+              <div
+                v-if="isLoadingBalances"
+                class="flex items-center gap-1 text-[10px] text-indigo-600"
+              >
+                <svg
+                  class="animate-spin h-3 w-3 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Cek saldo...</span>
+              </div>
+            </div>
+            <BaseCombobox
+              id="technician_location_id"
+              v-model="form.technician_location_id"
+              :options="locationOptions"
+              size="xs"
+              placeholder="Pilih lokasi teknisi..."
+              required
+              @change="onLocationChanged"
+            />
+          </div>
+
+          <!-- Tanggal Alokasi -->
+          <div>
+            <label
+              for="allocated_at"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              Tanggal Pemasangan *
+            </label>
+            <input
+              id="allocated_at"
+              v-model="form.allocated_at"
+              type="date"
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+              required
+            >
+          </div>
+
+          <!-- Catatan -->
+          <div>
+            <label
+              for="notes"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              Catatan Lapangan
+            </label>
+            <input
+              id="notes"
+              v-model="form.notes"
+              type="text"
+              placeholder="Keterangan alokasi/kondisi..."
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Integrated Scanner & Quick Entry Strip -->
+      <div class="bg-teal-50/50 border border-teal-100 rounded-xl p-2 sm:p-2.5 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <!-- Status Teknisi -->
+        <div class="w-full sm:w-60 shrink-0 flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-teal-200">
+          <span
+            class="w-2.5 h-2.5 rounded-full shrink-0"
+            :class="form.technician_location_id ? 'bg-teal-600' : 'bg-amber-400 animate-pulse'"
+          />
+          <div class="text-[11px] truncate">
+            <span
+              v-if="form.technician_location_id"
+              class="font-bold text-teal-900"
+            >
+              Teknisi Terpilih
+            </span>
+            <span
+              v-else
+              class="font-medium text-amber-700"
+            >
+              Pilih Teknisi Lapangan
+            </span>
           </div>
         </div>
 
-        <BarcodeScannerPanel
-          ref="scannerPanelRef"
-          :location-selected="Boolean(form.technician_location_id)"
-          label="Scan Barcode / SKU Unit Pasang"
-          placeholder="Scan barcode atau ketik SKU / Barcode produk dipasang... [F2]"
-          @scan-success="handleProductScanned"
-          @scan-error="(msg) => { errorMsg = msg; }"
-        />
-      </div>
+        <!-- Scanner Barcode Panel -->
+        <div class="flex-1 min-w-[200px]">
+          <BarcodeScannerPanel
+            ref="scannerPanelRef"
+            :compact="true"
+            :location-selected="Boolean(form.technician_location_id)"
+            label="Scan Barcode / SKU Unit Pasang"
+            placeholder="Scan barcode / ketik SKU produk dipasang [F2] lalu Enter..."
+            @scan-success="handleProductScanned"
+            @scan-error="(msg) => { errorMsg = msg; }"
+          />
+        </div>
 
-      <!-- Items Section -->
-      <div class="bg-white shadow-xs rounded-xl border border-gray-200 p-4 sm:p-6 space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-base font-semibold text-gray-900">
-              Daftar Unit Dipasang & Ditarik
-            </h2>
-            <p class="text-xs text-gray-500 mt-0.5">
-              Setiap unit baru (GOOD) akan memotong saldo teknisi. Jika ada unit rusak (DEFECTIVE) ditarik, saldo rusak teknisi akan bertambah otomatis.
-            </p>
-          </div>
+        <!-- Tombol Tambah Baris Manual -->
+        <div class="shrink-0 flex items-end">
           <button
+            id="btn-add-allocation-row"
             type="button"
-            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 shadow-xs ring-1 ring-inset ring-indigo-300 hover:bg-indigo-50 cursor-pointer"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-white border border-teal-200 px-3 py-1.5 text-xs font-semibold text-teal-800 shadow-2xs hover:bg-teal-50 hover:border-teal-300 transition-colors min-h-[36px] whitespace-nowrap cursor-pointer"
+            title="Tambah Baris Unit Kosong"
             @click="addRow"
           >
-            + Tambah Baris Unit
+            <svg
+              class="w-3.5 h-3.5 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            <span>+ Tambah Baris Unit</span>
           </button>
         </div>
+      </div>
 
-        <div class="space-y-4">
+      <!-- High-Density Items Card Container -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden flex flex-col">
+        <!-- Context Header Bar -->
+        <div class="px-3.5 py-2 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wider">
+              Daftar Unit Dipasang & Ditarik
+            </h3>
+            <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-md bg-gray-100 text-gray-600 font-mono">
+              {{ form.items.length }} baris unit
+            </span>
+          </div>
+          <span class="text-[11px] text-gray-400 font-mono hidden md:inline-block">
+            Tekan <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F2</kbd> ke Scanner &bull; <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F9</kbd> Simpan
+          </span>
+        </div>
+
+        <!-- Scrollable High-Density List Container -->
+        <div class="overflow-y-auto max-h-[calc(100vh-310px)] min-h-[200px] p-2.5 space-y-2">
           <div
             v-for="(row, idx) in form.items"
             :key="idx"
-            class="p-4 rounded-lg border border-gray-200 bg-gray-50/50 space-y-4 relative"
+            class="rounded-lg border border-gray-200 bg-gray-50/40 p-2.5 space-y-2 transition-colors hover:border-teal-200"
           >
-            <!-- Header Row -->
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2">
-              <span class="font-bold text-xs text-gray-700 flex items-center gap-1.5">
-                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">
-                  {{ idx + 1 }}
+            <!-- Top Strip: Row Number, Install Info & Delete -->
+            <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-md bg-teal-100 text-teal-800 flex items-center justify-center text-[10px] font-bold font-mono">
+                  #{{ idx + 1 }}
                 </span>
-                Baris Alokasi #{{ idx + 1 }}
-              </span>
+                <span class="text-[11px] font-bold text-gray-700">
+                  Unit Pasang & Tarik
+                </span>
+                <span
+                  v-if="row.has_pull"
+                  class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200"
+                >
+                  + Tarik Rusak
+                </span>
+              </div>
               <button
                 v-if="form.items.length > 1"
                 type="button"
-                class="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer"
+                class="text-[11px] text-rose-500 hover:text-rose-700 font-semibold cursor-pointer px-1.5 py-0.5 rounded hover:bg-rose-50 transition-colors"
                 @click="removeRow(idx)"
               >
                 Hapus Baris
               </button>
             </div>
 
-            <!-- Install Unit Section -->
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
-              <div class="sm:col-span-5">
-                <label class="block text-xs font-semibold text-emerald-800 uppercase tracking-wider mb-1">
-                  ✓ Unit Bagus Dipasang (GOOD) *
-                </label>
+            <!-- Install Unit Strip (GOOD) -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+              <!-- Produk Dipasang -->
+              <div class="sm:col-span-6">
+                <div class="flex items-center justify-between mb-0.5">
+                  <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
+                    ✓ Unit Bagus Dipasang (GOOD) *
+                  </span>
+                  <!-- Inline Stock Badge -->
+                  <div
+                    v-if="row.product_id"
+                    class="flex items-center gap-1 text-[10px]"
+                  >
+                    <span class="text-gray-400">Saldo Teknisi:</span>
+                    <span
+                      class="font-mono font-bold px-1 rounded text-[9px]"
+                      :class="getTechnicianStockNumber(row.product_id) > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                    >
+                      {{ getTechnicianStock(row.product_id) }}
+                    </span>
+                  </div>
+                </div>
                 <BaseCombobox
                   v-model="row.product_id"
                   :options="installProductOptions"
@@ -219,30 +371,18 @@
                   placeholder="Pilih / cari nama atau SKU produk..."
                   required
                 />
-                <!-- Stock Indicator below Combobox -->
-                <div
-                  v-if="row.product_id"
-                  class="mt-1.5 flex items-center justify-between text-[11px] bg-white px-2 py-1 rounded border border-gray-200"
-                >
-                  <span class="text-gray-500 font-medium">Sisa Stok Teknisi (GOOD):</span>
-                  <span
-                    class="font-mono font-bold px-1.5 py-0.2 rounded text-[10px]"
-                    :class="getTechnicianStockNumber(row.product_id) > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
-                  >
-                    {{ getTechnicianStock(row.product_id) }}
-                  </span>
-                </div>
-                <!-- Inline Warning if Quantity exceeds Stock -->
+                <!-- Warning Exceed Stock -->
                 <p
                   v-if="row.product_id && row.quantity > getTechnicianStockNumber(row.product_id)"
-                  class="mt-1 text-[11px] font-semibold text-rose-600 flex items-center gap-1"
+                  class="mt-0.5 text-[10px] font-semibold text-rose-600 flex items-center gap-1"
                 >
-                  ⚠ Kuantitas pasang ({{ row.quantity }}) melebihi sisa stok ({{ getTechnicianStock(row.product_id) }}).
+                  ⚠ Melebihi sisa stok ({{ getTechnicianStock(row.product_id) }}).
                 </p>
               </div>
 
-              <div class="sm:col-span-3">
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
+              <!-- Qty Pasang -->
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">
                   Qty Pasang *
                 </label>
                 <input
@@ -250,58 +390,63 @@
                   type="number"
                   min="1"
                   step="1"
-                  class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500 min-h-[36px]"
+                  class="block w-full rounded-md border-gray-300 text-xs py-1 px-2 font-mono font-bold text-gray-900 focus:border-teal-500 focus:ring-teal-500"
                   required
                 >
               </div>
 
+              <!-- Serial Number Unit Baru -->
               <div class="sm:col-span-4">
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                  Serial Number Unit Baru
+                <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">
+                  Serial Number Baru (Opsional)
                 </label>
                 <input
                   v-model="row.serial_number"
                   type="text"
                   placeholder="Contoh: SN-2026-001"
-                  class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500 min-h-[36px]"
+                  class="block w-full rounded-md border-gray-300 text-xs py-1 px-2 focus:border-teal-500 focus:ring-teal-500"
                 >
               </div>
             </div>
 
-            <!-- Pull Defective Toggle -->
-            <div class="pt-2 border-t border-dashed border-gray-200">
-              <label class="inline-flex items-center gap-2 cursor-pointer">
-                <input
-                  v-model="row.has_pull"
-                  type="checkbox"
-                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
-                  @change="onTogglePull(row)"
-                >
-                <span class="text-xs font-semibold text-amber-900">
-                  Ada unit lama ditarik dari toko (rusak)?
-                </span>
-              </label>
+            <!-- Pulled Unit Strip (DEFECTIVE) -->
+            <div class="pt-1.5 border-t border-dashed border-gray-200">
+              <div class="flex items-center justify-between">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    v-model="row.has_pull"
+                    type="checkbox"
+                    class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 h-3.5 w-3.5"
+                    @change="onTogglePull(row)"
+                  >
+                  <span class="text-[11px] font-semibold text-amber-900">
+                    Ada penarikan unit lama/rusak dari toko?
+                  </span>
+                </label>
+              </div>
 
-              <!-- Pulled Details -->
+              <!-- Pulled Details Inline -->
               <div
                 v-if="row.has_pull"
-                class="mt-3 p-3 bg-amber-50/60 rounded-md border border-amber-200 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end"
+                class="mt-1.5 p-2 bg-amber-50/70 rounded-md border border-amber-200 grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
               >
-                <div class="sm:col-span-4">
-                  <label class="block text-xs font-semibold text-amber-800 uppercase tracking-wider mb-1">
-                    ⚠ Unit Rusak Ditarik (DEFECTIVE) *
+                <!-- Produk Tarik -->
+                <div class="sm:col-span-5">
+                  <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">
+                    ⚠ Unit Rusak Ditarik *
                   </label>
                   <BaseCombobox
                     v-model="row.pulled_product_id"
                     :options="products"
                     size="xs"
-                    placeholder="Pilih / cari produk ditarik..."
+                    placeholder="Pilih produk ditarik..."
                     required
                   />
                 </div>
 
+                <!-- Qty Tarik -->
                 <div class="sm:col-span-2">
-                  <label class="block text-xs font-semibold text-amber-800 mb-1">
+                  <label class="block text-[10px] font-semibold text-amber-800 mb-0.5">
                     Qty Tarik *
                   </label>
                   <input
@@ -309,36 +454,62 @@
                     type="number"
                     min="1"
                     step="1"
-                    class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500 min-h-[36px]"
+                    class="block w-full rounded-md border-amber-300 text-xs py-1 px-2 font-mono font-bold text-gray-900 focus:border-amber-500 focus:ring-amber-500"
                     required
                   >
                 </div>
 
-                <div class="sm:col-span-3">
-                  <label class="block text-xs font-semibold text-amber-800 mb-1">
-                    Serial Number Rusak
+                <!-- Serial Number Rusak -->
+                <div class="sm:col-span-2">
+                  <label class="block text-[10px] font-semibold text-amber-800 mb-0.5">
+                    S/N Rusak
                   </label>
                   <input
                     v-model="row.pulled_serial_number"
                     type="text"
                     placeholder="S/N unit lama..."
-                    class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500 min-h-[36px]"
+                    class="block w-full rounded-md border-amber-300 text-xs py-1 px-2 focus:border-amber-500 focus:ring-amber-500"
                   >
                 </div>
 
+                <!-- Alasan Kerusakan -->
                 <div class="sm:col-span-3">
-                  <label class="block text-xs font-semibold text-amber-800 mb-1">
+                  <label class="block text-[10px] font-semibold text-amber-800 mb-0.5">
                     Alasan Kerusakan *
                   </label>
                   <input
                     v-model="row.defective_reason"
                     type="text"
-                    placeholder="Contoh: Mati total / Layar blank"
-                    class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500 min-h-[36px]"
+                    placeholder="Mati total / layar blank..."
+                    class="block w-full rounded-md border-amber-300 text-xs py-1 px-2 focus:border-amber-500 focus:ring-amber-500"
                     required
                   >
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-if="form.items.length === 0"
+            class="py-8 text-center"
+          >
+            <div class="flex flex-col items-center justify-center text-gray-400 text-xs">
+              <svg
+                class="w-7 h-7 text-gray-300 mb-1.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+              <span class="font-medium text-gray-500">Belum ada baris unit yang dialokasikan.</span>
+              <span class="text-[11px] text-gray-400 mt-0.5">Scan barcode produk dipasang di atas atau klik tombol "+ Tambah Baris Unit".</span>
             </div>
           </div>
         </div>
@@ -425,6 +596,14 @@ const installProductOptions = computed(() => {
             hasStock: (parseFloat(stock) || 0) > 0,
         };
     });
+});
+
+const totalInstallQty = computed(() => {
+    return form.value.items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
+});
+
+const totalPullQty = computed(() => {
+    return form.value.items.reduce((sum, i) => sum + (i.has_pull ? (Number(i.pulled_quantity) || 0) : 0), 0);
 });
 
 const getTechnicianStock = (productId) => {
@@ -566,13 +745,6 @@ const onTogglePull = (row) => {
     }
 };
 
-const handleKeyDown = (e) => {
-    if (e.key === 'F2') {
-        e.preventDefault();
-        scannerPanelRef.value?.focusInput();
-    }
-};
-
 const submitAllocation = async () => {
     errorMsg.value = '';
 
@@ -643,6 +815,16 @@ const submitAllocation = async () => {
         errorMsg.value = err.response?.data?.message || 'Gagal menyimpan alokasi toko.';
     } finally {
         isSubmitting.value = false;
+    }
+};
+
+const handleKeyDown = (e) => {
+    if (e.key === 'F2') {
+        e.preventDefault();
+        scannerPanelRef.value?.focusInput();
+    } else if (e.key === 'F9') {
+        e.preventDefault();
+        submitAllocation();
     }
 };
 

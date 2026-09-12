@@ -50,9 +50,31 @@ class User extends Authenticatable
             return Location::query()->where('is_active', true)->pluck('id')->toArray();
         }
 
-        return $this->locations()
+        $assignedIds = $this->locations()
             ->where('locations.is_active', true)
             ->pluck('locations.id')
             ->toArray();
+
+        if (! empty($assignedIds)) {
+            return $assignedIds;
+        }
+
+        $personalLocationIds = Location::query()
+            ->where('is_active', true)
+            ->where('user_id', $this->id)
+            ->pluck('id')
+            ->toArray();
+
+        if (! empty($personalLocationIds)) {
+            $mainWarehouseIds = Location::query()
+                ->where('is_active', true)
+                ->where('type', 'MAIN_WAREHOUSE')
+                ->pluck('id')
+                ->toArray();
+
+            return array_values(array_unique(array_merge($personalLocationIds, $mainWarehouseIds)));
+        }
+
+        return Location::query()->where('is_active', true)->pluck('id')->toArray();
     }
 }
