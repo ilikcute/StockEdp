@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  
+  <!-- Rounded Base -->
+  <rect width="512" height="512" rx="112" fill="url(#blueGrad)"/>
+  
+  <!-- Inner Box Symbol (Inventory & Warehousing) -->
+  <g filter="url(#shadow)" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Isometric Cube / Box -->
+    <path d="M256 112 L384 186 L256 260 L128 186 Z" fill="#ffffff" fill-opacity="0.25"/>
+    <path d="M128 186 L128 334 L256 408 L256 260 Z" fill="#ffffff" fill-opacity="0.15"/>
+    <path d="M384 186 L384 334 L256 408 L256 260 Z" fill="#ffffff" fill-opacity="0.35"/>
+    
+    <!-- Outer Outline -->
+    <path d="M256 112 L384 186 L384 334 L256 408 L128 334 L128 186 Z"/>
+    <path d="M256 260 L256 408"/>
+    <path d="M256 260 L128 186"/>
+    <path d="M256 260 L384 186"/>
+  </g>
+  
+  <!-- Highlight EDP badge -->
+  <circle cx="390" cy="122" r="42" fill="#10b981"/>
+  <path d="M374 122 L386 134 L408 112" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

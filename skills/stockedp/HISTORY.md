@@ -1,0 +1,289 @@
+# StockEdp — Condensed Project History
+
+Dokumen ini meringkas perjalanan proyek agar AI memahami bagaimana arsitektur dan keputusan saat ini terbentuk tanpa membaca seluruh chat.
+
+## Fase 1–4 — Fondasi
+
+Fondasi proyek dibangun sebagai Laravel + Vue 3 + MySQL dengan feature-first architecture.
+Fokus awal:
+
+- struktur modul;
+- autentikasi;
+- RBAC;
+- master data;
+- saldo/movement inventory;
+- transaction safety;
+- warehouse/location authorization;
+- idempotency dan concurrency.
+
+Fase 2 authentication/RBAC ditutup dengan automated tests dan lint/build PASS.
+Fase 4 sempat menemukan blocker location gate, inactive entity validation, lock handling, concurrency, dan double-submit; semuanya diperbaiki sebelum closure.
+
+## Fase 5 — Stock Transfer
+
+Implemented:
+
+- `stock_transfers`, `stock_transfer_items`;
+- number `TRF-YYYYMM-XXXX`;
+- Create/Update/Send/Receive/Cancel;
+- warehouse authorization;
+- active checks;
+- atomic number generation;
+- row locking;
+- concurrency tests;
+- maker/checker-compatible authorization.
+
+V1 decision: tanpa partial receipt dan reversal transfer.
+
+## Fase 6 — Stock Adjustment
+
+Implemented:
+
+- adjustment header/items;
+- DRAFT → POSTED/CANCELED;
+- reason/direction compatibility;
+- Create/Update/Post/Cancel actions;
+- maker-checker;
+- permissions/policy;
+- unique stock movement reference protection.
+
+Frontend blocker pernah terjadi karena Resource belum mengirim `creator_id` dan abilities. Diperbaiki agar maker-checker UX tidak menebak policy sendiri.
+
+## Fase 7 — Stock Opname
+
+### 7A Freeze Infrastructure
+
+Implemented `inventory_location_locks` dan `InventoryFreezeService`.
+Lokasi frozen menolak mutation normal.
+Global deterministic lock ordering ditetapkan untuk mengurangi deadlock.
+
+### 7B Stock Opname Domain
+
+Implemented:
+
+- DRAFT → IN_PROGRESS → COUNTED → POSTED;
+- CANCEL;
+- REOPEN COUNTED → IN_PROGRESS;
+- snapshot quantity;
+- blind count;
+- optimistic count version;
+- immutable count/reopen logs;
+- unexpected products;
+- maker-checker creator/counter restriction;
+- snapshot drift validation;
+- `OPNAME_IN`/`OPNAME_OUT` reconciliation;
+- freeze/unfreeze lifecycle.
+
+## Fase 8 — Reporting
+
+### 8A1
+
+Implemented reports:
+
+- inventory balances;
+- low stock;
+- stock card.
+
+Key decisions:
+
+- explicit allowed-location IDs into repository;
+- ledger order tied to movement identity to preserve `quantity_before/after` math even with backdated document dates;
+- report direction derived from exact balance delta;
+- date filters use Asia/Jakarta and half-open intervals.
+
+### 8A2
+
+Added transaction reports:
+
+- receipts;
+- issues;
+- transfers;
+- adjustments;
+- opnames.
+
+`DecimalQuantity` hardened to decimal string + BCMath and reject runtime float paths.
+Movement mapping uses class constants.
+Lock/deadlock handling and concurrency runner were audited.
+
+### 8B/8C Frontend + CSV
+
+Reporting UI completed.
+8 CSV exports implemented as synchronous streamed UTF-8 BOM responses with formula-injection protection, deterministic streaming, decimal passthrough, and location scoping.
+
+## Fase 9 — Hardening
+
+Security/integrity hardening included:
+
+- rollback testing;
+- movement/balance reconciliation;
+- sensitive data audit;
+- `.env` exclusion;
+- no secret in VITE variables;
+- rate limiting;
+- HTTP error contracts.
+
+Fase 9 closed.
+
+## Fase 10B — Release Foundation
+
+Added:
+
+- deterministic RoleAndPermissionSeeder;
+- interactive initial admin command;
+- installation/env/database docs;
+- backup/restore docs;
+- warehouse user guide;
+- ReleaseVerificationSeeder;
+- release acceptance/checklist docs.
+
+Automated quality gates closed clean.
+
+## Fase 10C-1 — Recoverability
+
+Performed actual backup/restore rehearsal.
+
+Accepted evidence included:
+
+- source `stockedp_release_rehearsal`;
+- restore `stockedp_release_restore_test`;
+- secure interactive password usage;
+- checksum;
+- source/restore parity across 22 data/pivot tables;
+- RBAC parity;
+- freeze-lock parity;
+- ledger integrity.
+
+## Fase 10C-2 — Canonical UAT
+
+12/12 operational scenarios passed.
+
+Critical lessons:
+
+- Maker-checker cannot be proven merely by a 403 from a role that lacks POST permission. A capable creator/counter must be rejected while a distinct capable checker succeeds.
+- Location scope/IDOR was explicitly verified.
+- Blind count was verified via raw API response.
+- 429 behavior preserved Retry-After without unwanted logout/form reset.
+
+## Fase 10C-3 — Performance & Production-Like Verification
+
+Initial walkthrough was rejected because:
+
+- global max was incorrectly reported as 88.29ms while actual table max was 267.55ms;
+- “human” timing values were implausibly tiny backend-style timings;
+- required search/filter/detail matrix was incomplete;
+- production-like rehearsal was read-only/incomplete;
+- regression/discovery evidence was vague.
+
+After correction:
+
+- 17 base + 11 supplemental operations passed;
+- global API max 267.55ms;
+- 10 real browser workflows all <60 sec, max 12.637 sec;
+- full write rehearsal passed;
+- concurrency passed;
+- exact normalized test discovery 371/371;
+- full regression 371/371, 106,228 assertions;
+- focused reporting/CSV/reconciliation/release-integrity tests passed.
+
+## Fase 10C-4 — Release Candidate Acceptance
+
+Combined accepted 10C-1/2/3 evidence.
+Release Candidate accepted at:
+
+```text
+64e9e3c89bd0cff2d5fed7c60b94605054f2ecc7
+```
+
+10D intentionally remained separate.
+
+## Fase 10D — Independent Final Release Audit
+
+An early docs-only commit declared Stable too soon. It was rejected because no fresh independent 10D evidence was bound.
+
+Correction performed:
+
+- fresh source architecture audit;
+- decimal precision audit;
+- transaction/locking audit;
+- RBAC/maker-checker;
+- location IDOR;
+- opname freeze/blind count;
+- secret/artifact/dependency audit;
+- fresh normalized discovery;
+- fresh full regression;
+- critical focused suites;
+- Pint/ESLint/Vite/Optimize;
+- APP_DEBUG=false smoke;
+- pre/post source hash parity.
+
+Final evidence bound at:
+
+```text
+674dbf2e5b4d047fd8a67fee91a04f8caeb2b613
+```
+
+Version 1 then became legitimately:
+
+```text
+STABLE
+RELEASE READY
+NOT DEPLOYED
+NO TAG
+NO GITHUB RELEASE
+```
+
+## Post-Release-Readiness Database Clarification
+
+After V1 certification, database roles were clarified:
+
+```text
+stockedp                       = operational/release database
+stockedp_release_uat           = UAT/performance/rehearsal only
+stockedp_release_rehearsal     = recoverability source only
+stockedp_release_restore_test  = restore target only
+```
+
+Important discovery:
+
+- `migrate:fresh` does not create MySQL database schema;
+- database `stockedp` must be created first;
+- `.env.example` historically used `InventorySystem`, inconsistent with release docs using `stockedp`;
+- `DatabaseSeeder` historically creates an admin factory user with test default password, so `migrate:fresh --seed` is not release bootstrap;
+- release bootstrap uses `migrate`, `RoleAndPermissionSeeder`, then `app:create-initial-admin`.
+
+## Fase 11A — Master Data Bulk Import (Products, Categories, Units & Locations)
+
+- Implemented bulk import for 4 master entities: Categories, Units, Locations, Products.
+- Full cycle: Template download → CSV Upload & Native Parsing (`SplFileObject`) → Backend Validation & Preview (max 20 rows) / Error Table → Transactional Commit (CREATE ONLY, All-or-Nothing, SHA256 checksum verification).
+- Reusable Vue 3 modal component `MasterDataImportModal.vue` integrated into 4 master pages with granular permissions (`{type}.import`).
+- `LocationObserver` triggered automatically to create `inventory_location_locks` without automatic `user_locations` assignment.
+- Product barcode leading zeros preserved as strings; Product `minimum_stock` maintained as 2-decimal strings (`DECIMAL(12,2)`) with 0 PHP float.
+- 0 stock movements or balance records mutated.
+
+## Fase 12A — Operational Inventory Dashboard & Computed Alert Center
+
+- Read-only (`delta = 0`), location-scoped (`$user->getAllowedLocationIds()`), computed alerts, inventory health, operational queue, recent movement activity (max 10, created_at DESC), top issued/received products (max 10, ISSUE/RECEIPT only), period activity event-time basis, assignment-scoped filter options.
+- 100% Low Stock Count Parity dengan canonical Low Stock Report.
+- Zero PHP float quantity arithmetic; Zero JS Number quantity conversion on Vue UI.
+- All quick navigation buttons & alert action links permission-aware with semantic HTML focus/keyboard support.
+
+## Fase 12B — Barcode Scanner & Warehouse Mobile UX
+
+- HID-first hardware support (USB/Bluetooth Keyboard Wedge scanner, manual keyboard/numpad). Zero new dependencies (`0` composer/npm packages added).
+- Exact Barcode Lookup API (`GET /api/v1/products/barcode-lookup?barcode=...`) with `products.view` RBAC, leading-zero preservation (pure string), and active-only product constraint (409 on inactive, 404 on unknown). Read-only invariant (`delta = 0`).
+- Frontend Barcode Scanner Architecture: `BarcodeScannerPanel.vue`, `use_inventory_barcode_scanner.js` (with rapid sequential scan queue), and `decimal_string.js` (exact 4-decimal string arithmetic without JS float/Number).
+- Transaction Workflow Integrations:
+  - Stock Receipt: Scan product adds or increments quantity (`+1.0000`) for `(product_id, location_id)`.
+  - Stock Issue: Requires scan location, adds/increments item (`+1.0000`), displays available stock warning without float arithmetic.
+  - Stock Transfer: Requires origin/destination locations, adds/increments item (`+1.0000`) per `product_id`.
+  - Stock Opname: Scan locates/scrolls/focuses item row without auto-increment (`≠ +1.0000`); opens unexpected product modal if permitted; preserves blind count mode (snapshot/system quantities hidden).
+- Frontend Layering & Mobile UX: Direct `apiClient` calls removed from touched Vue files; responsive mobile layout verified on 360x800, 390x844, 768x1024, 1024x768, 1280x800.
+
+## Fase 12C — Reorder & Replenishment Recommendation Center
+
+- Live Decision Support System (`/api/v1/replenishment-recommendations`), strictly read-only (`delta = 0`), 0 persistent recommendation tables.
+- Canonical low-stock query reuse (`minimum_stock > 0`, `on_hand < minimum_stock`, `gross_shortage = MAX(minimum_stock - on_hand, 0)`).
+- Pending inbound tracking (`TransferStatus::SENT` destined for target location reduces net replenishment need).
+- Safe internal source surplus allocation (`surplus = MAX(source_on_hand - source_min_stock, 0)`). Sources retain their minimum stock.
+- Frozen location safety (frozen source warehouses excluded from allocations; frozen target marks recommendations non-actionable).
+- Deterministic greedy allocation (`available_surplus DESC, location_id ASC`), location IDOR protection, string decimal safety (BCMath scale 4), and transfer form prefill ergonomics.
