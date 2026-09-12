@@ -171,10 +171,21 @@ class DashboardPeriodActivityTest extends TestCase
 
         // Multi-item receipt (100) created today is counted as 1 distinct document
         $this->assertSame(1, $activity['posted_receipt_count']);
+        $this->assertSame(2, $activity['receipt_item_count']);
+        $this->assertSame('15.0000', $activity['receipt_total_quantity']);
+
         $this->assertSame(1, $activity['posted_issue_count']);
+        $this->assertSame(1, $activity['issue_item_count']);
+        $this->assertSame('3.0000', $activity['issue_total_quantity']);
+
         $this->assertSame(1, $activity['received_transfer_count']);
+        $this->assertSame(0, $activity['transfer_item_count']);
+        $this->assertSame('0.0000', $activity['transfer_total_quantity']);
+
         // 3 movements created today (MOV-PA-01, MOV-PA-02, MOV-PA-04)
         $this->assertSame(3, $activity['movement_count']);
+        $this->assertSame(2, $activity['movement_item_count']);
+        $this->assertSame('18.0000', $activity['movement_total_quantity']);
 
         CarbonImmutable::setTestNow(null);
     }

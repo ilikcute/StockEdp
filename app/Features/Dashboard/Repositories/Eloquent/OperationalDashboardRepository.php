@@ -163,9 +163,24 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         if (empty($allowedLocationIds)) {
             return [
                 'posted_receipt_count' => 0,
+                'receipt_item_count' => 0,
+                'receipt_total_quantity' => '0.0000',
+                'receipt_total_amount' => 0.0,
+
                 'posted_issue_count' => 0,
+                'issue_item_count' => 0,
+                'issue_total_quantity' => '0.0000',
+                'issue_total_amount' => 0.0,
+
                 'received_transfer_count' => 0,
+                'transfer_item_count' => 0,
+                'transfer_total_quantity' => '0.0000',
+                'transfer_total_amount' => 0.0,
+
                 'movement_count' => 0,
+                'movement_item_count' => 0,
+                'movement_total_quantity' => '0.0000',
+                'movement_total_amount' => 0.0,
             ];
         }
 
@@ -173,46 +188,109 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         $startDateTime = CarbonImmutable::parse($dateFrom, 'Asia/Jakarta')->startOfDay();
         $endNextDateTime = CarbonImmutable::parse($dateTo, 'Asia/Jakarta')->addDay()->startOfDay();
 
-        $postedReceiptCount = StockMovement::query()
-            ->whereIn('location_id', $targetLocationIds)
-            ->where('movement_type', MovementType::RECEIPT->value)
-            ->where('reference_type', StockReceipt::class)
-            ->where('created_at', '>=', $startDateTime)
-            ->where('created_at', '<', $endNextDateTime)
-            ->distinct()
-            ->count('reference_id');
+        // 1. Receipt
+        $receiptQuery = StockMovement::query()
+            ->whereIn('stock_movements.location_id', $targetLocationIds)
+            ->where('stock_movements.movement_type', MovementType::RECEIPT->value)
+            ->where('stock_movements.reference_type', StockReceipt::class)
+            ->where('stock_movements.created_at', '>=', $startDateTime)
+            ->where('stock_movements.created_at', '<', $endNextDateTime);
 
-        $postedIssueCount = StockMovement::query()
-            ->whereIn('location_id', $targetLocationIds)
-            ->where('movement_type', MovementType::ISSUE->value)
-            ->where('reference_type', StockIssue::class)
-            ->where('created_at', '>=', $startDateTime)
-            ->where('created_at', '<', $endNextDateTime)
-            ->distinct()
-            ->count('reference_id');
+        $postedReceiptCount = (clone $receiptQuery)->distinct()->count('stock_movements.reference_id');
+        $receiptStats = (clone $receiptQuery)
+            ->leftJoin('products', 'products.id', '=', 'stock_movements.product_id')
+            ->selectRaw('
+                COUNT(DISTINCT stock_movements.product_id) as item_count,
+                COALESCE(SUM(stock_movements.quantity), 0) as total_quantity,
+                COALESCE(SUM(stock_movements.quantity * COALESCE(products.unit_price, 0)), 0) as total_amount
+            ')
+            ->first();
 
-        $receivedTransferCount = StockTransfer::query()
-            ->where('status', TransferStatus::RECEIVED->value)
-            ->where('received_at', '>=', $startDateTime)
-            ->where('received_at', '<', $endNextDateTime)
+        // 2. Issue
+        $issueQuery = StockMovement::query()
+            ->whereIn('stock_movements.location_id', $targetLocationIds)
+            ->where('stock_movements.movement_type', MovementType::ISSUE->value)
+            ->where('stock_movements.reference_type', StockIssue::class)
+            ->where('stock_movements.created_at', '>=', $startDateTime)
+            ->where('stock_movements.created_at', '<', $endNextDateTime);
+
+        $postedIssueCount = (clone $issueQuery)->distinct()->count('stock_movements.reference_id');
+        $issueStats = (clone $issueQuery)
+            ->leftJoin('products', 'products.id', '=', 'stock_movements.product_id')
+            ->selectRaw('
+                COUNT(DISTINCT stock_movements.product_id) as item_count,
+                COALESCE(SUM(stock_movements.quantity), 0) as total_quantity,
+                COALESCE(SUM(stock_movements.quantity * COALESCE(products.unit_price, 0)), 0) as total_amount
+            ')
+            ->first();
+
+        // 3. Transfer
+        $transferQuery = StockTransfer::query()
+            ->where('stock_transfers.status', TransferStatus::RECEIVED->value)
+            ->where('stock_transfers.received_at', '>=', $startDateTime)
+            ->where('stock_transfers.received_at', '<', $endNextDateTime)
             ->where(function ($q) use ($targetLocationIds) {
-                $q->whereIn('origin_location_id', $targetLocationIds)
-                    ->orWhereIn('destination_location_id', $targetLocationIds);
-            })
-            ->count();
+                $q->whereIn('stock_transfers.origin_location_id', $targetLocationIds)
+                    ->orWhereIn('stock_transfers.destination_location_id', $targetLocationIds);
+            });
 
-        $movementCount = StockMovement::query()
-            ->whereIn('location_id', $targetLocationIds)
-            ->where('created_at', '>=', $startDateTime)
-            ->where('created_at', '<', $endNextDateTime)
-            ->count();
+        $receivedTransferCount = (clone $transferQuery)->count();
+        $transferStats = (clone $transferQuery)
+            ->join('stock_transfer_items', 'stock_transfer_items.stock_transfer_id', '=', 'stock_transfers.id')
+            ->leftJoin('products', 'products.id', '=', 'stock_transfer_items.product_id')
+            ->selectRaw('
+                COUNT(DISTINCT stock_transfer_items.product_id) as item_count,
+                COALESCE(SUM(COALESCE(stock_transfer_items.received_quantity, stock_transfer_items.quantity)), 0) as total_quantity,
+                COALESCE(SUM(COALESCE(stock_transfer_items.received_quantity, stock_transfer_items.quantity) * COALESCE(products.unit_price, 0)), 0) as total_amount
+            ')
+            ->first();
+
+        // 4. Movement
+        $movementQuery = StockMovement::query()
+            ->whereIn('stock_movements.location_id', $targetLocationIds)
+            ->where('stock_movements.created_at', '>=', $startDateTime)
+            ->where('stock_movements.created_at', '<', $endNextDateTime);
+
+        $movementCount = (clone $movementQuery)->count();
+        $movementStats = (clone $movementQuery)
+            ->leftJoin('products', 'products.id', '=', 'stock_movements.product_id')
+            ->selectRaw('
+                COUNT(DISTINCT stock_movements.product_id) as item_count,
+                COALESCE(SUM(stock_movements.quantity), 0) as total_quantity,
+                COALESCE(SUM(stock_movements.quantity * COALESCE(products.unit_price, 0)), 0) as total_amount
+            ')
+            ->first();
 
         return [
             'posted_receipt_count' => (int) $postedReceiptCount,
+            'receipt_item_count' => (int) ($receiptStats?->item_count ?? 0),
+            'receipt_total_quantity' => $this->formatDecimalQuantity($receiptStats?->total_quantity),
+            'receipt_total_amount' => (float) ($receiptStats?->total_amount ?? 0.0),
+
             'posted_issue_count' => (int) $postedIssueCount,
+            'issue_item_count' => (int) ($issueStats?->item_count ?? 0),
+            'issue_total_quantity' => $this->formatDecimalQuantity($issueStats?->total_quantity),
+            'issue_total_amount' => (float) ($issueStats?->total_amount ?? 0.0),
+
             'received_transfer_count' => (int) $receivedTransferCount,
+            'transfer_item_count' => (int) ($transferStats?->item_count ?? 0),
+            'transfer_total_quantity' => $this->formatDecimalQuantity($transferStats?->total_quantity),
+            'transfer_total_amount' => (float) ($transferStats?->total_amount ?? 0.0),
+
             'movement_count' => (int) $movementCount,
+            'movement_item_count' => (int) ($movementStats?->item_count ?? 0),
+            'movement_total_quantity' => $this->formatDecimalQuantity($movementStats?->total_quantity),
+            'movement_total_amount' => (float) ($movementStats?->total_amount ?? 0.0),
         ];
+    }
+
+    private function formatDecimalQuantity(mixed $value): string
+    {
+        if ($value === null || $value === '' || $value === 0 || $value === '0' || $value === 0.0) {
+            return '0.0000';
+        }
+
+        return DecimalQuantity::normalize((string) $value);
     }
 
     public function getRecentActivity(array $allowedLocationIds, ?int $locationId): array

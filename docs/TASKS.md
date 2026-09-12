@@ -207,3 +207,168 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - Commit `36c3f9c`: `fix(reporting,dashboard): unpack nested report pagination and support click-through filters`.
   - Pushed to `origin/main`.
 - **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-12] Audit Menyeluruh & Implementasi Prioritas 1: Kualitas UX Teknisi Lapangan
+- **Konteks**: Berdasarkan permintaan audit menyeluruh terhadap arsitektur web app, performa indexing/database, keterbacaan kode, dan kemudahan UX teknisi lapangan saat alokasi barang.
+- **Pekerjaan yang Dilakukan**:
+  1. **Dokumentasi Audit Komprehensif**:
+     - Melakukan audit mendalam atas 119 routes, database indexing, relasi tabel, dan deadcode.
+     - Hasil audit disimpan di direktori `docs/` dengan rekomendasi bertahap berdasarkan prioritas dampak.
+  2. **Integrasi BaseCombobox pada StoreAllocationFormPage.vue**:
+     - Menggantikan tag `<select>` HTML statis dengan komponen pencarian cerdas `BaseCombobox.vue` untuk pemilihan Toko (dari 666 toko) dan Produk (dari 1.000 produk).
+     - Menghilangkan lag saat rendering ribuan elemen option di perangkat mobile teknisi.
+  3. **Indikator Saldo Stok Fisik Teknisi Real-Time**:
+     - Menampilkan indikator kuantitas saldo fisik teknisi (`on_hand_quantity`) pada daftar pilihan produk.
+     - Mencegah teknisi salah memilih produk yang stoknya kosong di lokasi lapangan.
+  4. **Shortcut Barcode Scanner**:
+     - Mengintegrasikan panel shortcut scan barcode/SKU (`BarcodeScannerPanel.vue`) pada form alokasi toko untuk mempercepat proses entri barang di toko.
+  5. **Perbaikan Navigasi Mobile (MobileBottomBar.vue)**:
+     - Menambahkan rute `/stores` ke tab Master dan `/inventory/store-allocations` ke tab Persediaan agar teknisi mudah mengakses fitur dari perangkat smartphone.
+- **Verifikasi**:
+  - `npm run build`: PASSED (built cleanly).
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-12] Pemadatan Dashboard, Normalisasi Angka Qty, dan Komponen Reusable Sidebar
+- **Konteks**: Permintaan pengguna untuk merapikan tampilan angka (menghilangkan desimal 4 digit `.0000`), menyajikan nilai keuangan persediaan, memadatkan tata letak dashboard yang terlalu melebar, dan merefaktor layout dengan reusable sidebar.
+- **Pekerjaan yang Dilakukan**:
+  1. **Format Angka & Informasi Keuangan Dashboard**:
+     - Memperbarui `TopIssuedProducts.vue`, `TopReceivedProducts.vue`, dan `RecentInventoryActivity.vue` menggunakan utility `formatQuantity()` agar angka kuantitas tampil bersih tanpa desimal (cth: `10` bukan `10.0000`).
+     - Menambahkan kolom **Harga Satuan** (`unit_price`) dan **Total Gross** (`total_gross` = Qty * unit_price) pada tabel-tabel widget dashboard.
+     - Menetapkan nilai default filter lokasi pada `DashboardFilterBar.vue` ke Gudang Induk (`MAIN_WAREHOUSE` / `ADM EDP`).
+  2. **Komponen Reusable Sidebar (AppSidebar.vue)**:
+     - Membuat komponen baru `resources/js/shared/layouts/navigation/AppSidebar.vue` dengan mode expand/collapse (lebar w-64 vs w-20), drawer overlay mobile, dan pengelompokan menu rapi:
+       - Menu Utama (Dashboard)
+       - Persediaan (Alokasi Toko, Riwayat Mutasi, Penerimaan, Pengeluaran, Transfer, Reorder, Penyesuaian, Opname)
+       - Laporan & Analitik (Saldo Stok, Saldo Teknisi, Stok Minimum, Pergerakan Fast/Slow, Kartu Stok, dan Laporan Transaksi)
+       - Master Data (Produk, Kategori, Satuan, Supplier, Lokasi, Toko)
+       - Manajemen Akses (Pengguna)
+  3. **Refactor AppLayout.vue & Pemadatan DashboardPage.vue**:
+     - Mengintegrasikan sidebar reusable ke dalam `AppLayout.vue`, merapikan navbar atas, status indikator sistem, dan profil user.
+     - Memadatkan tata letak `DashboardPage.vue` menjadi 2-kolom responsif yang padat, memangkas jarak spasi dan padding vertikal (>50%) sehingga seluruh widget utama terlihat tanpa perlu banyak scroll.
+- **Verifikasi**:
+  - `npm run build`: PASSED.
+  - `php artisan test tests/Feature/Dashboard/`: 21 passed (106 assertions).
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-12] Investigasi Penyesuaian Stok ADJ-202609-0001 & Perbaikan Lifecycle Laporan
+- **Konteks**: Pengguna melaporkan dokumen penyesuaian stok `ADJ-202609-0001` untuk Gudang Induk tidak tampak di dashboard dan laporan dianggap tidak memuat data penyesuaian tersebut.
+- **Hasil Investigasi Database Riil**:
+  1. Dokumen `ADJ-202609-0001` berstatus valid **`POSTED`**, lokasi `ADM EDP` (`location_id = 1`), diposting oleh Rahmad Solikin (`user_id = 15`) pada 11 September 2026 pukul 19:38:07 WIB.
+  2. Sebanyak **53 jenis item produk** (total 4.520 pcs senilai Rp 174.600.602) **sudah 100% masuk** ke saldo fisik `inventory_balances` lokasi `ADM EDP` dan mutasi `stock_movements`.
+  3. Analisis Dashboard: Widget Top 10 Masuk/Keluar secara desain hanya menghitung mutasi `RECEIPT` dan `ISSUE`. Transaksi penyesuaian stok bertipe `ADJUSTMENT_IN` sehingga tidak masuk ke agregasi pembelian supplier / pengeluaran toko, namun tercatat di tabel *Aktivitas Persediaan Terkini*.
+- **Perbaikan Bug Lifecycle onMounted pada 5 Halaman Laporan**:
+  - **Akar Masalah**: Pada 5 halaman laporan transaksi (`StockAdjustmentReportPage.vue`, `StockReceiptReportPage.vue`, `StockIssueReportPage.vue`, `StockTransferReportPage.vue`, `StockOpnameReportPage.vue`), hook `onMounted()` hanya memanggil `fetchBaseOptions()` tetapi lupa memanggil `fetchData(1)`. Akibatnya, saat halaman pertama kali dibuka dari menu sidebar, tabel tampil kosong melompong.
+  - **Tindakan Perbaikan**: Menambahkan pemanggilan `fetchData(1)` dan sinkronisasi route query parameter (`location_id`, `search`, dll.) di dalam `onMounted()` untuk kelima halaman tersebut.
+- **Reaktivitas Filter Dashboard**:
+  - Memperbarui `DashboardPage.vue` dengan watcher reaktif pada `filters.location_id` dan `DashboardFilterBar.vue` dengan dual emit (`update:locationId` & `update:location-id`) agar filter Gudang Induk langsung mengunci seketika saat halaman dibuka.
+- **Verifikasi**:
+  - `npm run build`: PASSED.
+  - Test Suite: PASSED.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-12] Perbaikan Response Unwrapping Store Pelaporan Saldo Stok Gudang
+- **Konteks**: Pengguna melaporkan bahwa di menu Laporan Saldo Stok Gudang (`/reports/inventory-balances`) saat memilih lokasi ADM EDP, detail barang masih belum muncul.
+- **Akar Masalah**:
+  1. Backend `InventoryBalanceReportController.php` membungkus resource paginasi dengan macro `response()->api(...)` yang menghasilkan payload bersarang:
+     `{ success: true, message: '...', data: { data: [...53 items...], links: {...}, meta: {...} } }`.
+  2. Pinia store `useInventoryBalanceReportStore.js` mengekstrak data dengan `this.data = response.data.data`. Karena `response.data.data` adalah objek `{ data, links, meta }` dan bukan array, template Vue `v-for="item in store.data"` mengiterasi properti objek alih-alih baris produk. Nilai kolom menjadi `undefined` (tampil strip `-`, kuantitas `0`, harga `Rp 0`) dan pagination tidak muncul.
+- **Tindakan Perbaikan**:
+  1. **Robust Payload Unwrapping pada Store Pelaporan**:
+     - Memperbarui `useInventoryBalanceReportStore.js`, `useLowStockReportStore.js`, dan `useStockCardReportStore.js` dengan mekanisme ekstraksi adaptif:
+       Mengekstrak `payload.data.data` jika bersarang, atau `payload.data` jika flat array, serta memetakan `payload.data.meta` secara akurat.
+  2. **Penyempurnaan Tampilan Dropdown Lokasi & Navigasi Pagination**:
+     - Memperbarui dropdown lokasi di `InventoryBalanceReportPage.vue` dengan binding string `:value="String(loc.id)"` dan label kode (cth: `ADM — ADM EDP`).
+     - Memperbarui kontrol pagination dengan informasi kuantitas item dan tombol navigasi responsif untuk mobile dan desktop.
+- **Verifikasi**:
+  - `npm run build`: PASSED (built in 3.26s, 0 errors).
+  - `php artisan test tests/Feature/Reporting/ReportingPhase8A1Test.php`: 17 passed (67 assertions).
+  - `php artisan test tests/Feature/Dashboard/DashboardRecentActivityTest.php tests/Feature/Dashboard/DashboardTopMovementsTest.php`: 5 passed (32 assertions).
+  - Pengujian manual API controller: 53 item produk lokasi `ADM EDP` berhasil diekstrak lengkap dengan SKU, nama, kategori, unit, kondisi BAGUS, kuantitas fisik, dan total nilai Rp 174.600.602.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-12] Penyempurnaan Ringkasan Aktivitas Periode (PeriodActivityCards.vue)
+- **Konteks & Kebutuhan Pengguna**:
+  Sebelumnya, widget Ringkasan Aktivitas Periode (`PeriodActivityCards.vue`) pada dashboard hanya menampilkan jumlah hitungan dokumen/transaksi (`count` angka bulat) tanpa rincian item, kuantitas, maupun nilai rupiahnya. Pengguna meminta agar masing-masing kartu dilengkapi ringkasan komprehensif:
+  1. Total Dokumen / Transaksi (count dokumen).
+  2. Total Item yang terlibat (berapa jenis SKU produk yang bermutasi).
+  3. Total Kuantitas Fisik / Volume (pcs) dengan pemformatan bilangan bulat/ribuan tanpa desimal `0000`.
+  4. Total Estimasi Nilai Nominal Rupiah (Gross Amount Rp) berdasarkan kuantitas dikalikan harga satuan produk.
+  Contoh: Pada kartu Movement untuk lokasi `ADM EDP` dapat terbaca ringkasan: 53 Mutasi, 53 Item, Total Qty: 4.520, dan Total Nilai: Rp 174.600.602.
+
+- **Tindakan Perbaikan Backend (`OperationalDashboardRepository.php`)**:
+  - Mengembangkan method `getPeriodActivity(array $allowedLocationIds, ?int $locationId, string $dateFrom, string $dateTo)` agar melakukan query agregasi komprehensif dengan `leftJoin('products', ...)`:
+    1. **Penerimaan Posting (`posted_receipt`)**:
+       - `posted_receipt_count`: Jumlah dokumen penerimaan distinct.
+       - `receipt_item_count`: `COUNT(DISTINCT stock_movements.product_id)`.
+       - `receipt_total_quantity`: `COALESCE(SUM(stock_movements.quantity), 0)`.
+       - `receipt_total_amount`: `COALESCE(SUM(stock_movements.quantity * products.unit_price), 0)`.
+    2. **Pengeluaran Posting (`posted_issue`)**:
+       - `posted_issue_count`: Jumlah dokumen pengeluaran distinct.
+       - `issue_item_count`: `COUNT(DISTINCT stock_movements.product_id)`.
+       - `issue_total_quantity`: `COALESCE(SUM(stock_movements.quantity), 0)`.
+       - `issue_total_amount`: `COALESCE(SUM(stock_movements.quantity * products.unit_price), 0)`.
+    3. **Transfer Selesai (`received_transfer`)**:
+       - `received_transfer_count`: Jumlah dokumen transfer berstatus `RECEIVED`.
+       - `transfer_item_count`: `COUNT(DISTINCT stock_transfer_items.product_id)`.
+       - `transfer_total_quantity`: `COALESCE(SUM(COALESCE(received_quantity, quantity)), 0)`.
+       - `transfer_total_amount`: `COALESCE(SUM(COALESCE(received_quantity, quantity) * products.unit_price), 0)`.
+    4. **Total Movement (`movement`)**:
+       - `movement_count`: Total record pergerakan stok pada periode dan cakupan lokasi.
+       - `movement_item_count`: `COUNT(DISTINCT stock_movements.product_id)`.
+       - `movement_total_quantity`: `COALESCE(SUM(stock_movements.quantity), 0)`.
+       - `movement_total_amount`: `COALESCE(SUM(stock_movements.quantity * products.unit_price), 0)`.
+  - Menambahkan method private `formatDecimalQuantity()` yang memanfaatkan `DecimalQuantity::normalize()` untuk memastikan presisi desimal tanpa runtime error.
+  - Memastikan kompatibilitas mundur (*backward compatibility*) tetap 100% terjaga bagi consumer API sebelumnya.
+
+- **Tindakan Perbaikan Frontend (`PeriodActivityCards.vue`)**:
+  - Mengimpor fungsi pembantu format standar: `formatRupiah` dan `formatQuantity` dari `@/shared/utils/formatters.js`.
+  - Merombak tata letak ke-4 kartu (Penerimaan Posting, Pengeluaran Posting, Transfer Selesai, Total Movement) dengan hierarki visual yang jelas:
+    - **Header**: Label transaksi dengan pill badge item terpengaruh (contoh: `53 Item`).
+    - **Hero Metric**: Jumlah dokumen/mutasi tebal (contoh: `53 Mutasi` / `1 Dokumen`).
+    - **Footer Divider**: Ringkasan baris bawah dengan kolom `Total Qty` (format ribuan Indonesia) dan `Total Nilai` (format mata uang Rupiah ber-prefix `Rp`).
+  - Menyesuaikan prop default dengan seluruh atribut data baru (`*_item_count`, `*_total_quantity`, `*_total_amount`).
+
+- **Verifikasi**:
+  - `php artisan test tests/Feature/Dashboard/DashboardPeriodActivityTest.php`: 1 passed (13 assertions).
+  - `php artisan test tests/Feature/Dashboard/DashboardPerformanceBenchmarkTest.php`: 1 passed (11 assertions).
+  - `npm run build`: PASSED (built in 2.60s, 0 errors).
+  - Verifikasi Data Operasional Riil (Lokasi ADM EDP periode September 2026):
+    - Movement: 53 Mutasi, 53 Item, Total Qty: 4.520 pcs, Total Nilai: Rp 174.600.602 (100% cocok dengan saldo penyesuaian stok ADJ-202609-0001).
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-13] Refaktorisasi Antarmuka Kompak & Bebas Scroll (StockReceiptFormPage.vue)
+- **Konteks & Kebutuhan Pengguna**:
+  Halaman pembuatan draft penerimaan barang (`StockReceiptFormPage.vue`) sebelumnya memiliki tinggi lebih dari 1360px akibat kartu bertumpuk vertikal dengan padding besar (`space-y-6`, `p-6`). Petugas gudang harus melakukan scroll bolak-balik antara scanner barcode di atas, form metadata di tengah, dan tabel item produk di bawah. Pengguna meminta agar tampilan direfaktor menjadi lebih kompak, mudah dioperasikan, dan tidak perlu scroll-scroll.
+- **Pekerjaan yang Dilakukan**:
+  1. **Header Toolbar Kompak**:
+     - Menggabungkan Judul Halaman, badge status Draft, 3 KPI chips ringkas (Jumlah Item, Total Qty, Total Nominal Nilai), tombol Batal, dan tombol Simpan Draft (F9) dalam satu baris header ramping.
+  2. **Metadata Strip 1-Baris**:
+     - Memadatkan 5 input dokumen (Tanggal Penerimaan, No. SPB / Memo GA, Sumber Barang, Supplier, Catatan) ke dalam 1 baris grid horizontal fleksibel (~52px) dengan ukuran input kompak `text-xs py-1.5 px-2.5`, menghemat >150px ruang vertikal.
+  3. **Scanner & Fast Entry Terpadu**:
+     - Menambahkan prop `compact: true` pada `BarcodeScannerPanel.vue` (input `min-h-[36px]` dan tombol scan ramping).
+     - Mengintegrasikan dropdown Lokasi Scan Aktif, kolom scan barcode/SKU, tombol scan, dan tombol `+ Baris Manual` dalam satu strip horizontal terpadu tepat di atas tabel.
+  4. **Tabel Item Berdensitas Tinggi dengan Scroll Internal**:
+     - Menerapkan padding rapat `py-1.5 px-2.5` pada baris tabel dan tombol hapus icon sampah.
+     - Menerapkan sticky table header (`sticky top-0 bg-gray-50/95`) dan sticky table footer (Grand Total Qty & Rupiah).
+     - Membatasi scroll hanya pada kontainer tabel (`max-h-[calc(100vh-320px)] overflow-y-auto`).
+- **Hasil Verifikasi**:
+  - Pengukuran browser: `scrollHeight: 730px` pada viewport `innerHeight: 730px` (100% Zero-Scroll Viewport Alignment, seluruh halaman pas dalam layar tanpa scrollbar utama).
+  - Pengujian alur kerja penerimaan: Scan barcode / SKU `25023` (FUSE BELING PANJANG 5A, Rp 422), edit kuantitas menjadi 5 pcs, kalkulasi subtotal Rp 2.110 reaktif, simpan draft sukses (`REC-202609-0001`), dan posting sukses.
+  - `npm run build`: PASSED (built in 2.38s, 0 errors).
+  - `php artisan test tests/Feature/Inventory/`: 100% PASSED (InventoryApiTest & StockReceiptTest).
+- **Status**: SELESAI & TERVERIFIKASI.
+
+
+

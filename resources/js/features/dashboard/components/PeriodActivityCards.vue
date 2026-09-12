@@ -20,46 +20,142 @@
             Ringkasan Aktivitas Periode
           </h3>
           <p class="text-[11px] text-gray-500 mt-0.5">
-            Dokumen terposting dan akumulasi transaksi.
+            Dokumen terposting, item terpengaruh, volume fisik, dan estimasi nilai mutasi.
           </p>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
         <!-- Posted Receipts -->
-        <div class="bg-emerald-50/50 border border-emerald-200 rounded-lg p-2.5">
-          <span class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider block">Penerimaan Posting</span>
-          <span
-            id="period-posted-receipt-count"
-            class="text-base font-bold text-gray-900 mt-1 block"
-          >{{ data.posted_receipt_count || 0 }}</span>
+        <div class="bg-emerald-50/60 border border-emerald-200/80 rounded-lg p-2.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold text-emerald-800 uppercase tracking-wider">Penerimaan Posting</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-emerald-100/80 text-emerald-800">
+                {{ data.receipt_item_count || 0 }} Item
+              </span>
+            </div>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span
+                id="period-posted-receipt-count"
+                class="text-base font-bold text-gray-900"
+              >{{ data.posted_receipt_count || 0 }}</span>
+              <span class="text-[11px] font-medium text-gray-500">Dokumen</span>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-emerald-200/70 grid grid-cols-2 gap-1 text-[11px]">
+            <div>
+              <span class="text-gray-500 block text-[10px]">Total Qty:</span>
+              <span class="font-semibold text-gray-900">{{ formatQuantity(data.receipt_total_quantity) }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-gray-500 block text-[10px]">Total Nilai:</span>
+              <span
+                class="font-semibold text-emerald-700 truncate block"
+                :title="formatRupiah(data.receipt_total_amount)"
+              >{{ formatRupiah(data.receipt_total_amount) }}</span>
+            </div>
+          </div>
         </div>
 
         <!-- Posted Issues -->
-        <div class="bg-amber-50/50 border border-amber-200 rounded-lg p-2.5">
-          <span class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider block">Pengeluaran Posting</span>
-          <span
-            id="period-posted-issue-count"
-            class="text-base font-bold text-gray-900 mt-1 block"
-          >{{ data.posted_issue_count || 0 }}</span>
+        <div class="bg-amber-50/60 border border-amber-200/80 rounded-lg p-2.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold text-amber-800 uppercase tracking-wider">Pengeluaran Posting</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100/80 text-amber-800">
+                {{ data.issue_item_count || 0 }} Item
+              </span>
+            </div>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span
+                id="period-posted-issue-count"
+                class="text-base font-bold text-gray-900"
+              >{{ data.posted_issue_count || 0 }}</span>
+              <span class="text-[11px] font-medium text-gray-500">Dokumen</span>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-amber-200/70 grid grid-cols-2 gap-1 text-[11px]">
+            <div>
+              <span class="text-gray-500 block text-[10px]">Total Qty:</span>
+              <span class="font-semibold text-gray-900">{{ formatQuantity(data.issue_total_quantity) }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-gray-500 block text-[10px]">Total Nilai:</span>
+              <span
+                class="font-semibold text-amber-700 truncate block"
+                :title="formatRupiah(data.issue_total_amount)"
+              >{{ formatRupiah(data.issue_total_amount) }}</span>
+            </div>
+          </div>
         </div>
 
         <!-- Received Transfers -->
-        <div class="bg-blue-50/50 border border-blue-200 rounded-lg p-2.5">
-          <span class="text-[10px] font-semibold text-blue-700 uppercase tracking-wider block">Transfer Selesai</span>
-          <span
-            id="period-received-transfer-count"
-            class="text-base font-bold text-gray-900 mt-1 block"
-          >{{ data.received_transfer_count || 0 }}</span>
+        <div class="bg-blue-50/60 border border-blue-200/80 rounded-lg p-2.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold text-blue-800 uppercase tracking-wider">Transfer Selesai</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100/80 text-blue-800">
+                {{ data.transfer_item_count || 0 }} Item
+              </span>
+            </div>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span
+                id="period-received-transfer-count"
+                class="text-base font-bold text-gray-900"
+              >{{ data.received_transfer_count || 0 }}</span>
+              <span class="text-[11px] font-medium text-gray-500">Dokumen</span>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-blue-200/70 grid grid-cols-2 gap-1 text-[11px]">
+            <div>
+              <span class="text-gray-500 block text-[10px]">Total Qty:</span>
+              <span class="font-semibold text-gray-900">{{ formatQuantity(data.transfer_total_quantity) }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-gray-500 block text-[10px]">Total Nilai:</span>
+              <span
+                class="font-semibold text-blue-700 truncate block"
+                :title="formatRupiah(data.transfer_total_amount)"
+              >{{ formatRupiah(data.transfer_total_amount) }}</span>
+            </div>
+          </div>
         </div>
 
         <!-- Stock Movements -->
-        <div class="bg-purple-50/50 border border-purple-200 rounded-lg p-2.5">
-          <span class="text-[10px] font-semibold text-purple-700 uppercase tracking-wider block">Total Movement</span>
-          <span
-            id="period-movement-count"
-            class="text-base font-bold text-gray-900 mt-1 block"
-          >{{ data.movement_count || 0 }}</span>
+        <div class="bg-purple-50/60 border border-purple-200/80 rounded-lg p-2.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold text-purple-800 uppercase tracking-wider">Total Movement</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100/80 text-purple-800">
+                {{ data.movement_item_count || 0 }} Item
+              </span>
+            </div>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span
+                id="period-movement-count"
+                class="text-base font-bold text-gray-900"
+              >{{ data.movement_count || 0 }}</span>
+              <span class="text-[11px] font-medium text-gray-500">Mutasi</span>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-purple-200/70 grid grid-cols-2 gap-1 text-[11px]">
+            <div>
+              <span class="text-gray-500 block text-[10px]">Total Qty:</span>
+              <span class="font-semibold text-gray-900">{{ formatQuantity(data.movement_total_quantity) }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-gray-500 block text-[10px]">Total Nilai:</span>
+              <span
+                class="font-semibold text-purple-700 truncate block"
+                :title="formatRupiah(data.movement_total_amount)"
+              >{{ formatRupiah(data.movement_total_amount) }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -67,14 +163,31 @@
 </template>
 
 <script setup>
+import { formatRupiah, formatQuantity } from '@/shared/utils/formatters.js';
+
 defineProps({
   data: {
     type: Object,
     default: () => ({
       posted_receipt_count: 0,
+      receipt_item_count: 0,
+      receipt_total_quantity: '0',
+      receipt_total_amount: 0,
+
       posted_issue_count: 0,
+      issue_item_count: 0,
+      issue_total_quantity: '0',
+      issue_total_amount: 0,
+
       received_transfer_count: 0,
+      transfer_item_count: 0,
+      transfer_total_quantity: '0',
+      transfer_total_amount: 0,
+
       movement_count: 0,
+      movement_item_count: 0,
+      movement_total_quantity: '0',
+      movement_total_amount: 0,
     }),
   },
 });

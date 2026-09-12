@@ -1,18 +1,54 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 space-y-6">
-    <div class="sm:flex sm:items-center justify-between">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          {{ isEdit ? 'Edit Draft Penerimaan' : 'Buat Draft Penerimaan Stok' }}
-        </h1>
-        <p class="mt-1 text-sm text-gray-600">
-          Isi form di bawah atau gunakan Barcode Scanner untuk mencatat mutasi masuk barang.
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0 flex gap-2">
+  <div class="space-y-2.5">
+    <!-- Top Compact Header Bar & KPI Summary -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <!-- Left: Title & Status -->
+      <div class="flex items-center gap-2.5">
         <router-link
           :to="isEdit ? `/inventory/receipts/${route.params.id}` : '/inventory/receipts'"
-          class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 cursor-pointer"
+          class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+          title="Kembali ke daftar penerimaan"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </router-link>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-gray-900 leading-tight">
+              {{ isEdit ? 'Edit Draft Penerimaan' : 'Penerimaan Stok (Goods Receipt)' }}
+            </h1>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-wide">
+              {{ isEdit ? 'Edit Draft' : 'Draft Baru' }}
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-500 hidden sm:block">
+            Input cepat barcode & pencatatan mutasi barang masuk.
+          </p>
+        </div>
+      </div>
+
+      <!-- Middle: KPI Summary Chips -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+          <span class="text-gray-500 font-medium">Item:</span>
+          <span class="font-bold text-gray-800 font-mono">{{ form.items.length }}</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
+          <span class="text-emerald-700 font-medium">Total Qty:</span>
+          <span class="font-black text-emerald-800 font-mono">{{ formatQuantity(totalItemsQty) }}</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-lg text-xs">
+          <span class="text-indigo-700 font-medium">Nilai:</span>
+          <span class="font-black text-indigo-900 font-mono">{{ formatRupiah(grandTotalAmount) }}</span>
+        </div>
+      </div>
+
+      <!-- Right: Main Actions -->
+      <div class="flex items-center gap-2 self-end md:self-auto">
+        <router-link
+          :to="isEdit ? `/inventory/receipts/${route.params.id}` : '/inventory/receipts'"
+          class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 border border-gray-300 shadow-2xs hover:bg-gray-50 transition-colors cursor-pointer"
         >
           Batal
         </router-link>
@@ -20,12 +56,15 @@
           id="btn-save-receipt-draft"
           type="button"
           :disabled="isSubmitting"
-          class="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:opacity-50 cursor-pointer"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
           title="Simpan Dokumen Draft (Shortcut: F9)"
           @click="submitForm"
         >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+          </svg>
           <span>{{ isSubmitting ? 'Menyimpan...' : 'Simpan Draft' }}</span>
-          <kbd class="hidden sm:inline-block font-mono text-[10px] bg-indigo-700/80 text-indigo-100 px-1.5 py-0.5 rounded border border-indigo-500 font-bold">F9</kbd>
+          <kbd class="hidden sm:inline-block font-mono text-[9px] bg-indigo-700/90 text-indigo-100 px-1 py-0.2 rounded border border-indigo-400 font-bold">F9</kbd>
         </button>
       </div>
     </div>
@@ -33,184 +72,229 @@
     <!-- Error Alert -->
     <div
       v-if="errorMsg"
-      class="rounded-lg bg-rose-50 border border-rose-200 p-4 text-sm text-rose-800"
+      class="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-800 flex items-center justify-between gap-2"
     >
-      {{ errorMsg }}
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ errorMsg }}</span>
+      </div>
+      <button
+        type="button"
+        class="text-rose-400 hover:text-rose-600 cursor-pointer"
+        @click="errorMsg = ''"
+      >
+        &times;
+      </button>
     </div>
 
-    <!-- Barcode Scanner Section -->
-    <div class="bg-white p-4 sm:p-6 shadow-xs rounded-xl border border-gray-200 space-y-4">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base font-bold text-gray-900 flex items-center gap-2">
-            <span class="w-6 h-6 rounded bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">📷</span>
-            Barcode Scanner Entry
-          </h2>
-          <p class="text-xs text-gray-500 mt-0.5">
-            Pilih Lokasi Scan lalu arahkan scanner barcode (HID/Keyboard Wedge).
-          </p>
-        </div>
+    <!-- Form Section -->
+    <form
+      class="space-y-2.5"
+      @submit.prevent="submitForm"
+    >
+      <!-- Document Metadata Strip (Single Horizontal Grid) -->
+      <div class="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3 shadow-2xs">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <!-- Tanggal Penerimaan -->
+          <div>
+            <label
+              for="date"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              Tanggal Penerimaan *
+            </label>
+            <input
+              id="date"
+              v-model="form.date"
+              type="date"
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+              required
+            >
+          </div>
 
-        <div class="w-full sm:w-72">
-          <label
-            for="receipt-scan-location"
-            class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1"
-          >
-            Lokasi Scan Aktif *
-          </label>
+          <!-- No. SPB / Memo GA -->
+          <div>
+            <label
+              for="memo_number"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              No. SPB / Memo GA
+            </label>
+            <input
+              id="memo_number"
+              v-model="form.memo_number"
+              type="text"
+              placeholder="MEMO-GA/2026/09/001"
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+            >
+          </div>
+
+          <!-- Sumber Barang -->
+          <div>
+            <label
+              for="source_type"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              Sumber Barang *
+            </label>
+            <select
+              id="source_type"
+              v-model="form.source_type"
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+              required
+            >
+              <option value="GA_PROCUREMENT">
+                Pengadaan Baru GA
+              </option>
+              <option value="GA_SERVICED">
+                Hasil Servis GA (Bagus)
+              </option>
+            </select>
+          </div>
+
+          <!-- Supplier -->
+          <div>
+            <label
+              for="supplier"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              Supplier (Opsional)
+            </label>
+            <select
+              id="supplier"
+              v-model="form.supplier_id"
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="">
+                -- Tanpa Supplier / Internal GA --
+              </option>
+              <option
+                v-for="sup in suppliers"
+                :key="sup.id"
+                :value="sup.id"
+              >
+                {{ sup.name }} ({{ sup.code }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Catatan -->
+          <div class="col-span-2 sm:col-span-1">
+            <label
+              for="notes"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              Catatan
+            </label>
+            <input
+              id="notes"
+              v-model="form.notes"
+              type="text"
+              placeholder="Keterangan tambahan..."
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Integrated Scanner & Quick Entry Strip -->
+      <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-2 sm:p-2.5 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <!-- Lokasi Scan Aktif -->
+        <div class="w-full sm:w-60 lg:w-72 shrink-0">
+          <div class="flex items-center gap-1.5 mb-1">
+            <span class="w-2 h-2 rounded-full bg-indigo-500" />
+            <label
+              for="receipt-scan-location"
+              class="text-[11px] font-bold text-indigo-900 uppercase tracking-wider"
+            >
+              Lokasi Scan Aktif *
+            </label>
+          </div>
           <BaseCombobox
             id="receipt-scan-location"
             v-model="scanLocationId"
             :options="locations"
-            placeholder="Pilih / cari nama toko..."
+            size="xs"
+            placeholder="Pilih lokasi scan..."
           />
         </div>
-      </div>
 
-      <BarcodeScannerPanel
-        ref="scannerPanelRef"
-        :location-selected="Boolean(scanLocationId)"
-        label="Scan Barcode / Masukkan SKU Produk"
-        placeholder="Scan barcode atau ketik SKU / Barcode produk penerimaan (cth: 1001 / 000123)... [F2]"
-        @scan-success="handleProductScanned"
-        @scan-error="(msg) => { errorMsg = msg; }"
-      />
-    </div>
-
-    <!-- Header & Items Form -->
-    <form
-      class="space-y-6"
-      @submit.prevent="submitForm"
-    >
-      <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 bg-white shadow-xs rounded-xl border border-gray-200 p-4 sm:p-6">
-        <div class="sm:col-span-2">
-          <label
-            for="date"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >Tanggal Penerimaan *</label>
-          <input
-            id="date"
-            v-model="form.date"
-            type="date"
-            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          >
+        <!-- Scanner Barcode Panel -->
+        <div class="flex-1 min-w-[200px]">
+          <BarcodeScannerPanel
+            ref="scannerPanelRef"
+            :compact="true"
+            :location-selected="Boolean(scanLocationId)"
+            label="Scan Barcode / SKU"
+            placeholder="Scan barcode / ketik SKU produk [F2] lalu Enter..."
+            @scan-success="handleProductScanned"
+            @scan-error="(msg) => { errorMsg = msg; }"
+          />
         </div>
 
-        <div class="sm:col-span-2">
-          <label
-            for="memo_number"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >No. SPB / Memo GA</label>
-          <input
-            id="memo_number"
-            v-model="form.memo_number"
-            type="text"
-            placeholder="Contoh: MEMO-GA/2026/09/001"
-            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-        </div>
-
-        <div class="sm:col-span-2">
-          <label
-            for="source_type"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >Sumber Barang *</label>
-          <select
-            id="source_type"
-            v-model="form.source_type"
-            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          >
-            <option value="GA_PROCUREMENT">
-              Pengadaan Baru GA
-            </option>
-            <option value="GA_SERVICED">
-              Hasil Servis GA (Barang Bagus)
-            </option>
-          </select>
-        </div>
-
-        <div class="sm:col-span-3">
-          <label
-            for="supplier"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >Supplier (Opsional)</label>
-          <select
-            id="supplier"
-            v-model="form.supplier_id"
-            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="">
-              -- Tanpa Supplier / Internal GA --
-            </option>
-            <option
-              v-for="sup in suppliers"
-              :key="sup.id"
-              :value="sup.id"
-            >
-              {{ sup.name }} ({{ sup.code }})
-            </option>
-          </select>
-        </div>
-
-        <div class="sm:col-span-3">
-          <label
-            for="notes"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >Catatan</label>
-          <input
-            id="notes"
-            v-model="form.notes"
-            type="text"
-            placeholder="Keterangan tambahan..."
-            class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-        </div>
-      </div>
-
-      <!-- Items Table -->
-      <div class="bg-white shadow-xs rounded-xl border border-gray-200 p-4 sm:p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-semibold text-gray-900">
-            Daftar Item Produk Masuk
-          </h3>
+        <!-- Tombol Tambah Baris Manual -->
+        <div class="shrink-0 flex items-end">
           <button
             id="btn-add-receipt-item"
             type="button"
-            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 shadow-xs ring-1 ring-inset ring-indigo-300 hover:bg-indigo-50 cursor-pointer"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-white border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-2xs hover:bg-indigo-50 hover:border-indigo-300 transition-colors min-h-[36px] whitespace-nowrap cursor-pointer"
+            title="Tambah Baris Item Kosong"
             @click="addItem"
           >
-            + Tambah Baris Manual
+            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>+ Baris Manual</span>
           </button>
         </div>
+      </div>
 
-        <div class="overflow-x-auto">
+      <!-- High-Density Items Table Card -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden flex flex-col">
+        <!-- Table Header Context Bar -->
+        <div class="px-3.5 py-2 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wider">
+              Daftar Item Produk Masuk
+            </h3>
+            <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-md bg-gray-100 text-gray-600 font-mono">
+              {{ form.items.length }} baris
+            </span>
+          </div>
+          <span class="text-[11px] text-gray-400 font-mono hidden md:inline-block">
+            Tekan <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F2</kbd> ke Scanner &bull; <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F9</kbd> Simpan
+          </span>
+        </div>
+
+        <!-- Scrollable Table Container -->
+        <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] min-h-[200px]">
           <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-gray-50 text-gray-600 font-semibold border-b border-gray-200">
-                <th class="py-2.5 px-3 w-10 text-center">
-                  No.
+            <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs text-gray-600 font-semibold border-b border-gray-200 z-10">
+              <tr class="text-[11px] text-gray-500">
+                <th class="py-2 px-2.5 w-10 text-center">
+                  #
                 </th>
-                <th class="py-2.5 px-3 w-36">
+                <th class="py-2 px-2.5 w-32">
                   SKU / Barcode
                 </th>
-                <th class="py-2.5 px-3">
+                <th class="py-2 px-2.5 min-w-[200px]">
                   Produk *
                 </th>
-                <th class="py-2.5 px-3">
+                <th class="py-2 px-2.5 min-w-[180px]">
                   Lokasi Tujuan *
                 </th>
-                <th class="py-2.5 px-3 text-right w-32">
+                <th class="py-2 px-2.5 text-right w-28">
                   Harga Satuan
                 </th>
-                <th class="py-2.5 px-3 text-right w-28">
+                <th class="py-2 px-2.5 text-right w-24">
                   Jumlah (Qty) *
                 </th>
-                <th class="py-2.5 px-3 text-right w-36">
+                <th class="py-2 px-2.5 text-right w-32">
                   Subtotal
                 </th>
-                <th class="py-2.5 px-3 text-center w-20">
+                <th class="py-2 px-2 w-14 text-center">
                   Aksi
                 </th>
               </tr>
@@ -219,21 +303,27 @@
               <tr
                 v-for="(item, index) in form.items"
                 :key="index"
+                class="hover:bg-slate-50/60 transition-colors"
               >
-                <td class="py-2.5 px-3 text-center text-gray-400 font-mono">
+                <!-- Nomor Urut -->
+                <td class="py-1.5 px-2.5 text-center text-gray-400 font-mono text-[11px]">
                   {{ index + 1 }}
                 </td>
-                <td class="py-2.5 px-3">
+
+                <!-- SKU Input Cepat -->
+                <td class="py-1.5 px-2.5">
                   <input
                     type="text"
                     :value="getProductSku(item.product_id)"
                     placeholder="Ketik SKU..."
-                    class="block w-full rounded-md border-gray-300 font-mono text-xs uppercase focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-md border-gray-300 py-1 px-2 font-mono text-xs uppercase focus:border-indigo-500 focus:ring-indigo-500"
                     @change="onSkuEntered($event.target.value, index)"
                     @keydown.enter.prevent="onSkuEntered($event.target.value, index)"
                   >
                 </td>
-                <td class="py-2.5 px-3 min-w-[220px]">
+
+                <!-- Pilih Produk -->
+                <td class="py-1.5 px-2.5">
                   <BaseCombobox
                     v-model="item.product_id"
                     :options="products"
@@ -241,65 +331,90 @@
                     placeholder="Pilih / cari produk..."
                   />
                 </td>
-                <td class="py-2.5 px-3 min-w-[200px]">
+
+                <!-- Lokasi Tujuan -->
+                <td class="py-1.5 px-2.5">
                   <BaseCombobox
                     v-model="item.location_id"
                     :options="locations"
                     size="xs"
-                    placeholder="Pilih / cari lokasi..."
+                    placeholder="Pilih lokasi tujuan..."
                   />
                 </td>
-                <td class="py-2.5 px-3 text-right font-mono text-xs text-gray-700">
+
+                <!-- Harga Satuan -->
+                <td class="py-1.5 px-2.5 text-right font-mono text-xs text-gray-600">
                   {{ formatRupiah(getProductPrice(item.product_id)) }}
                 </td>
-                <td class="py-2.5 px-3">
+
+                <!-- Jumlah / Qty -->
+                <td class="py-1.5 px-2.5">
                   <input
                     v-model="item.quantity"
                     type="text"
                     inputmode="decimal"
                     placeholder="1"
-                    class="block w-full text-right font-mono rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full text-right font-mono rounded-md border-gray-300 py-1 px-2 text-xs font-semibold text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
                     required
                     @blur="handleQtyBlur(item)"
                   >
                 </td>
-                <td class="py-2.5 px-3 text-right font-mono text-xs font-semibold text-gray-900">
+
+                <!-- Subtotal -->
+                <td class="py-1.5 px-2.5 text-right font-mono text-xs font-bold text-gray-900">
                   {{ formatRupiah(getItemSubtotal(item)) }}
                 </td>
-                <td class="py-2.5 px-3 text-center">
+
+                <!-- Aksi Hapus -->
+                <td class="py-1.5 px-2 text-center">
                   <button
                     type="button"
-                    class="text-rose-600 hover:text-rose-900 font-semibold cursor-pointer"
+                    class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                    title="Hapus baris ini"
                     @click="removeItem(index)"
                   >
-                    Hapus
+                    <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </td>
               </tr>
+
+              <!-- Empty State -->
               <tr v-if="form.items.length === 0">
                 <td
                   colspan="8"
-                  class="py-6 text-center text-gray-400"
+                  class="py-10 text-center text-gray-400"
                 >
-                  Belum ada item. Gunakan scanner di atas atau tombol Tambah Baris Manual.
+                  <div class="flex flex-col items-center justify-center gap-1.5">
+                    <span class="text-2xl">📦</span>
+                    <p class="text-xs font-medium text-gray-500">
+                      Belum ada item penerimaan.
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      Gunakan Barcode Scanner di atas atau klik tombol <strong>+ Baris Manual</strong>.
+                    </p>
+                  </div>
                 </td>
               </tr>
             </tbody>
+
+            <!-- Sticky Table Footer (Grand Total) -->
             <tfoot
               v-if="form.items.length > 0"
-              class="border-t-2 border-gray-200 bg-gray-50 text-xs font-medium"
+              class="sticky bottom-0 bg-slate-50/95 backdrop-blur-xs border-t-2 border-gray-200 text-xs font-semibold z-10"
             >
               <tr>
                 <td
                   colspan="5"
-                  class="py-2.5 px-3 text-right text-gray-700 font-semibold"
+                  class="py-2 px-3 text-right text-gray-600 uppercase tracking-wider text-[11px]"
                 >
                   Grand Total Penerimaan:
                 </td>
-                <td class="py-2.5 px-3 text-right font-mono font-bold text-gray-900">
+                <td class="py-2 px-2.5 text-right font-mono font-black text-gray-900 text-xs">
                   {{ formatQuantity(totalItemsQty) }}
                 </td>
-                <td class="py-2.5 px-3 text-right font-mono font-bold text-indigo-700">
+                <td class="py-2 px-2.5 text-right font-mono font-black text-indigo-700 text-xs">
                   {{ formatRupiah(grandTotalAmount) }}
                 </td>
                 <td />
