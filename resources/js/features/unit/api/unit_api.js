@@ -5,6 +5,10 @@ export const unitApi = {
         return apiClient.get('/units', { params });
     },
 
+    getById(id) {
+        return apiClient.get(`/units/${id}`);
+    },
+
     create(data) {
         return apiClient.post('/units', data);
     },

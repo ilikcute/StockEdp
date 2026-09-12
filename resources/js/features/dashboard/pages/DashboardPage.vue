@@ -1,24 +1,24 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-3.5">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
-          <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-sm">
+        <h1 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black shadow-2xs">
             EDP
           </span>
           Dashboard Operasional Persediaan
         </h1>
-        <p class="text-xs text-gray-500 mt-1">
-          Pusat pemantauan kesehatan persediaan, antrean operasional, dan peringatan real-time.
+        <p class="text-[11px] text-gray-500 mt-0.5">
+          Kesehatan stok, antrean operasional dokumen, dan pergerakan persediaan real-time.
         </p>
       </div>
 
       <div
         v-if="dashboardData?.generated_at"
-        class="text-xs text-gray-500 text-right bg-white px-3 py-1.5 rounded-lg border border-gray-200 self-start sm:self-auto shadow-xs"
+        class="text-[11px] text-gray-500 text-right bg-white px-2.5 py-1 rounded-lg border border-gray-200 self-start sm:self-auto shadow-2xs"
       >
-        <span class="text-gray-400">Terakhir diperbarui:</span>
+        <span class="text-gray-400">Sinkronisasi:</span>
         <span class="font-medium text-gray-700 ml-1">{{ formatTimestamp(dashboardData.generated_at) }}</span>
       </div>
     </div>
@@ -39,7 +39,7 @@
     <!-- Error Alert -->
     <div
       v-if="error"
-      class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center justify-between"
+      class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center justify-between"
     >
       <div class="flex items-center gap-2">
         <svg
@@ -69,17 +69,20 @@
     <!-- Loading Skeleton -->
     <div
       v-if="loading && !dashboardData"
-      class="space-y-6 animate-pulse"
+      class="space-y-3.5 animate-pulse"
     >
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
         <div
           v-for="i in 4"
           :key="i"
-          class="h-24 bg-gray-200 rounded-xl"
+          class="h-20 bg-gray-200 rounded-xl"
         />
       </div>
-      <div class="h-40 bg-gray-200 rounded-xl" />
-      <div class="h-48 bg-gray-200 rounded-xl" />
+      <div class="h-24 bg-gray-200 rounded-xl" />
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+        <div class="h-36 bg-gray-200 rounded-xl" />
+        <div class="h-36 bg-gray-200 rounded-xl" />
+      </div>
     </div>
 
     <template v-else-if="dashboardData">
@@ -89,31 +92,31 @@
         :location-id="filters.location_id"
       />
 
-      <!-- 1b. Replenishment Action Center Widget -->
+      <!-- 2. Replenishment Action Center Ribbon -->
       <ReplenishmentActionCard :location-id="filters.location_id" />
 
-      <!-- 2. Inventory Movement Intelligence Cards -->
-      <InventoryIntelligenceCards
-        :movement-data="dashboardData.inventory_movement"
-        :location-id="filters.location_id"
-      />
+      <!-- 3. Operational Queue & Period Activity Grid (Side by side) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch">
+        <OperationalQueueCards :data="dashboardData.operational_queue" />
+        <PeriodActivityCards :data="dashboardData.period_activity" />
+      </div>
 
-      <!-- 3. Operational Queue Cards -->
-      <OperationalQueueCards :data="dashboardData.operational_queue" />
+      <!-- 4. Movement Intelligence & Alert Center Grid (Side by side) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch">
+        <InventoryIntelligenceCards
+          :movement-data="dashboardData.inventory_movement"
+          :location-id="filters.location_id"
+        />
+        <DashboardAlertList :alerts="dashboardData.alerts" />
+      </div>
 
-      <!-- 4. Period Activity Cards -->
-      <PeriodActivityCards :data="dashboardData.period_activity" />
-
-      <!-- 5. Computed Alert Center -->
-      <DashboardAlertList :alerts="dashboardData.alerts" />
-
-      <!-- 6. Top Movement Products Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 5. Top Movement Products Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch">
         <TopIssuedProducts :products="dashboardData.top_issued_products" />
         <TopReceivedProducts :products="dashboardData.top_received_products" />
       </div>
 
-      <!-- 7. Recent Inventory Activity Table -->
+      <!-- 6. Recent Inventory Activity Table -->
       <RecentInventoryActivity :activities="dashboardData.recent_activity" />
     </template>
   </div>

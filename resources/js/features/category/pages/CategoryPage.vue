@@ -303,10 +303,17 @@ function openCreateModal() {
     showFormModal.value = true;
 }
 
-function openEditModal(category) {
+async function openEditModal(category) {
     editingCategory.value = category;
     categoryStore.clearErrors();
     showFormModal.value = true;
+    // Fetch fresh data from API to activate show endpoint
+    try {
+        const fresh = await categoryStore.fetchById(category.id);
+        if (fresh) editingCategory.value = fresh;
+    } catch {
+        // Use existing data if fetch fails
+    }
 }
 
 function closeFormModal() {

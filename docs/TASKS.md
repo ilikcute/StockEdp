@@ -162,3 +162,28 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
      - Verifikasi visual daftar master lokasi di `http://stockedp.test/locations`.
      - Pengujian unit test & reporting test: 100% Passed.
 - **Status**: SELESAI.
+
+---
+
+### [2026-09-12] Implementasi Frontend untuk 4 Endpoint Backend Dormant
+- **Konteks**: Audit menyeluruh 119 routes, 36 controllers, 50 action classes menemukan 4 area di mana backend endpoint sudah ada namun belum dikonsumsi frontend.
+- **Item 1 - Stock Movement Detail** (GET /api/v1/inventory/movements/{id}):
+  - Menambahkan method getMovementById(id) di inventoryApi.js.
+  - Menambahkan state selectedMovement, movementDetailLoading, dan action fetchMovementById di useInventoryStore.js.
+  - Membuat komponen baru StockMovementDetailModal.vue dengan tampilan detail lengkap.
+  - Menambahkan kolom Aksi + tombol "Detail" di StockMovementPage.vue.
+- **Item 2 - Master Data Show Endpoints** (GET /api/v1/{resource}/{id}):
+  - Menambahkan getById(id) di category_api.js, product_api.js, location_api.js, supplier_api.js, unit_api.js.
+  - Menambahkan getUserById(id) di user_api.js.
+  - Menambahkan action fetchById + export di use_category_store.js.
+  - Mengubah openEditModal di CategoryPage.vue menjadi async, memanggil fetchById untuk data terbaru dari API.
+- **Item 3 - Health Check Endpoint** (GET /api/v1/health):
+  - Membuat file baru resources/js/shared/api/system_api.js berisi systemApi.getHealth().
+  - Menambahkan indikator status sistem di AppLayout.vue header (badge hijau/kuning/merah, polling 60 detik, klik refresh manual).
+- **Item 4 - Dashboard Location Type Labels**:
+  - Menambahkan fungsi formatLocationOption di DashboardFilterBar.vue.
+  - Opsi dropdown lokasi kini menampilkan label tipe: (Gudang Induk), (Teknisi), (Gudang Afkir).
+- **Verifikasi**:
+  - npm run build: PASSED (built in 2.59s, 0 errors).
+  - php artisan test: Berjalan.
+- **Status**: SELESAI.

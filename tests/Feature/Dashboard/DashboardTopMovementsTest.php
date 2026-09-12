@@ -246,4 +246,48 @@ class DashboardTopMovementsTest extends TestCase
         $this->assertSame('20.0000', $topReceived[0]['total_quantity']);
         $this->assertSame(1, $topReceived[0]['movement_count']);
     }
+
+    public function test_top_movements_and_recent_activity_include_unit_price_and_total_gross(): void
+    {
+        $cat = Category::create(['code' => 'CAT-PRICE', 'name' => 'Cat Price', 'is_active' => true]);
+        $unit = Unit::create(['code' => 'UNT-PRICE', 'name' => 'Unit Price', 'symbol' => 'pcs', 'is_active' => true]);
+
+        $p = Product::create([
+            'sku' => 'PRD-PRICE-001',
+            'name' => 'Pricing Product',
+            'category_id' => $cat->id,
+            'unit_id' => $unit->id,
+            'unit_price' => 25000.00,
+            'is_active' => true,
+        ]);
+
+        StockMovement::create([
+            'movement_id' => 'MOV-PRICE-01',
+            'reference_type' => 'App\Features\Inventory\Models\StockIssue',
+            'reference_id' => 99,
+            'product_id' => $p->id,
+            'location_id' => $this->location->id,
+            'movement_type' => MovementType::ISSUE->value,
+            'quantity' => '10.0000',
+            'quantity_before' => '10.0000',
+            'quantity_after' => '0.0000',
+            'reference_number' => 'ISS-PRICE-01',
+            'created_by' => $this->admin->id,
+            'occurred_at' => now(),
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/dashboard');
+        $response->assertOk();
+
+        $topIssued = $response->json('data.top_issued_products');
+        $recent = $response->json('data.recent_activity');
+
+        $this->assertNotEmpty($topIssued);
+        $this->assertSame('25000.00', $topIssued[0]['unit_price']);
+        $this->assertSame('250000.00', $topIssued[0]['total_gross']);
+
+        $this->assertNotEmpty($recent);
+        $this->assertSame('25000.00', $recent[0]['unit_price']);
+        $this->assertSame('250000.00', $recent[0]['total_gross']);
+    }
 }

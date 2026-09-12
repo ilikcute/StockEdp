@@ -1,13 +1,13 @@
 <template>
   <div
     v-if="canViewReplenishment"
-    class="bg-white rounded-xl border border-gray-200 p-5 shadow-xs transition-shadow hover:shadow-md"
+    class="bg-white rounded-xl border border-gray-200 p-3 shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex items-start gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 shadow-2xs">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 shadow-2xs">
           <svg
-            class="w-5 h-5"
+            class="w-4 h-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -23,15 +23,15 @@
 
         <div>
           <div class="flex items-center gap-2">
-            <h3 class="text-sm font-bold text-gray-900">
-              Action Center: Rekomendasi Replenishment & Reorder
+            <h3 class="text-xs font-bold text-gray-900">
+              Rekomendasi Replenishment & Reorder
             </h3>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
+            <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800">
               Live Engine
             </span>
           </div>
-          <p class="text-xs text-gray-500 mt-0.5">
-            Deteksi defisit stok otomatis, alokasi surplus antar gudang, dan persiapan transfer satu klik.
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Deteksi defisit stok otomatis & persiapan alokasi antar gudang.
           </p>
         </div>
       </div>
@@ -42,9 +42,9 @@
             path: '/inventory/replenishment',
             query: locationId ? { location_id: locationId } : {}
           }"
-          class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 shadow-xs transition-colors min-h-[40px] focus:outline-none focus:ring-2 focus:ring-indigo-600 cursor-pointer"
+          class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 shadow-xs transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-indigo-600 cursor-pointer"
         >
-          <span>Buka Action Center</span>
+          <span>Action Center</span>
           <svg
             class="w-3.5 h-3.5"
             fill="none"

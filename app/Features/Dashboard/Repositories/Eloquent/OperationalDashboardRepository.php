@@ -231,6 +231,10 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
             ->get();
 
         return $movements->map(function (StockMovement $m) {
+            $unitPrice = (string) ($m->product?->unit_price ?? '0.00');
+            $quantity = DecimalQuantity::normalize((string) $m->quantity);
+            $totalGross = bcmul($quantity, $unitPrice, 2);
+
             return [
                 'id' => $m->id,
                 'occurred_at' => $m->occurred_at ?? $m->created_at?->toIso8601String() ?? '',
@@ -239,9 +243,11 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
                 'product_sku' => $m->product?->sku ?? '',
                 'product_name' => $m->product?->name ?? '',
                 'unit_symbol' => $m->product?->unit?->symbol ?? $m->product?->unit?->name ?? '',
+                'unit_price' => $unitPrice,
+                'total_gross' => $totalGross,
                 'location_code' => $m->location?->code ?? '',
                 'location_name' => $m->location?->name ?? '',
-                'quantity' => DecimalQuantity::normalize((string) $m->quantity),
+                'quantity' => $quantity,
                 'performed_by' => $m->creator?->name ?? 'System',
             ];
         })->all();
@@ -268,23 +274,30 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
                 'products.id as product_id',
                 'products.sku',
                 'products.name as product_name',
+                'products.unit_price',
                 'units.symbol as unit_symbol',
                 'units.name as unit_name',
                 DB::raw('SUM(stock_movements.quantity) as total_quantity'),
                 DB::raw('COUNT(stock_movements.id) as movement_count'),
             ])
-            ->groupBy('products.id', 'products.sku', 'products.name', 'units.symbol', 'units.name')
+            ->groupBy('products.id', 'products.sku', 'products.name', 'products.unit_price', 'units.symbol', 'units.name')
             ->orderByDesc(DB::raw('SUM(stock_movements.quantity)'))
             ->limit(10)
             ->get();
 
         return $results->map(function ($row) {
+            $unitPrice = (string) ($row->unit_price ?? '0.00');
+            $totalQuantity = DecimalQuantity::normalize((string) $row->total_quantity);
+            $totalGross = bcmul($totalQuantity, $unitPrice, 2);
+
             return [
                 'product_id' => $row->product_id,
                 'sku' => $row->sku,
                 'name' => $row->product_name,
                 'unit_symbol' => $row->unit_symbol ?: ($row->unit_name ?: ''),
-                'total_quantity' => DecimalQuantity::normalize((string) $row->total_quantity),
+                'unit_price' => $unitPrice,
+                'total_gross' => $totalGross,
+                'total_quantity' => $totalQuantity,
                 'movement_count' => (int) $row->movement_count,
             ];
         })->all();
@@ -311,23 +324,30 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
                 'products.id as product_id',
                 'products.sku',
                 'products.name as product_name',
+                'products.unit_price',
                 'units.symbol as unit_symbol',
                 'units.name as unit_name',
                 DB::raw('SUM(stock_movements.quantity) as total_quantity'),
                 DB::raw('COUNT(stock_movements.id) as movement_count'),
             ])
-            ->groupBy('products.id', 'products.sku', 'products.name', 'units.symbol', 'units.name')
+            ->groupBy('products.id', 'products.sku', 'products.name', 'products.unit_price', 'units.symbol', 'units.name')
             ->orderByDesc(DB::raw('SUM(stock_movements.quantity)'))
             ->limit(10)
             ->get();
 
         return $results->map(function ($row) {
+            $unitPrice = (string) ($row->unit_price ?? '0.00');
+            $totalQuantity = DecimalQuantity::normalize((string) $row->total_quantity);
+            $totalGross = bcmul($totalQuantity, $unitPrice, 2);
+
             return [
                 'product_id' => $row->product_id,
                 'sku' => $row->sku,
                 'name' => $row->product_name,
                 'unit_symbol' => $row->unit_symbol ?: ($row->unit_name ?: ''),
-                'total_quantity' => DecimalQuantity::normalize((string) $row->total_quantity),
+                'unit_price' => $unitPrice,
+                'total_gross' => $totalGross,
+                'total_quantity' => $totalQuantity,
                 'movement_count' => (int) $row->movement_count,
             ];
         })->all();
@@ -343,12 +363,13 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
             ->whereIn('id', $allowedLocationIds)
             ->where('is_active', true)
             ->orderBy('code')
-            ->select(['id', 'code', 'name'])
+            ->select(['id', 'code', 'name', 'type'])
             ->get()
             ->map(fn ($loc) => [
                 'id' => $loc->id,
                 'code' => $loc->code,
                 'name' => $loc->name,
+                'type' => $loc->type instanceof \BackedEnum ? $loc->type->value : (string) $loc->type,
             ])
             ->all();
 

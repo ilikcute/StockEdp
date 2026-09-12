@@ -5,6 +5,10 @@ export const categoryApi = {
         return apiClient.get('/categories', { params });
     },
 
+    getById(id) {
+        return apiClient.get(`/categories/${id}`);
+    },
+
     create(data) {
         return apiClient.post('/categories', data);
     },

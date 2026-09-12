@@ -44,6 +44,20 @@ export const useCategoryStore = defineStore('category', () => {
         }
     }
 
+    async function fetchById(id) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await categoryApi.getById(id);
+            return response.data.data;
+        } catch (err) {
+            error.value = normalizeApiError(err).message;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     async function create(data) {
         isLoading.value = true;
         error.value = null;
@@ -119,6 +133,7 @@ export const useCategoryStore = defineStore('category', () => {
         validationErrors,
         successMessage,
         fetchAll,
+        fetchById,
         create,
         update,
         changeStatus,

@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-4 transition-all duration-200">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+  <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-3 transition-all duration-200">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5">
       <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
         <!-- Location Dropdown -->
-        <div class="w-full sm:w-64">
+        <div class="w-full sm:w-60">
           <label
             for="dashboard-location-filter"
-            class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider"
+            class="block text-[11px] font-semibold text-gray-500 mb-0.5 uppercase tracking-wider"
           >
             Lokasi Persediaan
           </label>
@@ -14,7 +14,7 @@
             id="dashboard-location-filter"
             :value="locationId"
             class="w-full rounded-lg border border-gray-300 bg-white text-gray-900 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            @change="$emit('update:locationId', $event.target.value)"
+            @change="handleLocationChange"
           >
             <option value="">
               Semua Lokasi Terjangkau
@@ -24,14 +24,14 @@
               :key="loc.id"
               :value="loc.id"
             >
-              {{ loc.code }} — {{ loc.name }}
+              {{ formatLocationOption(loc) }}
             </option>
           </select>
         </div>
 
         <!-- Period Preset Selector -->
         <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">
+          <label class="block text-[11px] font-semibold text-gray-500 mb-0.5 uppercase tracking-wider">
             Periode
           </label>
           <div class="inline-flex rounded-lg border border-gray-300 p-0.5 bg-gray-50">
@@ -41,7 +41,7 @@
               :key="p.value"
               type="button"
               :class="[
-                'px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-150 cursor-pointer',
+                'px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-150 cursor-pointer',
                 period === p.value
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-gray-600 hover:text-gray-900'
@@ -55,7 +55,7 @@
       </div>
 
       <!-- Actions & Generated Info -->
-      <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
+      <div class="flex items-center gap-2.5 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-2 md:pt-0 border-gray-100">
         <div
           v-if="dateRangeText"
           class="text-xs text-gray-500 text-right"
@@ -68,7 +68,7 @@
           id="refresh-dashboard-btn"
           type="button"
           :disabled="loading"
-          class="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           @click="$emit('refresh')"
         >
           <svg
@@ -92,7 +92,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
   locationId: { type: [String, Number], default: '' },
@@ -103,7 +103,7 @@ const props = defineProps({
   dateTo: { type: String, default: '' },
 });
 
-defineEmits(['update:locationId', 'update:period', 'refresh']);
+const emit = defineEmits(['update:locationId', 'update:period', 'refresh']);
 
 const periods = [
   { value: 'today', label: 'Hari Ini' },
@@ -116,4 +116,52 @@ const dateRangeText = computed(() => {
   if (props.dateFrom === props.dateTo) return props.dateFrom;
   return `${props.dateFrom} s/d ${props.dateTo}`;
 });
+
+const hasUserSelected = ref(false);
+
+const findMainWarehouse = (locs) => {
+  if (!locs || locs.length === 0) return null;
+  // 1. Check by type MAIN_WAREHOUSE
+  const byType = locs.find(l => l.type === 'MAIN_WAREHOUSE');
+  if (byType) return byType;
+  // 2. Check by code 'ADM' or contains 'MAIN' or 'GDG'
+  const byCode = locs.find(l => ['ADM', 'MAIN', 'GDG', 'GUDANG'].includes(String(l.code || '').toUpperCase()));
+  if (byCode) return byCode;
+  // 3. Check by name containing 'adm' or 'gudang' or 'main'
+  const byName = locs.find(l => /gudang|main|adm/i.test(l.name || ''));
+  if (byName) return byName;
+  // 4. Default to first location
+  return locs[0];
+};
+
+const handleLocationChange = (event) => {
+  hasUserSelected.value = true;
+  emit('update:locationId', event.target.value);
+};
+
+// Format location option label with type indicator
+const LOCATION_TYPE_LABELS = {
+  MAIN_WAREHOUSE: '🏛 Gudang Induk',
+  FIELD_PERSONNEL: '🔧 Teknisi',
+  DAMAGED_STORAGE: '⚠ Gudang Afkir',
+};
+
+const formatLocationOption = (loc) => {
+  const typeLabel = LOCATION_TYPE_LABELS[loc.type] ? ` (${LOCATION_TYPE_LABELS[loc.type]})` : '';
+  return `${loc.code} — ${loc.name}${typeLabel}`;
+};
+
+// Set default location to main gudang when locations are loaded and no location has been selected yet
+watch(
+  () => props.locations,
+  (newLocations) => {
+    if (!hasUserSelected.value && (!props.locationId || props.locationId === '') && newLocations && newLocations.length > 0) {
+      const mainWarehouse = findMainWarehouse(newLocations);
+      if (mainWarehouse) {
+        emit('update:locationId', mainWarehouse.id);
+      }
+    }
+  },
+  { immediate: true }
+);
 </script>

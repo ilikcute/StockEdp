@@ -1,20 +1,20 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
     <!-- Out of Stock Card -->
     <component
       :is="canNavigate('reports.inventory_balance.view') ? 'button' : 'div'"
       type="button"
       :class="[
-        'bg-white rounded-xl border border-rose-200 p-4 shadow-xs text-left transition-all',
+        'bg-white rounded-xl border border-rose-200 p-3 shadow-xs text-left transition-all',
         canNavigate('reports.inventory_balance.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-rose-500' : ''
       ]"
       @click="canNavigate('reports.inventory_balance.view') && navigateTo('reports.inventory-balances', locationId ? { location_id: locationId, zero_stock: 1 } : { zero_stock: 1 })"
     >
       <div class="flex items-center justify-between">
-        <span class="text-xs font-medium text-rose-600 uppercase tracking-wider">Stok Habis (0)</span>
-        <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <span class="text-[11px] font-semibold text-rose-600 uppercase tracking-wider">Stok Habis (0)</span>
+        <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform">
           <svg
-            class="w-4 h-4"
+            class="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -28,16 +28,16 @@
           </svg>
         </div>
       </div>
-      <div class="mt-2 flex items-baseline justify-between">
+      <div class="mt-1.5 flex items-baseline justify-between">
         <span
           id="stat-out-of-stock-count"
-          class="text-2xl font-bold text-gray-900"
+          class="text-xl font-bold text-gray-900"
         >{{ data.out_of_stock_count || 0 }}</span>
         <span
           v-if="canNavigate('reports.inventory_balance.view')"
-          class="text-xs text-rose-600 font-medium group-hover:underline flex items-center gap-1"
+          class="text-[11px] text-rose-600 font-medium group-hover:underline flex items-center gap-1"
         >
-          Lihat Persediaan &rarr;
+          Lihat &rarr;
         </span>
       </div>
     </component>
@@ -47,16 +47,16 @@
       :is="canNavigate('reports.low_stock.view') ? 'button' : 'div'"
       type="button"
       :class="[
-        'bg-white rounded-xl border border-amber-200 p-4 shadow-xs text-left transition-all',
+        'bg-white rounded-xl border border-amber-200 p-3 shadow-xs text-left transition-all',
         canNavigate('reports.low_stock.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-amber-500' : ''
       ]"
       @click="canNavigate('reports.low_stock.view') && navigateTo('reports.low-stock', locationId ? { location_id: locationId } : {})"
     >
       <div class="flex items-center justify-between">
-        <span class="text-xs font-medium text-amber-600 uppercase tracking-wider">Di Bawah Min. Stok</span>
-        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <span class="text-[11px] font-semibold text-amber-600 uppercase tracking-wider">Di Bawah Min. Stok</span>
+        <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
           <svg
-            class="w-4 h-4"
+            class="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -70,16 +70,16 @@
           </svg>
         </div>
       </div>
-      <div class="mt-2 flex items-baseline justify-between">
+      <div class="mt-1.5 flex items-baseline justify-between">
         <span
           id="stat-low-stock-count"
-          class="text-2xl font-bold text-gray-900"
+          class="text-xl font-bold text-gray-900"
         >{{ data.low_stock_count || 0 }}</span>
         <span
           v-if="canNavigate('reports.low_stock.view')"
-          class="text-xs text-amber-600 font-medium group-hover:underline flex items-center gap-1"
+          class="text-[11px] text-amber-600 font-medium group-hover:underline flex items-center gap-1"
         >
-          Laporan Stok &rarr;
+          Laporan &rarr;
         </span>
       </div>
     </component>
@@ -89,16 +89,16 @@
       :is="canNavigate('stock_opnames.view') ? 'button' : 'div'"
       type="button"
       :class="[
-        'bg-white rounded-xl border border-purple-200 p-4 shadow-xs text-left transition-all',
+        'bg-white rounded-xl border border-purple-200 p-3 shadow-xs text-left transition-all',
         canNavigate('stock_opnames.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-purple-500' : ''
       ]"
       @click="canNavigate('stock_opnames.view') && navigateTo('stockOpnames')"
     >
       <div class="flex items-center justify-between">
-        <span class="text-xs font-medium text-purple-600 uppercase tracking-wider">Opname Aktif</span>
-        <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <span class="text-[11px] font-semibold text-purple-600 uppercase tracking-wider">Opname Aktif</span>
+        <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
           <svg
-            class="w-4 h-4"
+            class="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -112,16 +112,16 @@
           </svg>
         </div>
       </div>
-      <div class="mt-2 flex items-baseline justify-between">
+      <div class="mt-1.5 flex items-baseline justify-between">
         <span
           id="stat-active-opname-count"
-          class="text-2xl font-bold text-gray-900"
+          class="text-xl font-bold text-gray-900"
         >{{ data.active_opname_count || 0 }}</span>
         <span
           v-if="canNavigate('stock_opnames.view')"
-          class="text-xs text-purple-600 font-medium group-hover:underline flex items-center gap-1"
+          class="text-[11px] text-purple-600 font-medium group-hover:underline flex items-center gap-1"
         >
-          Kelola Opname &rarr;
+          Kelola &rarr;
         </span>
       </div>
     </component>
@@ -131,16 +131,16 @@
       :is="canNavigate('locations.view') ? 'button' : 'div'"
       type="button"
       :class="[
-        'bg-white rounded-xl border border-cyan-200 p-4 shadow-xs text-left transition-all',
+        'bg-white rounded-xl border border-cyan-200 p-3 shadow-xs text-left transition-all',
         canNavigate('locations.view') ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-cyan-500' : ''
       ]"
       @click="canNavigate('locations.view') && navigateTo('locations.index')"
     >
       <div class="flex items-center justify-between">
-        <span class="text-xs font-medium text-cyan-600 uppercase tracking-wider">Lokasi Beku</span>
-        <div class="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <span class="text-[11px] font-semibold text-cyan-600 uppercase tracking-wider">Lokasi Beku</span>
+        <div class="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center group-hover:scale-110 transition-transform">
           <svg
-            class="w-4 h-4"
+            class="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -154,16 +154,16 @@
           </svg>
         </div>
       </div>
-      <div class="mt-2 flex items-baseline justify-between">
+      <div class="mt-1.5 flex items-baseline justify-between">
         <span
           id="stat-frozen-location-count"
-          class="text-2xl font-bold text-gray-900"
+          class="text-xl font-bold text-gray-900"
         >{{ data.frozen_location_count || 0 }}</span>
         <span
           v-if="canNavigate('locations.view')"
-          class="text-xs text-cyan-600 font-medium group-hover:underline flex items-center gap-1"
+          class="text-[11px] text-cyan-600 font-medium group-hover:underline flex items-center gap-1"
         >
-          Status Lokasi &rarr;
+          Lokasi &rarr;
         </span>
       </div>
     </component>

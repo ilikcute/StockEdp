@@ -100,12 +100,18 @@
             >
               Referensi
             </th>
+            <th
+              scope="col"
+              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
+            >
+              <span class="sr-only">Aksi</span>
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <tr v-if="inventoryStore.loading && inventoryStore.movements.data.length === 0">
             <td
-              colspan="6"
+              colspan="7"
               class="py-10 text-center text-sm text-gray-500"
             >
               Memuat data...
@@ -113,7 +119,7 @@
           </tr>
           <tr v-else-if="inventoryStore.movements.data.length === 0">
             <td
-              colspan="6"
+              colspan="7"
               class="py-10 text-center text-sm text-gray-500"
             >
               Tidak ada data pergerakan stok.
@@ -163,6 +169,14 @@
                 oleh {{ item.creator?.name }}
               </div>
             </td>
+            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+              <button
+                class="text-indigo-600 hover:text-indigo-900 font-medium text-xs"
+                @click="openDetail(item)"
+              >
+                Detail
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -173,6 +187,13 @@
       :loading="inventoryStore.isLoading"
       @change="changePage"
     />
+
+    <!-- Stock Movement Detail Modal -->
+    <StockMovementDetailModal
+      v-model="showDetailModal"
+      :movement="inventoryStore.selectedMovement"
+      :loading="inventoryStore.movementDetailLoading"
+    />
   </div>
 </template>
 
@@ -180,12 +201,19 @@
 import { onMounted, ref, watch } from 'vue';
 import { useInventoryStore } from '../stores/useInventoryStore';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import StockMovementDetailModal from '../components/StockMovementDetailModal.vue';
 import { formatRupiah, formatQuantity, rowNumber, formatTimestamp } from '@/shared/utils/formatters.js';
 
 const inventoryStore = useInventoryStore();
 
 const searchQuery = ref('');
 const movementTypeFilter = ref('');
+const showDetailModal = ref(false);
+
+const openDetail = async (item) => {
+    showDetailModal.value = true;
+    await inventoryStore.fetchMovementById(item.id);
+};
 
 let debounceTimer = null;
 const debouncedSearch = () => {

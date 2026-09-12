@@ -7,6 +7,8 @@ export const useInventoryStore = defineStore('inventory', {
             data: [],
             meta: null
         },
+        selectedMovement: null,
+        movementDetailLoading: false,
         loading: false,
         error: null,
     }),
@@ -42,6 +44,20 @@ export const useInventoryStore = defineStore('inventory', {
             } finally {
                 this.loading = false;
             }
-        }
+        },
+
+        async fetchMovementById(id) {
+            this.movementDetailLoading = true;
+            this.selectedMovement = null;
+            try {
+                const response = await inventoryApi.getMovementById(id);
+                this.selectedMovement = response.data?.data || response.data;
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Gagal memuat detail pergerakan stok';
+                throw error;
+            } finally {
+                this.movementDetailLoading = false;
+            }
+        },
     }
 });

@@ -9,6 +9,10 @@ export const inventoryApi = {
         return apiClient.get('/inventory/movements', { params });
     },
 
+    getMovementById(id) {
+        return apiClient.get(`/inventory/movements/${id}`);
+    },
+
     getReceipts(params) {
         return apiClient.get('/stock-receipts', { params });
     },

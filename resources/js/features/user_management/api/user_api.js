@@ -5,6 +5,10 @@ export const userApi = {
         return apiClient.get('/users', { params });
     },
 
+    getUserById(id) {
+        return apiClient.get(`/users/${id}`);
+    },
+
     getFormOptions() {
         return apiClient.get('/users/form-options');
     },
