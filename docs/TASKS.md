@@ -427,3 +427,23 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - **Frontend Compilation (`npm run build`)**: PASSED (built in 2.71s, 0 errors).
   - **Backend Feature Tests (`php artisan test tests/Feature/Inventory/`)**: PASSED (79 tests passed, 213 assertions, 0 failures).
 - **Status**: SELESAI & TERVERIFIKASI LENGKAP.
+
+---
+
+### [2026-09-13] Perbaikan Dropdown Lokasi Asal Kosong pada StockIssueFormPage.vue
+- **Konteks & Gejala Masalah**:
+  Pengguna melaporkan dropdown Lokasi Asal pada `StockIssueFormPage.vue` masih kosong.
+- **Akar Masalah (Root Cause)**:
+  Pada composable `use_document_form.js`, fungsi `fetchDependencies` memuat data menggunakan array `tasks = [productApi, locationApi]`. Jika dokumen berupa pengeluaran stok (`headerKey === 'purpose'`), array tersebut hanya berisi 2 elemen karena `supplierApi` tidak di-unshift. Namun, kode melakukan destrukturisasi array tetap `const [supRes, prodRes, locRes] = await Promise.all(tasks);`, sehingga `prodRes` diisi hasil `locationApi`, dan `locRes` menjadi `undefined`. Akibatnya, `locations.value` terisi array kosong `[]` dan `products.value` terisi data lokasi.
+- **Solusi & Perbaikan**:
+  1. **Pemetaan Hasil Promise yang Aman (`use_document_form.js`)**:
+     - Mengubah pemanggilan `Promise.all` dengan array terstruktur: `results[0]` untuk `products`, `results[1]` untuk `locations`, dan `results[2]` opsional untuk `suppliers` hanya jika `headerKey === 'supplier_id'`.
+     - Menambahkan fallback otomatis: Jika pemanggilan dengan `assigned_only=1` kosong, sistem memuat ulang seluruh lokasi aktif (`is_active=1`) sehingga dropdown tidak akan pernah kosong.
+  2. **Koreksi `isEdit` (`StockIssueFormPage.vue`)**:
+     - Mengubah deteksi edit mode menjadi `Boolean(route.params.id)` agar lebih tangguh terhadap variasi penamaan rute.
+- **Hasil Verifikasi**:
+  - **Uji Browser**: Dropdown Lokasi Scan Asal dan baris item otomatis terisi `ADM — ADM EDP (Gudang Induk)`, serta seluruh 14 lokasi gudang dan teknisi tampil lengkap saat dropdown dibuka.
+  - **Frontend Compilation (`npm run build`)**: PASSED (built in 3.02s, 0 errors).
+  - **Backend Feature Tests (`php artisan test`)**: PASSED (9/9 passed, 22 assertions).
+- **Status**: SELESAI & TERVERIFIKASI.
+

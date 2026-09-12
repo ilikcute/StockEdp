@@ -495,7 +495,7 @@ const {
     submitForm,
 } = useDocumentForm({
     store,
-    isEdit: route.name === 'stockIssuesEdit',
+    isEdit: Boolean(route.params.id),
     basePath: '/inventory/issues',
     headerKey: 'purpose',
     locationNoun: 'lokasi asal',

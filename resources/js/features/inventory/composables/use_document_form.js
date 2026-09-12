@@ -43,20 +43,30 @@ export function useDocumentForm(config) {
 
     const fetchDependencies = async () => {
         try {
-            const tasks = [
+            const promises = [
                 productApi.getAll({ is_active: 1, per_page: 1000 }),
                 locationApi.getAll({ is_active: 1, assigned_only: 1, per_page: 1000, sort_by: 'id', sort_order: 'asc' }),
             ];
             if (headerKey === 'supplier_id') {
-                tasks.unshift(supplierApi.getAll({ is_active: 1, per_page: 500 }));
+                promises.push(supplierApi.getAll({ is_active: 1, per_page: 500 }));
             }
-            const [supRes, prodRes, locRes] = await Promise.all(tasks);
 
-            if (headerKey === 'supplier_id') {
+            const results = await Promise.all(promises);
+            const prodRes = results[0];
+            const locRes = results[1];
+            const supRes = headerKey === 'supplier_id' ? results[2] : null;
+
+            products.value = prodRes.data?.data?.data || prodRes.data?.data || [];
+            let loadedLocs = locRes.data?.data?.data || locRes.data?.data || [];
+            if (loadedLocs.length === 0) {
+                const allLocRes = await locationApi.getAll({ is_active: 1, per_page: 1000, sort_by: 'id', sort_order: 'asc' });
+                loadedLocs = allLocRes.data?.data?.data || allLocRes.data?.data || [];
+            }
+            locations.value = loadedLocs;
+
+            if (supRes) {
                 suppliers.value = supRes.data?.data?.data || supRes.data?.data || [];
             }
-            products.value = prodRes.data?.data?.data || prodRes.data?.data || [];
-            locations.value = locRes.data?.data?.data || locRes.data?.data || [];
 
             if (locations.value.length > 0) {
                 const mainWarehouse = locations.value.find((l) => l.type === 'MAIN_WAREHOUSE' || l.code === 'ADM');
@@ -74,6 +84,7 @@ export function useDocumentForm(config) {
                 : 'Gagal memuat master data produk atau lokasi.';
         }
     };
+
 
     const loadDocument = async () => {
         try {
