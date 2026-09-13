@@ -23,7 +23,7 @@
       </template>
     </BasePageHeader>
 
-    <div class="mt-6 flex flex-col sm:flex-row justify-between gap-4">
+    <div class="mt-3 flex flex-col sm:flex-row justify-between gap-2.5">
       <div class="w-full sm:max-w-xs">
         <BaseSearchInput
           :model-value="searchQuery"
@@ -36,7 +36,7 @@
         <select
           id="filter-category"
           v-model="categoryFilter"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Kategori
@@ -52,7 +52,7 @@
         <select
           id="filter-unit"
           v-model="unitFilter"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Satuan
@@ -67,7 +67,7 @@
         </select>
         <select
           v-model="statusFilter"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Status
@@ -81,7 +81,7 @@
         </select>
         <select
           v-model="sortBy"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="created_at">
             Terbaru
@@ -108,65 +108,65 @@
       @dismiss="store.clearMessages()"
     />
 
-    <div class="mt-6 overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
+    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+              class="py-1.5 px-1.5 w-8 text-center"
             >
               No.
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               SKU & Barcode
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Produk
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Kategori & Satuan
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Harga Satuan
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Min Stock
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Status
             </th>
             <th
               scope="col"
-              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
             >
-              <span class="sr-only">Aksi</span>
+              Aksi
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
+        <tbody class="divide-y divide-gray-100 bg-white">
           <tr v-if="store.isLoading && store.items.length === 0">
             <td
               colspan="8"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
               Memuat data...
             </td>
@@ -174,7 +174,7 @@
           <tr v-else-if="store.items.length === 0">
             <td
               colspan="8"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
               Tidak ada data produk yang ditemukan.
             </td>
@@ -182,67 +182,69 @@
           <tr
             v-for="(product, index) in store.items"
             :key="product.id"
-            :class="{ 'bg-gray-50': !product.is_active }"
+            class="hover:bg-gray-50/80 transition-colors"
+            :class="{ 'bg-gray-50/50': !product.is_active }"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
               {{ rowNumber(store.pagination, index) }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
-              <div class="font-mono font-medium text-gray-900">
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-mono font-medium text-gray-900 leading-tight">
                 {{ product.sku }}
               </div>
               <div
                 v-if="product.barcode"
-                class="text-xs text-gray-500"
+                class="text-[10px] text-gray-400 font-mono"
               >
                 {{ product.barcode }}
               </div>
             </td>
-            <td class="px-3 py-4 text-sm text-gray-900">
-              <div class="font-medium text-gray-900">
+            <td class="py-1.5 px-2 text-[11px]">
+              <div class="font-medium text-gray-900 leading-tight">
                 {{ product.name }}
               </div>
               <div
                 v-if="product.description"
-                class="text-xs text-gray-500 truncate max-w-[200px]"
+                class="text-[10px] text-gray-400 truncate max-w-[200px]"
                 :title="product.description"
               >
                 {{ product.description }}
               </div>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              <div class="text-gray-900">
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="text-gray-900 font-medium leading-tight">
                 {{ product.category_name }}
               </div>
-              <div class="text-xs">
+              <div class="text-[10px] text-gray-400">
                 {{ product.unit_name }}
               </div>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+            <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
               {{ formatRupiah(product.unit_price) }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
               {{ formatQuantity(product.minimum_stock) }} {{ product.unit_abbreviation }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <td class="py-1.5 px-2 whitespace-nowrap">
               <span
-                class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
-                :class="product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                :class="product.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
               >
                 {{ product.is_active ? 'Aktif' : 'Nonaktif' }}
               </span>
             </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px] space-x-2">
               <button
                 v-if="hasPermission('products.update')"
-                class="text-indigo-600 hover:text-indigo-900 mr-4"
+                class="font-semibold text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
                 @click="openEditModal(product)"
               >
                 Ubah
               </button>
               <button
                 v-if="hasPermission('products.change_status')"
-                :class="product.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'"
+                class="font-semibold hover:underline cursor-pointer"
+                :class="product.is_active ? 'text-rose-600 hover:text-rose-900' : 'text-emerald-600 hover:text-emerald-900'"
                 @click="openStatusModal(product)"
               >
                 {{ product.is_active ? 'Nonaktifkan' : 'Aktifkan' }}
@@ -390,3 +392,20 @@ onMounted(() => {
     fetchData();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

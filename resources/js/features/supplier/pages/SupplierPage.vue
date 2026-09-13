@@ -14,7 +14,7 @@
       </template>
     </BasePageHeader>
 
-    <div class="mt-6 flex flex-col sm:flex-row justify-between gap-4">
+    <div class="mt-3 flex flex-col sm:flex-row justify-between gap-2.5">
       <div class="w-full sm:max-w-xs">
         <BaseSearchInput
           :model-value="searchQuery"
@@ -26,7 +26,7 @@
       <div class="flex gap-2">
         <select
           v-model="statusFilter"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Status
@@ -40,7 +40,7 @@
         </select>
         <select
           v-model="sortBy"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="created_at">
             Terbaru
@@ -67,59 +67,59 @@
       @dismiss="store.clearMessages()"
     />
 
-    <div class="mt-6 overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
+    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+              class="py-1.5 px-1.5 w-8 text-center"
             >
               No.
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Kode
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Nama Supplier
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Kontak
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Email
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Status
             </th>
             <th
               scope="col"
-              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
             >
-              <span class="sr-only">Aksi</span>
+              Aksi
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
+        <tbody class="divide-y divide-gray-100 bg-white">
           <tr v-if="store.isLoading && store.items.length === 0">
             <td
               colspan="7"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
               Memuat data...
             </td>
@@ -127,7 +127,7 @@
           <tr v-else-if="store.items.length === 0">
             <td
               colspan="7"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
               Tidak ada data supplier yang ditemukan.
             </td>
@@ -135,23 +135,24 @@
           <tr
             v-for="(supplier, index) in store.items"
             :key="supplier.id"
-            :class="{ 'bg-gray-50': !supplier.is_active }"
+            class="hover:bg-gray-50/80 transition-colors"
+            :class="{ 'bg-gray-50/50': !supplier.is_active }"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
               {{ rowNumber(store.pagination, index) }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm font-mono font-medium text-gray-900">
+            <td class="py-1.5 px-2 font-mono font-medium text-gray-900 text-[11px] whitespace-nowrap">
               {{ supplier.code }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+            <td class="py-1.5 px-2 font-medium text-gray-900 text-[11px] whitespace-nowrap">
               {{ supplier.name }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-gray-500 text-[11px] whitespace-nowrap">
               <template v-if="supplier.contact_person !== undefined">
-                {{ supplier.contact_person || '—' }}
+                <div class="leading-tight">{{ supplier.contact_person || '—' }}</div>
                 <span
                   v-if="supplier.phone"
-                  class="block text-xs text-gray-400"
+                  class="block text-[10px] text-gray-400"
                 >{{ supplier.phone }}</span>
               </template>
               <span
@@ -159,32 +160,33 @@
                 class="text-gray-400 italic text-xs"
               >—</span>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-gray-500 text-[11px] whitespace-nowrap">
               <span v-if="supplier.email !== undefined">{{ supplier.email || '—' }}</span>
               <span
                 v-else
                 class="text-gray-400 italic text-xs"
               >—</span>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <td class="py-1.5 px-2 whitespace-nowrap">
               <span
-                class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
-                :class="supplier.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                :class="supplier.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
               >
                 {{ supplier.is_active ? 'Aktif' : 'Nonaktif' }}
               </span>
             </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px] space-x-2">
               <button
                 v-if="hasPermission('suppliers.update')"
-                class="text-indigo-600 hover:text-indigo-900 mr-4"
+                class="font-semibold text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
                 @click="openEditModal(supplier)"
               >
                 Ubah
               </button>
               <button
                 v-if="hasPermission('suppliers.change_status')"
-                :class="supplier.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'"
+                class="font-semibold hover:underline cursor-pointer"
+                :class="supplier.is_active ? 'text-rose-600 hover:text-rose-900' : 'text-emerald-600 hover:text-emerald-900'"
                 @click="openStatusModal(supplier)"
               >
                 {{ supplier.is_active ? 'Nonaktifkan' : 'Aktifkan' }}
@@ -290,3 +292,20 @@ const closeStatusModal = () => {
 
 onMounted(() => fetchData());
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
