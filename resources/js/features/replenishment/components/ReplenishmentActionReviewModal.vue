@@ -101,37 +101,37 @@
 
       <!-- Table of Items to Review -->
       <div class="flex-1 overflow-y-auto p-6 space-y-4">
-        <div class="rounded-xl border border-gray-200 overflow-x-auto touch-scroll shadow-2xs">
-          <table class="min-w-full divide-y divide-gray-200 text-xs">
-            <thead class="bg-gray-50 text-gray-600 font-semibold">
-              <tr>
+        <div class="rounded-xl border border-gray-200 overflow-x-auto shadow-2xs custom-scrollbar">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+              <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
                 <th
                   scope="col"
-                  class="py-3 pl-4 pr-3 text-left"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   Produk & SKU
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3 text-left"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   Rute Transfer
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3 text-right"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Kebutuhan Bersih
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3 text-right"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Surplus Sumber
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3 text-right w-44"
+                  class="py-1.5 px-2 text-right w-36 whitespace-nowrap"
                 >
                   Kuantitas Transfer
                 </th>
@@ -141,14 +141,14 @@
               <tr
                 v-for="item in localItems"
                 :key="`${item.product_id}-${item.source_location_id}`"
-                class="hover:bg-gray-50/50"
+                class="hover:bg-gray-50/80 transition-colors"
               >
                 <!-- Produk -->
-                <td class="py-3 pl-4 pr-3">
-                  <div class="font-bold text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+                  <div class="font-medium text-gray-900">
                     {{ item.product_name }}
                   </div>
-                  <div class="text-[11px] text-gray-500 font-mono">
+                  <div class="text-[10px] text-gray-400 font-mono">
                     {{ item.sku }} <span
                       v-if="item.barcode"
                       class="text-gray-400"
@@ -157,9 +157,9 @@
                 </td>
 
                 <!-- Rute Transfer -->
-                <td class="px-3 py-3">
+                <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
                       {{ item.source_location_name }}
                     </span>
                     <svg
@@ -175,31 +175,31 @@
                         d="M17 8l4 4m0 0l-4 4m4-4H3"
                       />
                     </svg>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200">
                       {{ item.target_location_name }}
                     </span>
                   </div>
                 </td>
 
                 <!-- Kebutuhan Bersih -->
-                <td class="px-3 py-3 text-right font-mono text-gray-700">
+                <td class="py-1.5 px-2 text-right font-mono text-gray-700 text-[11px] whitespace-nowrap">
                   {{ item.target_net_need }}
                 </td>
 
                 <!-- Surplus Sumber -->
-                <td class="px-3 py-3 text-right font-mono text-emerald-700 font-medium">
+                <td class="py-1.5 px-2 text-right font-mono text-emerald-700 font-medium text-[11px] whitespace-nowrap">
                   {{ item.source_available_surplus }}
                 </td>
 
                 <!-- Input Kuantitas Transfer -->
-                <td class="px-3 py-3 text-right">
-                  <div class="space-y-1">
+                <td class="py-1.5 px-2 text-right whitespace-nowrap">
+                  <div class="space-y-0.5">
                     <input
                       v-model="item.requested_quantity"
                       type="text"
                       inputmode="decimal"
                       :class="[
-                        'block w-full text-right rounded-md border px-2.5 py-1.5 text-xs font-mono font-bold shadow-2xs focus:outline-none focus:ring-1 text-gray-900',
+                        'block w-full text-right rounded-md border px-2 py-1 text-[11px] font-mono font-bold shadow-2xs focus:outline-none focus:ring-1 text-gray-900',
                         getItemError(item)
                           ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500 bg-rose-50/40 text-rose-900'
                           : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 bg-white'
@@ -207,7 +207,7 @@
                     >
                     <div
                       v-if="getItemError(item)"
-                      class="text-[10px] text-rose-600 font-medium text-right"
+                      class="text-[9px] text-rose-600 font-medium text-right"
                     >
                       {{ getItemError(item) }}
                     </div>
@@ -381,3 +381,20 @@ const handleRefreshAndClose = () => {
   emit('close');
 };
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

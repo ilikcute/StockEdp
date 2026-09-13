@@ -234,112 +234,106 @@
         </div>
       </div>
 
-      <div class="flex flex-col relative">
-        <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-            <div class="overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-              <table class="min-w-full divide-y divide-gray-300">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
-                    >
-                      No.
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                    >
-                      Tanggal Dokumen
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                    >
-                      Tanggal Posting
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                    >
-                      Referensi / Tipe
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                    >
-                      Qty Before
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 text-right text-sm font-semibold text-green-700 border-b border-gray-300"
-                    >
-                      Masuk
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 text-right text-sm font-semibold text-red-700 border-b border-gray-300"
-                    >
-                      Keluar
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                    >
-                      Qty After
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 bg-white">
-                  <tr v-if="store.data.length === 0">
-                    <td
-                      colspan="8"
-                      class="py-10 text-center text-sm text-gray-500"
-                    >
-                      Tidak ada pergerakan stok pada periode ini.
-                    </td>
-                  </tr>
-                  <tr
-                    v-for="(item, index) in store.data"
-                    :key="item.id"
-                    class="hover:bg-gray-50"
-                  >
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-                      {{ rowNumber(store.pagination, index) }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      {{ item.document_date || '-' }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      {{ item.movement_posted_at || item.occurred_at || '-' }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                      <div class="font-medium">
-                        {{ item.reference_number || item.movement_id }}
-                      </div>
-                      <div class="text-xs text-gray-500">
-                        {{ item.movement_type }}
-                      </div>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-500">
-                      {{ formatQuantity(item.quantity_before) }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-medium text-green-600">
-                      {{ item.quantity_in && item.quantity_in !== '0.0000' && item.quantity_in !== '0' ? '+' + formatQuantity(item.quantity_in) : '-' }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-medium text-red-600">
-                      {{ item.quantity_out && item.quantity_out !== '0.0000' && item.quantity_out !== '0' ? '-' + formatQuantity(item.quantity_out) : '-' }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-semibold text-gray-900">
-                      {{ formatQuantity(item.quantity_after) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+      <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+            <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+              <th
+                scope="col"
+                class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap"
+              >
+                No.
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 whitespace-nowrap"
+              >
+                Tanggal Dokumen
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 whitespace-nowrap"
+              >
+                Tanggal Posting
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 whitespace-nowrap"
+              >
+                Referensi / Tipe
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap"
+              >
+                Qty Before
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap text-emerald-700"
+              >
+                Masuk
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap text-rose-700"
+              >
+                Keluar
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap"
+              >
+                Qty After
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 bg-white">
+            <tr v-if="store.data.length === 0">
+              <td
+                colspan="8"
+                class="py-8 text-center text-xs text-gray-400"
+              >
+                Tidak ada pergerakan stok pada periode ini.
+              </td>
+            </tr>
+            <tr
+              v-for="(item, index) in store.data"
+              :key="item.id"
+              class="hover:bg-gray-50/80 transition-colors"
+            >
+              <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
+                {{ rowNumber(store.pagination, index) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-600 font-mono whitespace-nowrap">
+                {{ item.document_date || '-' }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-500 font-mono whitespace-nowrap">
+                {{ item.movement_posted_at || item.occurred_at || '-' }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+                <div class="font-medium text-gray-900 font-mono">
+                  {{ item.reference_number || item.movement_id }}
+                </div>
+                <div class="text-[10px] text-gray-400">
+                  {{ item.movement_type }}
+                </div>
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-500 whitespace-nowrap">
+                {{ formatQuantity(item.quantity_before) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-emerald-600 whitespace-nowrap">
+                {{ item.quantity_in && item.quantity_in !== '0.0000' && item.quantity_in !== '0' ? '+' + formatQuantity(item.quantity_in) : '-' }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-rose-600 whitespace-nowrap">
+                {{ item.quantity_out && item.quantity_out !== '0.0000' && item.quantity_out !== '0' ? '-' + formatQuantity(item.quantity_out) : '-' }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-gray-900 whitespace-nowrap">
+                {{ formatQuantity(item.quantity_after) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Pagination -->
@@ -518,3 +512,20 @@ onMounted(async () => {
     await masterStore.fetchOptions();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

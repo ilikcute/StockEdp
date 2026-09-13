@@ -209,127 +209,123 @@
 
       <div
         v-else
-        class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8"
+        class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar relative"
       >
-        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-            <div
-              v-if="store.loading"
-              class="absolute inset-0 bg-white/50 z-10 flex items-center justify-center"
-            >
-              <span class="text-indigo-600 font-medium bg-white px-4 py-2 rounded-md shadow">Memuat data...</span>
-            </div>
-
-            <div
-              v-if="selectedLocationName"
-              class="px-4 py-2 bg-gray-50 border-b border-gray-300 text-sm font-medium text-gray-700 sm:px-6"
-            >
-              Lokasi Terpilih: <span class="font-semibold text-gray-900">{{ selectedLocationName }}</span>
-            </div>
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
-                  >
-                    No.
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    SKU / Produk
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Kategori / Unit
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Harga Satuan
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    On-Hand
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Min Stock
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-red-700 border-b border-gray-300"
-                  >
-                    Shortage
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-red-700 border-b border-gray-300"
-                  >
-                    Estimasi Defisit
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-if="!store.loading && store.data.length === 0">
-                  <td
-                    colspan="8"
-                    class="py-10 text-center text-sm text-gray-500"
-                  >
-                    Tidak ada produk di bawah stok minimum pada lokasi ini.
-                  </td>
-                </tr>
-                <tr
-                  v-for="(item, index) in store.data"
-                  :key="item.id"
-                  class="hover:bg-gray-50"
-                >
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-                    {{ rowNumber(store.meta, index) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm">
-                    <div class="font-medium text-gray-900">
-                      {{ item.product_name }}
-                    </div>
-                    <div class="text-xs text-gray-500 font-mono">
-                      {{ item.sku }}
-                    </div>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <div>{{ item.category_name || '-' }}</div>
-                    <div class="text-xs text-gray-400">
-                      {{ item.unit_name || '-' }}
-                    </div>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-900">
-                    {{ formatRupiah(item.unit_price) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-900 font-medium">
-                    {{ formatQuantity(item.on_hand_quantity) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-500">
-                    {{ formatQuantity(item.minimum_stock) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-semibold text-red-600">
-                    -{{ formatQuantity(item.shortage_quantity) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-semibold text-red-600">
-                    {{ formatRupiah(item.deficit_estimated_cost || (Number(item.shortage_quantity || 0) * (item.unit_price || 0))) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div
+          v-if="store.loading"
+          class="absolute inset-0 bg-white/50 z-20 flex items-center justify-center"
+        >
+          <span class="text-indigo-600 font-medium bg-white px-3 py-1.5 rounded-lg shadow-sm text-xs">Memuat data...</span>
         </div>
+
+        <div
+          v-if="selectedLocationName"
+          class="px-3 py-1.5 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-700"
+        >
+          Lokasi Terpilih: <span class="font-semibold text-gray-900">{{ selectedLocationName }}</span>
+        </div>
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+            <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+              <th
+                scope="col"
+                class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap"
+              >
+                No.
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 whitespace-nowrap"
+              >
+                SKU / Produk
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 whitespace-nowrap"
+              >
+                Kategori / Unit
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap"
+              >
+                Harga Satuan
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap"
+              >
+                On-Hand
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap"
+              >
+                Min Stock
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap text-rose-700"
+              >
+                Shortage
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap text-rose-700"
+              >
+                Estimasi Defisit
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 bg-white">
+            <tr v-if="!store.loading && store.data.length === 0">
+              <td
+                colspan="8"
+                class="py-8 text-center text-xs text-gray-400"
+              >
+                Tidak ada produk di bawah stok minimum pada lokasi ini.
+              </td>
+            </tr>
+            <tr
+              v-for="(item, index) in store.data"
+              :key="item.id"
+              class="hover:bg-gray-50/80 transition-colors"
+            >
+              <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
+                {{ rowNumber(store.meta, index) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+                <div class="font-medium text-gray-900">
+                  {{ item.product_name }}
+                </div>
+                <div class="text-[10px] text-gray-400 font-mono">
+                  {{ item.sku }}
+                </div>
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+                <div>{{ item.category_name || '-' }}</div>
+                <div class="text-[10px] text-gray-400">
+                  {{ item.unit_name || '-' }}
+                </div>
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
+                {{ formatRupiah(item.unit_price) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-900 font-semibold whitespace-nowrap">
+                {{ formatQuantity(item.on_hand_quantity) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-500 whitespace-nowrap">
+                {{ formatQuantity(item.minimum_stock) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-rose-600 whitespace-nowrap">
+                -{{ formatQuantity(item.shortage_quantity) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-rose-700 whitespace-nowrap">
+                {{ formatRupiah(item.deficit_estimated_cost || (Number(item.shortage_quantity || 0) * (item.unit_price || 0))) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -510,3 +506,20 @@ onMounted(async () => {
     }
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

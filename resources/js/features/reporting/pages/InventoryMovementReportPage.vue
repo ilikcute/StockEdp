@@ -309,65 +309,65 @@
       <!-- Data Table -->
       <div
         v-else
-        class="overflow-x-auto"
+        class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar"
       >
-        <table class="min-w-full divide-y divide-gray-200 text-xs">
+        <table class="w-full text-left text-xs border-collapse">
           <!-- 1. Slow Moving Columns -->
           <thead
             v-if="filters.type === 'slow-moving'"
-            class="bg-gray-50"
+            class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10"
           >
-            <tr>
+            <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('sku')"
               >
                 SKU / Barcode {{ getSortIcon('sku') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('product_name')"
               >
                 Nama Produk {{ getSortIcon('product_name') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700"
+                class="py-1.5 px-2 text-left whitespace-nowrap"
               >
                 Kategori
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700"
+                class="py-1.5 px-2 text-left whitespace-nowrap"
               >
                 Lokasi
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-right font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('current_stock')"
               >
                 Stok Saat Ini {{ getSortIcon('current_stock') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('last_movement_at')"
               >
                 Mutasi Terakhir {{ getSortIcon('last_movement_at') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-right font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('days_since_last_movement')"
               >
                 Hari Tidak Bergerak {{ getSortIcon('days_since_last_movement') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-center font-semibold text-gray-700"
+                class="py-1.5 px-2 text-center whitespace-nowrap"
               >
                 Status
               </th>
@@ -377,73 +377,73 @@
           <!-- 2. Fast Moving Columns -->
           <thead
             v-else
-            class="bg-gray-50"
+            class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10"
           >
-            <tr>
+            <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('sku')"
               >
                 SKU / Barcode {{ getSortIcon('sku') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('product_name')"
               >
                 Nama Produk {{ getSortIcon('product_name') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700"
+                class="py-1.5 px-2 text-left whitespace-nowrap"
               >
                 Kategori
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-left font-semibold text-gray-700"
+                class="py-1.5 px-2 text-left whitespace-nowrap"
               >
                 Lokasi
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-right font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('current_stock')"
               >
                 Stok Saat Ini {{ getSortIcon('current_stock') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-right font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('total_outbound_quantity')"
               >
                 Total Keluar {{ getSortIcon('total_outbound_quantity') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-right font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('outbound_movement_count')"
               >
                 Jml Transaksi {{ getSortIcon('outbound_movement_count') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-right font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('velocity_score')"
               >
                 Rata-rata Keluar / Hari {{ getSortIcon('velocity_score') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-right font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('movement_days')"
               >
                 Hari Aktif {{ getSortIcon('movement_days') }}
               </th>
               <th
                 scope="col"
-                class="px-4 py-3 text-center font-semibold text-gray-700"
+                class="py-1.5 px-2 text-center whitespace-nowrap"
               >
                 Velocity
               </th>
@@ -451,14 +451,14 @@
           </thead>
 
           <!-- Table Body -->
-          <tbody class="divide-y divide-gray-200 bg-white">
+          <tbody class="divide-y divide-gray-100 bg-white">
             <template v-if="filters.type === 'slow-moving'">
               <tr
                 v-for="row in items"
                 :key="`${row.product_id}-${row.location_id}`"
-                class="hover:bg-gray-50/80"
+                class="hover:bg-gray-50/80 transition-colors"
               >
-                <td class="px-4 py-3 font-mono text-gray-900 whitespace-nowrap">
+                <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
                   <div class="font-semibold">
                     {{ row.sku }}
                   </div>
@@ -469,39 +469,39 @@
                     {{ row.barcode }}
                   </div>
                 </td>
-                <td class="px-4 py-3 font-medium text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
                   {{ row.product_name }}
                 </td>
-                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
                   {{ row.category_name || '-' }}
                 </td>
-                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-800">
+                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
                     {{ row.location_code }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-right font-mono font-medium text-gray-900 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-medium text-gray-900 whitespace-nowrap">
                   {{ row.current_stock }} {{ row.unit_symbol }}
                 </td>
-                <td class="px-4 py-3 text-gray-500 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap font-mono">
                   {{ formatTimestamp(row.last_movement_at) }}
                 </td>
-                <td class="px-4 py-3 text-right font-semibold whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-right font-semibold whitespace-nowrap">
                   <span
                     v-if="row.days_since_last_movement !== null"
-                    class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200"
+                    class="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[10px]"
                   >
                     {{ row.days_since_last_movement }} Hari
                   </span>
                   <span
                     v-else
-                    class="text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200"
+                    class="text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 text-[10px]"
                   >
                     Tidak pernah
                   </span>
                 </td>
-                <td class="px-4 py-3 text-center whitespace-nowrap">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
+                <td class="py-1.5 px-2 text-center whitespace-nowrap">
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center bg-slate-100 text-slate-700 border border-slate-300">
                     DORMAN
                   </span>
                 </td>
@@ -512,9 +512,9 @@
               <tr
                 v-for="row in items"
                 :key="`${row.product_id}-${row.location_id}`"
-                class="hover:bg-gray-50/80"
+                class="hover:bg-gray-50/80 transition-colors"
               >
-                <td class="px-4 py-3 font-mono text-gray-900 whitespace-nowrap">
+                <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
                   <div class="font-semibold">
                     {{ row.sku }}
                   </div>
@@ -525,34 +525,34 @@
                     {{ row.barcode }}
                   </div>
                 </td>
-                <td class="px-4 py-3 font-medium text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
                   {{ row.product_name }}
                 </td>
-                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
                   {{ row.category_name || '-' }}
                 </td>
-                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-800">
+                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
                     {{ row.location_code }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-right font-mono text-gray-700 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
                   {{ row.current_stock }} {{ row.unit_symbol }}
                 </td>
-                <td class="px-4 py-3 text-right font-mono font-bold text-emerald-800 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-emerald-800 whitespace-nowrap">
                   {{ row.total_outbound_quantity }} {{ row.unit_symbol }}
                 </td>
-                <td class="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-right font-semibold text-gray-900 whitespace-nowrap">
                   {{ row.outbound_movement_count }}x
                 </td>
-                <td class="px-4 py-3 text-right font-mono font-semibold text-emerald-700 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-emerald-700 whitespace-nowrap">
                   {{ row.average_daily_outbound }} / hari
                 </td>
-                <td class="px-4 py-3 text-right text-gray-600 whitespace-nowrap">
+                <td class="py-1.5 px-2 text-[11px] text-right text-gray-600 whitespace-nowrap">
                   {{ row.movement_days }} hari
                 </td>
-                <td class="px-4 py-3 text-center whitespace-nowrap">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <td class="py-1.5 px-2 text-center whitespace-nowrap">
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20">
                     FAST
                   </span>
                 </td>
@@ -816,3 +816,20 @@ async function onExportCsv() {
     }
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

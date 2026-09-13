@@ -39,24 +39,24 @@
         class="overflow-x-auto max-h-[250px] overflow-y-auto custom-scrollbar"
       >
         <table class="w-full text-left text-xs border-collapse">
-          <thead class="sticky top-0 bg-gray-50 z-10">
-            <tr class="text-gray-600 font-semibold border-b border-gray-200">
-              <th class="py-1 px-1.5 w-8 text-center">
+          <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+            <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+              <th class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap">
                 No.
               </th>
-              <th class="py-1 px-2">
+              <th class="py-1.5 px-2 whitespace-nowrap">
                 SKU & Produk
               </th>
-              <th class="py-1 px-2 text-right">
+              <th class="py-1.5 px-2 text-right whitespace-nowrap">
                 Harga
               </th>
-              <th class="py-1 px-2 text-right">
+              <th class="py-1.5 px-2 text-right whitespace-nowrap">
                 Total Keluar
               </th>
-              <th class="py-1 px-2 text-right">
+              <th class="py-1.5 px-2 text-right whitespace-nowrap">
                 Total Gross
               </th>
-              <th class="py-1 px-1.5 text-center">
+              <th class="py-1.5 px-1.5 text-center whitespace-nowrap">
                 Trx
               </th>
             </tr>

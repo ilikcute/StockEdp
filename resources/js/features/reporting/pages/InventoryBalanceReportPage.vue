@@ -227,132 +227,126 @@
     </div>
 
     <!-- Data Table -->
-    <div class="mt-6 flex flex-col relative">
-      <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-            <div
-              v-if="store.loading"
-              class="absolute inset-0 bg-white/50 z-10 flex items-center justify-center"
-            >
-              <span class="text-indigo-600 font-medium bg-white px-4 py-2 rounded-md shadow">Memuat data...</span>
-            </div>
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
-                  >
-                    No.
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    SKU / Produk
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Kategori / Unit
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Lokasi
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Kondisi
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Harga Satuan
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Stok Posisi
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
-                  >
-                    Total Nilai
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-if="!store.loading && store.data.length === 0">
-                  <td
-                    colspan="8"
-                    class="py-10 text-center text-sm text-gray-500"
-                  >
-                    Tidak ada data saldo stok yang ditemukan.
-                  </td>
-                </tr>
-                <tr
-                  v-for="(item, index) in store.data"
-                  :key="item.id"
-                  class="hover:bg-gray-50"
-                >
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
-                    {{ rowNumber(store.meta, index) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm">
-                    <div class="font-medium text-gray-900">
-                      {{ item.product_name || item.product?.name }}
-                    </div>
-                    <div class="text-xs text-gray-500 font-mono">
-                      {{ item.product_sku || item.product?.sku }}
-                    </div>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <div>{{ item.category_name || item.product?.category?.name || '-' }}</div>
-                    <div class="text-xs text-gray-400">
-                      {{ item.unit_name || item.product?.unit?.code || '-' }}
-                    </div>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <span
-                      v-if="item.location_name || item.location?.name"
-                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                    >
-                      {{ item.location_name || item.location?.name }}
-                    </span>
-                    <span v-else>-</span>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-center">
-                    <span
-                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
-                      :class="item.condition === 'DEFECTIVE' ? 'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-600/20' : 'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-600/20'"
-                    >
-                      {{ item.condition === 'DEFECTIVE' ? 'RUSAK' : 'BAGUS' }}
-                    </span>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-900">
-                    {{ formatRupiah(item.unit_price || item.product?.unit_price || 0) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-medium text-gray-900">
-                    {{ formatQuantity(item.on_hand_quantity ?? item.quantity) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono font-medium text-gray-900">
-                    {{ formatRupiah(item.total_value || (Number(item.on_hand_quantity ?? item.quantity ?? 0) * (item.unit_price || item.product?.unit_price || 0))) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar relative">
+      <div
+        v-if="store.loading"
+        class="absolute inset-0 bg-white/50 z-20 flex items-center justify-center"
+      >
+        <span class="text-indigo-600 font-medium bg-white px-3 py-1.5 rounded-lg shadow-sm text-xs">Memuat data...</span>
       </div>
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+            <th
+              scope="col"
+              class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap"
+            >
+              No.
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
+              SKU / Produk
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
+              Kategori / Unit
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
+              Lokasi
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-center whitespace-nowrap"
+            >
+              Kondisi
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
+            >
+              Harga Satuan
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
+            >
+              Stok Posisi
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
+            >
+              Total Nilai
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 bg-white">
+          <tr v-if="!store.loading && store.data.length === 0">
+            <td
+              colspan="8"
+              class="py-8 text-center text-xs text-gray-400"
+            >
+              Tidak ada data saldo stok yang ditemukan.
+            </td>
+          </tr>
+          <tr
+            v-for="(item, index) in store.data"
+            :key="item.id"
+            class="hover:bg-gray-50/80 transition-colors"
+          >
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
+              {{ rowNumber(store.meta, index) }}
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900">
+                {{ item.product_name || item.product?.name }}
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono">
+                SKU: {{ item.product_sku || item.product?.sku }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+              <div>{{ item.category_name || item.product?.category?.name || '-' }}</div>
+              <div class="text-[10px] text-gray-400">
+                {{ item.unit_name || item.product?.unit?.code || '-' }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+              <span
+                v-if="item.location_name || item.location?.name"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-700"
+              >
+                {{ item.location_name || item.location?.name }}
+              </span>
+              <span v-else>-</span>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] text-center whitespace-nowrap">
+              <span
+                class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center"
+                :class="item.condition === 'DEFECTIVE' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20' : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20'"
+              >
+                {{ item.condition === 'DEFECTIVE' ? 'RUSAK' : 'BAGUS' }}
+              </span>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-700 whitespace-nowrap">
+              {{ formatRupiah(item.unit_price || item.product?.unit_price || 0) }}
+            </td>
+            <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-gray-900 whitespace-nowrap">
+              {{ formatQuantity(item.on_hand_quantity ?? item.quantity) }}
+            </td>
+            <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-indigo-700 whitespace-nowrap">
+              {{ formatRupiah(item.total_value || (Number(item.on_hand_quantity ?? item.quantity ?? 0) * (item.unit_price || item.product?.unit_price || 0))) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Pagination -->
@@ -475,3 +469,20 @@ onMounted(async () => {
     fetchData(1);
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

@@ -1,156 +1,156 @@
 <template>
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-300">
-      <thead class="bg-gray-50">
-        <tr>
+  <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+    <table class="w-full text-left text-xs border-collapse">
+      <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+        <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
           <th
             scope="col"
-            class="py-3.5 pl-4 pr-3 text-center text-xs font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+            class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap"
           >
             No.
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 whitespace-nowrap"
           >
             No. Opname
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 whitespace-nowrap"
           >
             Tgl Dokumen
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 whitespace-nowrap"
           >
             Waktu Posting
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 whitespace-nowrap"
           >
             Lokasi
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 whitespace-nowrap"
           >
             Produk
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 text-right whitespace-nowrap"
           >
             Harga Satuan
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 text-right whitespace-nowrap"
           >
             Snapshot
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 text-right whitespace-nowrap"
           >
             Fisik (Counted)
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 text-right whitespace-nowrap"
           >
             Signed Variance
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-right text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 text-right whitespace-nowrap"
           >
             Nilai Selisih
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 whitespace-nowrap"
           >
             Movement / Status
           </th>
           <th
             scope="col"
-            class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 border-b border-gray-300"
+            class="py-1.5 px-2 whitespace-nowrap"
           >
             Hitung / Post By
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200 bg-white">
+      <tbody class="divide-y divide-gray-100 bg-white">
         <tr
           v-for="(item, index) in items"
           :key="item.item_id"
-          class="hover:bg-gray-50"
+          class="hover:bg-gray-50/80 transition-colors"
         >
-          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+          <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
             {{ rowNumber(pagination, index) }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+          <td class="py-1.5 px-2 text-[11px] font-mono font-medium text-indigo-600 whitespace-nowrap">
             {{ item.opname_number }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+          <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
             {{ item.document_date }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+          <td class="py-1.5 px-2 text-[11px] text-gray-500 font-mono whitespace-nowrap">
             {{ formatTimestamp(item.posted_at) }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+          <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
             {{ item.location?.name || '-' }}
           </td>
-          <td class="px-3 py-4 text-sm text-gray-900">
-            <div class="font-medium flex items-center gap-1.5">
+          <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+            <div class="font-medium text-gray-900 flex items-center gap-1.5">
               <span>{{ item.product?.name }}</span>
               <span
                 v-if="item.is_unexpected"
-                class="inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800"
+                class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center bg-amber-50 text-amber-700 ring-1 ring-amber-600/20"
               >
                 Unexpected
               </span>
             </div>
-            <div class="text-xs text-gray-500 font-mono">
+            <div class="text-[10px] text-gray-400 font-mono">
               SKU: {{ item.product?.sku }}
             </div>
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900">
+          <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-700 whitespace-nowrap">
             {{ formatRupiah(item.product?.unit_price) }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-600">
+          <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-600 whitespace-nowrap">
             {{ formatQuantity(item.snapshot_quantity) }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900 font-medium">
+          <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-gray-900 whitespace-nowrap">
             {{ formatQuantity(item.counted_quantity) }}
           </td>
           <td
-            class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right font-semibold"
-            :class="item.signed_variance.startsWith('-') ? 'text-red-700' : (item.movement_direction === 'NONE' ? 'text-gray-600' : 'text-green-700')"
+            class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold whitespace-nowrap"
+            :class="item.signed_variance?.startsWith('-') ? 'text-rose-700' : (item.movement_direction === 'NONE' ? 'text-gray-600' : 'text-emerald-700')"
           >
             {{ (item.signed_variance && !item.signed_variance.startsWith('-') && item.signed_variance !== '0.0000' && item.signed_variance !== '0' ? '+' : '') + formatQuantity(item.signed_variance) }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900 font-medium">
+          <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-gray-900 whitespace-nowrap">
             {{ formatRupiah(item.variance_amount) }}
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm">
+          <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
             <span
-              class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
+              class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center"
               :class="{
-                'bg-green-100 text-green-800': item.movement_direction === 'OPNAME_IN',
-                'bg-red-100 text-red-800': item.movement_direction === 'OPNAME_OUT',
+                'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20': item.movement_direction === 'OPNAME_IN',
+                'bg-rose-50 text-rose-700 ring-1 ring-rose-600/20': item.movement_direction === 'OPNAME_OUT',
                 'bg-gray-100 text-gray-700': item.movement_direction === 'NONE'
               }"
             >
               {{ getMovementDirectionLabel(item.movement_direction) }}
             </span>
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+          <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
             <div>{{ item.last_counted_by?.name || '-' }}</div>
-            <div class="text-xs text-gray-400">
+            <div class="text-[10px] text-gray-400">
               Post: {{ item.posted_by?.name || '-' }}
             </div>
           </td>
@@ -169,3 +169,20 @@ defineProps({
   pagination: { type: Object, default: null },
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

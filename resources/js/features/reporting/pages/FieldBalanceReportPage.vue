@@ -131,109 +131,108 @@
     </div>
 
     <!-- Data Table -->
-    <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr class="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
-              <th class="py-3 px-3 w-10 text-center">
-                No.
-              </th>
-              <th class="py-3 px-3">
-                Teknisi Lapangan
-              </th>
-              <th class="py-3 px-3">
-                Lokasi / Kode
-              </th>
-              <th class="py-3 px-3">
-                SKU & Produk
-              </th>
-              <th class="py-3 px-3">
-                Kategori
-              </th>
-              <th class="py-3 px-3 text-right w-32">
-                Siap Pasang (GOOD)
-              </th>
-              <th class="py-3 px-3 text-right w-32">
-                Rusak (DEFECTIVE)
-              </th>
-              <th class="py-3 px-3 text-right w-28">
-                Total Lapangan
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr v-if="store.loading && store.data.length === 0">
-              <td
-                colspan="8"
-                class="py-10 text-center text-gray-500"
-              >
-                Memuat saldo persediaan teknisi...
-              </td>
-            </tr>
-            <tr v-else-if="!store.loading && store.data.length === 0">
-              <td
-                colspan="8"
-                class="py-10 text-center text-gray-400"
-              >
-                Tidak ada data saldo lapangan yang sesuai filter.
-              </td>
-            </tr>
-            <tr
-              v-for="(row, idx) in store.data"
-              :key="row.id"
-              class="hover:bg-gray-50/80"
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+            <th class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap">
+              No.
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Teknisi Lapangan
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Lokasi / Kode
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              SKU & Produk
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Kategori
+            </th>
+            <th class="py-1.5 px-2 text-right whitespace-nowrap">
+              Siap Pasang (GOOD)
+            </th>
+            <th class="py-1.5 px-2 text-right whitespace-nowrap">
+              Rusak (DEFECTIVE)
+            </th>
+            <th class="py-1.5 px-2 text-right whitespace-nowrap">
+              Total Lapangan
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 bg-white">
+          <tr v-if="store.loading && store.data.length === 0">
+            <td
+              colspan="8"
+              class="py-8 text-center text-xs text-gray-400"
             >
-              <td class="py-2.5 px-3 text-center text-gray-400 font-mono">
-                {{ rowNumber(idx) }}
-              </td>
-              <td class="py-2.5 px-3">
-                <div class="font-medium text-gray-900">
-                  {{ row.technician_name }}
-                </div>
-                <div class="text-[11px] text-gray-500">
-                  {{ row.technician_email }}
-                </div>
-              </td>
-              <td class="py-2.5 px-3">
-                <div class="font-medium text-gray-900">
-                  {{ row.location_name }}
-                </div>
-                <div class="text-[11px] text-gray-500 font-mono">
-                  {{ row.location_code }}
-                </div>
-              </td>
-              <td class="py-2.5 px-3">
-                <div class="font-medium text-gray-900">
-                  {{ row.product_name }}
-                </div>
-                <div class="text-[11px] font-mono text-gray-500">
-                  SKU: {{ row.product_sku }}
-                </div>
-              </td>
-              <td class="py-2.5 px-3 text-gray-600">
-                {{ row.category_name }}
-              </td>
-              <td class="py-2.5 px-3 text-right">
-                <span class="inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-xs bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                  {{ row.good_quantity }} {{ row.unit_name }}
-                </span>
-              </td>
-              <td class="py-2.5 px-3 text-right">
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-xs"
-                  :class="Number(row.defective_quantity) > 0 ? 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20' : 'text-gray-400'"
-                >
-                  {{ row.defective_quantity }} {{ row.unit_name }}
-                </span>
-              </td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-gray-900">
-                {{ row.total_quantity }} {{ row.unit_name }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              Memuat saldo persediaan teknisi...
+            </td>
+          </tr>
+          <tr v-else-if="!store.loading && store.data.length === 0">
+            <td
+              colspan="8"
+              class="py-8 text-center text-xs text-gray-400"
+            >
+              Tidak ada data saldo lapangan yang sesuai filter.
+            </td>
+          </tr>
+          <tr
+            v-for="(row, idx) in store.data"
+            :key="row.id"
+            class="hover:bg-gray-50/80 transition-colors"
+          >
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
+              {{ rowNumber(idx) }}
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900">
+                {{ row.technician_name }}
+              </div>
+              <div class="text-[10px] text-gray-400">
+                {{ row.technician_email }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900">
+                {{ row.location_name }}
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono">
+                {{ row.location_code }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900">
+                {{ row.product_name }}
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono">
+                SKU: {{ row.product_sku }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+              {{ row.category_name }}
+            </td>
+            <td class="py-1.5 px-2 text-right whitespace-nowrap">
+              <span class="px-1.5 py-0.5 rounded font-mono font-bold text-[10px] bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                {{ row.good_quantity }} {{ row.unit_name }}
+              </span>
+            </td>
+            <td class="py-1.5 px-2 text-right whitespace-nowrap">
+              <span
+                class="px-1.5 py-0.5 rounded font-mono font-bold text-[10px]"
+                :class="Number(row.defective_quantity) > 0 ? 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20' : 'text-gray-400'"
+              >
+                {{ row.defective_quantity }} {{ row.unit_name }}
+              </span>
+            </td>
+            <td class="py-1.5 px-2 text-right font-mono font-bold text-gray-900 text-[11px] whitespace-nowrap">
+              {{ row.total_quantity }} {{ row.unit_name }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
       <!-- Pagination -->
       <div
@@ -260,7 +259,6 @@
           </button>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
@@ -341,3 +339,20 @@ onMounted(() => {
     fetchData(1);
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

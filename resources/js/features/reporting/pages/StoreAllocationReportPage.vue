@@ -129,137 +129,136 @@
     </div>
 
     <!-- Data Table -->
-    <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr class="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
-              <th class="py-3 px-3 w-10 text-center">
-                No.
-              </th>
-              <th class="py-3 px-3">
-                No. Alokasi & Tanggal
-              </th>
-              <th class="py-3 px-3">
-                Toko
-              </th>
-              <th class="py-3 px-3">
-                Teknisi / Lokasi
-              </th>
-              <th class="py-3 px-3">
-                Unit Dipasang (GOOD)
-              </th>
-              <th class="py-3 px-3 text-right w-16">
-                Qty
-              </th>
-              <th class="py-3 px-3">
-                S/N Baru
-              </th>
-              <th class="py-3 px-3">
-                Unit Ditarik (DEFECTIVE)
-              </th>
-              <th class="py-3 px-3 text-right w-16">
-                Qty
-              </th>
-              <th class="py-3 px-3">
-                S/N Rusak
-              </th>
-              <th class="py-3 px-3">
-                Alasan Kerusakan
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr v-if="store.loading && store.data.length === 0">
-              <td
-                colspan="11"
-                class="py-10 text-center text-gray-500"
-              >
-                Memuat data histori alokasi...
-              </td>
-            </tr>
-            <tr v-else-if="!store.loading && store.data.length === 0">
-              <td
-                colspan="11"
-                class="py-10 text-center text-gray-400"
-              >
-                Tidak ada data alokasi yang sesuai filter.
-              </td>
-            </tr>
-            <tr
-              v-for="(row, idx) in store.data"
-              :key="row.id"
-              class="hover:bg-gray-50/80"
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+            <th class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap">
+              No.
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              No. Alokasi & Tanggal
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Toko
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Teknisi / Lokasi
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Unit Dipasang (GOOD)
+            </th>
+            <th class="py-1.5 px-2 text-right w-16 whitespace-nowrap">
+              Qty
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              S/N Baru
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Unit Ditarik (DEFECTIVE)
+            </th>
+            <th class="py-1.5 px-2 text-right w-16 whitespace-nowrap">
+              Qty
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              S/N Rusak
+            </th>
+            <th class="py-1.5 px-2 whitespace-nowrap">
+              Alasan Kerusakan
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 bg-white">
+          <tr v-if="store.loading && store.data.length === 0">
+            <td
+              colspan="11"
+              class="py-8 text-center text-xs text-gray-400"
             >
-              <td class="py-2.5 px-3 text-center text-gray-400 font-mono">
-                {{ rowNumber(idx) }}
-              </td>
-              <td class="py-2.5 px-3">
-                <div class="font-mono font-bold text-gray-900">
-                  {{ row.allocation_number }}
+              Memuat data histori alokasi...
+            </td>
+          </tr>
+          <tr v-else-if="!store.loading && store.data.length === 0">
+            <td
+              colspan="11"
+              class="py-8 text-center text-xs text-gray-400"
+            >
+              Tidak ada data alokasi yang sesuai filter.
+            </td>
+          </tr>
+          <tr
+            v-for="(row, idx) in store.data"
+            :key="row.id"
+            class="hover:bg-gray-50/80 transition-colors"
+          >
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
+              {{ rowNumber(idx) }}
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-mono font-medium text-indigo-600">
+                {{ row.allocation_number }}
+              </div>
+              <div class="text-[10px] text-gray-400">
+                {{ row.allocated_at }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900">
+                {{ row.store_name }}
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono">
+                {{ row.store_code }} {{ row.store_address ? `• ${row.store_address}` : '' }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900">
+                {{ row.technician_name }}
+              </div>
+              <div class="text-[10px] text-gray-400">
+                {{ row.technician_location_name }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-emerald-900">
+                {{ row.product_name }}
+              </div>
+              <div class="text-[10px] font-mono text-gray-400">
+                SKU: {{ row.product_sku }}
+              </div>
+            </td>
+            <td class="py-1.5 px-2 text-right font-mono font-bold text-emerald-700 text-[11px] whitespace-nowrap">
+              {{ row.quantity }}
+            </td>
+            <td class="py-1.5 px-2 font-mono text-gray-700 text-[11px] whitespace-nowrap">
+              {{ row.serial_number || '-' }}
+            </td>
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div
+                v-if="row.pulled_product_name"
+                class="font-medium text-amber-900"
+              >
+                {{ row.pulled_product_name }}
+                <div class="text-[10px] font-mono text-gray-400">
+                  SKU: {{ row.pulled_product_sku }}
                 </div>
-                <div class="text-[11px] text-gray-500">
-                  {{ row.allocated_at }}
-                </div>
-              </td>
-              <td class="py-2.5 px-3">
-                <div class="font-medium text-gray-900">
-                  {{ row.store_name }}
-                </div>
-                <div class="text-[11px] text-gray-500 font-mono">
-                  {{ row.store_code }} {{ row.store_address ? `• ${row.store_address}` : '' }}
-                </div>
-              </td>
-              <td class="py-2.5 px-3">
-                <div class="font-medium text-gray-900">
-                  {{ row.technician_name }}
-                </div>
-                <div class="text-[11px] text-gray-500">
-                  {{ row.technician_location_name }}
-                </div>
-              </td>
-              <td class="py-2.5 px-3">
-                <div class="font-medium text-emerald-900">
-                  {{ row.product_name }}
-                </div>
-                <div class="text-[11px] font-mono text-gray-500">
-                  SKU: {{ row.product_sku }}
-                </div>
-              </td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-700">
-                {{ row.quantity }}
-              </td>
-              <td class="py-2.5 px-3 font-mono text-gray-700">
-                {{ row.serial_number || '-' }}
-              </td>
-              <td class="py-2.5 px-3">
-                <div
-                  v-if="row.pulled_product_name"
-                  class="font-medium text-amber-900"
-                >
-                  {{ row.pulled_product_name }}
-                  <div class="text-[11px] font-mono text-gray-500">
-                    SKU: {{ row.pulled_product_sku }}
-                  </div>
-                </div>
-                <span
-                  v-else
-                  class="text-gray-400 italic"
-                >-</span>
-              </td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-700">
-                {{ row.pulled_quantity || '-' }}
-              </td>
-              <td class="py-2.5 px-3 font-mono text-gray-700">
-                {{ row.pulled_serial_number || '-' }}
-              </td>
-              <td class="py-2.5 px-3 text-gray-700">
-                {{ row.defective_reason || '-' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </div>
+              <span
+                v-else
+                class="text-gray-400 italic text-[11px]"
+              >-</span>
+            </td>
+            <td class="py-1.5 px-2 text-right font-mono font-bold text-amber-700 text-[11px] whitespace-nowrap">
+              {{ row.pulled_quantity || '-' }}
+            </td>
+            <td class="py-1.5 px-2 font-mono text-gray-700 text-[11px] whitespace-nowrap">
+              {{ row.pulled_serial_number || '-' }}
+            </td>
+            <td class="py-1.5 px-2 text-gray-700 text-[11px]">
+              {{ row.defective_reason || '-' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
       <!-- Pagination -->
       <div
@@ -286,7 +285,6 @@
           </button>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
@@ -357,3 +355,20 @@ onMounted(() => {
     fetchData(1);
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
