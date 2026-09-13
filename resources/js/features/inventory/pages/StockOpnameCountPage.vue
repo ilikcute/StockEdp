@@ -97,15 +97,15 @@
       </div>
 
       <!-- Search / Filter for items -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 shadow-xs rounded-xl border border-gray-200">
-        <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-white p-2.5 shadow-2xs rounded-xl border border-gray-200">
+        <div class="flex flex-wrap items-center gap-2.5">
           <input
             v-model="searchItem"
             type="text"
             placeholder="Cari nama atau SKU produk..."
-            class="block w-full sm:w-64 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
+            class="block w-full sm:w-64 rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
           >
-          <label class="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer">
+          <label class="flex items-center gap-1.5 text-xs font-medium text-gray-700 cursor-pointer">
             <input
               v-model="showUncountedOnly"
               type="checkbox"
@@ -120,7 +120,7 @@
           v-if="abilities.can_add_item"
           id="btn-add-unexpected-product"
           type="button"
-          class="inline-flex items-center justify-center rounded-md bg-amber-600 px-3 py-2 text-xs font-semibold text-white shadow-xs hover:bg-amber-500 cursor-pointer"
+          class="inline-flex items-center justify-center rounded-lg bg-amber-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-amber-500 cursor-pointer"
           @click="showAddUnexpected = true"
         >
           + Produk Tak Terduga
@@ -128,33 +128,57 @@
       </div>
 
       <!-- Items counting table -->
-      <div class="bg-white shadow-xs rounded-xl border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
+      <div class="bg-white shadow-2xs rounded-xl border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
           <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-gray-50 text-gray-600 font-semibold border-b border-gray-200">
-                <th class="py-2.5 px-3 w-10 text-center">
+            <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+              <tr class="bg-gray-50 text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+                <th
+                  scope="col"
+                  class="py-1.5 px-1.5 w-8 text-center"
+                >
                   No.
                 </th>
-                <th class="py-2.5 px-3">
+                <th
+                  scope="col"
+                  class="py-1.5 px-2 whitespace-nowrap"
+                >
                   Produk
                 </th>
-                <th class="py-2.5 px-3 font-mono">
+                <th
+                  scope="col"
+                  class="py-1.5 px-2 whitespace-nowrap font-mono"
+                >
                   SKU
                 </th>
-                <th class="py-2.5 px-3">
+                <th
+                  scope="col"
+                  class="py-1.5 px-2 whitespace-nowrap"
+                >
                   Satuan
                 </th>
-                <th class="py-2.5 px-3 text-right">
+                <th
+                  scope="col"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
+                >
                   Harga Satuan
                 </th>
-                <th class="py-2.5 px-3 text-right">
+                <th
+                  scope="col"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
+                >
                   Qty Hitung Fisik *
                 </th>
-                <th class="py-2.5 px-3 text-center">
+                <th
+                  scope="col"
+                  class="py-1.5 px-2 text-center whitespace-nowrap"
+                >
                   Status
                 </th>
-                <th class="py-2.5 px-3 text-center w-20">
+                <th
+                  scope="col"
+                  class="py-1.5 px-2 text-center whitespace-nowrap w-20"
+                >
                   Aksi
                 </th>
               </tr>
@@ -163,7 +187,7 @@
               <tr v-if="filteredItems.length === 0">
                 <td
                   colspan="8"
-                  class="py-8 text-center text-gray-400"
+                  class="py-8 text-center text-xs text-gray-400"
                 >
                   Tidak ada item sesuai pencarian atau filter.
                 </td>
@@ -173,35 +197,35 @@
                 :key="item.id"
                 :class="[
                   'transition-colors',
-                  item.is_counted && !store.countConflicts[item.id] ? 'bg-emerald-50/50' : 'hover:bg-gray-50/80'
+                  item.is_counted && !store.countConflicts[item.id] ? 'bg-emerald-50/30' : 'hover:bg-gray-50/80'
                 ]"
               >
-                <td class="py-2.5 px-3 text-center text-gray-400 font-mono">
+                <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
                   {{ index + 1 }}
                 </td>
-                <td class="py-2.5 px-3 font-medium text-gray-900">
-                  {{ item.product?.name || item.product_name || '-' }}
+                <td class="py-1.5 px-2 whitespace-nowrap text-[11px]">
+                  <span class="font-medium text-gray-900 leading-tight">{{ item.product?.name || item.product_name || '-' }}</span>
                   <span
                     v-if="item.is_unexpected"
-                    class="ml-1.5 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 uppercase"
+                    class="ml-1 inline-flex items-center rounded px-1 py-0.2 text-[9px] font-bold text-amber-800 bg-amber-50 border border-amber-200 uppercase tracking-wider"
                   >
                     Tak Terduga
                   </span>
                 </td>
-                <td class="py-2.5 px-3 font-mono text-gray-600">
+                <td class="py-1.5 px-2 font-mono text-gray-400 text-[10px] whitespace-nowrap">
                   {{ item.product?.sku || '-' }}
                 </td>
-                <td class="py-2.5 px-3 text-gray-600">
+                <td class="py-1.5 px-2 text-gray-500 text-[11px] whitespace-nowrap">
                   {{ item.product?.unit?.symbol || item.product?.unit?.name || '-' }}
                 </td>
-                <td class="py-2.5 px-3 text-right font-mono text-xs text-gray-700">
+                <td class="py-1.5 px-2 text-right font-mono text-[11px] text-gray-700 whitespace-nowrap">
                   {{ formatRupiah(item.product_unit_price || item.product?.unit_price || 0) }}
                 </td>
-                <td class="py-2.5 px-3 text-right">
-                  <div class="flex items-center justify-end gap-2">
+                <td class="py-1.5 px-2 text-right whitespace-nowrap">
+                  <div class="flex items-center justify-end gap-1.5">
                     <span
                       v-if="store.countConflicts[item.id]"
-                      class="text-xs text-amber-600 font-semibold"
+                      class="text-[10px] text-amber-600 font-semibold"
                       title="Data diperbarui server. Masukkan ulang jumlah."
                     >
                       ⚠ Konflik
@@ -212,7 +236,7 @@
                       type="text"
                       inputmode="decimal"
                       placeholder="0"
-                      class="w-32 rounded-md border border-gray-300 px-2.5 py-1.5 text-xs font-mono text-right focus:border-indigo-500 focus:ring-indigo-500"
+                      class="w-24 rounded border border-gray-300 px-2 py-1 text-[11px] font-mono text-right focus:border-indigo-500 focus:ring-indigo-500"
                       :class="{
                         'border-emerald-400 bg-emerald-50/50': item.is_counted && !store.countConflicts[item.id],
                         'border-amber-400': store.countConflicts[item.id],
@@ -222,34 +246,34 @@
                     >
                   </div>
                 </td>
-                <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                <td class="py-1.5 px-2 text-center whitespace-nowrap">
                   <span
                     v-if="store.countConflicts[item.id]"
-                    class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800"
+                    class="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200"
                   >
                     Konflik
                   </span>
                   <span
                     v-else-if="item.is_counted"
-                    class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800"
+                    class="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200"
                   >
                     ✓ Sudah
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600"
+                    class="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 border border-gray-200"
                   >
                     Belum
                   </span>
                 </td>
-                <td class="py-2.5 px-3 text-center">
+                <td class="py-1.5 px-2 text-center whitespace-nowrap">
                   <button
                     type="button"
                     :disabled="store.loadingItemCount[item.id] || !countInputs[item.id]"
-                    class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:opacity-50 cursor-pointer"
+                    class="inline-flex items-center justify-center rounded bg-indigo-600 px-2 py-0.5 text-[11px] font-semibold text-white shadow-2xs hover:bg-indigo-500 disabled:opacity-50 cursor-pointer"
                     @click="saveCount(item)"
                   >
-                    {{ store.loadingItemCount[item.id] ? '...' : 'Simpan' }}
+                    Simpan
                   </button>
                 </td>
               </tr>
@@ -611,3 +635,20 @@ onMounted(async () => {
   await loadProducts();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

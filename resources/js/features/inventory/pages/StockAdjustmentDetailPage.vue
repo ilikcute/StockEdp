@@ -237,86 +237,87 @@
       </div>
 
       <!-- Items Section -->
-      <div class="mt-6 bg-white shadow-sm border border-gray-300 sm:rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
+      <div class="mt-4 bg-white shadow-2xs border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-4 py-2.5 sm:px-4 border-b border-gray-100">
+          <h3 class="text-xs font-semibold leading-5 text-gray-900">
             Daftar Barang Adjustment
           </h3>
         </div>
-        <div class="border-t border-gray-300 overflow-x-auto touch-scroll">
-          <table class="min-w-full divide-y divide-gray-300">
-            <thead class="bg-gray-50">
-              <tr>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+              <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
                 <th
                   scope="col"
-                  class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+                  class="py-1.5 px-1.5 w-8 text-center"
                 >
                   No.
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   Produk
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   SKU
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Harga Satuan
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
-                  Delta Kuantitas (Quantity)
+                  Delta Kuantitas
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Nilai Penyesuaian
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:pr-6 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   Catatan Item
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
+            <tbody class="divide-y divide-gray-100 bg-white">
               <tr
                 v-for="(item, index) in adjustment.items"
                 :key="item.id"
+                class="hover:bg-gray-50/80 transition-colors"
               >
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
                   {{ index + 1 }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
                   {{ item.product_name || '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="py-1.5 px-2 text-[10px] text-gray-400 font-mono whitespace-nowrap">
                   {{ item.product_sku || '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-900 whitespace-nowrap">
                   {{ formatRupiah(item.product_unit_price || item.product?.unit_price || 0) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right font-medium">
-                  <span :class="adjustment.direction === 'INCREASE' ? 'text-green-700' : 'text-orange-700'">
+                <td class="py-1.5 px-2 text-[11px] font-mono text-right font-medium whitespace-nowrap">
+                  <span :class="adjustment.direction === 'INCREASE' ? 'text-emerald-700' : 'text-orange-700'">
                     {{ adjustment.direction === 'INCREASE' ? '+' : '-' }}{{ formatQuantity(item.quantity) }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right font-medium text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] font-mono text-right font-medium text-gray-900 whitespace-nowrap">
                   {{ formatRupiah((item.product_unit_price || item.product?.unit_price || 0) * Number(item.quantity || 0)) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 sm:pr-6">
+                <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
                   {{ item.item_notes || '-' }}
                 </td>
               </tr>
@@ -503,3 +504,20 @@ onMounted(() => {
   store.fetchAdjustmentById(route.params.id);
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

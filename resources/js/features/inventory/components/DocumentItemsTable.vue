@@ -1,95 +1,96 @@
 <template>
-  <div class="mt-8">
-    <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">
+  <div class="mt-4">
+    <h3 class="text-sm font-semibold text-gray-900 mb-2">
       {{ heading }}
     </h3>
-    <div class="overflow-x-auto touch-scroll shadow-sm border border-gray-300 md:rounded-lg">
-      <table class="min-w-full divide-y divide-gray-300">
-        <thead class="bg-gray-50">
-          <tr>
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+              class="py-1.5 px-1.5 w-8 text-center"
             >
               No.
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Produk
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Lokasi Gudang
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
             >
               Harga Satuan
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
             >
               Kuantitas
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
             >
               Subtotal
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
+        <tbody class="divide-y divide-gray-100 bg-white">
           <tr
             v-for="(item, index) in items"
             :key="item.id"
+            class="hover:bg-gray-50/80 transition-colors"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
               {{ index + 1 }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
-              <div class="font-medium text-gray-900">
+            <td class="py-1.5 px-2 whitespace-nowrap text-[11px]">
+              <div class="font-medium text-gray-900 leading-tight">
                 {{ item.product?.name }}
               </div>
-              <div class="text-gray-500 font-mono text-xs">
+              <div class="text-gray-400 font-mono text-[10px]">
                 {{ item.product?.sku }}
               </div>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
               {{ item.location?.name }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 text-right font-mono">
+            <td class="py-1.5 px-2 text-[11px] text-gray-900 text-right font-mono whitespace-nowrap">
               {{ formatRupiah(item.unit_price ?? item.product?.unit_price) }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 text-right font-mono font-medium">
+            <td class="py-1.5 px-2 text-[11px] text-gray-900 text-right font-mono font-medium whitespace-nowrap">
               {{ formatQuantity(item.quantity) }} {{ item.product?.unit?.symbol || item.product?.unit?.name }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 text-right font-mono font-medium">
+            <td class="py-1.5 px-2 text-[11px] text-gray-900 text-right font-mono font-medium whitespace-nowrap">
               {{ formatRupiah(item.subtotal ?? (Number(item.quantity) * Number(item.unit_price ?? item.product?.unit_price ?? 0))) }}
             </td>
           </tr>
         </tbody>
         <tfoot
           v-if="items?.length > 0"
-          class="border-t-2 border-gray-200 bg-gray-50 text-sm font-medium"
+          class="border-t border-gray-200 bg-gray-50/90 text-xs font-medium"
         >
-          <tr>
+          <tr class="text-[11px]">
             <td
               colspan="4"
-              class="py-3 px-3 text-right text-gray-700 font-semibold"
+              class="py-1.5 px-2 text-right text-gray-700 font-semibold"
             >
               {{ grandTotalLabel }}
             </td>
-            <td class="py-3 px-3 text-right font-mono font-bold text-gray-900">
+            <td class="py-1.5 px-2 text-right font-mono font-bold text-gray-900 whitespace-nowrap">
               {{ formatQuantity(totalQuantity) }}
             </td>
-            <td class="py-3 px-3 text-right font-mono font-bold text-indigo-700">
+            <td class="py-1.5 px-2 text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
               {{ formatRupiah(totalAmount) }}
             </td>
           </tr>
@@ -125,3 +126,20 @@ defineProps({
     },
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

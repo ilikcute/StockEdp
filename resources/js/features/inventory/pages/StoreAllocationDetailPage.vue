@@ -114,80 +114,81 @@
           Rincian Unit Dipasang & Ditarik
         </h2>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
           <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
-                <th class="py-2.5 px-3 w-10 text-center">
+            <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+              <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+                <th class="py-1.5 px-1.5 w-8 text-center whitespace-nowrap">
                   No.
                 </th>
-                <th class="py-2.5 px-3">
+                <th class="py-1.5 px-2 whitespace-nowrap">
                   Unit Baru Dipasang (Kondisi: BAGUS)
                 </th>
-                <th class="py-2.5 px-3 text-right w-20">
+                <th class="py-1.5 px-2 text-right w-16 whitespace-nowrap">
                   Qty Pasang
                 </th>
-                <th class="py-2.5 px-3 w-36">
+                <th class="py-1.5 px-2 w-32 whitespace-nowrap">
                   S/N Unit Baru
                 </th>
-                <th class="py-2.5 px-3">
+                <th class="py-1.5 px-2 whitespace-nowrap">
                   Unit Lama Ditarik (Kondisi: RUSAK)
                 </th>
-                <th class="py-2.5 px-3 text-right w-20">
+                <th class="py-1.5 px-2 text-right w-16 whitespace-nowrap">
                   Qty Tarik
                 </th>
-                <th class="py-2.5 px-3 w-36">
+                <th class="py-1.5 px-2 w-32 whitespace-nowrap">
                   S/N Unit Rusak
                 </th>
-                <th class="py-2.5 px-3">
+                <th class="py-1.5 px-2 whitespace-nowrap">
                   Alasan Kerusakan
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="divide-y divide-gray-100 bg-white">
               <tr
                 v-for="(item, index) in (doc.items || [])"
                 :key="item.id || index"
+                class="hover:bg-gray-50/80 transition-colors"
               >
-                <td class="py-3 px-3 text-center text-gray-400 font-mono">
+                <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
                   {{ index + 1 }}
                 </td>
-                <td class="py-3 px-3">
+                <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
                   <div class="font-medium text-gray-900">
                     {{ item.product_name }}
                   </div>
-                  <div class="text-[11px] font-mono text-gray-500">
+                  <div class="text-[10px] font-mono text-gray-400">
                     SKU: {{ item.product_sku }}
                   </div>
                 </td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-700">
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-emerald-700 text-[11px] whitespace-nowrap">
                   {{ item.quantity }}
                 </td>
-                <td class="py-3 px-3 font-mono text-gray-700">
+                <td class="py-1.5 px-2 font-mono text-gray-700 text-[11px] whitespace-nowrap">
                   {{ item.serial_number || '-' }}
                 </td>
-                <td class="py-3 px-3">
+                <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
                   <div
                     v-if="item.pulled_product_id"
                     class="font-medium text-gray-900"
                   >
                     {{ item.pulled_product_name }}
-                    <div class="text-[11px] font-mono text-gray-500">
+                    <div class="text-[10px] font-mono text-gray-400">
                       SKU: {{ item.pulled_product_sku }}
                     </div>
                   </div>
                   <span
                     v-else
-                    class="text-gray-400 italic"
+                    class="text-gray-400 italic text-[11px]"
                   >Tidak ada penarikan</span>
                 </td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-amber-700">
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-amber-700 text-[11px] whitespace-nowrap">
                   {{ item.pulled_quantity || '-' }}
                 </td>
-                <td class="py-3 px-3 font-mono text-gray-700">
+                <td class="py-1.5 px-2 font-mono text-gray-700 text-[11px] whitespace-nowrap">
                   {{ item.pulled_serial_number || '-' }}
                 </td>
-                <td class="py-3 px-3 text-gray-600">
+                <td class="py-1.5 px-2 text-gray-600 text-[11px]">
                   {{ item.defective_reason || '-' }}
                 </td>
               </tr>
@@ -217,3 +218,20 @@ onMounted(() => {
     store.fetchAllocationById(route.params.id);
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

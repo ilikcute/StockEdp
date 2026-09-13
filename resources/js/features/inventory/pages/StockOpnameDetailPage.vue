@@ -209,18 +209,18 @@
       </div>
 
       <!-- Items Table -->
-      <div class="mt-6 bg-white shadow sm:rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 flex items-center justify-between">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
+      <div class="mt-4 bg-white shadow-2xs border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-4 py-2.5 sm:px-4 border-b border-gray-100 flex items-center justify-between">
+          <h3 class="text-xs font-semibold leading-5 text-gray-900">
             Daftar Item
-            <span class="ml-2 text-sm font-normal text-gray-500">
+            <span class="ml-2 text-[11px] font-normal text-gray-500">
               ({{ opname.items?.length ?? 0 }} produk)
             </span>
           </h3>
           <!-- Show counted progress when IN_PROGRESS -->
           <span
             v-if="opname.status === 'IN_PROGRESS'"
-            class="text-sm text-gray-600"
+            class="text-xs text-gray-600"
           >
             Sudah dihitung:
             <span class="font-semibold text-indigo-700">{{ countedCount }}</span>
@@ -228,37 +228,37 @@
             {{ opname.items?.length ?? 0 }}
           </span>
         </div>
-        <div class="border-t border-gray-200 overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-300">
-            <thead class="bg-gray-50">
-              <tr>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+              <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
                 <th
                   scope="col"
-                  class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+                  class="py-1.5 px-1.5 w-8 text-center"
                 >
                   No.
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   Produk
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   SKU
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Harga Satuan
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Stok Sistem
                 </th>
@@ -266,19 +266,19 @@
                 <template v-if="opname.status === 'COUNTED' || opname.status === 'POSTED'">
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                    class="py-1.5 px-2 text-right whitespace-nowrap"
                   >
                     Hitung Fisik
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                    class="py-1.5 px-2 text-right whitespace-nowrap"
                   >
                     Selisih
                   </th>
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                    class="py-1.5 px-2 text-right whitespace-nowrap"
                   >
                     Nilai Selisih
                   </th>
@@ -287,18 +287,18 @@
                 <template v-else-if="opname.status === 'IN_PROGRESS'">
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 border-b border-gray-300"
+                    class="py-1.5 px-2 text-center whitespace-nowrap"
                   >
                     Status Hitung
                   </th>
                 </template>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
+            <tbody class="divide-y divide-gray-100 bg-white">
               <tr v-if="!opname.items || opname.items.length === 0">
                 <td
                   :colspan="opname.status === 'IN_PROGRESS' ? 6 : 8"
-                  class="py-8 text-center text-sm text-gray-500"
+                  class="py-8 text-center text-xs text-gray-500"
                 >
                   Belum ada item.
                 </td>
@@ -306,61 +306,62 @@
               <tr
                 v-for="(item, index) in opname.items"
                 :key="item.id"
+                class="hover:bg-gray-50/80 transition-colors"
               >
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
                   {{ index + 1 }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
-                  {{ item.product?.name || item.product_name || '-' }}
+                <td class="py-1.5 px-2 whitespace-nowrap text-[11px]">
+                  <span class="font-medium text-gray-900 leading-tight">{{ item.product?.name || item.product_name || '-' }}</span>
                   <span
                     v-if="item.is_unexpected"
-                    class="ml-1 inline-flex items-center rounded-full bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-800"
+                    class="ml-1 inline-flex items-center rounded px-1 py-0.2 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200"
                   >
                     Tak Terduga
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                <td class="py-1.5 px-2 text-[10px] text-gray-400 font-mono whitespace-nowrap">
                   {{ item.product?.sku || '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-gray-900">
+                <td class="py-1.5 px-2 text-right font-mono text-gray-900 text-[11px] whitespace-nowrap">
                   {{ formatRupiah(item.product_unit_price || item.product?.unit_price || 0) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900">
+                <td class="py-1.5 px-2 font-mono text-right text-gray-900 text-[11px] whitespace-nowrap">
                   {{ formatQuantity(item.snapshot_quantity) }}
                 </td>
                 <!-- COUNTED / POSTED columns -->
                 <template v-if="opname.status === 'COUNTED' || opname.status === 'POSTED'">
-                  <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900">
+                  <td class="py-1.5 px-2 font-mono text-right text-gray-900 text-[11px] whitespace-nowrap">
                     {{ item.counted_quantity !== null && item.counted_quantity !== undefined ? formatQuantity(item.counted_quantity) : '-' }}
                   </td>
                   <td
-                    class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right font-semibold"
+                    class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold whitespace-nowrap"
                     :class="{
-                      'text-green-700': item.variance_quantity && !item.variance_quantity.startsWith('-') && item.variance_quantity !== '0.0000',
-                      'text-red-700': item.variance_quantity && item.variance_quantity.startsWith('-'),
-                      'text-gray-500': !item.variance_quantity || item.variance_quantity === '0.0000',
+                      'text-emerald-700': item.variance_quantity && !item.variance_quantity.startsWith('-') && item.variance_quantity !== '0.0000' && item.variance_quantity !== '0',
+                      'text-rose-700': item.variance_quantity && item.variance_quantity.startsWith('-'),
+                      'text-gray-500': !item.variance_quantity || item.variance_quantity === '0.0000' || item.variance_quantity === '0',
                     }"
                   >
                     {{ item.variance_quantity !== null && item.variance_quantity !== undefined
                       ? ((item.variance_quantity && !item.variance_quantity.startsWith('-') && item.variance_quantity !== '0.0000' && item.variance_quantity !== '0' ? '+' : '') + formatQuantity(item.variance_quantity))
                       : '-' }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900 font-medium">
+                  <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-900 font-medium whitespace-nowrap">
                     {{ formatRupiah(Math.abs(Number(item.variance_quantity || 0)) * (item.product_unit_price || item.product?.unit_price || 0)) }}
                   </td>
                 </template>
                 <!-- IN_PROGRESS: show counted badge -->
                 <template v-else-if="opname.status === 'IN_PROGRESS'">
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <td class="py-1.5 px-2 text-[11px] text-center whitespace-nowrap">
                     <span
                       v-if="item.is_counted"
-                      class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+                      class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200"
                     >
                       ✓ Sudah Dihitung
                     </span>
                     <span
                       v-else
-                      class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600"
+                      class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 border border-gray-200"
                     >
                       Belum
                     </span>
@@ -537,3 +538,20 @@ onMounted(() => {
     store.fetchOpname(route.params.id);
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

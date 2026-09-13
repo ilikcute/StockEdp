@@ -195,125 +195,126 @@
       </div>
 
       <!-- Items Section -->
-      <div class="mt-6 bg-white shadow-sm border border-gray-300 sm:rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
+      <div class="mt-4 bg-white shadow-2xs border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-4 py-2.5 sm:px-4 border-b border-gray-100">
+          <h3 class="text-xs font-semibold leading-5 text-gray-900">
             Daftar Barang Ditransfer
           </h3>
         </div>
-        <div class="border-t border-gray-300 overflow-x-auto touch-scroll">
-          <table class="min-w-full divide-y divide-gray-300">
-            <thead class="bg-gray-50">
-              <tr>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+              <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
                 <th
                   scope="col"
-                  class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+                  class="py-1.5 px-1.5 w-8 text-center"
                 >
                   No.
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   Produk
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   SKU
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 whitespace-nowrap"
                 >
                   Satuan (Unit)
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Harga Satuan
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-center whitespace-nowrap"
                 >
                   Kondisi
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Jumlah (Quantity)
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Diterima
                 </th>
                 <th
                   scope="col"
-                  class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 sm:pr-6 border-b border-gray-300"
+                  class="py-1.5 px-2 text-right whitespace-nowrap"
                 >
                   Nilai Transfer
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
+            <tbody class="divide-y divide-gray-100 bg-white">
               <tr
                 v-for="(item, index) in transfer.items"
                 :key="item.id"
+                class="hover:bg-gray-50/80 transition-colors"
               >
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+                <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
                   {{ index + 1 }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
                   {{ item.product?.name || item.product_name || '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="py-1.5 px-2 text-[10px] text-gray-400 font-mono whitespace-nowrap">
                   {{ item.product?.sku || item.product_sku || '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
                   {{ item.product?.unit?.symbol || item.product?.unit?.name || '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-right text-gray-700">
+                <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-700 whitespace-nowrap">
                   {{ formatRupiah(item.unit_price ?? item.product?.unit_price ?? item.product_unit_price ?? 0) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-center text-gray-600">
+                <td class="py-1.5 px-2 text-center whitespace-nowrap">
                   <span
-                    class="px-2 py-1 text-xs rounded-full"
+                    class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded inline-flex items-center"
                     :class="(item.condition || 'GOOD') === 'DEFECTIVE'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-emerald-100 text-emerald-800'"
+                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
                   >
                     {{ (item.condition || 'GOOD') === 'DEFECTIVE' ? 'RUSAK' : 'BAGUS' }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-900 whitespace-nowrap">
                   {{ formatQuantity(item.quantity) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right text-gray-900">
+                <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-900 whitespace-nowrap">
                   {{ item.received_quantity != null ? formatQuantity(item.received_quantity) : '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-right font-medium text-gray-900 sm:pr-6">
+                <td class="py-1.5 px-2 text-[11px] font-mono text-right font-medium text-gray-900 whitespace-nowrap">
                   {{ formatRupiah(item.subtotal ?? (Number(item.quantity || 0) * Number(item.unit_price ?? item.product?.unit_price ?? item.product_unit_price ?? 0))) }}
                 </td>
               </tr>
             </tbody>
             <tfoot
               v-if="transfer?.items?.length"
-              class="bg-gray-50 font-semibold text-gray-900 border-t border-gray-300"
+              class="border-t border-gray-200 bg-gray-50/90 text-xs font-medium"
             >
-              <tr>
+              <tr class="text-[11px]">
                 <td
                   colspan="8"
-                  class="px-4 py-3 text-right text-sm"
+                  class="py-1.5 px-2 text-right text-gray-700 font-semibold"
                 >
                   Grand Total Nilai Transfer:
                 </td>
-                <td class="px-3 py-3 text-right text-sm font-mono text-indigo-700 sm:pr-6">
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
                   {{ formatRupiah(grandTotal) }}
                 </td>
               </tr>
@@ -547,3 +548,20 @@ onMounted(() => {
   store.fetchTransferById(route.params.id);
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
