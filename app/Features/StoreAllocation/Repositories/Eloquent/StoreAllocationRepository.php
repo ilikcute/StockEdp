@@ -6,6 +6,7 @@ use App\Features\StoreAllocation\Models\StoreAllocation;
 use App\Features\StoreAllocation\Repositories\Contracts\StoreAllocationRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class StoreAllocationRepository implements StoreAllocationRepositoryInterface
 {
@@ -91,17 +92,26 @@ class StoreAllocationRepository implements StoreAllocationRepositoryInterface
         $today = Carbon::today()->format('Ymd');
         $prefix = "ALC-{$today}-";
 
-        $lastRecord = StoreAllocation::where('allocation_number', 'like', "{$prefix}%")
-            ->orderBy('id', 'desc')
-            ->first();
+        $fetchNext = function () use ($prefix) {
+            $lastRecord = StoreAllocation::where('allocation_number', 'like', "{$prefix}%")
+                ->lockForUpdate()
+                ->orderBy('id', 'desc')
+                ->first();
 
-        if ($lastRecord) {
-            $lastNumber = (int) substr($lastRecord->allocation_number, strlen($prefix));
-            $nextNumber = str_pad((string) ($lastNumber + 1), 4, '0', STR_PAD_LEFT);
-        } else {
-            $nextNumber = '0001';
+            if ($lastRecord) {
+                $lastNumber = (int) substr($lastRecord->allocation_number, strlen($prefix));
+                $nextNumber = str_pad((string) ($lastNumber + 1), 4, '0', STR_PAD_LEFT);
+            } else {
+                $nextNumber = '0001';
+            }
+
+            return $prefix.$nextNumber;
+        };
+
+        if (DB::transactionLevel() > 0) {
+            return $fetchNext();
         }
 
-        return $prefix.$nextNumber;
+        return DB::transaction($fetchNext);
     }
 }

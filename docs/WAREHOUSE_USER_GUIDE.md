@@ -17,14 +17,15 @@ Dokumen ini ditujukan untuk petugas operasional gudang dan supervisor persediaan
 ## 2. Navigasi Aplikasi
 
 - **Dashboard**: Ringkasan jumlah saldo stok, barang stok minimum, dan statistik transaksi.
-- **Master Data**: Produk, Kategori, Satuan, Supplier, Lokasi.
+- **Master Data**: Produk, Kategori, Satuan, Supplier, Lokasi, Toko (Stores).
 - **Transaksi**:
-  - **Penerimaan Stok (Stock Receipts)**: Pencatatan barang masuk dari supplier.
+  - **Penerimaan Stok (Stock Receipts)**: Pencatatan barang masuk dari supplier / General Affair (GA).
   - **Pengeluaran Stok (Stock Issues)**: Pencatatan barang keluar untuk kebutuhan operasional.
-  - **Transfer Stok (Stock Transfers)**: Pemindahan barang antarlokasi gudang (Status: DRAFT -> SENT -> RECEIVED).
+  - **Transfer Stok (Stock Transfers)**: Pemindahan barang antarlokasi gudang/teknisi (Status: DRAFT -> SENT -> RECEIVED).
+  - **Alokasi Toko (Store Allocations)**: Pencatatan penggantian unit operasional toko (pasang unit GOOD & tarik unit DEFECTIVE).
   - **Penyesuaian Stok (Stock Adjustments)**: Penyesuaian stok karena kerusakan atau temuan (Maker-Checker: disetujui Supervisor).
   - **Stock Opname**: Perhitungan fisik stok secara berkala (Snapshot -> Count -> Complete -> Review -> Post).
-- **Laporan (Reports)**: Laporan Saldo Stok, Stok Minimum, Kartu Stok, Laporan Transaksi, dan Ekspor CSV.
+- **Laporan (Reports)**: Laporan Saldo Stok, Saldo Teknisi Lapangan, Histori Alokasi Toko, Stok Minimum, Kartu Stok, Laporan Transaksi, dan Ekspor CSV.
 
 ---
 

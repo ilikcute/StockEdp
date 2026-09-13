@@ -519,3 +519,35 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - **Backend Feature Tests (`php artisan test tests/Feature/Inventory/`)**: PASSED (79/79 tests passed, 213 assertions, 0 failures).
   - **Git Sync**: Seluruh commit telah ter-push ke remote `origin/main` (`c9f7170..d63f333`).
 - **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-13] - Remediasi Temuan Audit Sistem & Kode (AUDIT_SISTEM_DAN_KODE.md)
+- **Tujuan**: Menindaklanjuti dan menyelesaikan seluruh temuan pada dokumen `docs/AUDIT_SISTEM_DAN_KODE.md` mencakup optimasi basis data, konkurensi alokasi toko, type-safety DTO persediaan, pembersihan repositori, serta sinkronisasi dokumentasi.
+- **Pekerjaan yang Dilakukan**:
+  1. **Optimasi Indeks Basis Data**:
+     - Membuat file migrasi baru `2026_09_13_000001_optimize_store_and_inventory_indexes.php`:
+       - Menghapus indeks non-unik redundan `stores_code_index` pada tabel `stores` (sudah dilindungi `stores_code_unique`).
+       - Menghapus indeks redundan `idx_balances_product_id` pada tabel `inventory_balances` (sudah tertutup prefix composite unique `prod_loc_cond_unique`).
+       - Mengubah urutan indeks komposit pada `store_allocations` dari `(allocated_at, store_id)` menjadi `(store_id, allocated_at)` dengan nama `idx_store_alloc_store_date` (*Equality before Range*).
+     - Menyesuaikan file migrasi asal (`2026_09_12_100001_create_stores_table.php`, `2026_09_12_100003_add_condition_to_inventory_balances_and_stock_movements.php`, dan `2026_09_12_100005_create_store_allocations_tables.php`) untuk instalasi bersih (*clean fresh migrations*).
+  2. **Pengamanan Konkurensi Generator Nomor Alokasi**:
+     - Memperbarui `StoreAllocationRepository::getNextAllocationNumber()` dengan menambahkan `lockForUpdate()` dan pembungkus transaksi otomatis.
+     - Memperbarui `CreateStoreAllocationAction::execute()` dengan menambahkan mekanisme retry loop (3x percobaan) dan penanganan backoff untuk error SQL 1062 (duplicate key) dan deadlock.
+  3. **Type-Safe Refactoring DTO & Repository**:
+     - Memperbarui `StockChangeDTO.php` agar properti `$condition` bertipe kuat enum `StockCondition`, dengan fleksibilitas parsing string jika diperlukan.
+     - Memperbarui `InventoryBalanceRepositoryInterface` dan `InventoryBalanceRepository` agar parameter `$condition` bertipe `StockCondition|string` dan dinormalisasi secara konsisten.
+     - Memperbarui `CreateStoreAllocationAction` agar menggunakan `StockCondition::GOOD` dan `StockCondition::DEFECTIVE` secara eksplisit.
+  4. **Pembersihan File Log & Cache Runtime di Root**:
+     - Menghapus berkas runtime `serve.log`, `serve.err.log`, dan `.phpunit.result.cache`.
+     - Memastikan `.gitignore` mengabaikan seluruh berkas log dan cache pengujian tersebut.
+  5. **Penyelarasan & Pembaruan Dokumentasi**:
+     - Membuat `README.md` pada root direktori berisi ringkasan arsitektur, panduan instalasi cepat, struktur proyek, dan peta dokumen.
+     - Memperbaiki syarat PHP pada `docs/INSTALLATION.md` menjadi `PHP 8.3+` (selaras dengan `composer.json`).
+     - Memperbaiki referensi usang pada `skills/stockedp/SKILL.md`.
+     - Melengkapi Bab 2 Navigasi pada `docs/WAREHOUSE_USER_GUIDE.md` dengan menyertakan Master Data Toko (Stores), Alokasi Toko, dan laporan terkait.
+- **Hasil Pengujian**:
+  - `php artisan test tests/Feature/StoreAllocation/StoreAllocationTest.php` -> 4 passed (13 assertions).
+  - Seluruh pengujian fitur Phase 2 lulus 100%.
+- **Status**: SELESAI & TERVERIFIKASI.
+

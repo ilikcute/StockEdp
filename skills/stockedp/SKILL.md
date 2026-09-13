@@ -58,8 +58,8 @@ Catatan: commit dokumentasi setelah SHA di atas boleh membuat HEAD bergerak. Jan
 - Ringkasan perjalanan Fase 1–10D: `skills/stockedp/HISTORY.md`
 - Isu operasional yang masih perlu perhatian: `skills/stockedp/KNOWN_ISSUES.md`
 
-Dokumen root tetap sumber detail utama bila dibutuhkan:
-`AGENTS.md`, `PRD.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `TASKS.md`, dan `docs/*`.
+Dokumen teknis tetap sumber detail utama bila dibutuhkan:
+`docs/PRD.md`, `docs/TASKS.md`, dan seluruh dokumen spesifikasi pada direktori `docs/*`.
 
 ## 4. Aturan Non-Negotiable
 
@@ -77,7 +77,7 @@ Dokumen root tetap sumber detail utama bila dibutuhkan:
 12. Jangan tambah dependency tanpa izin user.
 13. Jangan refactor di luar scope.
 14. Jangan melemahkan test untuk membuat implementasi PASS.
-15. Update `DECISIONS.md` bila keputusan arsitektur/domain berubah.
+15. Update dokumentasi di folder `docs/` bila keputusan arsitektur/domain berubah.
 
 ## 5. Domain Inventory Inti (PRD V1 Field Allocation)
 

@@ -1,12 +1,17 @@
 <template>
-  <div :class="[
-    compact ? 'bg-transparent p-0' : 'bg-white border border-blue-200 rounded-xl p-4 shadow-xs',
-    'transition-all'
-  ]">
+  <div
+    :class="[
+      compact ? 'bg-transparent p-0' : 'bg-white border border-blue-200 rounded-xl p-4 shadow-xs',
+      'transition-all'
+    ]"
+  >
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
       <!-- Input Section -->
       <div class="flex-1 relative">
-        <div v-if="!compact" class="flex items-center justify-between mb-1">
+        <div
+          v-if="!compact"
+          class="flex items-center justify-between mb-1"
+        >
           <label
             for="barcode-scanner-input"
             class="block text-xs font-bold text-gray-700 uppercase tracking-wider"

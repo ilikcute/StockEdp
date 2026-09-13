@@ -103,7 +103,7 @@ const props = defineProps({
   dateTo: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:locationId', 'update:period', 'refresh']);
+const emit = defineEmits(['update:locationId', 'update:location-id', 'update:period', 'refresh']);
 
 const periods = [
   { value: 'today', label: 'Hari Ini' },

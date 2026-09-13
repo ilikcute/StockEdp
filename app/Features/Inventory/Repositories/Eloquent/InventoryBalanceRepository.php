@@ -2,20 +2,23 @@
 
 namespace App\Features\Inventory\Repositories\Eloquent;
 
+use App\Features\Inventory\Enums\StockCondition;
 use App\Features\Inventory\Models\InventoryBalance;
 use App\Features\Inventory\Repositories\Contracts\InventoryBalanceRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
 class InventoryBalanceRepository implements InventoryBalanceRepositoryInterface
 {
-    public function lockBalanceForUpdate(int $productId, int $locationId, string $condition = 'GOOD'): InventoryBalance
+    public function lockBalanceForUpdate(int $productId, int $locationId, StockCondition|string $condition = StockCondition::GOOD): InventoryBalance
     {
+        $conditionValue = $condition instanceof StockCondition ? $condition->value : $condition;
+
         // insertOrIgnore prevents race condition errors on first balance creation.
         // It's atomic in MySQL and safely ignores duplicate key errors.
         DB::table('inventory_balances')->insertOrIgnore([
             'product_id' => $productId,
             'location_id' => $locationId,
-            'condition' => $condition,
+            'condition' => $conditionValue,
             'quantity' => '0.0000',
             'created_at' => now(),
             'updated_at' => now(),
@@ -23,16 +26,18 @@ class InventoryBalanceRepository implements InventoryBalanceRepositoryInterface
 
         return InventoryBalance::where('product_id', $productId)
             ->where('location_id', $locationId)
-            ->where('condition', $condition)
+            ->where('condition', $conditionValue)
             ->lockForUpdate()
             ->first();
     }
 
-    public function getBalance(int $productId, int $locationId, string $condition = 'GOOD'): ?InventoryBalance
+    public function getBalance(int $productId, int $locationId, StockCondition|string $condition = StockCondition::GOOD): ?InventoryBalance
     {
+        $conditionValue = $condition instanceof StockCondition ? $condition->value : $condition;
+
         return InventoryBalance::where('product_id', $productId)
             ->where('location_id', $locationId)
-            ->where('condition', $condition)
+            ->where('condition', $conditionValue)
             ->first();
     }
 

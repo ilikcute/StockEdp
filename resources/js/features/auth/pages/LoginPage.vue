@@ -3,7 +3,7 @@
     <div class="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-md border border-gray-100">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
-          Sistem Inventory
+          Sistem Inventory EDP Yogyakarta
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
           Silakan masuk ke akun Anda

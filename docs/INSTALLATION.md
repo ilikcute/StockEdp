@@ -6,7 +6,7 @@ Dokumen ini berisi panduan lengkap untuk melakukan instalasi dan penyetelan Sist
 
 ## 1. Persyaratan Sistem (System Requirements)
 
-- **PHP**: `8.5.0` (atau minimal `8.2+`) dengan ekstensi wajib:
+- **PHP**: `8.3+` (disarankan PHP 8.3 atau 8.4) dengan ekstensi wajib:
   - `bcmath` (Wajib untuk perhitungan desimal kuantitas presisi)
   - `pdo_mysql`
   - `mbstring`

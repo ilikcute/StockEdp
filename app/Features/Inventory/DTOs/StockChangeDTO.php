@@ -3,9 +3,12 @@
 namespace App\Features\Inventory\DTOs;
 
 use App\Features\Inventory\Enums\MovementType;
+use App\Features\Inventory\Enums\StockCondition;
 
 readonly class StockChangeDTO
 {
+    public StockCondition $condition;
+
     public function __construct(
         public int $productId,
         public int $locationId,
@@ -16,6 +19,10 @@ readonly class StockChangeDTO
         public ?string $referenceNumber = null,
         public ?int $userId = null,
         public ?string $occurredAt = null,
-        public string $condition = 'GOOD',
-    ) {}
+        StockCondition|string $condition = StockCondition::GOOD,
+    ) {
+        $this->condition = is_string($condition)
+            ? (StockCondition::tryFrom($condition) ?? StockCondition::GOOD)
+            : $condition;
+    }
 }

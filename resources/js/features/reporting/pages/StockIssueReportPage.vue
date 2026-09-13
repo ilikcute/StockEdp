@@ -82,6 +82,7 @@
 
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useStockIssueReportStore } from '../stores/useStockIssueReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
@@ -93,6 +94,7 @@ import ReportFeedbackPanels from '../components/ReportFeedbackPanels.vue';
 import QuantityByUnitSummary from '../components/QuantityByUnitSummary.vue';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 
+const route = useRoute();
 const store = useStockIssueReportStore();
 const masterStore = useReportFilterOptionsStore();
 const exportStore = useReportCsvExportStore();

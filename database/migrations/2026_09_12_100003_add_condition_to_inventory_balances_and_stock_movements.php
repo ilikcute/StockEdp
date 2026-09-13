@@ -18,9 +18,8 @@ return new class extends Migration
                     ->after('location_id');
             }
 
-            $table->index('product_id', 'idx_balances_product_id');
-            $table->dropUnique('prod_loc_unique');
             $table->unique(['product_id', 'location_id', 'condition'], 'prod_loc_cond_unique');
+            $table->dropUnique('prod_loc_unique');
         });
 
         Schema::table('stock_movements', function (Blueprint $table) {

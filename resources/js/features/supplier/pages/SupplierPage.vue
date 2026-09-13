@@ -149,7 +149,9 @@
             </td>
             <td class="py-1.5 px-2 text-gray-500 text-[11px] whitespace-nowrap">
               <template v-if="supplier.contact_person !== undefined">
-                <div class="leading-tight">{{ supplier.contact_person || '—' }}</div>
+                <div class="leading-tight">
+                  {{ supplier.contact_person || '—' }}
+                </div>
                 <span
                   v-if="supplier.phone"
                   class="block text-[10px] text-gray-400"

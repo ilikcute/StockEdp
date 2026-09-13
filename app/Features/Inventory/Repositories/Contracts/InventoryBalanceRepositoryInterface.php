@@ -2,6 +2,7 @@
 
 namespace App\Features\Inventory\Repositories\Contracts;
 
+use App\Features\Inventory\Enums\StockCondition;
 use App\Features\Inventory\Models\InventoryBalance;
 
 interface InventoryBalanceRepositoryInterface
@@ -9,12 +10,12 @@ interface InventoryBalanceRepositoryInterface
     /**
      * Get or create balance and lock for update.
      */
-    public function lockBalanceForUpdate(int $productId, int $locationId, string $condition = 'GOOD'): InventoryBalance;
+    public function lockBalanceForUpdate(int $productId, int $locationId, StockCondition|string $condition = StockCondition::GOOD): InventoryBalance;
 
     /**
      * Get balance without locking.
      */
-    public function getBalance(int $productId, int $locationId, string $condition = 'GOOD'): ?InventoryBalance;
+    public function getBalance(int $productId, int $locationId, StockCondition|string $condition = StockCondition::GOOD): ?InventoryBalance;
 
     /**
      * Get paginated balances.

@@ -234,31 +234,31 @@
       </table>
     </div>
 
-      <!-- Pagination -->
-      <div
-        v-if="store.pagination?.last_page > 1"
-        class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6"
-      >
-        <div class="text-xs text-gray-700">
-          Halaman {{ store.pagination.current_page }} dari {{ store.pagination.last_page }} (Total: {{ store.pagination.total }} baris)
-        </div>
-        <div class="flex gap-2">
-          <button
-            :disabled="store.pagination.current_page <= 1"
-            class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
-            @click="fetchData(store.pagination.current_page - 1)"
-          >
-            Sebelumnya
-          </button>
-          <button
-            :disabled="store.pagination.current_page >= store.pagination.last_page"
-            class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
-            @click="fetchData(store.pagination.current_page + 1)"
-          >
-            Selanjutnya
-          </button>
-        </div>
+    <!-- Pagination -->
+    <div
+      v-if="store.pagination?.last_page > 1"
+      class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6"
+    >
+      <div class="text-xs text-gray-700">
+        Halaman {{ store.pagination.current_page }} dari {{ store.pagination.last_page }} (Total: {{ store.pagination.total }} baris)
       </div>
+      <div class="flex gap-2">
+        <button
+          :disabled="store.pagination.current_page <= 1"
+          class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
+          @click="fetchData(store.pagination.current_page - 1)"
+        >
+          Sebelumnya
+        </button>
+        <button
+          :disabled="store.pagination.current_page >= store.pagination.last_page"
+          class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
+          @click="fetchData(store.pagination.current_page + 1)"
+        >
+          Selanjutnya
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 

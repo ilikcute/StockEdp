@@ -31,10 +31,16 @@
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div>
-                <h2 id="movement-detail-title" class="text-lg font-bold text-gray-900">
+                <h2
+                  id="movement-detail-title"
+                  class="text-lg font-bold text-gray-900"
+                >
                   Detail Pergerakan Stok
                 </h2>
-                <p v-if="movement?.movement_id" class="text-xs text-gray-500 font-mono mt-0.5">
+                <p
+                  v-if="movement?.movement_id"
+                  class="text-xs text-gray-500 font-mono mt-0.5"
+                >
                   {{ movement.movement_id }}
                 </p>
               </div>
@@ -44,25 +50,58 @@
                 aria-label="Tutup"
                 @click="$emit('update:modelValue', false)"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
             <!-- Loading State -->
-            <div v-if="loading" class="flex items-center justify-center py-16">
+            <div
+              v-if="loading"
+              class="flex items-center justify-center py-16"
+            >
               <div class="text-center">
-                <svg class="animate-spin w-8 h-8 text-indigo-500 mx-auto" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <svg
+                  class="animate-spin w-8 h-8 text-indigo-500 mx-auto"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
                 </svg>
-                <p class="mt-3 text-sm text-gray-500">Memuat detail...</p>
+                <p class="mt-3 text-sm text-gray-500">
+                  Memuat detail...
+                </p>
               </div>
             </div>
 
             <!-- Content -->
-            <div v-else-if="movement" class="px-6 py-5 space-y-5">
+            <div
+              v-else-if="movement"
+              class="px-6 py-5 space-y-5"
+            >
               <!-- Movement Type Badge -->
               <div class="flex items-center gap-3">
                 <span
@@ -80,34 +119,57 @@
               <div class="grid grid-cols-2 gap-4">
                 <!-- Produk -->
                 <div class="col-span-2 bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Produk</p>
-                  <p class="text-sm font-bold text-gray-900">{{ movement.product?.name || '-' }}</p>
-                  <p class="text-xs text-gray-500 font-mono">{{ movement.product?.sku || '-' }}</p>
-                  <p v-if="movement.product?.unit_price" class="text-xs text-indigo-600 font-semibold mt-1">
+                  <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Produk
+                  </p>
+                  <p class="text-sm font-bold text-gray-900">
+                    {{ movement.product?.name || '-' }}
+                  </p>
+                  <p class="text-xs text-gray-500 font-mono">
+                    {{ movement.product?.sku || '-' }}
+                  </p>
+                  <p
+                    v-if="movement.product?.unit_price"
+                    class="text-xs text-indigo-600 font-semibold mt-1"
+                  >
                     {{ formatRupiah(movement.product.unit_price) }}
                   </p>
                 </div>
 
                 <!-- Lokasi -->
                 <div class="bg-blue-50 rounded-xl p-4">
-                  <p class="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-1">Lokasi</p>
-                  <p class="text-sm font-bold text-blue-900">{{ movement.location?.name || '-' }}</p>
+                  <p class="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-1">
+                    Lokasi
+                  </p>
+                  <p class="text-sm font-bold text-blue-900">
+                    {{ movement.location?.name || '-' }}
+                  </p>
                 </div>
 
                 <!-- Dibuat Oleh -->
                 <div class="bg-purple-50 rounded-xl p-4">
-                  <p class="text-xs font-semibold text-purple-500 uppercase tracking-wider mb-1">Operator</p>
-                  <p class="text-sm font-bold text-purple-900">{{ movement.creator?.name || '-' }}</p>
+                  <p class="text-xs font-semibold text-purple-500 uppercase tracking-wider mb-1">
+                    Operator
+                  </p>
+                  <p class="text-sm font-bold text-purple-900">
+                    {{ movement.creator?.name || '-' }}
+                  </p>
                 </div>
               </div>
 
               <!-- Quantity Details -->
               <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4">
-                <p class="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-3">Mutasi Stok</p>
+                <p class="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-3">
+                  Mutasi Stok
+                </p>
                 <div class="grid grid-cols-3 gap-3 text-center">
                   <div>
-                    <p class="text-xs text-gray-500 mb-1">Sebelum</p>
-                    <p class="text-lg font-black text-gray-700 font-mono">{{ formatQuantity(movement.quantity_before) }}</p>
+                    <p class="text-xs text-gray-500 mb-1">
+                      Sebelum
+                    </p>
+                    <p class="text-lg font-black text-gray-700 font-mono">
+                      {{ formatQuantity(movement.quantity_before) }}
+                    </p>
                   </div>
                   <div class="flex flex-col items-center justify-center">
                     <div
@@ -116,20 +178,36 @@
                     >
                       {{ isInbound(movement.movement_type) ? '+' : '-' }}{{ formatQuantity(Math.abs(movement.quantity)) }}
                     </div>
-                    <svg class="w-4 h-4 text-gray-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    <svg
+                      class="w-4 h-4 text-gray-400 mt-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
                     </svg>
                   </div>
                   <div>
-                    <p class="text-xs text-gray-500 mb-1">Sesudah</p>
-                    <p class="text-lg font-black text-indigo-700 font-mono">{{ formatQuantity(movement.quantity_after) }}</p>
+                    <p class="text-xs text-gray-500 mb-1">
+                      Sesudah
+                    </p>
+                    <p class="text-lg font-black text-indigo-700 font-mono">
+                      {{ formatQuantity(movement.quantity_after) }}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <!-- Referensi -->
               <div class="border-t border-gray-100 pt-4">
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Referensi Transaksi</p>
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Referensi Transaksi
+                </p>
                 <div class="flex items-center gap-3">
                   <span
                     v-if="movement.reference_type"
@@ -145,8 +223,13 @@
             </div>
 
             <!-- Error State -->
-            <div v-else class="px-6 py-12 text-center">
-              <p class="text-gray-500 text-sm">Gagal memuat detail pergerakan stok.</p>
+            <div
+              v-else
+              class="px-6 py-12 text-center"
+            >
+              <p class="text-gray-500 text-sm">
+                Gagal memuat detail pergerakan stok.
+              </p>
             </div>
 
             <!-- Footer -->

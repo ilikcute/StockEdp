@@ -161,6 +161,7 @@
 
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useStockAdjustmentReportStore } from '../stores/useStockAdjustmentReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
@@ -172,6 +173,7 @@ import ReportPagination from '../components/ReportPagination.vue';
 import ReportFeedbackPanels from '../components/ReportFeedbackPanels.vue';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 
+const route = useRoute();
 const store = useStockAdjustmentReportStore();
 const masterStore = useReportFilterOptionsStore();
 const exportStore = useReportCsvExportStore();

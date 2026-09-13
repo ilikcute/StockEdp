@@ -25,7 +25,7 @@ return new class extends Migration
                 $table->foreignId('updated_by')->nullable()->constrained('users')->restrictOnDelete();
                 $table->timestamps();
 
-                $table->index(['allocated_at', 'store_id']);
+                $table->index(['store_id', 'allocated_at'], 'idx_store_alloc_store_date');
                 $table->index('technician_user_id');
                 $table->index('technician_location_id');
             });
