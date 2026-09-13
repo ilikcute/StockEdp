@@ -1,38 +1,68 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Penerimaan Stok
+  <div class="space-y-3">
+    <!-- Top Header Toolbar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+          <svg
+            class="w-4 h-4 text-indigo-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+          Daftar Penerimaan Stok (Goods Receipts)
         </h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Daftar dokumen penerimaan barang.
+        <p class="text-[11px] text-gray-500 mt-0.5">
+          Pengelolaan arsip dokumen pencatatan barang masuk dari pengadaan atau retur servis.
         </p>
       </div>
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+      <div class="flex items-center gap-2">
         <router-link
           v-if="hasPermission('stock_receipts.create')"
           to="/inventory/receipts/create"
-          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
         >
-          Buat Draft Baru
+          <svg
+            class="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span>Buat Draft Baru</span>
         </router-link>
       </div>
     </div>
 
-    <div class="mt-6 flex flex-col sm:flex-row justify-between gap-4">
-      <div class="w-full sm:max-w-xs">
+    <!-- Filter & Search Toolbar -->
+    <div class="flex flex-col sm:flex-row justify-between gap-2.5">
+      <div class="w-full sm:w-64">
         <BaseSearchInput
           id="search"
           v-model="searchQuery"
-          placeholder="Cari Nomor Referensi..."
+          placeholder="Cari Nomor Referensi / SPB..."
+          size="sm"
           @search="onSearch"
         />
       </div>
       <div class="flex gap-2 flex-wrap sm:flex-nowrap">
         <select
           v-model="statusFilter"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Status
@@ -55,95 +85,120 @@
       :message="store.error"
     />
 
-    <div class="mt-6 overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
+    <!-- High-Density Table Container -->
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+              class="py-1.5 px-1.5 w-8 text-center"
             >
               No.
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap min-w-[160px]"
             >
               Nomor Dokumen
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Tanggal
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 min-w-[180px]"
             >
-              Supplier
+              Sumber / Supplier
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap w-24"
             >
               Status
             </th>
             <th
               scope="col"
-              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
+              class="py-1.5 px-2 text-center whitespace-nowrap w-16"
             >
-              <span class="sr-only">Aksi</span>
+              Aksi
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
+        <tbody class="divide-y divide-gray-100 bg-white">
           <tr v-if="store.loading && (!store.receipts?.data || store.receipts.data.length === 0)">
             <td
               colspan="6"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
-              Memuat data...
+              <div class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Memuat data penerimaan...</span>
+              </div>
             </td>
           </tr>
           <tr v-else-if="!store.receipts?.data || store.receipts.data.length === 0">
             <td
               colspan="6"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-400"
             >
-              Tidak ada data.
+              Tidak ada data penerimaan yang cocok.
             </td>
           </tr>
           <tr
             v-for="(item, index) in (store.receipts?.data || [])"
             :key="item.id"
+            class="hover:bg-gray-50/80 transition-colors"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
               {{ rowNumber(store.receipts?.meta, index) }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
-              <div>{{ item.receipt_number }}</div>
+            <td class="py-1.5 px-2 whitespace-nowrap font-mono">
+              <div class="font-bold text-gray-900 text-[11px]">
+                {{ item.receipt_number }}
+              </div>
               <div
                 v-if="item.memo_number"
-                class="text-xs text-gray-500 font-normal"
+                class="text-[10px] text-indigo-600 font-sans"
               >
                 SPB: {{ item.memo_number }}
               </div>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 whitespace-nowrap text-gray-600 text-[11px]">
               {{ item.date }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-gray-800 text-[11px]">
               {{ item.supplier?.name || (item.source_type === 'GA_SERVICED' ? 'Hasil Servis GA' : 'Internal GA') }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <td class="py-1.5 px-2 whitespace-nowrap">
               <DocumentStatusBadge :status="item.status" />
             </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+            <td class="py-1.5 px-2 text-center whitespace-nowrap">
               <router-link
                 v-if="hasPermission('stock_receipts.view')"
                 :to="`/inventory/receipts/${item.id}`"
-                class="text-indigo-600 hover:text-indigo-900"
+                class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
               >
                 Detail
               </router-link>
@@ -178,3 +233,20 @@ const { searchQuery, statusFilter, onSearch, changePage, hasPermission } = useDo
     collection: 'receipts',
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

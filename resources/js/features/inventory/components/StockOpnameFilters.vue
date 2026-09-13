@@ -1,10 +1,10 @@
 <template>
-  <div class="flex flex-wrap gap-3 items-end">
+  <div class="flex flex-wrap gap-2.5 items-end">
     <!-- Search -->
     <div>
       <label
         for="opname-search"
-        class="block text-xs font-medium text-gray-700 mb-1"
+        class="block text-[11px] font-medium text-gray-700 mb-0.5"
       >
         Nomor Opname
       </label>
@@ -13,7 +13,7 @@
         v-model="localFilters.search"
         type="text"
         placeholder="Cari nomor..."
-        class="block w-44 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        class="block w-40 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-900 placeholder-gray-400 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @input="emitFilters"
       >
     </div>
@@ -22,14 +22,14 @@
     <div>
       <label
         for="opname-status"
-        class="block text-xs font-medium text-gray-700 mb-1"
+        class="block text-[11px] font-medium text-gray-700 mb-0.5"
       >
         Status
       </label>
       <select
         id="opname-status"
         v-model="localFilters.status"
-        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        class="block rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
         <option value="">
@@ -57,14 +57,14 @@
     <div>
       <label
         for="opname-location"
-        class="block text-xs font-medium text-gray-700 mb-1"
+        class="block text-[11px] font-medium text-gray-700 mb-0.5"
       >
         Lokasi
       </label>
       <select
         id="opname-location"
         v-model="localFilters.location_id"
-        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        class="block rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
         <option value="">
@@ -84,7 +84,7 @@
     <div>
       <label
         for="opname-start-date"
-        class="block text-xs font-medium text-gray-700 mb-1"
+        class="block text-[11px] font-medium text-gray-700 mb-0.5"
       >
         Tanggal Dari
       </label>
@@ -92,7 +92,7 @@
         id="opname-start-date"
         v-model="localFilters.start_date"
         type="date"
-        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        class="block rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
     </div>
@@ -101,7 +101,7 @@
     <div>
       <label
         for="opname-end-date"
-        class="block text-xs font-medium text-gray-700 mb-1"
+        class="block text-[11px] font-medium text-gray-700 mb-0.5"
       >
         Tanggal Hingga
       </label>
@@ -109,7 +109,7 @@
         id="opname-end-date"
         v-model="localFilters.end_date"
         type="date"
-        class="block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        class="block rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         @change="emitFilters"
       >
     </div>
@@ -117,7 +117,7 @@
     <!-- Reset -->
     <button
       type="button"
-      class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+      class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
       @click="resetFilters"
     >
       Reset

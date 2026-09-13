@@ -21,13 +21,13 @@
     </div>
 
     <!-- Filter & Search Bar -->
-    <div class="flex flex-col sm:flex-row gap-3">
+    <div class="mt-3 flex flex-col sm:flex-row gap-2.5">
       <div class="flex-1">
         <input
           v-model="searchQuery"
           type="text"
           placeholder="Cari nomor alokasi, toko, atau teknisi..."
-          class="block w-full rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @input="handleSearch"
         >
       </div>
@@ -36,38 +36,62 @@
     <!-- Alert / Error -->
     <div
       v-if="store.error"
-      class="rounded-lg bg-rose-50 border border-rose-200 p-4 text-sm text-rose-800"
+      class="mt-3 rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800"
     >
       {{ store.error }}
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto shadow-xs border border-gray-200 rounded-xl bg-white">
-      <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
-        <thead class="bg-gray-50 text-gray-700 font-semibold">
-          <tr>
-            <th class="py-3 px-4 w-12 text-center">
+    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+            <th
+              scope="col"
+              class="py-1.5 px-1.5 w-8 text-center"
+            >
               No.
             </th>
-            <th class="py-3 px-4">
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
               No. Alokasi
             </th>
-            <th class="py-3 px-4">
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
               Tanggal
             </th>
-            <th class="py-3 px-4">
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
               Toko
             </th>
-            <th class="py-3 px-4">
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
               Teknisi / Lokasi
             </th>
-            <th class="py-3 px-4">
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
               Item Dipasang
             </th>
-            <th class="py-3 px-4">
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
               Item Ditarik
             </th>
-            <th class="py-3 px-4 text-center w-24">
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
+            >
               Aksi
             </th>
           </tr>
@@ -76,7 +100,7 @@
           <tr v-if="store.loading && (!store.allocations?.data || store.allocations.data.length === 0)">
             <td
               colspan="8"
-              class="py-10 text-center text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
               Memuat data alokasi...
             </td>
@@ -84,7 +108,7 @@
           <tr v-else-if="!store.allocations?.data || store.allocations.data.length === 0">
             <td
               colspan="8"
-              class="py-10 text-center text-gray-400"
+              class="py-8 text-center text-xs text-gray-400"
             >
               Belum ada riwayat alokasi toko.
             </td>
@@ -92,57 +116,57 @@
           <tr
             v-for="(item, index) in (store.allocations?.data || [])"
             :key="item.id"
-            class="hover:bg-gray-50"
+            class="hover:bg-gray-50/80 transition-colors"
           >
-            <td class="py-3 px-4 text-center text-gray-400 font-mono text-xs">
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
               {{ rowNumber(store.allocations?.meta, index) }}
             </td>
-            <td class="py-3 px-4 font-mono font-medium text-gray-900">
+            <td class="py-1.5 px-2 font-mono font-medium text-gray-900 text-[11px] whitespace-nowrap">
               {{ item.allocation_number }}
             </td>
-            <td class="py-3 px-4 text-gray-600 whitespace-nowrap">
+            <td class="py-1.5 px-2 text-gray-600 text-[11px] whitespace-nowrap">
               {{ item.allocated_at }}
             </td>
-            <td class="py-3 px-4">
-              <div class="font-medium text-gray-900">
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900 leading-tight">
                 {{ item.store_name }}
               </div>
               <div
                 v-if="item.store_code"
-                class="text-xs text-gray-500 font-mono"
+                class="text-[10px] text-gray-400 font-mono"
               >
                 {{ item.store_code }}
               </div>
             </td>
-            <td class="py-3 px-4">
-              <div class="font-medium text-gray-900">
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900 leading-tight">
                 {{ item.technician_name }}
               </div>
-              <div class="text-xs text-gray-500">
+              <div class="text-[10px] text-gray-400">
                 {{ item.technician_location_name }}
               </div>
             </td>
-            <td class="py-3 px-4">
-              <span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+            <td class="py-1.5 px-2 whitespace-nowrap">
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                 ✓ {{ countInstalled(item) }} Unit
               </span>
             </td>
-            <td class="py-3 px-4">
+            <td class="py-1.5 px-2 whitespace-nowrap">
               <span
                 v-if="countPulled(item) > 0"
-                class="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200"
               >
                 ⚠ {{ countPulled(item) }} Unit
               </span>
               <span
                 v-else
-                class="text-xs text-gray-400"
+                class="text-[11px] text-gray-400"
               >-</span>
             </td>
-            <td class="py-3 px-4 text-center whitespace-nowrap">
+            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px]">
               <router-link
                 :to="`/inventory/store-allocations/${item.id}`"
-                class="text-indigo-600 hover:text-indigo-900 font-semibold text-xs"
+                class="font-semibold text-indigo-600 hover:text-indigo-900 hover:underline"
               >
                 Detail
               </router-link>
@@ -230,3 +254,20 @@ onMounted(() => {
     loadData();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

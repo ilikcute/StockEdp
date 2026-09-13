@@ -21,9 +21,9 @@
     </div>
 
     <!-- Quick Tab Filters -->
-    <div class="mt-4 border-b border-gray-300">
+    <div class="mt-3 border-b border-gray-200">
       <nav
-        class="-mb-px flex space-x-8"
+        class="-mb-px flex space-x-6"
         aria-label="Tabs"
       >
         <button
@@ -34,7 +34,7 @@
             activeTab === tab.value
               ? 'border-indigo-600 text-indigo-600 font-semibold'
               : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-            'whitespace-nowrap border-b-2 py-4 px-1 text-sm cursor-pointer'
+            'whitespace-nowrap border-b-2 py-2 px-1 text-xs cursor-pointer'
           ]"
           @click="selectTab(tab.value)"
         >
@@ -44,7 +44,7 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
       <div>
         <label
           for="search"
@@ -54,7 +54,7 @@
           id="search"
           v-model="searchQuery"
           type="text"
-          class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="Cari Nomor / Catatan..."
         >
       </div>
@@ -64,7 +64,7 @@
           id="directionFilter"
           v-model="directionFilter"
           aria-label="Filter Direction"
-          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Arah (Direction)
@@ -83,7 +83,7 @@
           id="reasonFilter"
           v-model="reasonFilter"
           aria-label="Filter Alasan"
-          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Alasan (Reason)
@@ -117,7 +117,7 @@
           id="locationFilter"
           v-model="locationFilter"
           aria-label="Filter Lokasi"
-          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Lokasi
@@ -137,7 +137,7 @@
           id="statusFilter"
           v-model="statusFilter"
           aria-label="Filter Status"
-          class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
             Semua Status
@@ -158,79 +158,79 @@
     <!-- Error Alert -->
     <div
       v-if="store.error"
-      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+      class="mt-3 rounded-md bg-red-50 p-3 border border-red-200"
     >
-      <p class="text-sm font-medium text-red-800">
+      <p class="text-xs font-medium text-red-800">
         {{ store.error }}
       </p>
     </div>
 
     <!-- Table -->
-    <div class="mt-6 overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
+    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+              class="py-1.5 px-1.5 w-8 text-center"
             >
               No.
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Nomor Adjustment
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Tanggal
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Lokasi
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Arah
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Alasan
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Status
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Pembuat
             </th>
             <th
               scope="col"
-              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
             >
-              <span class="sr-only">Aksi</span>
+              Aksi
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
+        <tbody class="divide-y divide-gray-100 bg-white">
           <tr v-if="store.loadingList && (!store.adjustments.data || store.adjustments.data.length === 0)">
             <td
               colspan="9"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
               Memuat data penyesuaian stok...
             </td>
@@ -238,7 +238,7 @@
           <tr v-else-if="!store.adjustments.data || store.adjustments.data.length === 0">
             <td
               colspan="9"
-              class="py-10 text-center text-sm text-gray-500"
+              class="py-8 text-center text-xs text-gray-500"
             >
               <span v-if="hasActiveFilter">Filter tidak menemukan data adjustment.</span>
               <span v-else>Belum ada data penyesuaian stok.</span>
@@ -247,50 +247,51 @@
           <tr
             v-for="(item, index) in (store.adjustments.data || [])"
             :key="item.id"
+            class="hover:bg-gray-50/80 transition-colors"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
               {{ rowNumber(store.adjustments?.meta, index) }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+            <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
               {{ item.adjustment_number }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
               {{ item.adjustment_date }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
               {{ item.location_name || '-' }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
               <span
-                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                :class="item.direction === 'INCREASE' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                :class="item.direction === 'INCREASE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-orange-50 text-orange-700 border border-orange-200'"
               >
                 {{ item.direction === 'INCREASE' ? '↑ Penambahan' : '↓ Pengurangan' }}
               </span>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
               {{ item.reason_label || item.reason_code }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
               <span
-                class="px-2 py-1 text-xs font-semibold rounded-full"
+                class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center"
                 :class="{
-                  'bg-yellow-100 text-yellow-800': item.status === 'DRAFT',
-                  'bg-green-100 text-green-800': item.status === 'POSTED',
-                  'bg-gray-100 text-gray-800': item.status === 'CANCELED'
+                  'bg-amber-50 text-amber-700 border border-amber-200': item.status === 'DRAFT',
+                  'bg-emerald-50 text-emerald-700 border border-emerald-200': item.status === 'POSTED',
+                  'bg-gray-100 text-gray-600 border border-gray-200': item.status === 'CANCELED'
                 }"
               >
                 {{ item.status_label || item.status }}
               </span>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
               {{ item.created_by || '-' }}
             </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px]">
               <router-link
                 v-if="hasPermission('stock_adjustments.view')"
                 :to="`/inventory/adjustments/${item.id}`"
-                class="text-indigo-600 hover:text-indigo-900"
+                class="font-semibold text-indigo-600 hover:text-indigo-900 hover:underline"
               >
                 Detail
               </router-link>
@@ -390,3 +391,20 @@ onMounted(async () => {
   fetchData();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
