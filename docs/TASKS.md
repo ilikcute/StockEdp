@@ -447,3 +447,22 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - **Backend Feature Tests (`php artisan test`)**: PASSED (9/9 passed, 22 assertions).
 - **Status**: SELESAI & TERVERIFIKASI.
 
+---
+
+### [2026-09-13] Penyelarasan Densitas & Gaya Tabel StockMovementPage.vue dengan RecentInventoryActivity.vue
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar gaya dan ukuran tabel pada halaman Riwayat Pergerakan Stok (`StockMovementPage.vue`) disamakan dengan komponen `RecentInventoryActivity.vue` agar kolom dan jarak antar baris (*cell padding*) tidak terlalu lebar dan besar, sehingga mampu menampung lebih banyak baris data secara efisien.
+- **Pekerjaan yang Dilakukan**:
+  1. **Pemadatan Sel & Baris Tabel (High-Density Table)**:
+     - Mengubah padding vertikal baris dari sebelumnya `py-4` (tinggi ~65px per baris) menjadi `py-1.5 px-2` (tinggi ~39px per baris), memangkas lebih dari 40% ruang vertikal yang terbuang.
+     - Mengubah ukuran font data menjadi `text-[11px]`, font SKU produk menjadi `text-[10px] text-gray-400 font-mono`, dan badge mutasi menjadi `text-[9px] font-bold uppercase px-1.5 py-0.5 rounded`.
+  2. **Header & Toolbar Ramping**:
+     - Memperbarui header halaman dan filter bar (`searchQuery` & `movementTypeFilter`) dengan input `py-1.5 px-2.5 text-xs` dan container bersudut halus (`rounded-xl border border-gray-200 shadow-2xs`).
+  3. **Penyesuaian Kolom Log Mutasi**:
+     - Kolom tabel ditata jelas: `No.`, `Waktu`, `Jenis`, `No. Dokumen / Ref`, `SKU & Produk`, `Lokasi`, `Harga Satuan`, `Mutasi (Qty)`, `Saldo Akhir`, `Petugas`, dan `Aksi (Detail)`.
+     - Sticky header dengan `bg-gray-50/95 backdrop-blur-xs` dan scrollbar horizontal/vertikal ramping (`custom-scrollbar`).
+- **Hasil Verifikasi**:
+  - **Uji Browser**: Tinggi rata-rata per baris adalah 39.88px. Dalam satu layar tanpa scroll, tabel mampu menampilkan 14+ baris data mutasi secara rapi dan sangat mudah dibaca.
+  - **Screenshot**: Disimpan sebagai `stock_movement_compact_table`.
+  - **Frontend Compilation (`npm run build`)**: PASSED (built in 2.11s, 0 errors).
+- **Status**: SELESAI & TERVERIFIKASI.

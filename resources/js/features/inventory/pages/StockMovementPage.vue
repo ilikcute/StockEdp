@@ -1,33 +1,49 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Riwayat Pergerakan Stok
+  <div class="space-y-3">
+    <!-- Top Header & Filter Toolbar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+          <svg
+            class="w-4 h-4 text-indigo-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+          Riwayat Pergerakan Stok (Movement Ledger)
         </h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Log histori mutasi persediaan barang.
+        <p class="text-[11px] text-gray-500 mt-0.5">
+          Log histori transaksi dan mutasi persediaan barang secara komprehensif.
         </p>
       </div>
-    </div>
 
-    <div class="mt-6 flex flex-col sm:flex-row justify-between gap-4">
-      <div class="w-full sm:max-w-xs">
-        <input
-          id="search"
-          v-model="searchQuery"
-          type="text"
-          class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          placeholder="Cari SKU atau Referensi..."
-        >
-      </div>
-      <div class="flex gap-2 flex-wrap sm:flex-nowrap">
+      <!-- Filters -->
+      <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <!-- Search Input -->
+        <div class="w-full sm:w-60">
+          <input
+            id="search"
+            v-model="searchQuery"
+            type="text"
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="Cari SKU atau No. Ref..."
+          >
+        </div>
+
+        <!-- Movement Type Filter -->
         <select
           v-model="movementTypeFilter"
-          class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">
-            Semua Jenis
+            Semua Jenis Mutasi
           </option>
           <option value="RECEIPT">
             Penerimaan
@@ -42,136 +58,215 @@
             Transfer Keluar
           </option>
           <option value="ADJUSTMENT_IN">
-            Penyesuaian Masuk
+            Penyesuaian (+)
           </option>
           <option value="ADJUSTMENT_OUT">
-            Penyesuaian Keluar
+            Penyesuaian (-)
           </option>
         </select>
       </div>
     </div>
 
+    <!-- Error Alert -->
     <div
       v-if="inventoryStore.error"
-      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+      class="rounded-lg bg-rose-50 p-3 border border-rose-200 text-xs text-rose-800 flex items-center justify-between"
     >
-      <p class="text-sm font-medium text-red-800">
-        {{ inventoryStore.error }}
-      </p>
+      <span>{{ inventoryStore.error }}</span>
+      <button
+        type="button"
+        class="text-rose-500 hover:text-rose-700 text-xs font-semibold"
+        @click="inventoryStore.error = null"
+      >
+        Tutup
+      </button>
     </div>
 
-    <div class="mt-6 overflow-x-auto touch-scroll shadow-xs border border-gray-200 rounded-xl bg-white">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
+    <!-- High-Density Table (Styled like RecentInventoryActivity.vue) -->
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 border-b border-gray-300 w-16"
+              class="py-1.5 px-1.5 w-8 text-center"
             >
               No.
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Waktu
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
-            >
-              Produk & Lokasi
-            </th>
-            <th
-              scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
               Jenis
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
-              Jumlah & Saldo
+              No. Dokumen / Ref
             </th>
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-b border-gray-300"
+              class="py-1.5 px-2 min-w-[200px]"
             >
-              Referensi
+              SKU & Produk
             </th>
             <th
               scope="col"
-              class="relative py-3.5 pl-3 pr-4 sm:pr-6 border-b border-gray-300"
+              class="py-1.5 px-2 whitespace-nowrap"
             >
-              <span class="sr-only">Aksi</span>
+              Lokasi
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
+            >
+              Harga Satuan
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
+            >
+              Mutasi (Qty)
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap"
+            >
+              Saldo Akhir
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 whitespace-nowrap"
+            >
+              Petugas
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-center whitespace-nowrap w-16"
+            >
+              Aksi
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
+        <tbody class="divide-y divide-gray-100 bg-white">
+          <!-- Loading State -->
           <tr v-if="inventoryStore.loading && inventoryStore.movements.data.length === 0">
             <td
-              colspan="7"
-              class="py-10 text-center text-sm text-gray-500"
+              colspan="11"
+              class="py-8 text-center text-xs text-gray-500"
             >
-              Memuat data...
+              <div class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Memuat data riwayat mutasi...</span>
+              </div>
             </td>
           </tr>
+
+          <!-- Empty State -->
           <tr v-else-if="inventoryStore.movements.data.length === 0">
             <td
-              colspan="7"
-              class="py-10 text-center text-sm text-gray-500"
+              colspan="11"
+              class="py-8 text-center text-xs text-gray-400"
             >
-              Tidak ada data pergerakan stok.
+              Tidak ada data pergerakan stok yang cocok dengan kriteria pencarian.
             </td>
           </tr>
+
+          <!-- Data Rows -->
           <tr
             v-for="(item, index) in inventoryStore.movements.data"
             :key="item.id"
+            class="hover:bg-gray-50/80 transition-colors"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-500 sm:pl-6">
+            <!-- No. -->
+            <td class="py-1.5 px-1.5 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
               {{ rowNumber(inventoryStore.movements?.meta, index) }}
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+
+            <!-- Waktu -->
+            <td class="py-1.5 px-2 text-gray-600 whitespace-nowrap text-[11px]">
               {{ formatTimestamp(item.occurred_at) }}
             </td>
-            <td class="px-3 py-4 text-sm text-gray-900">
-              <div class="font-medium text-gray-900">
-                {{ item.product?.name }} <span class="text-gray-500 font-mono text-xs">({{ item.product?.sku }})</span>
-              </div>
-              <div class="text-xs text-gray-500 flex items-center gap-2">
-                <span>{{ item.location?.name }}</span>
-                <span
-                  v-if="item.product?.unit_price"
-                  class="text-indigo-600 font-semibold"
-                >• {{ formatRupiah(item.product.unit_price) }}</span>
-              </div>
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
-              <span 
-                class="px-2 py-1 text-xs font-semibold rounded-full"
-                :class="getBadgeClass(item.movement_type)"
-              >
+
+            <!-- Jenis / Tipe Mutasi -->
+            <td class="py-1.5 px-2 whitespace-nowrap">
+              <span :class="['px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider', getBadgeClass(item.movement_type)]">
                 {{ formatMovementType(item.movement_type) }}
               </span>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              <div class="font-mono text-gray-900 font-medium">
-                Mutasi: {{ formatQuantity(item.quantity) }}
+
+            <!-- No. Referensi -->
+            <td class="py-1.5 px-2 font-mono text-gray-800 whitespace-nowrap text-[11px]">
+              {{ item.reference_number || '-' }}
+            </td>
+
+            <!-- SKU & Produk -->
+            <td class="py-1.5 px-2">
+              <div class="font-medium text-gray-900 leading-tight text-[11px]">
+                {{ item.product?.name }}
               </div>
-              <div class="font-mono text-xs text-gray-500">
-                Akhir: {{ formatQuantity(item.quantity_after) }}
+              <div class="text-[10px] text-gray-400 font-mono">
+                {{ item.product?.sku }}
               </div>
             </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              <div>{{ item.reference_number || '-' }}</div>
-              <div class="text-xs">
-                oleh {{ item.creator?.name }}
-              </div>
+
+            <!-- Lokasi -->
+            <td class="py-1.5 px-2 text-gray-600 whitespace-nowrap text-[11px]">
+              <span class="font-semibold text-gray-700">{{ item.location?.code }}</span> — {{ item.location?.name }}
             </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+
+            <!-- Harga Satuan -->
+            <td class="py-1.5 px-2 text-right font-mono text-gray-600 whitespace-nowrap text-[11px]">
+              {{ item.product?.unit_price ? formatRupiah(item.product.unit_price) : '-' }}
+            </td>
+
+            <!-- Jumlah Mutasi -->
+            <td class="py-1.5 px-2 text-right font-mono font-bold whitespace-nowrap text-[11px]">
+              <span :class="isPositiveMovement(item.movement_type) ? 'text-emerald-700' : 'text-amber-800'">
+                {{ isPositiveMovement(item.movement_type) ? '+' : '-' }}{{ formatQuantity(item.quantity) }}
+              </span>
+            </td>
+
+            <!-- Saldo Akhir -->
+            <td class="py-1.5 px-2 text-right font-mono text-gray-600 whitespace-nowrap text-[11px]">
+              {{ formatQuantity(item.quantity_after) }}
+            </td>
+
+            <!-- Petugas -->
+            <td class="py-1.5 px-2 text-gray-500 whitespace-nowrap text-[11px]">
+              {{ item.creator?.name || 'System' }}
+            </td>
+
+            <!-- Aksi Detail -->
+            <td class="py-1.5 px-2 text-center whitespace-nowrap">
               <button
-                class="text-indigo-600 hover:text-indigo-900 font-medium text-xs"
+                type="button"
+                class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
                 @click="openDetail(item)"
               >
                 Detail
@@ -182,6 +277,7 @@
       </table>
     </div>
 
+    <!-- Pagination -->
     <BasePagination
       :pagination="inventoryStore.movements.meta"
       :loading="inventoryStore.isLoading"
@@ -198,16 +294,21 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
-import { useInventoryStore } from '../stores/useInventoryStore';
-import BasePagination from '@/shared/components/BasePagination.vue';
-import StockMovementDetailModal from '../components/StockMovementDetailModal.vue';
-import { formatRupiah, formatQuantity, rowNumber, formatTimestamp } from '@/shared/utils/formatters.js';
+import { onMounted, ref, watch } from "vue";
+import { useInventoryStore } from "../stores/useInventoryStore";
+import BasePagination from "@/shared/components/BasePagination.vue";
+import StockMovementDetailModal from "../components/StockMovementDetailModal.vue";
+import {
+    formatRupiah,
+    formatQuantity,
+    rowNumber,
+    formatTimestamp,
+} from "@/shared/utils/formatters.js";
 
 const inventoryStore = useInventoryStore();
 
-const searchQuery = ref('');
-const movementTypeFilter = ref('');
+const searchQuery = ref("");
+const movementTypeFilter = ref("");
 const showDetailModal = ref(false);
 
 const openDetail = async (item) => {
@@ -241,31 +342,53 @@ const changePage = (page) => {
     }
 };
 
+const isPositiveMovement = (type) => {
+    return ['RECEIPT', 'TRANSFER_IN', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type);
+};
+
 const formatMovementType = (type) => {
     const map = {
-        'RECEIPT': 'Penerimaan',
-        'ISSUE': 'Pengeluaran',
-        'TRANSFER_IN': 'Transfer Masuk',
-        'TRANSFER_OUT': 'Transfer Keluar',
-        'ADJUSTMENT_IN': 'Penyesuaian Masuk',
-        'ADJUSTMENT_OUT': 'Penyesuaian Keluar',
+        RECEIPT: "Penerimaan",
+        ISSUE: "Pengeluaran",
+        TRANSFER_IN: "Transfer Masuk",
+        TRANSFER_OUT: "Transfer Keluar",
+        ADJUSTMENT_IN: "Penyesuaian (+)",
+        ADJUSTMENT_OUT: "Penyesuaian (-)",
+        OPNAME_IN: "Opname (+)",
+        OPNAME_OUT: "Opname (-)",
+        REVERSAL: "Pembatalan",
     };
     return map[type] || type;
 };
 
 const getBadgeClass = (type) => {
-    const map = {
-        'RECEIPT': 'bg-green-100 text-green-800',
-        'ISSUE': 'bg-red-100 text-red-800',
-        'TRANSFER_IN': 'bg-blue-100 text-blue-800',
-        'TRANSFER_OUT': 'bg-yellow-100 text-yellow-800',
-        'ADJUSTMENT_IN': 'bg-teal-100 text-teal-800',
-        'ADJUSTMENT_OUT': 'bg-orange-100 text-orange-800',
-    };
-    return map[type] || 'bg-gray-100 text-gray-800';
+    if (['RECEIPT', 'TRANSFER_IN', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type)) {
+        return 'bg-emerald-100 text-emerald-800';
+    }
+    if (['ISSUE', 'TRANSFER_OUT', 'ADJUSTMENT_OUT', 'OPNAME_OUT'].includes(type)) {
+        return 'bg-amber-100 text-amber-800';
+    }
+    return 'bg-gray-100 text-gray-800';
 };
 
 onMounted(() => {
     fetchData();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
