@@ -466,3 +466,56 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - **Screenshot**: Disimpan sebagai `stock_movement_compact_table`.
   - **Frontend Compilation (`npm run build`)**: PASSED (built in 2.11s, 0 errors).
 - **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-13] Standarisasi Menyeluruh Seluruh Tabel Aplikasi ke Desain High-Density Compact
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar seluruh tabel di aplikasi diseragamkan menggunakan ukuran dan densitas tinggi yang sama dengan `RecentInventoryActivity.vue` dan `StockMovementPage.vue` agar ukuran kolom dan spasinya tidak terlalu lebar/besar sehingga muat banyak baris dalam satu layar (*viewport*).
+- **Pekerjaan yang Dilakukan**:
+  1. **Fase 1: Tabel Daftar Transaksi (Transaction List Tables)**:
+     - Mengubah padding sel dari `py-3.5`/`py-4` menjadi `py-1.5 px-2` (kolom nomor `py-1.5 px-1.5 w-8 text-center text-gray-400 font-mono text-[11px]`).
+     - Standardisasi wrapper tabel: `<div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">`.
+     - Standardisasi thead: `<thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">` dengan `tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]"`.
+     - Komponen/halaman yang diperbarui:
+       - `StockMovementPage.vue`
+       - `StockReceiptListPage.vue`
+       - `StockIssueListPage.vue`
+       - `StockTransferListPage.vue`
+       - `StockAdjustmentListPage.vue`
+       - `StockOpnameListPage.vue` (+ `StockOpnameFilters.vue`, `StockOpnameStatusBadge.vue`)
+       - `StoreAllocationListPage.vue`
+     - Commit: `21426cf`.
+  2. **Fase 2: Tabel Data Master (Master Data Tables)**:
+     - Menerapkan format compact `py-1.5 px-2`, typography `text-[11px]`, badge `text-[9px]`, nomor urut `font-mono text-gray-400`, dan tombol aksi ramping `p-1 text-xs hover:bg-gray-100 rounded-md`.
+     - Komponen/halaman yang diperbarui:
+       - `ProductPage.vue`
+       - `StorePage.vue`
+       - `LocationPage.vue`
+       - `SupplierPage.vue`
+       - `CategoryPage.vue`
+       - `UnitPage.vue`
+       - `UserTable.vue`
+     - Commit: `32c94a4`.
+  3. **Fase 3: Tabel Rincian Item Dokumen (Document Detail Items Tables)**:
+     - Menerapkan format compact pada rincian item dokumen fisik dan scan hitung opname.
+     - Komponen/halaman yang diperbarui:
+       - `DocumentItemsTable.vue`
+       - `StockTransferDetailPage.vue`
+       - `StockAdjustmentDetailPage.vue`
+       - `StockOpnameDetailPage.vue`
+       - `StockOpnameCountPage.vue`
+       - `StoreAllocationDetailPage.vue`
+     - Commit: `8159dbd`.
+  4. **Fase 4: Tabel Laporan, Replenishment, Import & Dashboard**:
+     - Menerapkan format compact pada seluruh tabel laporan dinamis, rekomendasi replenishment, import preview & error, serta widget dashboard:
+       - Laporan: `StockReceiptReportTable.vue`, `StockIssueReportTable.vue`, `StockTransferReportTable.vue`, `StockAdjustmentReportTable.vue`, `StockOpnameReportTable.vue`, `FieldBalanceReportPage.vue`, `InventoryBalanceReportPage.vue`, `InventoryMovementReportPage.vue`, `LowStockReportPage.vue`, `StockCardReportPage.vue`, `StoreAllocationReportPage.vue`.
+       - Replenishment: `ReplenishmentRecommendationTable.vue`, `ReplenishmentActionReviewModal.vue`.
+       - Master Data Import: `MasterDataImportPreviewTable.vue`, `MasterDataImportErrorTable.vue`.
+       - Dashboard: `TopIssuedProducts.vue`, `TopReceivedProducts.vue`.
+     - Commit: `d63f333`.
+- **Hasil Verifikasi**:
+  - **Frontend Compilation (`npm run build`)**: PASSED (built in 6.06s, 0 errors, semua CSS/JS ter-bundle sempurna).
+  - **Backend Feature Tests (`php artisan test tests/Feature/Inventory/`)**: PASSED (79/79 tests passed, 213 assertions, 0 failures).
+  - **Git Sync**: Seluruh commit telah ter-push ke remote `origin/main` (`c9f7170..d63f333`).
+- **Status**: SELESAI & TERVERIFIKASI.
