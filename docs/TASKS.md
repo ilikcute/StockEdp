@@ -1212,3 +1212,40 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
     - `ProductManagementTest.php` + `LocationManagementTest.php` -> **PASSED** (35 tests, 99 assertions).
     - `UnitManagementTest.php` + `SupplierManagementTest.php` + `StoreManagementTest.php` + `UserAuthorizationTest.php` + `UserCrudTest.php` + `UserSecurityGuardTest.php` -> **PASSED** (63 tests, 214 assertions).
     - **Total 125 Feature Tests Master Data 100% LULUS**.
+
+---
+
+### [2026-09-14] Penyelarasan Layout, Ukuran, dan Susunan Form Controls TOP Header Master Data dengan Menu Laporan & Analitik
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna menemukan bahwa style dan susunan form (search input, filtering, tombol tambah, dan import) yang ada di dalam TOP Header modul Master Data masih berbeda dengan standar yang digunakan di menu Laporan & Analitik (`LowStockReportPage.vue`, `FieldBalanceReportPage.vue`, `InventoryBalanceReportPage.vue`, dll.), baik dari segi ukuran input/button maupun letak susunan elemennya.
+- **Standarisasi yang Diterapkan**:
+  1. **Struktur Kontainer TOP Header**:
+     - Menggunakan standar container compact: `<div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">`.
+  2. **Primary Controls Row (Satu Baris Horizontal Terpadu)**:
+     - Menggunakan layout flexbox: `<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">`.
+     - **Sisi Kiri**: Judul dokumen (`text-base font-bold text-gray-900`) berikon modul warna aksen dan deskripsi ringkas (`text-[11px] text-gray-500`).
+     - **Sisi Kanan**: Toolbar kontrol terpadu sejajar dalam satu baris horizontal (`flex items-center gap-2 flex-wrap sm:flex-nowrap`):
+       - Input pencarian berukuran standar compact (`w-full sm:w-48` atau `sm:w-52`) dengan padding `py-1.5 px-2.5 text-xs rounded-lg border-gray-300 shadow-2xs`.
+       - Dropdown filter cepat status / kategori / lokasi dengan styling seragam (`py-1.5 pl-2.5 pr-8 text-xs rounded-lg border border-gray-300 shadow-2xs`).
+       - Dropdown pengurutan / sort by (`py-1.5 pl-2.5 pr-8 text-xs rounded-lg border border-gray-300 shadow-2xs`).
+       - Tombol **Reset Filter** reaktif (`rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50`).
+       - Tombol aksi sekunder / tersier: Tombol **Import CSV** (`BaseButton variant="secondary" size="sm"`).
+       - Tombol aksi utama: Tombol **+ Tambah Entitas** (`BaseButton variant="primary" size="sm"`).
+  3. **Multi-tier Advanced Filter Toggle (Model 2 Tingkat untuk Modul dengan Banyak Filter)**:
+     - Diterapkan pada **`ProductPage.vue`** persis sebagaimana di **`LowStockReportPage.vue`**:
+       - *Baris 1*: Judul di kiri; Search input (`sm:w-48`), Tombol Toggle Filter berindikator badge counter filter aktif, Tombol Reset, Tombol Import CSV, dan Tombol "+ Tambah Produk" di kanan.
+       - *Baris 2 (`v-show="showAdvancedFilters"`)*: Dropdown Kategori, Satuan, Status Keaktifan, dan Urutkan (Sort By) dengan label kompak `text-[11px] font-medium text-gray-500` dan penataan grid rapi.
+  4. **Penyelarasan Seluruh Modul Master Data**:
+     - **Master Produk (`ProductPage.vue`)**: Standarisasi 2-tier toggle filter, search `sm:w-48`, tombol size `sm`, fungsi `resetAllFilters()`, computed `activeFiltersCount`.
+     - **Master Kategori (`CategoryPage.vue`)**: Search input `sm:w-48`, dropdown status & sort by, tombol reset reaktif, tombol import & tambah di baris yang sama.
+     - **Master Satuan (`UnitPage.vue`)**: Search input `sm:w-48`, dropdown status & sort by, tombol reset reaktif, tombol import & tambah sejajar horizontal.
+     - **Master Supplier (`SupplierPage.vue`)**: Search input `sm:w-52`, dropdown status & sort by, tombol reset reaktif, tombol tambah supplier sejajar horizontal.
+     - **Master Lokasi Gudang (`LocationPage.vue`)**: Search input `sm:w-48`, dropdown status & sort by, tombol reset reaktif, tombol import & tambah lokasi sejajar horizontal.
+     - **Master Toko (`StorePage.vue`)**: Search input `sm:w-48`, dropdown status & sort by, tombol reset reaktif, tombol import & tambah toko sejajar horizontal.
+     - **Pengelolaan Pengguna (`UserManagementPage.vue`)**: Judul dan tombol "+ Tambah Pengguna" di baris 1; Tab navigasi (Pengguna vs Roles) di sisi kiri baris 2 yang berdampingan langsung dengan toolbar filter (Search `sm:w-48`, filter peran, filter lokasi, filter status, tombol reset) di sisi kanan baris 2.
+- **Verifikasi Quality Gates**:
+  - **JavaScript / Vue Linter (ESLint)**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Asset Compilation (Vite)**: `npm run build` -> **100% PASS** (307 modules transformed, build time ~3.3s).
+  - **Automated Feature Testing (PHPUnit)**:
+    - Seluruh suite feature test Master Data & User Management (`tests/Feature/Product`, `Category`, `Unit`, `Supplier`, `Location`, `Store`, `User`) -> **142 tests PASSED, 1222 assertions PASSED, 0 failures**.
+- **Status**: SELESAI & TERVERIFIKASI 100%.

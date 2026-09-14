@@ -3,9 +3,10 @@
     <!-- TOP Header & Filter Toolbar Compact -->
     <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
       <!-- Primary Controls Row -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <!-- Title & Subtitle -->
         <div>
-          <h1 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+          <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
             <svg
               class="w-4 h-4 text-indigo-600"
               fill="none"
@@ -25,7 +26,64 @@
             Kelola daftar produk, kategori, dan satuan persediaan.
           </p>
         </div>
+
+        <!-- Primary Controls (Search, Toggle Filter, Reset, Action Buttons) -->
         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <!-- Search Input -->
+          <div class="w-full sm:w-48">
+            <BaseSearchInput
+              :model-value="searchQuery"
+              placeholder="Cari SKU, Barcode, atau Nama..."
+              @update:model-value="searchQuery = $event"
+              @search="onSearch"
+            />
+          </div>
+
+          <!-- Toggle Advanced Filters -->
+          <button
+            type="button"
+            :class="[
+              'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap',
+              showAdvancedFilters || activeFiltersCount > 0
+                ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+            @click="showAdvancedFilters = !showAdvancedFilters"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
+            </svg>
+            <span>Filter</span>
+            <span
+              v-if="activeFiltersCount > 0"
+              class="inline-flex items-center justify-center px-1.5 py-0.2 text-[10px] font-bold text-white bg-indigo-600 rounded-full"
+            >
+              {{ activeFiltersCount }}
+            </span>
+          </button>
+
+          <!-- Reset Filter -->
+          <button
+            v-if="isAnyFilterActive"
+            type="button"
+            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
+            title="Reset Filter"
+            @click="resetAllFilters"
+          >
+            Reset
+          </button>
+
+          <!-- Action Buttons -->
           <BaseButton
             v-if="hasPermission('products.import')"
             id="btn-import-product"
@@ -46,77 +104,91 @@
         </div>
       </div>
 
-      <!-- Filters & Search Row -->
-      <div class="flex flex-col sm:flex-row justify-between gap-2 pt-2 border-t border-gray-100">
-        <div class="w-full sm:max-w-xs">
-          <BaseSearchInput
-            :model-value="searchQuery"
-            placeholder="Cari SKU, Barcode, atau Nama..."
-            @update:model-value="searchQuery = $event"
-            @search="onSearch"
-          />
-        </div>
-        <div class="flex gap-2 flex-wrap sm:flex-nowrap">
-          <select
-            id="filter-category"
-            v-model="categoryFilter"
-            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua Kategori
-            </option>
-            <option
-              v-for="cat in categories"
-              :key="cat.id"
-              :value="cat.id"
+      <!-- Secondary Row: Advanced Filters (Category, Unit, Status, Sorting) -->
+      <div
+        v-show="showAdvancedFilters"
+        class="border-t border-gray-100 pt-2 flex flex-wrap items-center justify-between gap-2.5 text-xs"
+      >
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Kategori -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Kategori:</span>
+            <select
+              id="filter-category"
+              v-model="categoryFilter"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              {{ cat.name }}
-            </option>
-          </select>
-          <select
-            id="filter-unit"
-            v-model="unitFilter"
-            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua Satuan
-            </option>
-            <option
-              v-for="unit in units"
-              :key="unit.id"
-              :value="unit.id"
+              <option value="">
+                Semua Kategori
+              </option>
+              <option
+                v-for="cat in categories"
+                :key="cat.id"
+                :value="cat.id"
+              >
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Satuan -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Satuan:</span>
+            <select
+              id="filter-unit"
+              v-model="unitFilter"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              {{ unit.name }}
-            </option>
-          </select>
-          <select
-            v-model="statusFilter"
-            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua Status
-            </option>
-            <option value="true">
-              Aktif
-            </option>
-            <option value="false">
-              Nonaktif
-            </option>
-          </select>
-          <select
-            v-model="sortBy"
-            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="created_at">
-              Terbaru
-            </option>
-            <option value="sku">
-              SKU
-            </option>
-            <option value="name">
-              Nama
-            </option>
-          </select>
+              <option value="">
+                Semua Satuan
+              </option>
+              <option
+                v-for="unit in units"
+                :key="unit.id"
+                :value="unit.id"
+              >
+                {{ unit.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Status:</span>
+            <select
+              v-model="statusFilter"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="">
+                Semua Status
+              </option>
+              <option value="true">
+                Aktif
+              </option>
+              <option value="false">
+                Nonaktif
+              </option>
+            </select>
+          </div>
+
+          <!-- Sort By -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Urutkan:</span>
+            <select
+              v-model="sortBy"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="created_at">
+                Terbaru
+              </option>
+              <option value="sku">
+                SKU
+              </option>
+              <option value="name">
+                Nama
+              </option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -311,7 +383,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useProductStore } from '../stores/use_product_store';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import BaseButton from '@/shared/components/BaseButton.vue';
@@ -332,6 +404,35 @@ const statusFilter = ref('');
 const categoryFilter = ref('');
 const unitFilter = ref('');
 const sortBy = ref('created_at');
+const showAdvancedFilters = ref(false);
+
+const activeFiltersCount = computed(() => {
+    let count = 0;
+    if (categoryFilter.value) count++;
+    if (unitFilter.value) count++;
+    if (statusFilter.value) count++;
+    if (sortBy.value !== 'created_at') count++;
+    return count;
+});
+
+const isAnyFilterActive = computed(() => {
+    return !!(
+        searchQuery.value ||
+        categoryFilter.value ||
+        unitFilter.value ||
+        statusFilter.value ||
+        sortBy.value !== 'created_at'
+    );
+});
+
+const resetAllFilters = () => {
+    searchQuery.value = '';
+    categoryFilter.value = '';
+    unitFilter.value = '';
+    statusFilter.value = '';
+    sortBy.value = 'created_at';
+    fetchData(1);
+};
 
 const isFormModalOpen = ref(false);
 const isStatusModalOpen = ref(false);

@@ -3,7 +3,8 @@
     <!-- TOP Header & Filter Toolbar Compact -->
     <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
       <!-- Primary Controls Row -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <!-- Title & Subtitle -->
         <div>
           <h1 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
             <svg
@@ -31,7 +32,63 @@
             Kelola daftar lokasi penyimpanan barang.
           </p>
         </div>
+
+        <!-- Primary Controls (Search, Filters, Reset, Action Buttons) -->
         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <!-- Search Input -->
+          <div class="w-full sm:w-48">
+            <BaseSearchInput
+              :model-value="searchQuery"
+              placeholder="Cari kode atau nama..."
+              @update:model-value="searchQuery = $event"
+              @search="onSearch"
+            />
+          </div>
+
+          <!-- Status Filter -->
+          <select
+            v-model="statusFilter"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Status
+            </option>
+            <option value="true">
+              Aktif
+            </option>
+            <option value="false">
+              Nonaktif
+            </option>
+          </select>
+
+          <!-- Sort By -->
+          <select
+            v-model="sortBy"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="created_at">
+              Terbaru
+            </option>
+            <option value="code">
+              Kode
+            </option>
+            <option value="name">
+              Nama
+            </option>
+          </select>
+
+          <!-- Reset Button -->
+          <button
+            v-if="searchQuery || statusFilter || sortBy !== 'created_at'"
+            type="button"
+            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
+            title="Reset Filter"
+            @click="resetFilters"
+          >
+            Reset
+          </button>
+
+          <!-- Action Buttons -->
           <BaseButton
             v-if="hasPermission('locations.import')"
             id="btn-import-location"
@@ -49,48 +106,6 @@
           >
             + Tambah Lokasi
           </BaseButton>
-        </div>
-      </div>
-
-      <!-- Filters & Search Row -->
-      <div class="flex flex-col sm:flex-row justify-between gap-2 pt-2 border-t border-gray-100">
-        <div class="w-full sm:max-w-xs">
-          <BaseSearchInput
-            :model-value="searchQuery"
-            placeholder="Cari kode atau nama..."
-            @update:model-value="searchQuery = $event"
-            @search="onSearch"
-          />
-        </div>
-        <div class="w-full sm:max-w-xs flex gap-2">
-          <select
-            v-model="statusFilter"
-            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua Status
-            </option>
-            <option value="true">
-              Aktif
-            </option>
-            <option value="false">
-              Nonaktif
-            </option>
-          </select>
-          <select
-            v-model="sortBy"
-            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="created_at">
-              Terbaru
-            </option>
-            <option value="code">
-              Kode
-            </option>
-            <option value="name">
-              Nama
-            </option>
-          </select>
         </div>
       </div>
     </div>
@@ -311,6 +326,13 @@ const fetchData = (page = 1) => {
 
 function onSearch(value) {
     searchQuery.value = value;
+    fetchData(1);
+}
+
+function resetFilters() {
+    searchQuery.value = '';
+    statusFilter.value = '';
+    sortBy.value = 'created_at';
     fetchData(1);
 }
 

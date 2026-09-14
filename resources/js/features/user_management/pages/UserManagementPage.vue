@@ -38,8 +38,8 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs Row -->
-      <div class="pt-2 border-t border-gray-100">
+      <!-- Navigation Tabs & Integrated Filters Row -->
+      <div class="pt-2 border-t border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
         <nav
           class="flex space-x-6"
           aria-label="Tabs"
@@ -76,25 +76,23 @@
             Peran & Hak Akses (Roles & Permissions)
           </button>
         </nav>
-      </div>
 
-      <!-- Tab Users Filters Row -->
-      <div
-        v-if="activeTab === 'users'"
-        class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-gray-100"
-      >
-        <div class="w-full sm:max-w-xs">
-          <input
-            id="user-search"
-            v-model="filters.search"
-            type="text"
-            placeholder="Cari nama, username, email..."
-            class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
-            @input="onSearchInput"
-          >
-        </div>
+        <!-- Tab Users Filters -->
+        <div
+          v-if="activeTab === 'users'"
+          class="flex items-center gap-2 flex-wrap sm:flex-nowrap"
+        >
+          <div class="w-full sm:w-48">
+            <input
+              id="user-search"
+              v-model="filters.search"
+              type="text"
+              placeholder="Cari nama, username..."
+              class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
+              @input="onSearchInput"
+            >
+          </div>
 
-        <div class="flex gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto items-center">
           <select
             id="user-role-filter"
             v-model="filters.role_id"
