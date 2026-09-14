@@ -1280,3 +1280,24 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - **ESLint**: `npm run lint` -> **100% PASS** (0 errors, 0 warnings).
   - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed, ~3.1s).
 - **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Penyelarasan Komponen Pagination Halaman Pengelolaan Pengguna (UserManagementPage) dengan BasePagination
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna menemukan bahwa pagination pada halaman `UserManagementPage.vue` berbeda tampilannya dengan pagination pada halaman lain di bawah submenu Master Data (`CategoryPage`, `ProductPage`, `UnitPage`, `SupplierPage`, `LocationPage`, `StorePage`).
+- **Penyebab Masalah (Root Cause)**:
+  Sebelumnya, `UserTable.vue` mengimplementasikan kontrol pagination secara custom dan hardcoded di bagian footer tabel (`px-3 py-2 border-t bg-gray-50/50`) dengan hanya dua tombol "Sebelumnya" dan "Berikutnya" serta teks ringkas `1 / 1`. Hal ini menyimpang dari standar komponen `BasePagination.vue` yang digunakan oleh seluruh modul Master Data lainnya.
+- **Implementasi yang Diterapkan**:
+  1. **Komponen `UserTable.vue`**:
+     - Menghapus pagination footer custom yang usang di dalam tabel, menjaga agar tabel murni fokus menampilkan data tabel dengan card container `rounded-xl border border-gray-200 shadow-2xs overflow-hidden`.
+  2. **Halaman `UserManagementPage.vue`**:
+     - Mengimpor dan menyematkan komponen standard [`BasePagination.vue`](file:///D:/laragon/www/StockEdp/resources/js/shared/components/BasePagination.vue) tepat di bawah `<UserTable />` pada tab Pengguna:
+       `<BasePagination :pagination="meta" :loading="loading" @change="changePage" />`.
+     - Membungkus tab Pengguna dengan kontainer standar `space-y-3`.
+     - Memberikan pengalaman navigasi paginasi yang konsisten 100%: teks "Menampilkan X sampai Y dari Z data", navigasi nomor halaman bernomor lengkap, tombol First (`«`), Previous (`‹`), Next (`›`), Last (`»`), serta highlight status halaman aktif berwarna indigo (`bg-indigo-600 text-white`).
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 errors, 0 warnings).
+  - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed, ~3.17s).
+  - **PHPUnit Feature Testing**: `tests/Feature/User` -> **100% PASS** (19 tests, 870 assertions).
+- **Status**: SELESAI & TERVERIFIKASI 100%.

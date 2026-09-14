@@ -164,14 +164,23 @@
     />
 
     <!-- TAB 1: DAFTAR PENGGUNA -->
-    <div v-if="activeTab === 'users'">
+    <div
+      v-if="activeTab === 'users'"
+      class="space-y-3"
+    >
       <UserTable
         :users="users"
         :meta="meta"
         :loading="loading"
         @edit="openEditModal"
         @toggle-status="toggleUserStatus"
-        @change-page="changePage"
+      />
+
+      <!-- Pagination -->
+      <BasePagination
+        :pagination="meta"
+        :loading="loading"
+        @change="changePage"
       />
     </div>
 
@@ -231,6 +240,7 @@ import BaseButton from '@/shared/components/BaseButton.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
 import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
 import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import UserTable from '../components/UserTable.vue';
 import UserFormModal from '../components/UserFormModal.vue';
 import RolePermissionMatrix from '../components/RolePermissionMatrix.vue';

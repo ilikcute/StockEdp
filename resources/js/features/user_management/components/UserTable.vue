@@ -233,40 +233,6 @@
         </tbody>
       </table>
     </div>
-
-    <!-- Pagination Footer -->
-    <div
-      v-if="meta.total > 0"
-      class="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-2 border-t border-gray-200 bg-gray-50/50 text-xs text-gray-500"
-    >
-      <div class="text-gray-600 text-[11px] font-medium">
-        Menampilkan {{ meta.from || 0 }} - {{ meta.to || 0 }} dari {{ meta.total }} pengguna
-      </div>
-
-      <div class="flex items-center gap-1.5">
-        <button
-          type="button"
-          :disabled="meta.current_page <= 1 || loading"
-          class="rounded border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 shadow-2xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          @click="$emit('change-page', meta.current_page - 1)"
-        >
-          Sebelumnya
-        </button>
-
-        <span class="px-1.5 font-medium text-gray-700 text-[11px]">
-          {{ meta.current_page }} / {{ meta.last_page }}
-        </span>
-
-        <button
-          type="button"
-          :disabled="meta.current_page >= meta.last_page || loading"
-          class="rounded border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 shadow-2xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          @click="$emit('change-page', meta.current_page + 1)"
-        >
-          Berikutnya
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
