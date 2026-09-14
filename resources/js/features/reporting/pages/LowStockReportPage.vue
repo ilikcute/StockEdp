@@ -490,45 +490,11 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="store.meta?.total > 0"
-      class="flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2.5 sm:px-4 rounded-lg shadow-xs"
-    >
-      <div class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <p class="text-xs text-gray-700">
-            Menampilkan
-            <span class="font-semibold text-gray-900">{{ store.meta.from }}</span>
-            sampai
-            <span class="font-semibold text-gray-900">{{ store.meta.to }}</span>
-            dari
-            <span class="font-semibold text-gray-900">{{ store.meta.total }}</span>
-            produk defisit
-          </p>
-        </div>
-        <div class="flex items-center gap-1.5 self-end sm:self-auto">
-          <button
-            type="button"
-            :disabled="store.meta.current_page <= 1"
-            class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
-            @click="changePage(store.meta.current_page - 1)"
-          >
-            Sebelumnya
-          </button>
-          <span class="text-xs text-gray-500 px-1 font-mono">
-            {{ store.meta.current_page }} / {{ store.meta.last_page }}
-          </span>
-          <button
-            type="button"
-            :disabled="store.meta.current_page >= store.meta.last_page"
-            class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
-            @click="changePage(store.meta.current_page + 1)"
-          >
-            Selanjutnya
-          </button>
-        </div>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.meta"
+      :loading="store.loading"
+      @change="changePage"
+    />
   </div>
 </template>
 
@@ -540,6 +506,7 @@ import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsSto
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 import BaseCombobox from '@/shared/components/BaseCombobox.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import { cleanReportExportFilters } from '../utils/reportHelpers';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 

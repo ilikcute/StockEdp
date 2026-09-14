@@ -167,10 +167,10 @@
         />
       </div>
 
-      <ReportPagination
+      <BasePagination
         :pagination="store.pagination"
         :loading="store.loading"
-        @page-change="fetchData"
+        @change="fetchData"
       />
     </div>
   </div>
@@ -186,7 +186,7 @@ import { cleanReportFilters, cleanReportExportFilters, validatePeriod } from '..
 import { formatRupiah, formatQuantity } from '@/shared/utils/formatters.js';
 import StockAdjustmentReportFilters from '../components/adjustment/StockAdjustmentReportFilters.vue';
 import StockAdjustmentReportTable from '../components/adjustment/StockAdjustmentReportTable.vue';
-import ReportPagination from '../components/ReportPagination.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import ReportFeedbackPanels from '../components/ReportFeedbackPanels.vue';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 

@@ -1377,4 +1377,43 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - **Browser Verification**: Terverifikasi langsung via subagent dengan tangkapan layar `base_pagination_inventory_1789374721031.png`.
 - **Status**: SELESAI & TERVERIFIKASI 100%.
 
+---
+
+### [2026-09-14] Standarisasi Komponen BasePagination pada Seluruh Halaman Laporan (9 Halaman)
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta untuk mengganti sistem pagination pada 9 halaman pelaporan inventaris menggunakan komponen standar `BasePagination` dari `@/shared/components/BasePagination.vue`.
+- **Daftar Halaman yang Diperbarui (9 Halaman)**:
+  1. [InventoryMovementReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/InventoryMovementReportPage.vue) (`meta.pagination` & `changePage`)
+  2. [LowStockReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/LowStockReportPage.vue) (`store.meta` & `changePage`)
+  3. [StockAdjustmentReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/StockAdjustmentReportPage.vue) (`store.pagination` & `fetchData`)
+  4. [StockCardReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/StockCardReportPage.vue) (`store.meta` & `changePage`)
+  5. [StockIssueReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/StockIssueReportPage.vue) (`store.pagination` & `fetchData`)
+  6. [StockOpnameReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/StockOpnameReportPage.vue) (`store.pagination` & `fetchData`)
+  7. [StockReceiptReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/StockReceiptReportPage.vue) (`store.pagination` & `fetchData`)
+  8. [StockTransferReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/StockTransferReportPage.vue) (`store.pagination` & `fetchData`)
+  9. [StoreAllocationReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/StoreAllocationReportPage.vue) (`store.pagination` & `fetchData`)
+- **Implementasi yang Diterapkan**:
+  - Mengganti komponen pagination lama/kustom atau HTML manual dengan `<BasePagination :pagination="..." :loading="..." @change="..." />`.
+  - Mengimpor `BasePagination` dari `@/shared/components/BasePagination.vue` pada setiap file.
+  - Membersihkan import komponen pagination lama yang sudah tidak dipakai lagi.
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Vite Build**: `npm run build` -> **100% PASS** (306 modules transformed cleanly).
+- **Status**: SELESAI & TERVERIFIKASI 100%.
+
+---
+
+### [2026-09-14] Penyelarasan Layout Tabel & BasePagination pada InventoryMovementReportPage
+- **Konteks & Kebutuhan Pengguna**:
+  Pada [InventoryMovementReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/InventoryMovementReportPage.vue), pembungkus (wrapper div) data table sebelumnya menyatukan tabel dan paginasi dalam satu card berkontur ganda. Pengguna meminta agar style data table dan paginasi disesuaikan seperti halaman laporan lainnya di mana paginasi berada di luar div tabel.
+- **Implementasi yang Diterapkan**:
+  1. Menghilangkan outer div pembungkus tabel + paginasi.
+  2. Menjadikan container tabel berdiri sendiri (`overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar relative`) dengan subtle loading overlay.
+  3. Memindahkan loading dan empty state ke dalam row `<tbody>` dengan colspan dinamis (`11` untuk slow moving, `13` untuk fast moving).
+  4. Menempatkan `<BasePagination>` di luar container tabel secara mandiri sejajar dengan halaman laporan lainnya.
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Vite Build**: `npm run build` -> **100% PASS** (306 modules transformed cleanly).
+  - **Browser Verification**: Screenshot `inventory_movement_report_1789375499885.png` mengonfirmasi pemisahan tata letak tabel dan BasePagination yang rapi serta 0 console error.
+- **Status**: SELESAI & TERVERIFIKASI 100%.
 

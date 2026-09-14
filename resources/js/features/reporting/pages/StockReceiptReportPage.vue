@@ -94,10 +94,10 @@
         />
       </div>
 
-      <ReportPagination
+      <BasePagination
         :pagination="store.pagination"
         :loading="store.loading"
-        @page-change="fetchData"
+        @change="fetchData"
       />
     </div>
   </div>
@@ -112,7 +112,7 @@ import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { cleanReportFilters, cleanReportExportFilters, validatePeriod } from '../utils/reportHelpers';
 import StockReceiptReportFilters from '../components/receipt/StockReceiptReportFilters.vue';
 import StockReceiptReportTable from '../components/receipt/StockReceiptReportTable.vue';
-import ReportPagination from '../components/ReportPagination.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import ReportFeedbackPanels from '../components/ReportFeedbackPanels.vue';
 import QuantityByUnitSummary from '../components/QuantityByUnitSummary.vue';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';

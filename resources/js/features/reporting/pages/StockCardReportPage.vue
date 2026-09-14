@@ -400,30 +400,11 @@
       </div>
 
       <!-- Pagination -->
-      <div
-        v-if="store.meta?.total > 0"
-        class="flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2 rounded-xl shadow-2xs text-xs"
-      >
-        <div class="text-[11px] text-gray-600">
-          Menampilkan <span class="font-semibold text-gray-900">{{ store.meta.from }}</span> sampai <span class="font-semibold text-gray-900">{{ store.meta.to }}</span> dari <span class="font-semibold text-gray-900">{{ store.meta.total }}</span> hasil
-        </div>
-        <div class="flex gap-1.5">
-          <button
-            :disabled="store.meta.current_page <= 1"
-            class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            @click="changePage(store.meta.current_page - 1)"
-          >
-            Sebelumnya
-          </button>
-          <button
-            :disabled="store.meta.current_page >= store.meta.last_page"
-            class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            @click="changePage(store.meta.current_page + 1)"
-          >
-            Selanjutnya
-          </button>
-        </div>
-      </div>
+      <BasePagination
+        :pagination="store.meta"
+        :loading="store.loading"
+        @change="changePage"
+      />
     </div>
   </div>
 </template>
@@ -435,6 +416,7 @@ import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsSto
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { toLocalDateInputValue, cleanReportExportFilters } from '../utils/reportHelpers';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
 const store = useStockCardReportStore();

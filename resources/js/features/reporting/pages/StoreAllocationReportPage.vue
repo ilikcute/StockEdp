@@ -426,30 +426,11 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="store.pagination?.total > 0"
-      class="flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2 rounded-xl shadow-2xs text-xs"
-    >
-      <div class="text-[11px] text-gray-600">
-        Menampilkan halaman <span class="font-semibold text-gray-900">{{ store.pagination.current_page }}</span> dari <span class="font-semibold text-gray-900">{{ store.pagination.last_page }}</span> (Total: <span class="font-semibold text-gray-900">{{ store.pagination.total }}</span> baris)
-      </div>
-      <div class="flex gap-1.5">
-        <button
-          :disabled="store.pagination.current_page <= 1"
-          class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          @click="fetchData(store.pagination.current_page - 1)"
-        >
-          Sebelumnya
-        </button>
-        <button
-          :disabled="store.pagination.current_page >= store.pagination.last_page"
-          class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          @click="fetchData(store.pagination.current_page + 1)"
-        >
-          Selanjutnya
-        </button>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.pagination"
+      :loading="store.loading"
+      @change="fetchData"
+    />
   </div>
 </template>
 
@@ -460,6 +441,7 @@ import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { storeApi } from '@/features/store/api/store_api';
 import { formatQuantity, formatRupiah } from '@/shared/utils/formatters';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 
 const store = useStoreAllocationReportStore();
 const exportStore = useReportCsvExportStore();

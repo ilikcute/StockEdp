@@ -385,402 +385,365 @@
       </div>
     </div>
 
-    <!-- Table Container -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-      <!-- Loading Overlay -->
+    <!-- Data Table -->
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar relative">
       <div
-        v-if="loading"
-        class="p-8 text-center"
+        v-if="loading && items.length > 0"
+        class="absolute inset-0 bg-white/50 z-20 flex items-center justify-center"
       >
-        <div class="inline-block animate-spin w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full mb-2" />
-        <p class="text-xs text-gray-500">
-          Memuat data pergerakan persediaan...
-        </p>
+        <span class="text-indigo-600 font-medium bg-white px-3 py-1.5 rounded-lg shadow-sm text-xs">Memuat data...</span>
       </div>
 
-      <!-- Empty State -->
-      <div
-        v-else-if="!items.length"
-        class="p-12 text-center"
-      >
-        <svg
-          class="w-12 h-12 text-gray-300 mx-auto mb-3"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      <table class="w-full text-left text-xs border-collapse">
+        <!-- 1. Slow Moving Columns -->
+        <thead
+          v-if="filters.type === 'slow-moving'"
+          class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-          />
-        </svg>
-        <h3 class="text-sm font-semibold text-gray-900">
-          Tidak ada data pergerakan ditemukan
-        </h3>
-        <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-          {{ filters.type === 'slow-moving'
-            ? 'Seluruh produk memiliki pergerakan transaksi dalam periode yang dipilih.'
-            : 'Tidak ada produk dengan transaksi pengeluaran (Issue) pada periode yang dipilih.'
-          }}
-        </p>
-      </div>
-
-      <!-- Data Table -->
-      <div
-        v-else
-        class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar"
-      >
-        <table class="w-full text-left text-xs border-collapse">
-          <!-- 1. Slow Moving Columns -->
-          <thead
-            v-if="filters.type === 'slow-moving'"
-            class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10"
-          >
-            <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-center whitespace-nowrap w-10 text-gray-500 font-semibold"
-              >
-                No.
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('sku')"
-              >
-                SKU / Barcode {{ getSortIcon('sku') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('product_name')"
-              >
-                Nama Produk {{ getSortIcon('product_name') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap"
-              >
-                Kategori
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap"
-              >
-                Lokasi
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100 text-gray-600 font-semibold"
-                @click="toggleSort('unit_price')"
-              >
-                Harga Satuan {{ getSortIcon('unit_price') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('current_stock')"
-              >
-                Stok Saat Ini {{ getSortIcon('current_stock') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap text-gray-600 font-semibold"
-              >
-                Total Nilai (Rp)
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('last_movement_at')"
-              >
-                Mutasi Terakhir {{ getSortIcon('last_movement_at') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('days_since_last_movement')"
-              >
-                Hari Tidak Bergerak {{ getSortIcon('days_since_last_movement') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-center whitespace-nowrap"
-              >
-                Status
-              </th>
-            </tr>
-          </thead>
-
-          <!-- 2. Fast Moving Columns -->
-          <thead
-            v-else
-            class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10"
-          >
-            <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-center whitespace-nowrap w-10 text-gray-500 font-semibold"
-              >
-                No.
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('sku')"
-              >
-                SKU / Barcode {{ getSortIcon('sku') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('product_name')"
-              >
-                Nama Produk {{ getSortIcon('product_name') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap"
-              >
-                Kategori
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-left whitespace-nowrap"
-              >
-                Lokasi
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100 text-gray-600 font-semibold"
-                @click="toggleSort('unit_price')"
-              >
-                Harga Satuan {{ getSortIcon('unit_price') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('current_stock')"
-              >
-                Stok Saat Ini {{ getSortIcon('current_stock') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap text-gray-600 font-semibold"
-              >
-                Total Nilai (Rp)
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('total_outbound_quantity')"
-              >
-                Total Keluar {{ getSortIcon('total_outbound_quantity') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('outbound_movement_count')"
-              >
-                Jml Transaksi {{ getSortIcon('outbound_movement_count') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('velocity_score')"
-              >
-                Rata-rata Keluar / Hari {{ getSortIcon('velocity_score') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                @click="toggleSort('movement_days')"
-              >
-                Hari Aktif {{ getSortIcon('movement_days') }}
-              </th>
-              <th
-                scope="col"
-                class="py-1.5 px-2 text-center whitespace-nowrap"
-              >
-                Velocity
-              </th>
-            </tr>
-          </thead>
-
-          <!-- Table Body -->
-          <tbody class="divide-y divide-gray-100 bg-white">
-            <template v-if="filters.type === 'slow-moving'">
-              <tr
-                v-for="(row, idx) in items"
-                :key="`${row.product_id}-${row.location_id}`"
-                class="hover:bg-gray-50/80 transition-colors"
-              >
-                <td class="py-1.5 px-2 text-center font-mono text-[11px] text-gray-400 whitespace-nowrap">
-                  {{ getRowNumber(idx) }}
-                </td>
-                <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
-                  <div class="font-semibold">
-                    {{ row.sku }}
-                  </div>
-                  <div
-                    v-if="row.barcode"
-                    class="text-[10px] text-gray-400"
-                  >
-                    {{ row.barcode }}
-                  </div>
-                </td>
-                <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
-                  {{ row.product_name }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
-                  {{ row.category_name || '-' }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
-                    {{ row.location_code }}
-                  </span>
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
-                  {{ formatRupiah(row.unit_price) }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-medium text-gray-900 whitespace-nowrap">
-                  {{ formatQuantity(row.current_stock) }} {{ row.unit_symbol }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
-                  {{ formatRupiah(row.total_value ?? (Number(row.current_stock) * Number(row.unit_price || 0))) }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap font-mono">
-                  {{ formatTimestamp(row.last_movement_at) }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-semibold whitespace-nowrap">
-                  <span
-                    v-if="row.days_since_last_movement !== null"
-                    class="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[10px]"
-                  >
-                    {{ row.days_since_last_movement }} Hari
-                  </span>
-                  <span
-                    v-else
-                    class="text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 text-[10px]"
-                  >
-                    Tidak pernah
-                  </span>
-                </td>
-                <td class="py-1.5 px-2 text-center whitespace-nowrap">
-                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center bg-slate-100 text-slate-700 border border-slate-300">
-                    DORMAN
-                  </span>
-                </td>
-              </tr>
-            </template>
-
-            <template v-else>
-              <tr
-                v-for="(row, idx) in items"
-                :key="`${row.product_id}-${row.location_id}`"
-                class="hover:bg-gray-50/80 transition-colors"
-              >
-                <td class="py-1.5 px-2 text-center font-mono text-[11px] text-gray-400 whitespace-nowrap">
-                  {{ getRowNumber(idx) }}
-                </td>
-                <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
-                  <div class="font-semibold">
-                    {{ row.sku }}
-                  </div>
-                  <div
-                    v-if="row.barcode"
-                    class="text-[10px] text-gray-400"
-                  >
-                    {{ row.barcode }}
-                  </div>
-                </td>
-                <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
-                  {{ row.product_name }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
-                  {{ row.category_name || '-' }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
-                    {{ row.location_code }}
-                  </span>
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
-                  {{ formatRupiah(row.unit_price) }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
-                  {{ formatQuantity(row.current_stock) }} {{ row.unit_symbol }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
-                  {{ formatRupiah(row.total_value ?? (Number(row.current_stock) * Number(row.unit_price || 0))) }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-emerald-800 whitespace-nowrap">
-                  {{ formatQuantity(row.total_outbound_quantity) }} {{ row.unit_symbol }}
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-semibold text-gray-900 whitespace-nowrap">
-                  {{ row.outbound_movement_count }}x
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-emerald-700 whitespace-nowrap">
-                  {{ Number(row.average_daily_outbound).toLocaleString('id-ID', { maximumFractionDigits: 2 }) }} / hari
-                </td>
-                <td class="py-1.5 px-2 text-[11px] text-right text-gray-600 whitespace-nowrap">
-                  {{ row.movement_days }} hari
-                </td>
-                <td class="py-1.5 px-2 text-center whitespace-nowrap">
-                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20">
-                    FAST
-                  </span>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination Controls -->
-      <div
-        v-if="meta?.pagination?.total"
-        class="flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2.5 sm:px-4 rounded-b-xl shadow-xs"
-      >
-        <div class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <p class="text-xs text-gray-700">
-              Menampilkan
-              <span class="font-semibold text-gray-900">{{ meta.pagination.from ?? 0 }}</span>
-              sampai
-              <span class="font-semibold text-gray-900">{{ meta.pagination.to ?? 0 }}</span>
-              dari
-              <span class="font-semibold text-gray-900">{{ meta.pagination.total }}</span>
-              produk
-            </p>
-          </div>
-
-          <div class="flex items-center gap-1.5 self-end sm:self-auto">
-            <button
-              type="button"
-              class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
-              :disabled="meta.pagination.current_page <= 1 || loading"
-              @click="changePage(meta.pagination.current_page - 1)"
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-center whitespace-nowrap w-10 text-gray-500 font-semibold"
             >
-              Sebelumnya
-            </button>
-            <span class="text-xs text-gray-500 px-1 font-mono">
-              {{ meta.pagination.current_page }} / {{ meta.pagination.last_page }}
-            </span>
-            <button
-              type="button"
-              class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
-              :disabled="meta.pagination.current_page >= meta.pagination.last_page || loading"
-              @click="changePage(meta.pagination.current_page + 1)"
+              No.
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('sku')"
             >
-              Selanjutnya
-            </button>
-          </div>
-        </div>
-      </div>
+              SKU / Barcode {{ getSortIcon('sku') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('product_name')"
+            >
+              Nama Produk {{ getSortIcon('product_name') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap"
+            >
+              Kategori
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap"
+            >
+              Lokasi
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100 text-gray-600 font-semibold"
+              @click="toggleSort('unit_price')"
+            >
+              Harga Satuan {{ getSortIcon('unit_price') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('current_stock')"
+            >
+              Stok Saat Ini {{ getSortIcon('current_stock') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap text-gray-600 font-semibold"
+            >
+              Total Nilai (Rp)
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('last_movement_at')"
+            >
+              Mutasi Terakhir {{ getSortIcon('last_movement_at') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('days_since_last_movement')"
+            >
+              Hari Tidak Bergerak {{ getSortIcon('days_since_last_movement') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-center whitespace-nowrap"
+            >
+              Status
+            </th>
+          </tr>
+        </thead>
+
+        <!-- 2. Fast Moving Columns -->
+        <thead
+          v-else
+          class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10"
+        >
+          <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-center whitespace-nowrap w-10 text-gray-500 font-semibold"
+            >
+              No.
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('sku')"
+            >
+              SKU / Barcode {{ getSortIcon('sku') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('product_name')"
+            >
+              Nama Produk {{ getSortIcon('product_name') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap"
+            >
+              Kategori
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-left whitespace-nowrap"
+            >
+              Lokasi
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100 text-gray-600 font-semibold"
+              @click="toggleSort('unit_price')"
+            >
+              Harga Satuan {{ getSortIcon('unit_price') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('current_stock')"
+            >
+              Stok Saat Ini {{ getSortIcon('current_stock') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap text-gray-600 font-semibold"
+            >
+              Total Nilai (Rp)
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('total_outbound_quantity')"
+            >
+              Total Keluar {{ getSortIcon('total_outbound_quantity') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('outbound_movement_count')"
+            >
+              Jml Transaksi {{ getSortIcon('outbound_movement_count') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('velocity_score')"
+            >
+              Rata-rata Keluar / Hari {{ getSortIcon('velocity_score') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
+              @click="toggleSort('movement_days')"
+            >
+              Hari Aktif {{ getSortIcon('movement_days') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-center whitespace-nowrap"
+            >
+              Velocity
+            </th>
+          </tr>
+        </thead>
+
+        <!-- Table Body -->
+        <tbody class="divide-y divide-gray-100 bg-white">
+          <tr v-if="loading && items.length === 0">
+            <td
+              :colspan="filters.type === 'slow-moving' ? 11 : 13"
+              class="py-8 text-center text-xs text-gray-400"
+            >
+              Memuat data pergerakan persediaan...
+            </td>
+          </tr>
+          <tr v-else-if="!loading && items.length === 0">
+            <td
+              :colspan="filters.type === 'slow-moving' ? 11 : 13"
+              class="py-12 text-center text-xs text-gray-400"
+            >
+              <svg
+                class="w-10 h-10 text-gray-300 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                />
+              </svg>
+              <div class="text-xs font-semibold text-gray-700">
+                Tidak ada data pergerakan ditemukan
+              </div>
+              <p class="text-[11px] text-gray-500 mt-0.5 max-w-sm mx-auto">
+                {{ filters.type === 'slow-moving'
+                  ? 'Seluruh produk memiliki pergerakan transaksi dalam periode yang dipilih.'
+                  : 'Tidak ada produk dengan transaksi pengeluaran (Issue) pada periode yang dipilih.'
+                }}
+              </p>
+            </td>
+          </tr>
+          <template v-else-if="filters.type === 'slow-moving'">
+            <tr
+              v-for="(row, idx) in items"
+              :key="`${row.product_id}-${row.location_id}`"
+              class="hover:bg-gray-50/80 transition-colors"
+            >
+              <td class="py-1.5 px-2 text-center font-mono text-[11px] text-gray-400 whitespace-nowrap">
+                {{ getRowNumber(idx) }}
+              </td>
+              <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
+                <div class="font-semibold">
+                  {{ row.sku }}
+                </div>
+                <div
+                  v-if="row.barcode"
+                  class="text-[10px] text-gray-400"
+                >
+                  {{ row.barcode }}
+                </div>
+              </td>
+              <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
+                {{ row.product_name }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+                {{ row.category_name || '-' }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
+                  {{ row.location_code }}
+                </span>
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
+                {{ formatRupiah(row.unit_price) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-medium text-gray-900 whitespace-nowrap">
+                {{ formatQuantity(row.current_stock) }} {{ row.unit_symbol }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
+                {{ formatRupiah(row.total_value ?? (Number(row.current_stock) * Number(row.unit_price || 0))) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap font-mono">
+                {{ formatTimestamp(row.last_movement_at) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-semibold whitespace-nowrap">
+                <span
+                  v-if="row.days_since_last_movement !== null"
+                  class="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[10px]"
+                >
+                  {{ row.days_since_last_movement }} Hari
+                </span>
+                <span
+                  v-else
+                  class="text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 text-[10px]"
+                >
+                  Tidak pernah
+                </span>
+              </td>
+              <td class="py-1.5 px-2 text-center whitespace-nowrap">
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center bg-slate-100 text-slate-700 border border-slate-300">
+                  DORMAN
+                </span>
+              </td>
+            </tr>
+          </template>
+
+          <template v-else>
+            <tr
+              v-for="(row, idx) in items"
+              :key="`${row.product_id}-${row.location_id}`"
+              class="hover:bg-gray-50/80 transition-colors"
+            >
+              <td class="py-1.5 px-2 text-center font-mono text-[11px] text-gray-400 whitespace-nowrap">
+                {{ getRowNumber(idx) }}
+              </td>
+              <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
+                <div class="font-semibold">
+                  {{ row.sku }}
+                </div>
+                <div
+                  v-if="row.barcode"
+                  class="text-[10px] text-gray-400"
+                >
+                  {{ row.barcode }}
+                </div>
+              </td>
+              <td class="py-1.5 px-2 text-[11px] font-medium text-gray-900 whitespace-nowrap">
+                {{ row.product_name }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+                {{ row.category_name || '-' }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
+                  {{ row.location_code }}
+                </span>
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
+                {{ formatRupiah(row.unit_price) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
+                {{ formatQuantity(row.current_stock) }} {{ row.unit_symbol }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
+                {{ formatRupiah(row.total_value ?? (Number(row.current_stock) * Number(row.unit_price || 0))) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-emerald-800 whitespace-nowrap">
+                {{ formatQuantity(row.total_outbound_quantity) }} {{ row.unit_symbol }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-semibold text-gray-900 whitespace-nowrap">
+                {{ row.outbound_movement_count }}x
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-emerald-700 whitespace-nowrap">
+                {{ Number(row.average_daily_outbound).toLocaleString('id-ID', { maximumFractionDigits: 2 }) }} / hari
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right text-gray-600 whitespace-nowrap">
+                {{ row.movement_days }} hari
+              </td>
+              <td class="py-1.5 px-2 text-center whitespace-nowrap">
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20">
+                  FAST
+                </span>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </div>
+
+    <!-- Pagination -->
+    <BasePagination
+      :pagination="meta?.pagination"
+      :loading="loading"
+      @change="changePage"
+    />
   </div>
 </template>
 
@@ -788,6 +751,7 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reportingApi } from '../api/reportingApi';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import { showToast } from '@/shared/utils/use_toast.js';
 import { formatTimestamp, formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
