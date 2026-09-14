@@ -525,7 +525,7 @@ class ReportExportService
 
         $headers = [
             'Nomor Alokasi', 'Tanggal Alokasi', 'Nama Toko', 'Kode Toko', 'Alamat Toko',
-            'Teknisi', 'Lokasi Teknisi', 'Produk Dipasang', 'SKU Dipasang', 'Qty Pasang', 'S/N Baru',
+            'Teknisi', 'Lokasi Teknisi', 'Produk Dipasang', 'SKU Dipasang', 'Harga Satuan', 'Qty Pasang', 'Total Nilai (Rp)', 'S/N Baru',
             'Produk Ditarik', 'SKU Ditarik', 'Qty Ditarik', 'S/N Ditarik', 'Alasan Kerusakan', 'Catatan',
         ];
 
@@ -541,7 +541,9 @@ class ReportExportService
                     $item->technician_location_name ?? '',
                     $item->product_name ?? '',
                     $item->product_sku ?? '',
+                    isset($item->unit_price) ? (string) $item->unit_price : '0',
                     DecimalQuantity::normalize($item->quantity),
+                    isset($item->total_value) ? (string) $item->total_value : '0',
                     $item->serial_number ?? '',
                     $item->pulled_product_name ?? '',
                     $item->pulled_product_sku ?? '',
@@ -563,7 +565,9 @@ class ReportExportService
         $headers = [
             'Teknisi', 'Kode Lokasi', 'Nama Lokasi',
             'SKU', 'Nama Produk', 'Kategori', 'Satuan',
+            'Harga Satuan',
             'Siap Pasang (GOOD)', 'Rusak Lapangan (DEFECTIVE)', 'Total Saldo Lapangan',
+            'Total Nilai (Rp)',
         ];
 
         $generator = function () use ($cursor) {
@@ -576,9 +580,11 @@ class ReportExportService
                     $item->product_name ?? '',
                     $item->category_name ?? '',
                     $item->unit_name ?? '',
+                    (float) ($item->unit_price ?? 0),
                     DecimalQuantity::normalize($item->good_quantity),
                     DecimalQuantity::normalize($item->defective_quantity),
                     DecimalQuantity::normalize($item->total_quantity),
+                    (float) ($item->total_value ?? ((float) ($item->total_quantity ?? 0) * (float) ($item->unit_price ?? 0))),
                 ];
             }
         };

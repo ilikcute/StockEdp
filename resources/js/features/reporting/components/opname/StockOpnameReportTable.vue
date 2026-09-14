@@ -122,16 +122,16 @@
             {{ formatRupiah(item.product?.unit_price) }}
           </td>
           <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-600 whitespace-nowrap">
-            {{ formatQuantity(item.snapshot_quantity) }}
+            {{ formatQuantity(item.snapshot_quantity, false) }}
           </td>
           <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-gray-900 whitespace-nowrap">
-            {{ formatQuantity(item.counted_quantity) }}
+            {{ formatQuantity(item.counted_quantity, false) }}
           </td>
           <td
             class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold whitespace-nowrap"
             :class="item.signed_variance?.startsWith('-') ? 'text-rose-700' : (item.movement_direction === 'NONE' ? 'text-gray-600' : 'text-emerald-700')"
           >
-            {{ (item.signed_variance && !item.signed_variance.startsWith('-') && item.signed_variance !== '0.0000' && item.signed_variance !== '0' ? '+' : '') + formatQuantity(item.signed_variance) }}
+            {{ (item.signed_variance && !item.signed_variance.startsWith('-') && item.signed_variance !== '0.0000' && item.signed_variance !== '0' ? '+' : '') + formatQuantity(item.signed_variance, false) }}
           </td>
           <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-gray-900 whitespace-nowrap">
             {{ formatRupiah(item.variance_amount) }}

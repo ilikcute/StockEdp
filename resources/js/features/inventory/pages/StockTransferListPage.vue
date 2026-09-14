@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <!-- Top Header Toolbar (Compact) -->
+    <!-- Top Header & Filter Toolbar (Compact) -->
     <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
         <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
@@ -24,11 +24,47 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
+      <!-- Actions, Filter & Search (Unified in Top Header) -->
+      <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <!-- Search Input -->
+        <div class="w-full sm:w-56">
+          <input
+            id="search"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari Nomor Transfer..."
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @input="handleSearch"
+          >
+        </div>
+
+        <!-- Status Filter -->
+        <select
+          v-model="statusFilter"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          @change="fetchData(1)"
+        >
+          <option value="">
+            Semua Status
+          </option>
+          <option value="DRAFT">
+            Draft
+          </option>
+          <option value="IN_TRANSIT">
+            Dikirim / In-Transit
+          </option>
+          <option value="RECEIVED">
+            Diterima
+          </option>
+          <option value="CANCELED">
+            Dibatalkan
+          </option>
+        </select>
+
         <router-link
           v-if="hasPermission('stock_transfers.create')"
           to="/inventory/transfers/create"
-          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer whitespace-nowrap"
         >
           <svg
             class="w-3.5 h-3.5"
@@ -48,46 +84,14 @@
       </div>
     </div>
 
-    <!-- Quick Tab Filters & Search Bar -->
-    <div class="bg-white rounded-xl border border-gray-200 px-3 py-2 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-2.5">
-      <!-- Tabs -->
-      <div class="flex items-center gap-1 flex-wrap">
-        <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          type="button"
-          :class="[
-            activeTab === tab.value
-              ? 'bg-blue-50 text-blue-700 font-bold border-blue-200'
-              : 'text-gray-600 hover:bg-gray-100 border-transparent',
-            'px-2.5 py-1 text-xs rounded-lg border transition-colors cursor-pointer'
-          ]"
-          @click="selectTab(tab.value)"
-        >
-          {{ tab.name }}
-        </button>
-      </div>
-
-      <!-- Search Input -->
-      <div class="w-full md:w-64">
-        <input
-          id="search"
-          v-model="searchQuery"
-          type="text"
-          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          placeholder="Cari Nomor Transfer..."
-        >
-      </div>
-    </div>
-
     <div
       v-if="store.error"
-      class="rounded-lg bg-rose-50 p-3 border border-rose-200 text-xs text-rose-800 flex items-center justify-between"
+      class="rounded-lg bg-rose-50 p-2.5 border border-rose-200 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
       <span>{{ store.error }}</span>
       <button
         type="button"
-        class="text-rose-500 hover:text-rose-700 text-xs font-semibold"
+        class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
         @click="store.error = null"
       >
         Tutup
@@ -249,7 +253,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useStockTransferStore } from '../stores/useStockTransferStore';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { rowNumber } from '@/shared/utils/formatters';
@@ -260,32 +264,12 @@ const authStore = useAuthStore();
 
 const searchQuery = ref('');
 const statusFilter = ref('');
-const activeTab = ref('ALL');
-
-const tabs = [
-  { name: 'Semua', value: 'ALL' },
-  { name: 'Draft', value: 'DRAFT' },
-  { name: 'Dikirim / In-Transit', value: 'IN_TRANSIT' },
-  { name: 'Diterima', value: 'RECEIVED' },
-  { name: 'Dibatalkan', value: 'CANCELED' },
-];
-
-const selectTab = (tabValue) => {
-  activeTab.value = tabValue;
-  statusFilter.value = tabValue === 'ALL' ? '' : tabValue;
-};
 
 let debounceTimer = null;
-const debouncedSearch = () => {
+const handleSearch = () => {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => fetchData(1), 400);
+  debounceTimer = setTimeout(() => fetchData(1), 300);
 };
-
-watch(searchQuery, debouncedSearch);
-watch(statusFilter, (newVal) => {
-  activeTab.value = newVal || 'ALL';
-  fetchData(1);
-});
 
 const fetchData = (page = 1) => {
   store.fetchTransfers({

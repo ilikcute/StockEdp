@@ -1,28 +1,46 @@
 <template>
-  <div class="space-y-6 p-6">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">
-          Laporan Hasil Stock Opname
-        </h1>
-        <p class="text-xs text-gray-500 mt-1">
-          Periode laporan menggunakan waktu posting opname (POSTED_AT).
-        </p>
-      </div>
-      <div>
-        <ReportCsvExportControl
-          :loading="exportStore.isExporting(reportKey)"
-          :disabled="false"
-          :error="exportStore.errorFor(reportKey)"
-          :status="exportStore.statusFor(reportKey)"
-          :validation-errors="exportStore.validationErrorsFor(reportKey)"
-          :success-message="exportStore.successFor(reportKey)"
-          @export="exportCsv"
-          @dismiss="exportStore.clearFeedback(reportKey)"
-        />
+  <div class="space-y-3">
+    <!-- TOP Header Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
+            </svg>
+            Laporan Hasil Stock Opname
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Periode laporan menggunakan waktu posting opname (POSTED_AT).
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <ReportCsvExportControl
+            size="sm"
+            :loading="exportStore.isExporting(reportKey)"
+            :disabled="false"
+            :error="exportStore.errorFor(reportKey)"
+            :status="exportStore.statusFor(reportKey)"
+            :validation-errors="exportStore.validationErrorsFor(reportKey)"
+            :success-message="exportStore.successFor(reportKey)"
+            @export="exportCsv"
+            @dismiss="exportStore.clearFeedback(reportKey)"
+          />
+        </div>
       </div>
     </div>
 
+    <!-- Filters Compact -->
     <StockOpnameReportFilters
       :filters="filters"
       :master-store="masterStore"
@@ -57,14 +75,14 @@
 
     <div
       v-if="!store.loading && !store.error && store.data.length > 0"
-      class="space-y-4"
+      class="space-y-3"
     >
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-500 px-1">
-        <span>Menampilkan {{ store.data.length }} baris item opname</span>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[11px] text-gray-500 px-1">
+        <span>Menampilkan {{ store.data.length }} baris item hasil opname</span>
         <span>Total filtered item: {{ store.pagination?.total || 0 }}</span>
       </div>
 
-      <div class="rounded-lg bg-white shadow-sm border border-gray-300 overflow-hidden">
+      <div class="rounded-xl bg-white shadow-2xs border border-gray-200 overflow-hidden">
         <StockOpnameReportTable
           :items="store.data"
           :pagination="store.pagination"
@@ -101,9 +119,9 @@ const exportStore = useReportCsvExportStore();
 const reportKey = 'stock-opnames';
 
 const defaultFilters = {
+    location_id: '',
     variance_direction: '',
     is_unexpected: '',
-    location_id: '',
     product_id: '',
     category_id: '',
     unit_id: '',

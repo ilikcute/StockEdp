@@ -114,7 +114,7 @@ class StoreAllocationReportTest extends TestCase
 
         $response->assertOk()
             ->assertJsonStructure([
-                'meta' => ['summary' => ['total_allocations', 'total_installed', 'total_pulled']],
+                'meta' => ['summary' => ['total_allocations', 'total_installed', 'total_pulled', 'total_value']],
                 'data' => [
                     '*' => [
                         'id',
@@ -123,7 +123,9 @@ class StoreAllocationReportTest extends TestCase
                         'store_name',
                         'technician_name',
                         'product_name',
+                        'unit_price',
                         'quantity',
+                        'total_value',
                         'serial_number',
                         'pulled_product_name',
                         'pulled_quantity',
@@ -138,6 +140,9 @@ class StoreAllocationReportTest extends TestCase
         $found = collect($data)->firstWhere('allocation_number', 'ALC-20260912-9999');
         $this->assertNotNull($found);
         $this->assertSame('Laser optik mati total', $found['defective_reason']);
+        $this->assertEquals(1500000, $found['unit_price']);
+        $this->assertEquals(1500000, $found['total_value']);
+        $this->assertEquals(1500000, $response->json('meta.summary.total_value'));
     }
 
     public function test_can_filter_store_allocation_report_by_store_and_search(): void
@@ -163,8 +168,11 @@ class StoreAllocationReportTest extends TestCase
         $this->assertStringContainsString('text/csv', $response->headers->get('content-type'));
         $content = $response->streamedContent();
         $this->assertStringContainsString('Nomor Alokasi', $content);
+        $this->assertStringContainsString('Harga Satuan', $content);
+        $this->assertStringContainsString('Total Nilai (Rp)', $content);
         $this->assertStringContainsString('ALC-20260912-9999', $content);
         $this->assertStringContainsString('Laser optik mati total', $content);
+        $this->assertStringContainsString('1500000', $content);
     }
 
     public function test_unauthorized_user_is_forbidden(): void

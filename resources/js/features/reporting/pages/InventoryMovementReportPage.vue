@@ -1,58 +1,84 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 space-y-6">
-    <!-- Header -->
-    <div class="sm:flex sm:items-center sm:justify-between gap-4">
-      <div>
-        <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2.5">
-          <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-black shadow-sm">
-            MOV
-          </span>
-          Laporan Pergerakan Persediaan (Slow & Fast Moving)
-        </h1>
-        <p class="mt-1 text-xs text-gray-500">
-          Analisis kecerdasan pergerakan stok untuk mengidentifikasi produk tanpa perputaran (Slow Moving) dan produk dengan permintaan tinggi (Fast Moving).
-        </p>
-      </div>
+  <div class="space-y-3">
+    <!-- Top Header & Filter Toolbar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Primary Header Row: Title & Primary Controls -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <!-- Title & Subtitle -->
+        <div class="shrink-0">
+          <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5 whitespace-nowrap">
+            <svg
+              class="w-4 h-4 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              />
+            </svg>
+            Laporan Pergerakan Persediaan (Slow & Fast Moving)
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Analisis perputaran stok: Slow Moving (dorman) vs Fast Moving (permintaan tinggi).
+          </p>
+        </div>
 
-      <div class="mt-4 sm:mt-0 flex items-center gap-3">
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="isExporting || loading"
-          @click="onExportCsv"
-        >
-          <svg
-            class="w-4 h-4 text-gray-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-          <span>{{ isExporting ? 'Mengekspor...' : 'Ekspor CSV' }}</span>
-        </button>
-      </div>
-    </div>
+        <!-- Primary Controls (Tabs, Search, Period, Filter Toggle, Reset, Export) -->
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <!-- Movement Type Switcher (Pill Tabs) -->
+          <div class="inline-flex rounded-lg bg-gray-100 p-0.5 text-xs font-semibold shrink-0">
+            <button
+              type="button"
+              class="px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              :class="filters.type === 'slow-moving' ? 'bg-slate-800 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'"
+              @click="switchType('slow-moving')"
+            >
+              <span>Slow Moving</span>
+              <span
+                class="px-1.5 py-0.2 rounded-full text-[10px]"
+                :class="filters.type === 'slow-moving' ? 'bg-slate-700 text-slate-200' : 'bg-gray-200 text-gray-700'"
+              >
+                {{ meta?.summary?.slow_moving_count ?? 0 }}
+              </span>
+            </button>
+            <button
+              type="button"
+              class="px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              :class="filters.type === 'fast-moving' ? 'bg-emerald-700 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'"
+              @click="switchType('fast-moving')"
+            >
+              <span>Fast Moving</span>
+              <span
+                class="px-1.5 py-0.2 rounded-full text-[10px]"
+                :class="filters.type === 'fast-moving' ? 'bg-emerald-800 text-emerald-100' : 'bg-gray-200 text-gray-700'"
+              >
+                {{ meta?.summary?.fast_moving_count ?? 0 }}
+              </span>
+            </button>
+          </div>
 
-    <!-- Filter Bar Card -->
-    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-4">
-      <!-- Row 1: Period, Type, Location, Category, Unit -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        <!-- Periode -->
-        <div>
-          <label
-            for="filter-period"
-            class="block text-xs font-semibold text-gray-700 mb-1"
-          >Periode Analisis</label>
+          <!-- Search Input -->
+          <div class="w-full sm:w-44">
+            <input
+              id="filter-search"
+              v-model="filters.search"
+              type="text"
+              placeholder="Cari SKU, Barcode, nama..."
+              class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              @input="debouncedSearch"
+              @keyup.enter="applyFilters"
+            >
+          </div>
+
+          <!-- Quick Period Select -->
           <select
             id="filter-period"
             v-model="filters.period"
-            class="w-full text-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             @change="applyFilters"
           >
             <option
@@ -63,205 +89,300 @@
               {{ p.label }}
             </option>
           </select>
-        </div>
 
-        <!-- Tipe Analisis -->
-        <div>
-          <label
-            for="filter-type"
-            class="block text-xs font-semibold text-gray-700 mb-1"
-          >Tipe Pergerakan</label>
-          <select
-            id="filter-type"
-            v-model="filters.type"
-            class="w-full text-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            @change="applyFilters"
-          >
-            <option value="slow-moving">
-              Slow Moving (Dorman)
-            </option>
-            <option value="fast-moving">
-              Fast Moving (Cepat)
-            </option>
-          </select>
-        </div>
-
-        <!-- Lokasi -->
-        <div>
-          <label
-            for="filter-location"
-            class="block text-xs font-semibold text-gray-700 mb-1"
-          >Lokasi Gudang</label>
-          <select
-            id="filter-location"
-            v-model="filters.location_id"
-            class="w-full text-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            @change="applyFilters"
-          >
-            <option value="">
-              Semua Lokasi Terotorisasi
-            </option>
-            <option
-              v-for="loc in baseOptions.locations"
-              :key="loc.id"
-              :value="loc.id"
-            >
-              {{ loc.code }} - {{ loc.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Kategori -->
-        <div>
-          <label
-            for="filter-category"
-            class="block text-xs font-semibold text-gray-700 mb-1"
-          >Kategori Produk</label>
-          <select
-            id="filter-category"
-            v-model="filters.category_id"
-            class="w-full text-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            @change="applyFilters"
-          >
-            <option value="">
-              Semua Kategori
-            </option>
-            <option
-              v-for="cat in baseOptions.categories"
-              :key="cat.id"
-              :value="cat.id"
-            >
-              {{ cat.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Satuan -->
-        <div>
-          <label
-            for="filter-unit"
-            class="block text-xs font-semibold text-gray-700 mb-1"
-          >Satuan</label>
-          <select
-            id="filter-unit"
-            v-model="filters.unit_id"
-            class="w-full text-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            @change="applyFilters"
-          >
-            <option value="">
-              Semua Satuan
-            </option>
-            <option
-              v-for="u in baseOptions.units"
-              :key="u.id"
-              :value="u.id"
-            >
-              {{ u.code }} ({{ u.name }})
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Row 2: Search and Actions -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-gray-100">
-        <div class="flex-1 max-w-md relative">
-          <input
-            id="filter-search"
-            v-model="filters.search"
-            type="text"
-            placeholder="Cari SKU, Barcode, atau Nama Produk..."
-            class="w-full text-xs rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            @keyup.enter="applyFilters"
-          >
-          <svg
-            class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </div>
-
-        <div class="flex items-center gap-2">
+          <!-- Toggle Advanced Filters -->
           <button
             type="button"
-            class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            @click="applyFilters"
+            :class="[
+              'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap',
+              showAdvancedFilters || activeExtraFiltersCount > 0
+                ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+            @click="showAdvancedFilters = !showAdvancedFilters"
           >
-            Terapkan Filter
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
+            </svg>
+            <span>Filter</span>
+            <span
+              v-if="activeExtraFiltersCount > 0"
+              class="inline-flex items-center justify-center px-1.5 py-0.2 text-[10px] font-bold text-white bg-indigo-600 rounded-full"
+            >
+              {{ activeExtraFiltersCount }}
+            </span>
           </button>
+
+          <!-- Reset Filter -->
           <button
+            v-if="isAnyFilterActive"
             type="button"
-            class="px-3 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer"
+            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
+            title="Reset Filter"
             @click="resetFilters"
           >
             Reset
           </button>
+
+          <!-- Ekspor CSV Button -->
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            :disabled="isExporting || loading"
+            @click="onExportCsv"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            <span>{{ isExporting ? 'Mengekspor...' : 'Ekspor CSV' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Secondary Row: Advanced Filters (Location, Category, Unit, Sorting, Paging) -->
+      <div
+        v-show="showAdvancedFilters"
+        class="border-t border-gray-100 pt-2 flex flex-wrap items-center justify-between gap-2.5 text-xs"
+      >
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Lokasi -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Lokasi:</span>
+            <select
+              id="filter-location"
+              v-model="filters.location_id"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-[180px]"
+              @change="applyFilters"
+            >
+              <option value="">
+                Semua Lokasi
+              </option>
+              <option
+                v-for="loc in baseOptions.locations"
+                :key="loc.id"
+                :value="loc.id"
+              >
+                {{ loc.code ? loc.code + ' — ' : '' }}{{ loc.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Kategori -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Kategori:</span>
+            <select
+              id="filter-category"
+              v-model="filters.category_id"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-[180px]"
+              @change="applyFilters"
+            >
+              <option value="">
+                Semua Kategori
+              </option>
+              <option
+                v-for="cat in baseOptions.categories"
+                :key="cat.id"
+                :value="cat.id"
+              >
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Satuan -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Satuan:</span>
+            <select
+              id="filter-unit"
+              v-model="filters.unit_id"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              @change="applyFilters"
+            >
+              <option value="">
+                Semua Satuan
+              </option>
+              <option
+                v-for="u in baseOptions.units"
+                :key="u.id"
+                :value="u.id"
+              >
+                {{ u.code }} ({{ u.name }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sorting & Paging -->
+        <div class="flex items-center gap-1.5 flex-wrap ml-auto">
+          <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Urutkan:</span>
+          <select
+            v-model="filters.sort_by"
+            class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @change="applyFilters"
+          >
+            <template v-if="filters.type === 'slow-moving'">
+              <option value="days_since_last_movement">
+                Hari Tidak Bergerak
+              </option>
+              <option value="current_stock">
+                Stok Saat Ini
+              </option>
+              <option value="unit_price">
+                Harga Satuan
+              </option>
+              <option value="sku">
+                SKU
+              </option>
+              <option value="product_name">
+                Nama Produk
+              </option>
+            </template>
+            <template v-else>
+              <option value="velocity_score">
+                Rata-rata Keluar / Hari
+              </option>
+              <option value="total_outbound_quantity">
+                Total Keluar
+              </option>
+              <option value="outbound_movement_count">
+                Jumlah Transaksi
+              </option>
+              <option value="movement_days">
+                Hari Aktif
+              </option>
+              <option value="current_stock">
+                Stok Saat Ini
+              </option>
+              <option value="unit_price">
+                Harga Satuan
+              </option>
+              <option value="sku">
+                SKU
+              </option>
+              <option value="product_name">
+                Nama Produk
+              </option>
+            </template>
+          </select>
+          <select
+            v-model="filters.sort_order"
+            class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @change="applyFilters"
+          >
+            <option value="desc">
+              Desc
+            </option>
+            <option value="asc">
+              Asc
+            </option>
+          </select>
+          <select
+            v-model="filters.per_page"
+            class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @change="applyFilters"
+          >
+            <option :value="15">
+              15 / hal
+            </option>
+            <option :value="50">
+              50 / hal
+            </option>
+            <option :value="100">
+              100 / hal
+            </option>
+          </select>
         </div>
       </div>
     </div>
 
-    <!-- Movement Type Tabs & Active Summary -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-3">
-      <div class="flex items-center gap-2">
-        <button
-          type="button"
-          class="px-4 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-2"
-          :class="filters.type === 'slow-moving' ? 'bg-slate-800 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-          @click="switchType('slow-moving')"
+    <!-- Active Summary Info Bar -->
+    <div
+      v-if="meta?.date_from && meta?.date_to"
+      class="flex items-center justify-between text-xs text-gray-500 bg-white px-3.5 py-1.5 rounded-xl border border-gray-200 shadow-2xs"
+    >
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-[11px] text-gray-400">Mode:</span>
+        <span
+          class="font-bold text-[11px] uppercase tracking-wider"
+          :class="filters.type === 'slow-moving' ? 'text-slate-800' : 'text-emerald-700'"
         >
-          <span>Slow Moving (Dorman)</span>
-          <span
-            class="px-1.5 py-0.5 rounded-full text-[10px]"
-            :class="filters.type === 'slow-moving' ? 'bg-slate-700 text-slate-200' : 'bg-gray-200 text-gray-700'"
-          >
-            {{ meta?.summary?.slow_moving_count ?? 0 }}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="px-4 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-2"
-          :class="filters.type === 'fast-moving' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-          @click="switchType('fast-moving')"
+          {{ filters.type === 'slow-moving' ? 'Slow Moving (Dorman)' : 'Fast Moving (Cepat)' }}
+        </span>
+        <span
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono"
+          :class="filters.type === 'slow-moving' ? 'bg-slate-100 text-slate-800 border border-slate-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'"
         >
-          <span>Fast Moving (Cepat)</span>
-          <span
-            class="px-1.5 py-0.5 rounded-full text-[10px]"
-            :class="filters.type === 'fast-moving' ? 'bg-emerald-800 text-emerald-100' : 'bg-gray-200 text-gray-700'"
-          >
-            {{ meta?.summary?.fast_moving_count ?? 0 }}
-          </span>
-        </button>
+          {{ (filters.type === 'slow-moving' ? meta?.summary?.slow_moving_count : meta?.summary?.fast_moving_count) ?? 0 }} Produk
+        </span>
+        <span
+          v-if="selectedLocationName"
+          class="inline-flex items-center gap-1 text-[11px] text-gray-600 font-medium"
+        >
+          &bull; Lokasi: <strong class="text-gray-900">{{ selectedLocationName }}</strong>
+        </span>
       </div>
-
-      <div
-        v-if="meta?.date_from && meta?.date_to"
-        class="text-xs text-gray-500"
-      >
-        Rentang Tanggal Analisis: <span class="font-semibold text-gray-700">{{ meta.date_from }} s/d {{ meta.date_to }}</span> ({{ filters.period }} Hari)
+      <div class="text-[11px]">
+        Rentang Analisis: <span class="font-semibold text-gray-800 font-mono">{{ meta.date_from }} s/d {{ meta.date_to }}</span> ({{ filters.period }} Hari)
       </div>
     </div>
 
-    <!-- Error State -->
+    <!-- Error Alert -->
     <div
       v-if="error"
-      class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center justify-between"
+      class="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
-      <span>{{ error }}</span>
-      <button
-        type="button"
-        class="underline font-semibold hover:text-rose-900 cursor-pointer"
-        @click="fetchReport"
-      >
-        Coba Lagi
-      </button>
+      <div class="flex items-center gap-2">
+        <svg
+          class="w-4 h-4 text-rose-600 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{{ error }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="font-semibold text-rose-700 hover:text-rose-900 bg-rose-100 px-2.5 py-1 rounded text-xs cursor-pointer"
+          @click="fetchReport"
+        >
+          Coba Lagi
+        </button>
+        <button
+          type="button"
+          class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+          @click="error = null"
+        >
+          Tutup
+        </button>
+      </div>
     </div>
 
     <!-- Table Container -->
@@ -320,6 +441,12 @@
             <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
               <th
                 scope="col"
+                class="py-1.5 px-2 text-center whitespace-nowrap w-10 text-gray-500 font-semibold"
+              >
+                No.
+              </th>
+              <th
+                scope="col"
                 class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('sku')"
               >
@@ -346,10 +473,23 @@
               </th>
               <th
                 scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100 text-gray-600 font-semibold"
+                @click="toggleSort('unit_price')"
+              >
+                Harga Satuan {{ getSortIcon('unit_price') }}
+              </th>
+              <th
+                scope="col"
                 class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('current_stock')"
               >
                 Stok Saat Ini {{ getSortIcon('current_stock') }}
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap text-gray-600 font-semibold"
+              >
+                Total Nilai (Rp)
               </th>
               <th
                 scope="col"
@@ -382,6 +522,12 @@
             <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
               <th
                 scope="col"
+                class="py-1.5 px-2 text-center whitespace-nowrap w-10 text-gray-500 font-semibold"
+              >
+                No.
+              </th>
+              <th
+                scope="col"
                 class="py-1.5 px-2 text-left whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('sku')"
               >
@@ -408,10 +554,23 @@
               </th>
               <th
                 scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100 text-gray-600 font-semibold"
+                @click="toggleSort('unit_price')"
+              >
+                Harga Satuan {{ getSortIcon('unit_price') }}
+              </th>
+              <th
+                scope="col"
                 class="py-1.5 px-2 text-right whitespace-nowrap cursor-pointer hover:bg-gray-100"
                 @click="toggleSort('current_stock')"
               >
                 Stok Saat Ini {{ getSortIcon('current_stock') }}
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap text-gray-600 font-semibold"
+              >
+                Total Nilai (Rp)
               </th>
               <th
                 scope="col"
@@ -454,10 +613,13 @@
           <tbody class="divide-y divide-gray-100 bg-white">
             <template v-if="filters.type === 'slow-moving'">
               <tr
-                v-for="row in items"
+                v-for="(row, idx) in items"
                 :key="`${row.product_id}-${row.location_id}`"
                 class="hover:bg-gray-50/80 transition-colors"
               >
+                <td class="py-1.5 px-2 text-center font-mono text-[11px] text-gray-400 whitespace-nowrap">
+                  {{ getRowNumber(idx) }}
+                </td>
                 <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
                   <div class="font-semibold">
                     {{ row.sku }}
@@ -480,8 +642,14 @@
                     {{ row.location_code }}
                   </span>
                 </td>
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
+                  {{ formatRupiah(row.unit_price) }}
+                </td>
                 <td class="py-1.5 px-2 text-[11px] text-right font-mono font-medium text-gray-900 whitespace-nowrap">
-                  {{ row.current_stock }} {{ row.unit_symbol }}
+                  {{ formatQuantity(row.current_stock) }} {{ row.unit_symbol }}
+                </td>
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
+                  {{ formatRupiah(row.total_value ?? (Number(row.current_stock) * Number(row.unit_price || 0))) }}
                 </td>
                 <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap font-mono">
                   {{ formatTimestamp(row.last_movement_at) }}
@@ -510,10 +678,13 @@
 
             <template v-else>
               <tr
-                v-for="row in items"
+                v-for="(row, idx) in items"
                 :key="`${row.product_id}-${row.location_id}`"
                 class="hover:bg-gray-50/80 transition-colors"
               >
+                <td class="py-1.5 px-2 text-center font-mono text-[11px] text-gray-400 whitespace-nowrap">
+                  {{ getRowNumber(idx) }}
+                </td>
                 <td class="py-1.5 px-2 font-mono text-[11px] text-gray-900 whitespace-nowrap">
                   <div class="font-semibold">
                     {{ row.sku }}
@@ -537,16 +708,22 @@
                   </span>
                 </td>
                 <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
-                  {{ row.current_stock }} {{ row.unit_symbol }}
+                  {{ formatRupiah(row.unit_price) }}
+                </td>
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-700 whitespace-nowrap">
+                  {{ formatQuantity(row.current_stock) }} {{ row.unit_symbol }}
+                </td>
+                <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
+                  {{ formatRupiah(row.total_value ?? (Number(row.current_stock) * Number(row.unit_price || 0))) }}
                 </td>
                 <td class="py-1.5 px-2 text-[11px] text-right font-mono font-bold text-emerald-800 whitespace-nowrap">
-                  {{ row.total_outbound_quantity }} {{ row.unit_symbol }}
+                  {{ formatQuantity(row.total_outbound_quantity) }} {{ row.unit_symbol }}
                 </td>
                 <td class="py-1.5 px-2 text-[11px] text-right font-semibold text-gray-900 whitespace-nowrap">
                   {{ row.outbound_movement_count }}x
                 </td>
                 <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-emerald-700 whitespace-nowrap">
-                  {{ row.average_daily_outbound }} / hari
+                  {{ Number(row.average_daily_outbound).toLocaleString('id-ID', { maximumFractionDigits: 2 }) }} / hari
                 </td>
                 <td class="py-1.5 px-2 text-[11px] text-right text-gray-600 whitespace-nowrap">
                   {{ row.movement_days }} hari
@@ -565,36 +742,42 @@
       <!-- Pagination Controls -->
       <div
         v-if="meta?.pagination?.total"
-        class="bg-gray-50 px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-600"
+        class="flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2.5 sm:px-4 rounded-b-xl shadow-xs"
       >
-        <div>
-          Menampilkan <span class="font-semibold text-gray-900">{{ meta.pagination.from ?? 0 }}</span> s/d
-          <span class="font-semibold text-gray-900">{{ meta.pagination.to ?? 0 }}</span> dari
-          <span class="font-semibold text-gray-900">{{ meta.pagination.total }}</span> produk
-        </div>
+        <div class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <p class="text-xs text-gray-700">
+              Menampilkan
+              <span class="font-semibold text-gray-900">{{ meta.pagination.from ?? 0 }}</span>
+              sampai
+              <span class="font-semibold text-gray-900">{{ meta.pagination.to ?? 0 }}</span>
+              dari
+              <span class="font-semibold text-gray-900">{{ meta.pagination.total }}</span>
+              produk
+            </p>
+          </div>
 
-        <div class="flex items-center gap-1.5 self-end sm:self-auto">
-          <button
-            type="button"
-            class="px-2.5 py-1 rounded border border-gray-300 bg-white font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-            :disabled="meta.pagination.current_page <= 1 || loading"
-            @click="changePage(meta.pagination.current_page - 1)"
-          >
-            &larr; Sebelumnya
-          </button>
-
-          <span class="px-2 font-semibold text-gray-800">
-            Halaman {{ meta.pagination.current_page }} dari {{ meta.pagination.last_page }}
-          </span>
-
-          <button
-            type="button"
-            class="px-2.5 py-1 rounded border border-gray-300 bg-white font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-            :disabled="meta.pagination.current_page >= meta.pagination.last_page || loading"
-            @click="changePage(meta.pagination.current_page + 1)"
-          >
-            Berikutnya &rarr;
-          </button>
+          <div class="flex items-center gap-1.5 self-end sm:self-auto">
+            <button
+              type="button"
+              class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
+              :disabled="meta.pagination.current_page <= 1 || loading"
+              @click="changePage(meta.pagination.current_page - 1)"
+            >
+              Sebelumnya
+            </button>
+            <span class="text-xs text-gray-500 px-1 font-mono">
+              {{ meta.pagination.current_page }} / {{ meta.pagination.last_page }}
+            </span>
+            <button
+              type="button"
+              class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
+              :disabled="meta.pagination.current_page >= meta.pagination.last_page || loading"
+              @click="changePage(meta.pagination.current_page + 1)"
+            >
+              Selanjutnya
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -602,14 +785,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reportingApi } from '../api/reportingApi';
 import { showToast } from '@/shared/utils/use_toast.js';
-import { formatTimestamp } from '@/shared/utils/formatters.js';
+import { formatTimestamp, formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
 const route = useRoute();
 const router = useRouter();
+
+const showAdvancedFilters = ref(false);
 
 const periodOptions = [
     { value: 30, label: '30 Hari Terakhir' },
@@ -726,6 +911,40 @@ async function fetchReport() {
     }
 }
 
+const selectedLocationName = computed(() => {
+    if (!filters.location_id) return null;
+    const loc = baseOptions.locations.find((l) => String(l.id) === String(filters.location_id));
+    return loc ? (loc.code ? `${loc.code} — ${loc.name}` : loc.name) : null;
+});
+
+const activeExtraFiltersCount = computed(() => {
+    let count = 0;
+    if (filters.location_id) count++;
+    if (filters.category_id) count++;
+    if (filters.unit_id) count++;
+    if (filters.per_page !== 15) count++;
+    return count;
+});
+
+const isAnyFilterActive = computed(() => {
+    return !!(
+        filters.search ||
+        filters.location_id ||
+        filters.category_id ||
+        filters.unit_id ||
+        filters.period !== 90 ||
+        filters.per_page !== 15
+    );
+});
+
+let searchDebounceTimer = null;
+function debouncedSearch() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        applyFilters();
+    }, 300);
+}
+
 function applyFilters() {
     filters.page = 1;
     // Update router query cleanly
@@ -736,6 +955,7 @@ function applyFilters() {
             period: filters.period,
             location_id: filters.location_id || undefined,
             category_id: filters.category_id || undefined,
+            unit_id: filters.unit_id || undefined,
             search: filters.search || undefined,
         },
     });
@@ -743,12 +963,14 @@ function applyFilters() {
 }
 
 function resetFilters() {
+    clearTimeout(searchDebounceTimer);
     filters.period = 90;
     filters.location_id = '';
     filters.category_id = '';
     filters.unit_id = '';
     filters.search = '';
     filters.page = 1;
+    filters.per_page = 15;
     filters.sort_by = filters.type === 'fast-moving' ? 'velocity_score' : 'days_since_last_movement';
     filters.sort_order = 'desc';
     applyFilters();
@@ -777,6 +999,10 @@ function toggleSort(field) {
 function getSortIcon(field) {
     if (filters.sort_by !== field) return '';
     return filters.sort_order === 'asc' ? '▲' : '▼';
+}
+
+function getRowNumber(index) {
+    return rowNumber(meta.value?.pagination, index);
 }
 
 function changePage(newPage) {

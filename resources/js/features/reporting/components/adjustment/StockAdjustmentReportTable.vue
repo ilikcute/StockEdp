@@ -140,7 +140,7 @@
             {{ formatRupiah(item.product?.unit_price) }}
           </td>
           <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-gray-900 whitespace-nowrap">
-            <span>{{ formatQuantity(item.quantity) }}</span>
+            <span>{{ formatQuantity(item.quantity, false) }}</span>
             <span
               v-if="item.product?.unit_name"
               class="text-[10px] text-gray-400 font-normal ml-1"

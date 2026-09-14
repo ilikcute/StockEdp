@@ -1,28 +1,42 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <!-- Header -->
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Detail Stock Opname
-        </h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Rincian sesi penghitungan stok fisik.
-        </p>
-      </div>
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex flex-wrap gap-2">
+  <div class="space-y-3">
+    <!-- TOP Header & Action Strip Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-center gap-3">
         <router-link
           to="/inventory/opnames"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          class="inline-flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg border border-gray-200 transition-colors"
         >
-          Kembali
+          &larr; Kembali
         </router-link>
 
+        <div class="h-4 w-px bg-gray-200" />
+
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-gray-900 tracking-tight font-mono">
+              {{ opname?.opname_number || 'Detail Stock Opname' }}
+            </h1>
+            <StockOpnameStatusBadge
+              v-if="opname"
+              :status="opname.status"
+            />
+          </div>
+          <p class="text-[11px] text-gray-500">
+            Rincian sesi penghitungan stok fisik.
+          </p>
+        </div>
+      </div>
+
+      <div
+        v-if="opname"
+        class="flex items-center gap-2 flex-wrap"
+      >
         <!-- Edit Draft -->
         <router-link
           v-if="abilities.can_update"
           :to="`/inventory/opnames/${opname.id}/edit`"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          class="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50"
         >
           Edit Draft
         </router-link>
@@ -31,7 +45,7 @@
         <button
           v-if="abilities.can_start"
           :disabled="isAnyActionLoading"
-          class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50"
+          class="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
           @click="openConfirm('start')"
         >
           Mulai Opname
@@ -41,7 +55,7 @@
         <router-link
           v-if="opname?.status === 'IN_PROGRESS'"
           :to="`/inventory/opnames/${opname.id}/count`"
-          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+          class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-indigo-700"
         >
           Ruang Hitung →
         </router-link>
@@ -50,7 +64,7 @@
         <button
           v-if="abilities.can_complete"
           :disabled="isAnyActionLoading"
-          class="block rounded-md bg-yellow-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-yellow-400 disabled:opacity-50"
+          class="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-amber-700 disabled:opacity-50 cursor-pointer"
           @click="openConfirm('complete')"
         >
           Selesai Hitung
@@ -60,7 +74,7 @@
         <button
           v-if="abilities.can_reopen"
           :disabled="isAnyActionLoading"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-yellow-700 shadow-sm ring-1 ring-inset ring-yellow-400 hover:bg-yellow-50 disabled:opacity-50"
+          class="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 shadow-2xs hover:bg-amber-50 disabled:opacity-50 cursor-pointer"
           @click="showReopenDialog = true"
         >
           Buka Kembali
@@ -70,7 +84,7 @@
         <button
           v-if="abilities.can_post"
           :disabled="isAnyActionLoading"
-          class="block rounded-md bg-green-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-500 disabled:opacity-50"
+          class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
           @click="openConfirm('post')"
         >
           Posting
@@ -80,7 +94,7 @@
         <button
           v-if="abilities.can_cancel"
           :disabled="isAnyActionLoading"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 disabled:opacity-50"
+          class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 shadow-2xs hover:bg-rose-100 disabled:opacity-50 cursor-pointer"
           @click="showCancelDialog = true"
         >
           Batalkan
@@ -91,7 +105,7 @@
     <!-- Loading skeleton -->
     <div
       v-if="store.loadingDetail && !opname"
-      class="mt-8 text-center text-gray-500"
+      class="p-8 text-center text-xs text-gray-500"
     >
       Memuat data opname...
     </div>
@@ -100,107 +114,56 @@
       <!-- Error alert -->
       <div
         v-if="store.error"
-        class="mt-4 rounded-md bg-red-50 p-4"
+        class="rounded-xl border border-rose-200 bg-rose-50 p-3"
       >
-        <p class="text-sm font-medium text-red-800">
+        <p class="text-xs font-medium text-rose-800">
           {{ store.error }}
         </p>
       </div>
 
-      <!-- Document Info -->
-      <div class="mt-8 overflow-hidden bg-white shadow sm:rounded-lg">
-        <div class="px-4 py-5 sm:px-6 flex items-center justify-between">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
-            Informasi Dokumen
-          </h3>
-          <StockOpnameStatusBadge :status="opname.status" />
-        </div>
-        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Nomor Opname
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-mono font-medium">
-                {{ opname.opname_number }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Lokasi
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ opname.location_name || '-' }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Tanggal Opname
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ opname.opname_date }}
-              </dd>
-            </div>
-            <div
-              v-if="opname.notes"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Catatan
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 whitespace-pre-line">
-                {{ opname.notes }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Dibuat Oleh / Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ opname.created_by || '-' }}
-                <span
-                  v-if="opname.created_at"
-                  class="text-gray-500"
-                >
-                  ({{ opname.created_at }})
-                </span>
-              </dd>
-            </div>
-            <div
-              v-if="opname.posted_by"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Diposting Oleh / Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ opname.posted_by }} ({{ opname.posted_at }})
-              </dd>
-            </div>
-            <div
-              v-if="opname.canceled_at || opname.cancelled_at"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Dibatalkan Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ opname.canceled_at || opname.cancelled_at }}
-              </dd>
-            </div>
-          </dl>
+      <!-- Compact Metadata Card -->
+      <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Lokasi</span>
+            <span class="font-semibold text-gray-800">{{ opname.location_name || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Tanggal Opname</span>
+            <span class="font-semibold text-gray-800">{{ opname.opname_date }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Dibuat Oleh</span>
+            <span class="font-semibold text-gray-800">{{ opname.created_by || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Diposting Oleh</span>
+            <span class="font-semibold text-gray-800">{{ opname.posted_by ? `${opname.posted_by} (${opname.posted_at || ''})` : '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Dibatalkan Pada</span>
+            <span class="font-semibold text-gray-800">{{ opname.canceled_at || opname.cancelled_at || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Catatan</span>
+            <span class="text-gray-700 truncate block">{{ opname.notes || '-' }}</span>
+          </div>
         </div>
       </div>
 
       <!-- COUNTED: Summary Variance -->
       <div
         v-if="opname.status === 'COUNTED' || opname.status === 'POSTED'"
-        class="mt-6 rounded-md bg-yellow-50 border border-yellow-200 p-4"
+        class="rounded-lg bg-amber-50 border border-amber-200 p-2.5"
       >
-        <p class="text-sm font-medium text-yellow-800">
+        <p class="text-[11px] font-medium text-amber-900">
           <span v-if="opname.status === 'COUNTED'">
-            ✓ Penghitungan selesai. Review selisih di bawah, lalu klik <strong>Posting</strong> untuk
-            membukukan penyesuaian stok, atau <strong>Buka Kembali</strong> untuk menghitung ulang.
+            ✓ Penghitungan selesai. Review selisih di bawah, lalu klik <strong>Posting</strong> untuk membukukan penyesuaian stok, atau <strong>Buka Kembali</strong> untuk menghitung ulang.
           </span>
           <span v-else>
             ✓ Opname telah diposting. Selisih stok sudah tercatat sebagai movement OPNAME_IN / OPNAME_OUT.
@@ -327,12 +290,12 @@
                   {{ formatRupiah(item.product_unit_price || item.product?.unit_price || 0) }}
                 </td>
                 <td class="py-1.5 px-2 font-mono text-right text-gray-900 text-[11px] whitespace-nowrap">
-                  {{ formatQuantity(item.snapshot_quantity) }}
+                  {{ formatQuantity(item.snapshot_quantity, false) }}
                 </td>
                 <!-- COUNTED / POSTED columns -->
                 <template v-if="opname.status === 'COUNTED' || opname.status === 'POSTED'">
                   <td class="py-1.5 px-2 font-mono text-right text-gray-900 text-[11px] whitespace-nowrap">
-                    {{ item.counted_quantity !== null && item.counted_quantity !== undefined ? formatQuantity(item.counted_quantity) : '-' }}
+                    {{ item.counted_quantity !== null && item.counted_quantity !== undefined ? formatQuantity(item.counted_quantity, false) : '-' }}
                   </td>
                   <td
                     class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold whitespace-nowrap"
@@ -343,7 +306,7 @@
                     }"
                   >
                     {{ item.variance_quantity !== null && item.variance_quantity !== undefined
-                      ? ((item.variance_quantity && !item.variance_quantity.startsWith('-') && item.variance_quantity !== '0.0000' && item.variance_quantity !== '0' ? '+' : '') + formatQuantity(item.variance_quantity))
+                      ? ((item.variance_quantity && !item.variance_quantity.startsWith('-') && item.variance_quantity !== '0.0000' && item.variance_quantity !== '0' ? '+' : '') + formatQuantity(item.variance_quantity, false))
                       : '-' }}
                   </td>
                   <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-900 font-medium whitespace-nowrap">

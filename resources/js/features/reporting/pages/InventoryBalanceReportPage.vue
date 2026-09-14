@@ -1,47 +1,48 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Laporan Saldo Stok
-        </h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Informasi ketersediaan stok produk di semua lokasi.
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-        <ReportCsvExportControl
-          :loading="exportStore.isExporting(reportKey)"
-          :disabled="false"
-          :error="exportStore.errorFor(reportKey)"
-          :status="exportStore.statusFor(reportKey)"
-          :validation-errors="exportStore.validationErrorsFor(reportKey)"
-          :success-message="exportStore.successFor(reportKey)"
-          @export="exportCsv"
-          @dismiss="exportStore.clearFeedback(reportKey)"
-        />
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="mt-6 flex flex-col gap-4">
-      <div class="flex flex-wrap gap-4 items-end">
-        <div class="w-full sm:w-auto flex-1 min-w-[200px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
-          <input
-            id="search"
-            v-model="filters.search"
-            type="text"
-            class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="Cari SKU atau Nama Produk..."
-          >
+  <div class="space-y-3">
+    <!-- Top Header & Integrated Filter Bar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Main Row: Title & Primary Controls -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Laporan Saldo Stok
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Informasi ketersediaan stok produk di semua lokasi gudang dan teknisi.
+          </p>
         </div>
-        
-        <div class="w-full sm:w-auto min-w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+
+        <!-- Primary Controls (Search, Quick Filter, Export, Toggle) -->
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <!-- Search Input -->
+          <div class="w-full sm:w-56">
+            <input
+              id="search"
+              v-model="filters.search"
+              type="text"
+              class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Cari SKU atau Nama Produk..."
+            >
+          </div>
+
+          <!-- Quick Location Filter -->
           <select
             v-model="filters.location_id"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">
               Semua Lokasi
@@ -54,71 +55,11 @@
               {{ loc.code ? loc.code + ' — ' : '' }}{{ loc.name }}
             </option>
           </select>
-        </div>
 
-        <div class="w-full sm:w-auto min-w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-          <select
-            v-model="filters.category_id"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua Kategori
-            </option>
-            <option
-              v-for="cat in masterStore.categories"
-              :key="cat.id"
-              :value="cat.id"
-            >
-              {{ cat.name }}
-            </option>
-          </select>
-        </div>
-
-        <div class="w-full sm:w-auto min-w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-          <select
-            v-model="filters.unit_id"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua Unit
-            </option>
-            <option
-              v-for="unit in masterStore.units"
-              :key="unit.id"
-              :value="unit.id"
-            >
-              {{ unit.code }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-4 items-end">
-        <div class="w-full sm:w-auto min-w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Status Produk</label>
-          <select
-            v-model="filters.is_active"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua
-            </option>
-            <option value="1">
-              Aktif
-            </option>
-            <option value="0">
-              Nonaktif
-            </option>
-          </select>
-        </div>
-
-        <div class="w-full sm:w-auto min-w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Stok</label>
+          <!-- Quick Condition Filter -->
           <select
             v-model="filters.condition"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">
               Semua Kondisi
@@ -130,31 +71,158 @@
               Rusak (DEFECTIVE)
             </option>
           </select>
+
+          <!-- Toggle Advanced Filters -->
+          <button
+            type="button"
+            :class="[
+              'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap',
+              showAdvancedFilters || activeExtraFiltersCount > 0
+                ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+            @click="showAdvancedFilters = !showAdvancedFilters"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
+            </svg>
+            <span>Filter</span>
+            <span
+              v-if="activeExtraFiltersCount > 0"
+              class="inline-flex items-center justify-center px-1.5 py-0.2 text-[10px] font-bold text-white bg-indigo-600 rounded-full"
+            >
+              {{ activeExtraFiltersCount }}
+            </span>
+          </button>
+
+          <!-- Reset Filter -->
+          <button
+            v-if="isAnyFilterActive"
+            type="button"
+            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
+            title="Reset Filter"
+            @click="resetAllFilters"
+          >
+            Reset
+          </button>
+
+          <!-- Export CSV Control -->
+          <ReportCsvExportControl
+            size="sm"
+            :loading="exportStore.isExporting(reportKey)"
+            :disabled="false"
+            :error="exportStore.errorFor(reportKey)"
+            :status="exportStore.statusFor(reportKey)"
+            :validation-errors="exportStore.validationErrorsFor(reportKey)"
+            :success-message="exportStore.successFor(reportKey)"
+            @export="exportCsv"
+            @dismiss="exportStore.clearFeedback(reportKey)"
+          />
+        </div>
+      </div>
+
+      <!-- Secondary Row: Advanced Filters (Category, Unit, Active Status, Stock Flags, Sorting) -->
+      <div
+        v-show="showAdvancedFilters"
+        class="border-t border-gray-100 pt-2 flex flex-wrap items-center justify-between gap-2.5 text-xs"
+      >
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Kategori -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Kategori:</span>
+            <select
+              v-model="filters.category_id"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="">
+                Semua Kategori
+              </option>
+              <option
+                v-for="cat in masterStore.categories"
+                :key="cat.id"
+                :value="cat.id"
+              >
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Unit -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Satuan:</span>
+            <select
+              v-model="filters.unit_id"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="">
+                Semua Satuan
+              </option>
+              <option
+                v-for="unit in masterStore.units"
+                :key="unit.id"
+                :value="unit.id"
+              >
+                {{ unit.code }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Status Produk -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Status:</span>
+            <select
+              v-model="filters.is_active"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="">
+                Semua
+              </option>
+              <option value="1">
+                Aktif
+              </option>
+              <option value="0">
+                Nonaktif
+              </option>
+            </select>
+          </div>
+
+          <!-- Checkboxes -->
+          <div class="flex items-center gap-3 pl-1">
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-[11px] text-gray-700">
+              <input
+                v-model="filters.positive_stock"
+                type="checkbox"
+                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer"
+              >
+              <span>Stok Positif</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-[11px] text-gray-700">
+              <input
+                v-model="filters.zero_stock"
+                type="checkbox"
+                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer"
+              >
+              <span>Stok Nol</span>
+            </label>
+          </div>
         </div>
 
-        <div class="flex gap-4">
-          <label class="flex items-center gap-2">
-            <input
-              v-model="filters.positive_stock"
-              type="checkbox"
-              class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-            >
-            <span class="text-sm text-gray-700">Hanya Stok Positif</span>
-          </label>
-          <label class="flex items-center gap-2">
-            <input
-              v-model="filters.zero_stock"
-              type="checkbox"
-              class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-            >
-            <span class="text-sm text-gray-700">Hanya Stok Nol</span>
-          </label>
-        </div>
-
-        <div class="flex gap-2 w-full sm:w-auto ml-auto">
+        <!-- Sorting & Pagination Count -->
+        <div class="flex items-center gap-1.5 flex-wrap ml-auto">
+          <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Urutkan:</span>
           <select
             v-model="filters.sort_by"
-            class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="id">
               ID
@@ -174,27 +242,27 @@
           </select>
           <select
             v-model="filters.sort_order"
-            class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="desc">
-              Menurun (Desc)
+              Desc
             </option>
             <option value="asc">
-              Menaik (Asc)
+              Asc
             </option>
           </select>
           <select
             v-model="filters.per_page"
-            class="block rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="15">
-              15 Baris
+              15 / hal
             </option>
             <option value="50">
-              50 Baris
+              50 / hal
             </option>
             <option value="100">
-              100 Baris
+              100 / hal
             </option>
           </select>
         </div>
@@ -204,25 +272,27 @@
     <!-- Error State -->
     <div
       v-if="store.error"
-      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+      class="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
-      <div class="flex">
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">
-            Error memuat data
-          </h3>
-          <div class="mt-2 text-sm text-red-700">
-            <p>{{ store.error }}</p>
-          </div>
-          <div class="mt-4">
-            <button
-              class="text-sm font-medium text-red-800 hover:text-red-900 bg-red-100 px-3 py-1.5 rounded-md cursor-pointer"
-              @click="fetchData(1)"
-            >
-              Coba Lagi
-            </button>
-          </div>
-        </div>
+      <div>
+        <span class="font-semibold">Error memuat data: </span>
+        <span>{{ store.error }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="font-semibold text-rose-700 hover:text-rose-900 bg-rose-100 px-2.5 py-1 rounded text-xs cursor-pointer"
+          @click="fetchData(1)"
+        >
+          Coba Lagi
+        </button>
+        <button
+          type="button"
+          class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+          @click="store.error = null"
+        >
+          Tutup
+        </button>
       </div>
     </div>
 
@@ -391,7 +461,7 @@
 </template>
 
 <script setup>
-import { onMounted, watch, reactive } from 'vue';
+import { onMounted, watch, reactive, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useInventoryBalanceReportStore } from '../stores/useInventoryBalanceReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
@@ -405,6 +475,8 @@ const store = useInventoryBalanceReportStore();
 const masterStore = useReportFilterOptionsStore();
 const exportStore = useReportCsvExportStore();
 const reportKey = 'inventory-balances';
+
+const showAdvancedFilters = ref(false);
 
 const filters = reactive({
     search: '',
@@ -420,10 +492,47 @@ const filters = reactive({
     per_page: '15',
 });
 
+const activeExtraFiltersCount = computed(() => {
+    let count = 0;
+    if (filters.category_id) count++;
+    if (filters.unit_id) count++;
+    if (filters.is_active !== '') count++;
+    if (filters.positive_stock) count++;
+    if (filters.zero_stock) count++;
+    return count;
+});
+
+const isAnyFilterActive = computed(() => {
+    return Boolean(
+        filters.search ||
+        filters.location_id ||
+        filters.condition ||
+        filters.category_id ||
+        filters.unit_id ||
+        filters.is_active !== '' ||
+        filters.positive_stock ||
+        filters.zero_stock
+    );
+});
+
+const resetAllFilters = () => {
+    filters.search = '';
+    filters.location_id = '';
+    filters.condition = '';
+    filters.category_id = '';
+    filters.unit_id = '';
+    filters.is_active = '';
+    filters.positive_stock = false;
+    filters.zero_stock = false;
+    filters.sort_by = 'id';
+    filters.sort_order = 'desc';
+    filters.per_page = '15';
+};
+
 let debounceTimer = null;
 const debouncedFetch = () => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => fetchData(1), 500);
+    debounceTimer = setTimeout(() => fetchData(1), 300);
 };
 
 watch(() => ({ ...filters }), debouncedFetch, { deep: true });

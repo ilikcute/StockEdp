@@ -1,57 +1,82 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <BasePageHeader
-      title="Master Supplier"
-      description="Kelola daftar supplier / pemasok barang."
-    >
-      <template #actions>
-        <BaseButton
-          v-if="hasPermission('suppliers.create')"
-          @click="openCreateModal"
-        >
-          Tambah Supplier
-        </BaseButton>
-      </template>
-    </BasePageHeader>
-
-    <div class="mt-3 flex flex-col sm:flex-row justify-between gap-2.5">
-      <div class="w-full sm:max-w-xs">
-        <BaseSearchInput
-          :model-value="searchQuery"
-          placeholder="Cari kode atau nama..."
-          @update:model-value="searchQuery = $event"
-          @search="onSearch"
-        />
+  <div class="space-y-3">
+    <!-- TOP Header & Filter Toolbar Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Primary Controls Row -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            Master Supplier
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Kelola daftar supplier / pemasok barang.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <BaseButton
+            v-if="hasPermission('suppliers.create')"
+            id="btn-create-supplier"
+            size="sm"
+            @click="openCreateModal"
+          >
+            + Tambah Supplier
+          </BaseButton>
+        </div>
       </div>
-      <div class="flex gap-2">
-        <select
-          v-model="statusFilter"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Status
-          </option>
-          <option value="true">
-            Aktif
-          </option>
-          <option value="false">
-            Nonaktif
-          </option>
-        </select>
-        <select
-          v-model="sortBy"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="created_at">
-            Terbaru
-          </option>
-          <option value="code">
-            Kode
-          </option>
-          <option value="name">
-            Nama
-          </option>
-        </select>
+
+      <!-- Filters & Search Row -->
+      <div class="flex flex-col sm:flex-row justify-between gap-2 pt-2 border-t border-gray-100">
+        <div class="w-full sm:max-w-xs">
+          <BaseSearchInput
+            :model-value="searchQuery"
+            placeholder="Cari kode atau nama..."
+            @update:model-value="searchQuery = $event"
+            @search="onSearch"
+          />
+        </div>
+        <div class="flex gap-2">
+          <select
+            v-model="statusFilter"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Status
+            </option>
+            <option value="true">
+              Aktif
+            </option>
+            <option value="false">
+              Nonaktif
+            </option>
+          </select>
+          <select
+            v-model="sortBy"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="created_at">
+              Terbaru
+            </option>
+            <option value="code">
+              Kode
+            </option>
+            <option value="name">
+              Nama
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -67,7 +92,7 @@
       @dismiss="store.clearMessages()"
     />
 
-    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
       <table class="w-full text-left text-xs border-collapse">
         <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
           <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
@@ -227,7 +252,6 @@ import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import BaseButton from '@/shared/components/BaseButton.vue';
 import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
-import BasePageHeader from '@/shared/components/BasePageHeader.vue';
 import { rowNumber } from '@/shared/utils/formatters';
 import SupplierFormModal from '../components/SupplierFormModal.vue';
 import SupplierStatusModal from '../components/SupplierStatusModal.vue';

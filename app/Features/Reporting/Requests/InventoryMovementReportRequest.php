@@ -25,7 +25,7 @@ class InventoryMovementReportRequest extends FormRequest
             'category_id' => 'nullable|integer|exists:categories,id',
             'unit_id' => 'nullable|integer|exists:units,id',
             'search' => 'nullable|string|max:100',
-            'sort_by' => 'nullable|string|in:days_since_last_movement,velocity_score,total_outbound_quantity,average_daily_outbound,outbound_movement_count,movement_days,current_stock,last_movement_at,product_name,sku',
+            'sort_by' => 'nullable|string|in:days_since_last_movement,velocity_score,total_outbound_quantity,average_daily_outbound,outbound_movement_count,movement_days,current_stock,unit_price,last_movement_at,product_name,sku',
             'sort_order' => 'nullable|string|in:asc,desc,ASC,DESC',
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',

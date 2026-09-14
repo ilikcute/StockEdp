@@ -74,6 +74,7 @@ class InventoryMovementReportQueryService
             'products.sku',
             'products.barcode',
             'products.name as product_name',
+            'products.unit_price',
             'categories.name as category_name',
             'units.code as unit_code',
             'units.symbol as unit_symbol',
@@ -91,6 +92,7 @@ class InventoryMovementReportQueryService
             'product_name' => $query->orderBy('products.name', $sortOrder)->orderBy('products.id', 'asc'),
             'sku' => $query->orderBy('products.sku', $sortOrder)->orderBy('products.id', 'asc'),
             'current_stock' => $query->orderByRaw("COALESCE(inventory_balances.quantity, 0) {$sortOrder}")->orderBy('products.id', 'asc'),
+            'unit_price' => $query->orderBy('products.unit_price', $sortOrder)->orderBy('products.id', 'asc'),
             'last_movement_at' => $query->orderBy('lm.last_movement_at', $sortOrder)->orderBy('products.id', 'asc'),
             default => $sortOrder === 'asc'
                 // Fewest days inactive first (most recent movement first)
@@ -107,6 +109,9 @@ class InventoryMovementReportQueryService
             $daysSinceLastMovement = $lastMovementAt !== null
                 ? abs((int) $today->startOfDay()->diffInDays($lastMovementAt->startOfDay(), false))
                 : null;
+            $currentStock = DecimalQuantity::normalize((string) ($row->raw_current_stock ?? '0.0000'));
+            $unitPrice = (float) ($row->unit_price ?? 0);
+            $totalValue = (float) bcmul((string) $currentStock, (string) $unitPrice, 2);
 
             return [
                 'product_id' => (int) $row->product_id,
@@ -119,7 +124,9 @@ class InventoryMovementReportQueryService
                 'location_id' => (int) $row->location_id,
                 'location_code' => (string) $row->location_code,
                 'location_name' => (string) $row->location_name,
-                'current_stock' => DecimalQuantity::normalize((string) ($row->raw_current_stock ?? '0.0000')),
+                'unit_price' => $unitPrice,
+                'current_stock' => $currentStock,
+                'total_value' => $totalValue,
                 'last_movement_at' => $lastMovementAt?->toIso8601String(),
                 'days_since_last_movement' => $daysSinceLastMovement,
                 'movement_count' => 0,
@@ -138,6 +145,7 @@ class InventoryMovementReportQueryService
             'products.sku',
             'products.barcode',
             'products.name as product_name',
+            'products.unit_price',
             'categories.name as category_name',
             'units.code as unit_code',
             'units.symbol as unit_symbol',
@@ -158,6 +166,7 @@ class InventoryMovementReportQueryService
             'product_name' => $query->orderBy('products.name', $sortOrder)->orderBy('products.id', 'asc'),
             'sku' => $query->orderBy('products.sku', $sortOrder)->orderBy('products.id', 'asc'),
             'current_stock' => $query->orderByRaw("COALESCE(inventory_balances.quantity, 0) {$sortOrder}")->orderBy('products.id', 'asc'),
+            'unit_price' => $query->orderBy('products.unit_price', $sortOrder)->orderBy('products.id', 'asc'),
             'outbound_movement_count' => $query->orderBy('oa.outbound_movement_count', $sortOrder)->orderBy('products.id', 'asc'),
             'movement_days' => $query->orderBy('oa.movement_days', $sortOrder)->orderBy('products.id', 'asc'),
             default => $query->orderBy('oa.total_outbound_quantity', $sortOrder)->orderBy('products.id', 'asc'),
@@ -169,6 +178,9 @@ class InventoryMovementReportQueryService
         $paginator->getCollection()->transform(function ($row) use ($periodDays) {
             $totalOutbound = DecimalQuantity::normalize((string) $row->total_outbound_quantity);
             $avgDailyOutbound = bcdiv($totalOutbound, (string) $periodDays, 4);
+            $currentStock = DecimalQuantity::normalize((string) ($row->raw_current_stock ?? '0.0000'));
+            $unitPrice = (float) ($row->unit_price ?? 0);
+            $totalValue = (float) bcmul((string) $currentStock, (string) $unitPrice, 2);
 
             return [
                 'product_id' => (int) $row->product_id,
@@ -181,7 +193,9 @@ class InventoryMovementReportQueryService
                 'location_id' => (int) $row->location_id,
                 'location_code' => (string) $row->location_code,
                 'location_name' => (string) $row->location_name,
-                'current_stock' => DecimalQuantity::normalize((string) ($row->raw_current_stock ?? '0.0000')),
+                'unit_price' => $unitPrice,
+                'current_stock' => $currentStock,
+                'total_value' => $totalValue,
                 'total_outbound_quantity' => $totalOutbound,
                 'outbound_movement_count' => (int) $row->outbound_movement_count,
                 'movement_days' => (int) $row->movement_days,

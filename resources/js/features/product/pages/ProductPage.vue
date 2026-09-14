@@ -1,98 +1,123 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <BasePageHeader
-      title="Master Produk"
-      description="Kelola daftar produk, kategori, dan satuan."
-    >
-      <template #actions>
-        <BaseButton
-          v-if="hasPermission('products.import')"
-          id="btn-import-product"
-          variant="secondary"
-          @click="isImportModalOpen = true"
-        >
-          📥 Import CSV
-        </BaseButton>
-        <BaseButton
-          v-if="hasPermission('products.create')"
-          id="btn-create-product"
-          @click="openCreateModal"
-        >
-          Tambah Produk
-        </BaseButton>
-      </template>
-    </BasePageHeader>
-
-    <div class="mt-3 flex flex-col sm:flex-row justify-between gap-2.5">
-      <div class="w-full sm:max-w-xs">
-        <BaseSearchInput
-          :model-value="searchQuery"
-          placeholder="Cari SKU, Barcode, atau Nama..."
-          @update:model-value="searchQuery = $event"
-          @search="onSearch"
-        />
+  <div class="space-y-3">
+    <!-- TOP Header & Filter Toolbar Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Primary Controls Row -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+            Master Produk
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Kelola daftar produk, kategori, dan satuan persediaan.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <BaseButton
+            v-if="hasPermission('products.import')"
+            id="btn-import-product"
+            variant="secondary"
+            size="sm"
+            @click="isImportModalOpen = true"
+          >
+            📥 Import CSV
+          </BaseButton>
+          <BaseButton
+            v-if="hasPermission('products.create')"
+            id="btn-create-product"
+            size="sm"
+            @click="openCreateModal"
+          >
+            + Tambah Produk
+          </BaseButton>
+        </div>
       </div>
-      <div class="flex gap-2 flex-wrap sm:flex-nowrap">
-        <select
-          id="filter-category"
-          v-model="categoryFilter"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Kategori
-          </option>
-          <option
-            v-for="cat in categories"
-            :key="cat.id"
-            :value="cat.id"
+
+      <!-- Filters & Search Row -->
+      <div class="flex flex-col sm:flex-row justify-between gap-2 pt-2 border-t border-gray-100">
+        <div class="w-full sm:max-w-xs">
+          <BaseSearchInput
+            :model-value="searchQuery"
+            placeholder="Cari SKU, Barcode, atau Nama..."
+            @update:model-value="searchQuery = $event"
+            @search="onSearch"
+          />
+        </div>
+        <div class="flex gap-2 flex-wrap sm:flex-nowrap">
+          <select
+            id="filter-category"
+            v-model="categoryFilter"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
-            {{ cat.name }}
-          </option>
-        </select>
-        <select
-          id="filter-unit"
-          v-model="unitFilter"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Satuan
-          </option>
-          <option
-            v-for="unit in units"
-            :key="unit.id"
-            :value="unit.id"
+            <option value="">
+              Semua Kategori
+            </option>
+            <option
+              v-for="cat in categories"
+              :key="cat.id"
+              :value="cat.id"
+            >
+              {{ cat.name }}
+            </option>
+          </select>
+          <select
+            id="filter-unit"
+            v-model="unitFilter"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
-            {{ unit.name }}
-          </option>
-        </select>
-        <select
-          v-model="statusFilter"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Status
-          </option>
-          <option value="true">
-            Aktif
-          </option>
-          <option value="false">
-            Nonaktif
-          </option>
-        </select>
-        <select
-          v-model="sortBy"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="created_at">
-            Terbaru
-          </option>
-          <option value="sku">
-            SKU
-          </option>
-          <option value="name">
-            Nama
-          </option>
-        </select>
+            <option value="">
+              Semua Satuan
+            </option>
+            <option
+              v-for="unit in units"
+              :key="unit.id"
+              :value="unit.id"
+            >
+              {{ unit.name }}
+            </option>
+          </select>
+          <select
+            v-model="statusFilter"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Status
+            </option>
+            <option value="true">
+              Aktif
+            </option>
+            <option value="false">
+              Nonaktif
+            </option>
+          </select>
+          <select
+            v-model="sortBy"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="created_at">
+              Terbaru
+            </option>
+            <option value="sku">
+              SKU
+            </option>
+            <option value="name">
+              Nama
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -108,7 +133,7 @@
       @dismiss="store.clearMessages()"
     />
 
-    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
       <table class="w-full text-left text-xs border-collapse">
         <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
           <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
@@ -292,7 +317,6 @@ import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import BaseButton from '@/shared/components/BaseButton.vue';
 import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
-import BasePageHeader from '@/shared/components/BasePageHeader.vue';
 import { rowNumber } from '@/shared/utils/formatters';
 import ProductFormModal from '../components/ProductFormModal.vue';
 import ProductStatusModal from '../components/ProductStatusModal.vue';

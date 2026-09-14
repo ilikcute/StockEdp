@@ -1,11 +1,11 @@
 <template>
-  <div class="rounded-lg bg-white p-4 border border-gray-300 shadow-sm mb-6">
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+  <div class="rounded-xl bg-white p-3 border border-gray-200 shadow-2xs">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
       <div>
         <label class="block text-xs font-medium text-gray-700">Arah Selisih</label>
         <select
           :value="filters.variance_direction"
-          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @change="emit('update:filter', 'variance_direction', $event.target.value)"
         >
           <option value="">
@@ -27,17 +27,17 @@
         <label class="block text-xs font-medium text-gray-700">Filter Product Unexpected</label>
         <select
           :value="filters.is_unexpected"
-          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @change="emit('update:filter', 'is_unexpected', $event.target.value)"
         >
           <option value="">
             Semua Produk
           </option>
           <option value="1">
-            Hanya Produk Tak Terduga (Unexpected = 1)
+            Hanya Unexpected (1)
           </option>
           <option value="0">
-            Hanya Produk Terdaftar (Unexpected = 0)
+            Hanya Terdaftar (0)
           </option>
         </select>
       </div>
@@ -48,7 +48,7 @@
           :value="filters.search"
           type="text"
           placeholder="Cari nomor opname..."
-          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @input="emit('update:filter', 'search', $event.target.value)"
         >
       </div>
@@ -108,7 +108,7 @@
       <div class="flex items-end">
         <button
           type="button"
-          class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @click="emit('reset')"
         >
           Reset Filter
@@ -140,8 +140,8 @@ const emit = defineEmits([
 ]);
 
 const opnameSortOptions = [
-    { value: 'posted_at', label: 'Waktu Posting' },
-    { value: 'opname_date', label: 'Tanggal Dokumen' },
+    { value: 'posted_at', label: 'Waktu Posting (posted_at)' },
+    { value: 'opname_date', label: 'Tanggal Opname (opname_date)' },
     { value: 'opname_number', label: 'Nomor Opname' },
     { value: 'id', label: 'ID Item' },
 ];

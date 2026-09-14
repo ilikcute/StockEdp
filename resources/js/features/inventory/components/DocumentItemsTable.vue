@@ -69,7 +69,7 @@
               {{ formatRupiah(item.unit_price ?? item.product?.unit_price) }}
             </td>
             <td class="py-1.5 px-2 text-[11px] text-gray-900 text-right font-mono font-medium whitespace-nowrap">
-              {{ formatQuantity(item.quantity) }} {{ item.product?.unit?.symbol || item.product?.unit?.name }}
+              {{ formatQuantity(item.quantity, false) }} {{ item.product?.unit?.symbol || item.product?.unit?.name }}
             </td>
             <td class="py-1.5 px-2 text-[11px] text-gray-900 text-right font-mono font-medium whitespace-nowrap">
               {{ formatRupiah(item.subtotal ?? (Number(item.quantity) * Number(item.unit_price ?? item.product?.unit_price ?? 0))) }}
@@ -88,7 +88,7 @@
               {{ grandTotalLabel }}
             </td>
             <td class="py-1.5 px-2 text-right font-mono font-bold text-gray-900 whitespace-nowrap">
-              {{ formatQuantity(totalQuantity) }}
+              {{ formatQuantity(totalQuantity, false) }}
             </td>
             <td class="py-1.5 px-2 text-right font-mono font-bold text-indigo-700 whitespace-nowrap">
               {{ formatRupiah(totalAmount) }}

@@ -1,25 +1,42 @@
 <template>
-  <div class="space-y-3.5 p-4 sm:p-5 max-w-full">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">
-          Laporan Stock Adjustment
-        </h1>
-        <p class="text-xs text-gray-500 mt-0.5">
-          Periode laporan berbasis waktu posting movement adjustment (MOVEMENT_POSTED_AT).
-        </p>
-      </div>
-      <div>
-        <ReportCsvExportControl
-          :loading="exportStore.isExporting(reportKey)"
-          :disabled="false"
-          :error="exportStore.errorFor(reportKey)"
-          :status="exportStore.statusFor(reportKey)"
-          :validation-errors="exportStore.validationErrorsFor(reportKey)"
-          :success-message="exportStore.successFor(reportKey)"
-          @export="exportCsv"
-          @dismiss="exportStore.clearFeedback(reportKey)"
-        />
+  <div class="space-y-3">
+    <!-- TOP Header Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+              />
+            </svg>
+            Laporan Penyesuaian Stok (Adjustment)
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Periode laporan berbasis waktu posting movement adjustment (MOVEMENT_POSTED_AT).
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <ReportCsvExportControl
+            size="sm"
+            :loading="exportStore.isExporting(reportKey)"
+            :disabled="false"
+            :error="exportStore.errorFor(reportKey)"
+            :status="exportStore.statusFor(reportKey)"
+            :validation-errors="exportStore.validationErrorsFor(reportKey)"
+            :success-message="exportStore.successFor(reportKey)"
+            @export="exportCsv"
+            @dismiss="exportStore.clearFeedback(reportKey)"
+          />
+        </div>
       </div>
     </div>
 
@@ -129,7 +146,7 @@
           class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-[11px]"
         >
           <span class="text-gray-500 mr-1">{{ unit.unit_name || unit.unit_code }}:</span>
-          <span class="font-mono font-semibold text-gray-900">{{ formatQuantity(unit.total_quantity) }}</span>
+          <span class="font-mono font-semibold text-gray-900">{{ formatQuantity(unit.total_quantity, false) }}</span>
         </span>
       </div>
     </div>
@@ -143,7 +160,7 @@
         <span>Total filtered item: <strong class="text-gray-700 font-mono">{{ store.pagination?.total || 0 }}</strong></span>
       </div>
 
-      <div class="rounded-lg bg-white shadow-2xs border border-gray-200 overflow-hidden">
+      <div class="rounded-xl bg-white shadow-2xs border border-gray-200 overflow-hidden">
         <StockAdjustmentReportTable
           :items="store.data"
           :pagination="store.pagination"

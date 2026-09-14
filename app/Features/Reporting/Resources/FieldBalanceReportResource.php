@@ -23,9 +23,11 @@ class FieldBalanceReportResource extends JsonResource
             'product_name' => $this->product_name ?? '-',
             'category_name' => $this->category_name ?? '-',
             'unit_name' => $this->unit_name ?? '-',
+            'unit_price' => (float) ($this->unit_price ?? 0),
             'good_quantity' => DecimalQuantity::normalize((string) ($this->good_quantity ?? '0')),
             'defective_quantity' => DecimalQuantity::normalize((string) ($this->defective_quantity ?? '0')),
             'total_quantity' => DecimalQuantity::normalize((string) ($this->total_quantity ?? '0')),
+            'total_value' => (float) ($this->total_value ?? ((float) ($this->total_quantity ?? 0) * (float) ($this->unit_price ?? 0))),
         ];
     }
 }

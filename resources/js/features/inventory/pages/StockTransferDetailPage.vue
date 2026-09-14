@@ -1,52 +1,76 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Detail Transfer Stok
-        </h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Rincian dokumen perpindahan barang antar lokasi.
-        </p>
-      </div>
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex gap-2">
+  <div class="space-y-3">
+    <!-- TOP Header & Action Strip Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-center gap-3">
         <router-link
           to="/inventory/transfers"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          class="inline-flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg border border-gray-200 transition-colors"
         >
-          Kembali
+          &larr; Kembali
         </router-link>
-        
+
+        <div class="h-4 w-px bg-gray-200" />
+
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-gray-900 tracking-tight font-mono">
+              {{ transfer?.transfer_number || 'Detail Transfer Stok' }}
+            </h1>
+            <span
+              v-if="transfer"
+              class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full"
+              :class="{
+                'bg-yellow-100 text-yellow-800': transfer.status === 'DRAFT',
+                'bg-blue-100 text-blue-800': transfer.status === 'IN_TRANSIT',
+                'bg-green-100 text-green-800': transfer.status === 'RECEIVED',
+                'bg-orange-100 text-orange-800': transfer.status === 'DISCREPANCY',
+                'bg-gray-100 text-gray-800': transfer.status === 'CANCELED'
+              }"
+            >
+              {{ ({ DRAFT: 'Draft', 'IN_TRANSIT': 'Dikirim (In-Transit)', RECEIVED: 'Diterima', DISCREPANCY: 'Selisih (Discrepancy)', CANCELED: 'Dibatalkan' })[transfer.status] || transfer.status }}
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-500">
+            Rincian dokumen perpindahan barang antar lokasi.
+          </p>
+        </div>
+      </div>
+
+      <div
+        v-if="transfer"
+        class="flex items-center gap-2 flex-wrap"
+      >
         <router-link
-          v-if="transfer?.status === 'DRAFT' && hasPermission('stock_transfers.update')"
+          v-if="transfer.status === 'DRAFT' && hasPermission('stock_transfers.update')"
           :to="`/inventory/transfers/${transfer.id}/edit`"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          class="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50"
         >
           Edit Draft
         </router-link>
 
         <button
-          v-if="transfer?.status === 'DRAFT' && hasPermission('stock_transfers.cancel')"
+          v-if="transfer.status === 'DRAFT' && hasPermission('stock_transfers.cancel')"
           :disabled="store.loadingAction"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 disabled:opacity-50"
+          class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 shadow-2xs hover:bg-rose-100 disabled:opacity-50 cursor-pointer"
           @click="openConfirmModal('cancel')"
         >
           Batalkan Draft
         </button>
 
         <button
-          v-if="transfer?.status === 'DRAFT' && hasPermission('stock_transfers.send')"
+          v-if="transfer.status === 'DRAFT' && hasPermission('stock_transfers.send')"
           :disabled="store.loadingAction"
-          class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          class="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
           @click="openConfirmModal('send')"
         >
           Kirim Barang (Send)
         </button>
 
         <button
-          v-if="transfer?.status === 'IN_TRANSIT' && hasPermission('stock_transfers.receive')"
+          v-if="transfer.status === 'IN_TRANSIT' && hasPermission('stock_transfers.receive')"
           :disabled="store.loadingAction"
-          class="block rounded-md bg-green-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-500 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
           @click="openConfirmModal('receive')"
         >
           Terima Barang (Receive)
@@ -56,146 +80,61 @@
 
     <div
       v-if="store.loadingDetail && !transfer"
-      class="mt-8 text-center text-gray-500"
+      class="p-8 text-center text-xs text-gray-500"
     >
       Memuat data transfer...
     </div>
 
     <div
       v-else-if="transfer"
-      class="mt-8"
+      class="space-y-3"
     >
       <div
         v-if="store.error"
-        class="mb-4 rounded-md bg-red-50 p-4"
+        class="rounded-xl border border-rose-200 bg-rose-50 p-3"
       >
-        <p class="text-sm font-medium text-red-800">
+        <p class="text-xs font-medium text-rose-800">
           {{ store.error }}
         </p>
       </div>
 
-      <div class="overflow-hidden bg-white shadow sm:rounded-lg">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
-            Informasi Dokumen Transfer
-          </h3>
-        </div>
-        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Nomor Transfer
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-medium">
-                {{ transfer.transfer_number }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Status
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <span 
-                  class="px-2 py-1 text-xs font-semibold rounded-full"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800': transfer.status === 'DRAFT',
-                    'bg-blue-100 text-blue-800': transfer.status === 'IN_TRANSIT',
-                    'bg-green-100 text-green-800': transfer.status === 'RECEIVED',
-                    'bg-orange-100 text-orange-800': transfer.status === 'DISCREPANCY',
-                    'bg-gray-100 text-gray-800': transfer.status === 'CANCELED'
-                  }"
-                >
-                  {{ ({ DRAFT: 'Draft', 'IN_TRANSIT': 'Dikirim (In-Transit)', RECEIVED: 'Diterima', DISCREPANCY: 'Selisih (Discrepancy)', CANCELED: 'Dibatalkan' })[transfer.status] || transfer.status }}
-                </span>
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Jenis Transfer
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.transfer_type === 'RETURN' ? 'Retur ke Gudang' : 'Transfer Stok' }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Lokasi Asal (Origin)
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.origin_location_name || '-' }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Lokasi Tujuan (Destination)
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.destination_location_name || '-' }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Tanggal Transfer
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.transfer_date }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Catatan
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 whitespace-pre-line">
-                {{ transfer.notes || '-' }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Dibuat Oleh / Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.created_by || '-' }} ({{ transfer.created_at }})
-              </dd>
-            </div>
-            <div
-              v-if="transfer.sent_at"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Waktu Pengiriman (Dikirim)
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.sent_at }}
-              </dd>
-            </div>
-            <div
-              v-if="transfer.received_at"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Waktu Penerimaan (Received)
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.received_at }}
-              </dd>
-            </div>
-            <div
-              v-if="transfer.canceled_at"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Waktu Pembatalan (Canceled)
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ transfer.canceled_at }}
-              </dd>
-            </div>
-          </dl>
+      <!-- Compact Metadata Card -->
+      <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Jenis Transfer</span>
+            <span class="font-semibold text-gray-800">{{ transfer.transfer_type === 'RETURN' ? 'Retur ke Gudang' : 'Transfer Stok' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Lokasi Asal</span>
+            <span class="font-semibold text-gray-800">{{ transfer.origin_location_name || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Lokasi Tujuan</span>
+            <span class="font-semibold text-gray-800">{{ transfer.destination_location_name || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Tanggal Transfer</span>
+            <span class="font-semibold text-gray-800">{{ transfer.transfer_date }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Dibuat Oleh</span>
+            <span class="font-semibold text-gray-800">{{ transfer.created_by || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Catatan</span>
+            <span class="text-gray-700 truncate block">{{ transfer.notes || '-' }}</span>
+          </div>
         </div>
       </div>
 
       <!-- Items Section -->
-      <div class="mt-4 bg-white shadow-2xs border border-gray-200 rounded-xl overflow-hidden">
+      <div class="bg-white shadow-2xs border border-gray-200 rounded-xl overflow-hidden">
         <div class="px-4 py-2.5 sm:px-4 border-b border-gray-100">
           <h3 class="text-xs font-semibold leading-5 text-gray-900">
             Daftar Barang Ditransfer
@@ -293,10 +232,10 @@
                   </span>
                 </td>
                 <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-900 whitespace-nowrap">
-                  {{ formatQuantity(item.quantity) }}
+                  {{ formatQuantity(item.quantity, false) }}
                 </td>
                 <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-900 whitespace-nowrap">
-                  {{ item.received_quantity != null ? formatQuantity(item.received_quantity) : '-' }}
+                  {{ item.received_quantity != null ? formatQuantity(item.received_quantity, false) : '-' }}
                 </td>
                 <td class="py-1.5 px-2 text-[11px] font-mono text-right font-medium text-gray-900 whitespace-nowrap">
                   {{ formatRupiah(item.subtotal ?? (Number(item.quantity || 0) * Number(item.unit_price ?? item.product?.unit_price ?? item.product_unit_price ?? 0))) }}

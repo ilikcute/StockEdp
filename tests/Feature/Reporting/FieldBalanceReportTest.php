@@ -85,16 +85,18 @@ class FieldBalanceReportTest extends TestCase
 
         $response->assertOk()
             ->assertJsonStructure([
-                'meta' => ['summary' => ['total_good', 'total_defective', 'total_units']],
+                'meta' => ['summary' => ['total_good', 'total_defective', 'total_units', 'total_value']],
                 'data' => [
                     '*' => [
                         'technician_name',
                         'location_name',
                         'product_sku',
                         'product_name',
+                        'unit_price',
                         'good_quantity',
                         'defective_quantity',
                         'total_quantity',
+                        'total_value',
                     ],
                 ],
                 'pagination',
@@ -102,9 +104,14 @@ class FieldBalanceReportTest extends TestCase
 
         $item = collect($response->json('data'))->firstWhere('product_sku', $this->product->sku);
         $this->assertNotNull($item);
+        $this->assertSame(1200000.0, (float) $item['unit_price']);
         $this->assertSame('5.0000', $item['good_quantity']);
         $this->assertSame('2.0000', $item['defective_quantity']);
         $this->assertSame('7.0000', $item['total_quantity']);
+        $this->assertSame(8400000.0, (float) $item['total_value']);
+
+        $summary = $response->json('meta.summary');
+        $this->assertSame(8400000.0, (float) $summary['total_value']);
     }
 
     public function test_can_export_field_balances_to_csv(): void
@@ -114,6 +121,8 @@ class FieldBalanceReportTest extends TestCase
         $response->assertOk();
         $this->assertStringContainsString('text/csv', $response->headers->get('content-type'));
         $content = $response->streamedContent();
+        $this->assertStringContainsString('Harga Satuan', $content);
+        $this->assertStringContainsString('Total Nilai (Rp)', $content);
         $this->assertStringContainsString('Siap Pasang (GOOD)', $content);
         $this->assertStringContainsString('Rusak Lapangan (DEFECTIVE)', $content);
         $this->assertStringContainsString($this->product->sku, $content);

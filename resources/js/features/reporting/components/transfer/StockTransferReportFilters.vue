@@ -1,26 +1,27 @@
 <template>
-  <div class="rounded-lg bg-white p-4 border border-gray-300 shadow-sm mb-6">
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+  <div class="rounded-xl bg-white p-3 border border-gray-200 shadow-2xs">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
       <div>
         <label class="block text-xs font-medium text-gray-700">Dasar Tanggal</label>
         <select
           :value="filters.date_basis"
-          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold"
+          class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold"
           @change="emit('update:filter', 'date_basis', $event.target.value)"
         >
           <option value="SENT_AT">
-            Tanggal Pengiriman (SENT_AT)
+            Tgl Kirim (SENT_AT)
           </option>
           <option value="RECEIVED_AT">
-            Tanggal Penerimaan (RECEIVED_AT)
+            Tgl Terima (RECEIVED_AT)
           </option>
         </select>
       </div>
+
       <div>
         <label class="block text-xs font-medium text-gray-700">Status Transfer</label>
         <select
           :value="filters.status"
-          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @change="emit('update:filter', 'status', $event.target.value)"
         >
           <option value="">
@@ -37,16 +38,18 @@
           </option>
         </select>
       </div>
+
       <div>
         <label class="block text-xs font-medium text-gray-700">Pencarian Teks</label>
         <input
           :value="filters.search"
           type="text"
           placeholder="Cari nomor transfer..."
-          class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @input="emit('update:filter', 'search', $event.target.value)"
         >
       </div>
+
       <ReportMasterSelect
         label="Lokasi Asal"
         placeholder="Semua Lokasi Asal"
@@ -54,6 +57,7 @@
         :options="masterStore.locations"
         @update:model-value="val => emit('update:filter', 'origin_location_id', val)"
       />
+
       <ReportMasterSelect
         label="Lokasi Tujuan"
         placeholder="Semua Lokasi Tujuan"
@@ -61,6 +65,7 @@
         :options="masterStore.locations"
         @update:model-value="val => emit('update:filter', 'destination_location_id', val)"
       />
+
       <ReportMasterSelect
         label="Kategori"
         placeholder="Semua Kategori"
@@ -68,6 +73,7 @@
         :options="masterStore.categories"
         @update:model-value="val => emit('update:filter', 'category_id', val)"
       />
+
       <ReportMasterSelect
         label="Satuan"
         placeholder="Semua Satuan"
@@ -75,6 +81,7 @@
         :options="masterStore.units"
         @update:model-value="val => emit('update:filter', 'unit_id', val)"
       />
+
       <ReportProductSearch
         :model-value="productSearch"
         :selected-product-id="filters.product_id"
@@ -85,12 +92,14 @@
         @select-product="p => emit('select-product', p)"
         @clear-product="emit('clear-product')"
       />
+
       <ReportPeriodFilters
         :start-date="filters.start_date"
         :end-date="filters.end_date"
         @update:start-date="val => emit('update:filter', 'start_date', val)"
         @update:end-date="val => emit('update:filter', 'end_date', val)"
       />
+
       <ReportSortControls
         :sort-by="filters.sort_by"
         :sort-order="filters.sort_order"
@@ -100,10 +109,11 @@
         @update:sort-order="val => emit('update:filter', 'sort_order', val)"
         @update:per-page="val => emit('update:filter', 'per_page', val)"
       />
+
       <div class="flex items-end">
         <button
           type="button"
-          class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
           @click="emit('reset')"
         >
           Reset Filter

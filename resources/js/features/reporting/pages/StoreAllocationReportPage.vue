@@ -1,129 +1,282 @@
 <template>
-  <div class="space-y-6 p-6">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">
-          Laporan Histori Kerusakan & Alokasi Toko
-        </h1>
-        <p class="text-xs text-gray-500 mt-1">
-          Histori penggantian unit operasional toko, unit bagus yang terpasang, dan unit rusak yang ditarik teknisi.
-        </p>
-      </div>
-      <div>
-        <ReportCsvExportControl
-          :loading="exportStore.isExporting('store-allocations')"
-          :disabled="false"
-          :error="exportStore.errorFor('store-allocations')"
-          :status="exportStore.statusFor('store-allocations')"
-          :validation-errors="exportStore.validationErrorsFor('store-allocations')"
-          :success-message="exportStore.successFor('store-allocations')"
-          @export="exportCsv"
-          @dismiss="exportStore.clearFeedback('store-allocations')"
-        />
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-200 space-y-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+  <div class="space-y-3">
+    <!-- Top Header & Filter Toolbar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Primary Controls Row -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <!-- Title & Subtitle -->
         <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Mulai</label>
-          <input
-            v-model="filters.start_date"
-            type="date"
-            class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500"
-          >
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Akhir</label>
-          <input
-            v-model="filters.end_date"
-            type="date"
-            class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500"
-          >
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Toko</label>
-          <select
-            v-model="filters.store_id"
-            class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="">
-              Semua Toko
-            </option>
-            <option
-              v-for="st in stores"
-              :key="st.id"
-              :value="st.id"
+          <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              {{ st.name }} ({{ st.code }})
-            </option>
-          </select>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+            Laporan Histori Kerusakan & Alokasi Toko
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Histori penggantian unit operasional toko, unit baru terpasang, dan unit rusak tarikan teknisi.
+          </p>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Pencarian</label>
-          <input
-            v-model="filters.search"
-            type="text"
-            placeholder="No. alokasi, serial number, alasan..."
-            class="block w-full rounded-md border-gray-300 text-xs focus:border-indigo-500 focus:ring-indigo-500"
-            @keydown.enter="fetchData(1)"
-          >
-        </div>
-        <div class="flex gap-2">
+
+        <!-- Controls (Search, Store Filter, Toggle Filter, Reset, Export CSV) -->
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <!-- Search Input -->
+          <div class="w-full sm:w-56">
+            <input
+              id="search"
+              v-model="filters.search"
+              type="text"
+              placeholder="No. alokasi, S/N, alasan..."
+              class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              @input="handleSearch"
+            >
+          </div>
+
+          <!-- Store Selector -->
+          <div class="w-full sm:w-48">
+            <select
+              v-model="filters.store_id"
+              class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              @change="fetchData(1)"
+            >
+              <option value="">
+                Semua Toko
+              </option>
+              <option
+                v-for="st in stores"
+                :key="st.id"
+                :value="st.id"
+              >
+                {{ st.name }} ({{ st.code }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Toggle Date Filter -->
           <button
             type="button"
-            class="flex-1 rounded-md bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 cursor-pointer"
-            @click="fetchData(1)"
+            :class="[
+              'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap',
+              showDateFilter || hasActiveDates
+                ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+            @click="showDateFilter = !showDateFilter"
           >
-            Terapkan Filter
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span>Tanggal</span>
+            <span
+              v-if="hasActiveDates"
+              class="inline-flex items-center justify-center w-2 h-2 bg-indigo-600 rounded-full"
+            />
           </button>
+
+          <!-- Reset Filter -->
           <button
+            v-if="isAnyFilterActive"
             type="button"
-            class="rounded-md bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 cursor-pointer"
+            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
+            title="Reset Filter"
             @click="resetFilters"
           >
             Reset
           </button>
+
+          <!-- Export CSV Control (Compact size="sm") -->
+          <ReportCsvExportControl
+            size="sm"
+            :loading="exportStore.isExporting('store-allocations')"
+            :disabled="false"
+            :error="exportStore.errorFor('store-allocations')"
+            :status="exportStore.statusFor('store-allocations')"
+            :validation-errors="exportStore.validationErrorsFor('store-allocations')"
+            :success-message="exportStore.successFor('store-allocations')"
+            @export="exportCsv"
+            @dismiss="exportStore.clearFeedback('store-allocations')"
+          />
         </div>
+      </div>
+
+      <!-- Collapsible Date Filter Row -->
+      <div
+        v-if="showDateFilter || hasActiveDates"
+        class="border-t border-gray-100 pt-2.5 flex flex-wrap items-center gap-3 text-xs"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-semibold text-gray-600">Mulai:</span>
+          <input
+            v-model="filters.start_date"
+            type="date"
+            class="rounded-lg border border-gray-300 bg-white py-1 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @change="fetchData(1)"
+          >
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-semibold text-gray-600">Sampai:</span>
+          <input
+            v-model="filters.end_date"
+            type="date"
+            class="rounded-lg border border-gray-300 bg-white py-1 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @change="fetchData(1)"
+          >
+        </div>
+        <button
+          v-if="hasActiveDates"
+          type="button"
+          class="text-xs text-gray-500 hover:text-rose-600 cursor-pointer font-medium"
+          @click="clearDates"
+        >
+          Hapus Periode
+        </button>
       </div>
     </div>
 
-    <!-- Feedback / Alerts -->
+    <!-- Alert Error Compact -->
     <div
       v-if="store.error"
-      class="rounded-lg bg-rose-50 border border-rose-200 p-4 text-sm text-rose-800"
+      class="rounded-lg bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
-      {{ store.error }}
+      <span>{{ store.error }}</span>
+      <button
+        type="button"
+        class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+        @click="store.error = null"
+      >
+        Tutup
+      </button>
     </div>
 
-    <!-- Summary Badges -->
+    <!-- Summary Badges (Compact) -->
     <div
       v-if="store.summary"
-      class="grid grid-cols-1 sm:grid-cols-3 gap-4"
+      class="grid grid-cols-2 sm:grid-cols-4 gap-2"
     >
-      <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-200">
-        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          Total Alokasi Selesai
+      <!-- Total Alokasi Selesai -->
+      <div class="bg-white px-3 py-2 rounded-xl shadow-2xs border border-gray-200 flex items-center gap-2.5">
+        <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
         </div>
-        <div class="mt-1 text-2xl font-bold text-gray-900">
-          {{ store.summary.total_allocations }} Dokumen
+        <div class="min-w-0">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-gray-500 truncate">
+            Total Alokasi
+          </div>
+          <div class="text-lg font-bold font-mono text-gray-900 leading-tight">
+            {{ formatQuantity(store.summary.total_allocations) }} <span class="text-xs font-normal text-gray-500">Dok</span>
+          </div>
         </div>
       </div>
-      <div class="bg-emerald-50/60 p-4 rounded-xl shadow-xs border border-emerald-200">
-        <div class="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-          Total Unit Baru Dipasang
+
+      <!-- Total Unit Baru Dipasang -->
+      <div class="bg-emerald-50/50 px-3 py-2 rounded-xl shadow-2xs border border-emerald-200 flex items-center gap-2.5">
+        <div class="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg shrink-0">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
         </div>
-        <div class="mt-1 text-2xl font-bold text-emerald-900">
-          {{ store.summary.total_installed }} Unit
+        <div class="min-w-0">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 truncate">
+            Dipasang (GOOD)
+          </div>
+          <div class="text-lg font-bold font-mono text-emerald-900 leading-tight">
+            {{ formatQuantity(store.summary.total_installed) }} <span class="text-xs font-normal text-emerald-700">Unit</span>
+          </div>
         </div>
       </div>
-      <div class="bg-amber-50/60 p-4 rounded-xl shadow-xs border border-amber-200">
-        <div class="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-          Total Unit Rusak Ditarik
+
+      <!-- Total Unit Rusak Ditarik -->
+      <div class="bg-amber-50/50 px-3 py-2 rounded-xl shadow-2xs border border-amber-200 flex items-center gap-2.5">
+        <div class="p-1.5 bg-amber-100 text-amber-700 rounded-lg shrink-0">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
         </div>
-        <div class="mt-1 text-2xl font-bold text-amber-900">
-          {{ store.summary.total_pulled }} Unit
+        <div class="min-w-0">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-amber-800 truncate">
+            Ditarik (DEFECTIVE)
+          </div>
+          <div class="text-lg font-bold font-mono text-amber-900 leading-tight">
+            {{ formatQuantity(store.summary.total_pulled) }} <span class="text-xs font-normal text-amber-700">Unit</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Nilai Alokasi Dipasang -->
+      <div class="bg-indigo-50/50 px-3 py-2 rounded-xl shadow-2xs border border-indigo-200 flex items-center gap-2.5">
+        <div class="p-1.5 bg-indigo-100 text-indigo-700 rounded-lg shrink-0">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-800 truncate">
+            Total Nilai Dipasang
+          </div>
+          <div class="text-lg font-bold font-mono text-indigo-900 leading-tight">
+            {{ formatRupiah(store.summary.total_value) }}
+          </div>
         </div>
       </div>
     </div>
@@ -148,8 +301,14 @@
             <th class="py-1.5 px-2 whitespace-nowrap">
               Unit Dipasang (GOOD)
             </th>
+            <th class="py-1.5 px-2 text-right whitespace-nowrap">
+              Harga Satuan
+            </th>
             <th class="py-1.5 px-2 text-right w-16 whitespace-nowrap">
               Qty
+            </th>
+            <th class="py-1.5 px-2 text-right whitespace-nowrap">
+              Total Nilai (Rp)
             </th>
             <th class="py-1.5 px-2 whitespace-nowrap">
               S/N Baru
@@ -171,7 +330,7 @@
         <tbody class="divide-y divide-gray-100 bg-white">
           <tr v-if="store.loading && store.data.length === 0">
             <td
-              colspan="11"
+              colspan="13"
               class="py-8 text-center text-xs text-gray-400"
             >
               Memuat data histori alokasi...
@@ -179,7 +338,7 @@
           </tr>
           <tr v-else-if="!store.loading && store.data.length === 0">
             <td
-              colspan="11"
+              colspan="13"
               class="py-8 text-center text-xs text-gray-400"
             >
               Tidak ada data alokasi yang sesuai filter.
@@ -225,8 +384,14 @@
                 SKU: {{ row.product_sku }}
               </div>
             </td>
+            <td class="py-1.5 px-2 text-right font-mono text-gray-700 text-[11px] whitespace-nowrap">
+              {{ formatRupiah(row.unit_price) }}
+            </td>
             <td class="py-1.5 px-2 text-right font-mono font-bold text-emerald-700 text-[11px] whitespace-nowrap">
-              {{ row.quantity }}
+              {{ formatQuantity(row.quantity) }}
+            </td>
+            <td class="py-1.5 px-2 text-right font-mono font-bold text-indigo-700 text-[11px] whitespace-nowrap">
+              {{ formatRupiah(row.total_value) }}
             </td>
             <td class="py-1.5 px-2 font-mono text-gray-700 text-[11px] whitespace-nowrap">
               {{ row.serial_number || '-' }}
@@ -247,7 +412,7 @@
               >-</span>
             </td>
             <td class="py-1.5 px-2 text-right font-mono font-bold text-amber-700 text-[11px] whitespace-nowrap">
-              {{ row.pulled_quantity || '-' }}
+              {{ row.pulled_quantity ? formatQuantity(row.pulled_quantity) : '-' }}
             </td>
             <td class="py-1.5 px-2 font-mono text-gray-700 text-[11px] whitespace-nowrap">
               {{ row.pulled_serial_number || '-' }}
@@ -262,23 +427,23 @@
 
     <!-- Pagination -->
     <div
-      v-if="store.pagination?.last_page > 1"
-      class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6"
+      v-if="store.pagination?.total > 0"
+      class="flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2 rounded-xl shadow-2xs text-xs"
     >
-      <div class="text-xs text-gray-700">
-        Halaman {{ store.pagination.current_page }} dari {{ store.pagination.last_page }} (Total: {{ store.pagination.total }} baris)
+      <div class="text-[11px] text-gray-600">
+        Menampilkan halaman <span class="font-semibold text-gray-900">{{ store.pagination.current_page }}</span> dari <span class="font-semibold text-gray-900">{{ store.pagination.last_page }}</span> (Total: <span class="font-semibold text-gray-900">{{ store.pagination.total }}</span> baris)
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-1.5">
         <button
           :disabled="store.pagination.current_page <= 1"
-          class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
+          class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           @click="fetchData(store.pagination.current_page - 1)"
         >
           Sebelumnya
         </button>
         <button
           :disabled="store.pagination.current_page >= store.pagination.last_page"
-          class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
+          class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           @click="fetchData(store.pagination.current_page + 1)"
         >
           Selanjutnya
@@ -289,16 +454,18 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useStoreAllocationReportStore } from '../stores/useStoreAllocationReportStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { storeApi } from '@/features/store/api/store_api';
+import { formatQuantity, formatRupiah } from '@/shared/utils/formatters';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 
 const store = useStoreAllocationReportStore();
 const exportStore = useReportCsvExportStore();
 
 const stores = ref([]);
+const showDateFilter = ref(false);
 
 const filters = reactive({
     start_date: '',
@@ -307,6 +474,9 @@ const filters = reactive({
     search: '',
 });
 
+const hasActiveDates = computed(() => Boolean(filters.start_date || filters.end_date));
+const isAnyFilterActive = computed(() => Boolean(filters.search || filters.store_id || filters.start_date || filters.end_date));
+
 const loadStores = async () => {
     try {
         const res = await storeApi.getAll({ is_active: 1, per_page: 500 });
@@ -314,6 +484,14 @@ const loadStores = async () => {
     } catch {
         // quiet error
     }
+};
+
+let searchTimer = null;
+const handleSearch = () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        fetchData(1);
+    }, 300);
 };
 
 const fetchData = (page = 1) => {
@@ -327,11 +505,18 @@ const fetchData = (page = 1) => {
     store.fetchReport(params);
 };
 
+const clearDates = () => {
+    filters.start_date = '';
+    filters.end_date = '';
+    fetchData(1);
+};
+
 const resetFilters = () => {
     filters.start_date = '';
     filters.end_date = '';
     filters.store_id = '';
     filters.search = '';
+    showDateFilter.value = false;
     fetchData(1);
 };
 

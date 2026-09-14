@@ -1458,7 +1458,9 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'store_allocation_items.product_id',
                 'products.name as product_name',
                 'products.sku as product_sku',
+                'products.unit_price as unit_price',
                 'store_allocation_items.quantity',
+                DB::raw('store_allocation_items.quantity * COALESCE(products.unit_price, 0) as total_value'),
                 'store_allocation_items.serial_number',
                 'store_allocation_items.pulled_product_id',
                 'pulled_products.name as pulled_product_name',
@@ -1493,7 +1495,9 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'locations.name as technician_location_name',
                 'products.name as product_name',
                 'products.sku as product_sku',
+                'products.unit_price as unit_price',
                 'store_allocation_items.quantity',
+                DB::raw('store_allocation_items.quantity * COALESCE(products.unit_price, 0) as total_value'),
                 'store_allocation_items.serial_number',
                 'pulled_products.name as pulled_product_name',
                 'pulled_products.sku as pulled_product_sku',
@@ -1511,7 +1515,7 @@ class ReportingRepository implements ReportingRepositoryInterface
     public function getStoreAllocationReportSummary(array $allowedLocationIds, array $filters): array
     {
         if (empty($allowedLocationIds)) {
-            return ['total_allocations' => 0, 'total_installed' => 0, 'total_pulled' => 0];
+            return ['total_allocations' => 0, 'total_installed' => 0, 'total_pulled' => 0, 'total_value' => 0];
         }
 
         $base = $this->buildStoreAllocationReportQuery($allowedLocationIds, $filters);
@@ -1519,13 +1523,15 @@ class ReportingRepository implements ReportingRepositoryInterface
         $row = $base->selectRaw('
             COUNT(DISTINCT store_allocations.id) as total_allocations,
             COALESCE(SUM(store_allocation_items.quantity), 0) as total_installed,
-            COALESCE(SUM(store_allocation_items.pulled_quantity), 0) as total_pulled
+            COALESCE(SUM(store_allocation_items.pulled_quantity), 0) as total_pulled,
+            COALESCE(SUM(store_allocation_items.quantity * COALESCE(products.unit_price, 0)), 0) as total_value
         ')->first();
 
         return [
             'total_allocations' => (int) ($row->total_allocations ?? 0),
             'total_installed' => (float) ($row->total_installed ?? 0),
             'total_pulled' => (float) ($row->total_pulled ?? 0),
+            'total_value' => (float) ($row->total_value ?? 0),
         ];
     }
 
@@ -1587,6 +1593,7 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'products.id',
                 'products.sku',
                 'products.name',
+                'products.unit_price',
                 'categories.name',
                 'units.name',
             ])
@@ -1600,11 +1607,13 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'products.id as product_id',
                 'products.sku as product_sku',
                 'products.name as product_name',
+                'products.unit_price as unit_price',
                 'categories.name as category_name',
                 'units.name as unit_name',
                 DB::raw("SUM(CASE WHEN inventory_balances.condition = 'GOOD' THEN inventory_balances.quantity ELSE 0 END) as good_quantity"),
                 DB::raw("SUM(CASE WHEN inventory_balances.condition = 'DEFECTIVE' THEN inventory_balances.quantity ELSE 0 END) as defective_quantity"),
                 DB::raw('SUM(inventory_balances.quantity) as total_quantity'),
+                DB::raw('SUM(inventory_balances.quantity * COALESCE(products.unit_price, 0)) as total_value'),
             ]);
 
         return $query->orderBy('technicians.name')
@@ -1630,6 +1639,7 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'products.id',
                 'products.sku',
                 'products.name',
+                'products.unit_price',
                 'categories.name',
                 'units.name',
             ])
@@ -1639,11 +1649,13 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'technicians.name as technician_name',
                 'products.sku as product_sku',
                 'products.name as product_name',
+                'products.unit_price as unit_price',
                 'categories.name as category_name',
                 'units.name as unit_name',
                 DB::raw("SUM(CASE WHEN inventory_balances.condition = 'GOOD' THEN inventory_balances.quantity ELSE 0 END) as good_quantity"),
                 DB::raw("SUM(CASE WHEN inventory_balances.condition = 'DEFECTIVE' THEN inventory_balances.quantity ELSE 0 END) as defective_quantity"),
                 DB::raw('SUM(inventory_balances.quantity) as total_quantity'),
+                DB::raw('SUM(inventory_balances.quantity * COALESCE(products.unit_price, 0)) as total_value'),
             ]);
 
         return $query->orderBy('technicians.name')
@@ -1654,7 +1666,7 @@ class ReportingRepository implements ReportingRepositoryInterface
     public function getFieldBalancesSummary(array $allowedLocationIds, array $filters): array
     {
         if (empty($allowedLocationIds)) {
-            return ['total_good' => 0, 'total_defective' => 0, 'total_units' => 0];
+            return ['total_good' => 0, 'total_defective' => 0, 'total_units' => 0, 'total_value' => 0];
         }
 
         $base = $this->buildFieldBalancesQuery($allowedLocationIds, $filters);
@@ -1662,13 +1674,15 @@ class ReportingRepository implements ReportingRepositoryInterface
         $row = $base->selectRaw("
             COALESCE(SUM(CASE WHEN inventory_balances.condition = 'GOOD' THEN inventory_balances.quantity ELSE 0 END), 0) as total_good,
             COALESCE(SUM(CASE WHEN inventory_balances.condition = 'DEFECTIVE' THEN inventory_balances.quantity ELSE 0 END), 0) as total_defective,
-            COALESCE(SUM(inventory_balances.quantity), 0) as total_units
+            COALESCE(SUM(inventory_balances.quantity), 0) as total_units,
+            COALESCE(SUM(inventory_balances.quantity * COALESCE(products.unit_price, 0)), 0) as total_value
         ")->first();
 
         return [
             'total_good' => (float) ($row->total_good ?? 0),
             'total_defective' => (float) ($row->total_defective ?? 0),
             'total_units' => (float) ($row->total_units ?? 0),
+            'total_value' => (float) ($row->total_value ?? 0),
         ];
     }
 }

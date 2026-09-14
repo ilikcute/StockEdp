@@ -75,6 +75,6 @@ class User extends Authenticatable
             return array_values(array_unique(array_merge($personalLocationIds, $mainWarehouseIds)));
         }
 
-        return Location::query()->where('is_active', true)->pluck('id')->toArray();
+        return [];
     }
 }

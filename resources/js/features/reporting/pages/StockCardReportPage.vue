@@ -1,128 +1,179 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Kartu Stok (Stock Card)
-        </h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Riwayat pergerakan stok untuk suatu produk di lokasi tertentu dalam periode waktu tertentu.
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-        <ReportCsvExportControl
-          :loading="exportStore.isExporting(reportKey)"
-          :disabled="!canFetch"
-          disabled-reason="Pilih produk, lokasi, dan periode terlebih dahulu."
-          :error="exportStore.errorFor(reportKey)"
-          :status="exportStore.statusFor(reportKey)"
-          :validation-errors="exportStore.validationErrorsFor(reportKey)"
-          :success-message="exportStore.successFor(reportKey)"
-          @export="exportCsv"
-          @dismiss="exportStore.clearFeedback(reportKey)"
-        />
-      </div>
-    </div>
+  <div class="space-y-3">
+    <!-- Top Header & Filter Toolbar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Primary Header Row -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <!-- Title & Subtitle -->
+        <div>
+          <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Kartu Stok (Stock Card)
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Riwayat pergerakan stok suatu produk di lokasi tertentu dalam periode waktu tertentu.
+          </p>
+        </div>
 
-    <!-- Filters -->
-    <div class="mt-6 flex flex-col gap-4">
-      <div class="flex flex-wrap gap-4 items-end">
-        <div class="w-full sm:w-auto flex-1 min-w-[250px] relative">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Produk <span class="text-red-500">*</span></label>
-          <div class="relative">
+        <!-- Controls (Product Search, Location, Date toggle, Submit, Export) -->
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <!-- Product Selector Compact -->
+          <div class="w-full sm:w-56 relative">
             <input
               v-model="productSearch"
               type="text"
-              class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Cari & Pilih Produk..."
+              class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Pilih Produk *..."
               @input="onProductSearch"
               @focus="showProductDropdown = true"
             >
             <div
               v-if="selectedProduct"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center"
+              class="absolute inset-y-0 right-0 pr-2 flex items-center"
             >
               <button
-                class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                type="button"
+                class="text-gray-400 hover:text-gray-600 cursor-pointer text-xs"
                 @click="clearProduct"
               >
-                <span class="sr-only">Clear</span>
-                &times;
+                ✕
               </button>
             </div>
+            <!-- Dropdown Results -->
             <div
               v-if="showProductDropdown && masterStore.products.length > 0"
-              class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base border border-gray-300 overflow-auto sm:text-sm"
+              class="absolute z-20 mt-1 w-full bg-white shadow-lg max-h-52 rounded-lg py-1 text-xs border border-gray-200 overflow-auto custom-scrollbar"
             >
               <div
                 v-for="prod in masterStore.products"
                 :key="prod.id"
-                class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50"
+                class="cursor-pointer select-none py-1.5 px-2.5 hover:bg-indigo-50 transition-colors"
                 @click="selectProduct(prod)"
               >
-                <div class="font-medium text-gray-900">
+                <div class="font-medium text-gray-900 truncate">
                   {{ prod.name }}
                 </div>
-                <div class="text-xs text-gray-500">
+                <div class="text-[10px] text-gray-500 font-mono">
                   {{ prod.sku }}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="w-full sm:w-auto min-w-[200px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi <span class="text-red-500">*</span></label>
-          <select
-            v-model="filters.location_id"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="">
-              -- Pilih Lokasi --
-            </option>
-            <option
-              v-for="loc in masterStore.locations"
-              :key="loc.id"
-              :value="loc.id"
+          <!-- Location Selector -->
+          <div class="w-full sm:w-44">
+            <select
+              v-model="filters.location_id"
+              class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              {{ loc.name }}
-            </option>
-          </select>
-        </div>
+              <option value="">
+                -- Pilih Lokasi * --
+              </option>
+              <option
+                v-for="loc in masterStore.locations"
+                :key="loc.id"
+                :value="loc.id"
+              >
+                {{ loc.code ? `${loc.code} — ` : '' }}{{ loc.name }}
+              </option>
+            </select>
+          </div>
 
-        <div class="w-full sm:w-auto min-w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai <span class="text-red-500">*</span></label>
-          <input
-            v-model="filters.start_date"
-            type="date"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-        </div>
-
-        <div class="w-full sm:w-auto min-w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir <span class="text-red-500">*</span></label>
-          <input
-            v-model="filters.end_date"
-            type="date"
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-        </div>
-      </div>
-      
-      <div class="flex justify-between items-center">
-        <div>
+          <!-- Toggle Date / Period -->
           <button
+            type="button"
+            :class="[
+              'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap',
+              showDateRow
+                ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+            @click="showDateRow = !showDateRow"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span>Periode</span>
+          </button>
+
+          <!-- Tampilkan Button -->
+          <button
+            type="button"
             :disabled="!canFetch || store.loading"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
             @click="fetchData(1)"
           >
-            Tampilkan Kartu Stok
+            <span v-if="store.loading">Memuat...</span>
+            <span v-else>Tampilkan</span>
           </button>
+
+          <!-- Export CSV Control -->
+          <ReportCsvExportControl
+            size="sm"
+            :loading="exportStore.isExporting(reportKey)"
+            :disabled="!canFetch"
+            disabled-reason="Pilih produk, lokasi, dan periode terlebih dahulu."
+            :error="exportStore.errorFor(reportKey)"
+            :status="exportStore.statusFor(reportKey)"
+            :validation-errors="exportStore.validationErrorsFor(reportKey)"
+            :success-message="exportStore.successFor(reportKey)"
+            @export="exportCsv"
+            @dismiss="exportStore.clearFeedback(reportKey)"
+          />
         </div>
-        <div class="flex gap-2">
+      </div>
+
+      <!-- Collapsible Date & Settings Row -->
+      <div
+        v-if="showDateRow"
+        class="border-t border-gray-100 pt-2.5 flex flex-wrap items-center justify-between gap-3 text-xs"
+      >
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-semibold text-gray-600">Mulai *:</span>
+            <input
+              v-model="filters.start_date"
+              type="date"
+              class="rounded-lg border border-gray-300 bg-white py-1 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-semibold text-gray-600">Sampai *:</span>
+            <input
+              v-model="filters.end_date"
+              type="date"
+              class="rounded-lg border border-gray-300 bg-white py-1 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] text-gray-500 font-medium">Per Halaman:</span>
           <select
             v-model="filters.per_page"
-            class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 pl-3 pr-10"
+            class="rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             @change="fetchData(1)"
           >
             <option value="15">
@@ -137,11 +188,11 @@
           </select>
         </div>
       </div>
-      
-      <!-- Filter Error Validation UX -->
+
+      <!-- Local Validation Error -->
       <div
         v-if="localValidationError"
-        class="text-sm text-red-600 font-medium"
+        class="text-xs text-rose-600 font-medium border-t border-rose-100 pt-1.5"
       >
         {{ localValidationError }}
       </div>
@@ -150,26 +201,24 @@
     <!-- Error State -->
     <div
       v-if="store.error"
-      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+      class="rounded-lg bg-rose-50 p-2.5 border border-rose-200 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
-      <div class="flex">
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">
-            Error memuat data
-          </h3>
-          <div class="mt-2 text-sm text-red-700">
-            <p>{{ store.error }}</p>
-          </div>
-        </div>
-      </div>
+      <span>{{ store.error }}</span>
+      <button
+        type="button"
+        class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+        @click="store.error = null"
+      >
+        Tutup
+      </button>
     </div>
 
     <!-- Validation Errors -->
     <div
       v-if="Object.keys(store.validationErrors).length > 0"
-      class="mt-4 rounded-md bg-yellow-50 p-4 border border-yellow-200"
+      class="rounded-lg bg-amber-50 p-2.5 border border-amber-200 text-xs text-amber-800 shadow-2xs"
     >
-      <ul class="list-disc pl-5 text-sm text-yellow-700">
+      <ul class="list-disc pl-5 space-y-0.5">
         <li
           v-for="(errors, field) in store.validationErrors"
           :key="field"
@@ -182,18 +231,18 @@
     <!-- Prompt / Loading -->
     <div
       v-if="!hasFetchedData"
-      class="mt-6 rounded-md bg-blue-50 p-4 border border-blue-200 text-center py-10"
+      class="rounded-xl bg-indigo-50/40 p-6 border border-indigo-100 text-center shadow-2xs"
     >
-      <p class="text-sm font-medium text-blue-800">
-        Pilih produk, lokasi, dan periode untuk melihat kartu stok.
+      <p class="text-xs font-semibold text-indigo-900">
+        Pilih produk, lokasi, dan periode untuk melihat riwayat kartu stok.
       </p>
     </div>
 
     <div
       v-else-if="store.loading"
-      class="mt-6 text-center py-10"
+      class="rounded-xl bg-white p-8 border border-gray-200 text-center shadow-2xs"
     >
-      <p class="text-sm text-gray-500 font-medium">
+      <p class="text-xs text-gray-500 font-medium">
         Memuat kartu stok...
       </p>
     </div>
@@ -201,40 +250,54 @@
     <!-- Stock Card Data -->
     <div
       v-else
-      class="mt-6"
+      class="space-y-3"
     >
-      <div class="bg-gray-50 p-4 rounded-lg border border-gray-300 shadow-sm mb-4">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-          <div>
-            <span class="block text-gray-500">Harga Satuan:</span>
-            <span class="font-mono font-medium text-indigo-700">{{ formatRupiah(store.meta?.product?.unit_price) }}</span>
+      <!-- Stock Card Summary Badges (Compact) -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        <div class="bg-white px-3 py-2 rounded-xl shadow-2xs border border-gray-200">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            Harga Satuan
           </div>
-          <div>
-            <span class="block text-gray-500">Opening Balance:</span>
-            <span class="font-mono font-medium text-gray-900">{{ formatQuantity(store.summary?.opening_balance) }}</span>
-          </div>
-          <div>
-            <span class="block text-gray-500">Total Masuk:</span>
-            <span class="font-mono font-medium text-green-700">+{{ formatQuantity(store.summary?.total_quantity_in) }}</span>
-          </div>
-          <div>
-            <span class="block text-gray-500">Total Keluar:</span>
-            <span class="font-mono font-medium text-red-700">-{{ formatQuantity(store.summary?.total_quantity_out) }}</span>
-          </div>
-          <div>
-            <span class="block text-gray-500">Closing Balance:</span>
-            <span class="font-mono font-medium text-gray-900">{{ formatQuantity(store.summary?.closing_balance) }}</span>
+          <div class="text-base font-bold font-mono text-indigo-700 mt-0.5 leading-tight">
+            {{ formatRupiah(store.meta?.product?.unit_price) }}
           </div>
         </div>
-        <div
-          v-if="store.meta?.date_basis"
-          class="mt-2 text-xs text-gray-500"
-        >
-          Periode laporan menggunakan waktu posting transaksi. (Date Basis: {{ store.meta.date_basis }})
+        <div class="bg-white px-3 py-2 rounded-xl shadow-2xs border border-gray-200">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            Saldo Awal
+          </div>
+          <div class="text-base font-bold font-mono text-gray-900 mt-0.5 leading-tight">
+            {{ formatQuantity(store.summary?.opening_balance) }}
+          </div>
+        </div>
+        <div class="bg-emerald-50/50 px-3 py-2 rounded-xl shadow-2xs border border-emerald-200">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+            Total Masuk
+          </div>
+          <div class="text-base font-bold font-mono text-emerald-700 mt-0.5 leading-tight">
+            +{{ formatQuantity(store.summary?.total_quantity_in) }}
+          </div>
+        </div>
+        <div class="bg-rose-50/50 px-3 py-2 rounded-xl shadow-2xs border border-rose-200">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-rose-800">
+            Total Keluar
+          </div>
+          <div class="text-base font-bold font-mono text-rose-700 mt-0.5 leading-tight">
+            -{{ formatQuantity(store.summary?.total_quantity_out) }}
+          </div>
+        </div>
+        <div class="bg-indigo-50/50 px-3 py-2 rounded-xl shadow-2xs border border-indigo-200">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-800">
+            Saldo Akhir
+          </div>
+          <div class="text-base font-bold font-mono text-indigo-900 mt-0.5 leading-tight">
+            {{ formatQuantity(store.summary?.closing_balance) }}
+          </div>
         </div>
       </div>
 
-      <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+      <!-- High-Density Data Table -->
+      <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
         <table class="w-full text-left text-xs border-collapse">
           <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
             <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
@@ -266,7 +329,7 @@
                 scope="col"
                 class="py-1.5 px-2 text-right whitespace-nowrap"
               >
-                Qty Before
+                Saldo Sebelum
               </th>
               <th
                 scope="col"
@@ -284,7 +347,7 @@
                 scope="col"
                 class="py-1.5 px-2 text-right whitespace-nowrap"
               >
-                Qty After
+                Saldo Sesudah
               </th>
             </tr>
           </thead>
@@ -339,41 +402,26 @@
       <!-- Pagination -->
       <div
         v-if="store.meta?.total > 0"
-        class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm"
+        class="flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2 rounded-xl shadow-2xs text-xs"
       >
-        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-          <div>
-            <p class="text-sm text-gray-700">
-              Menampilkan
-              <span class="font-medium">{{ store.meta.from }}</span>
-              sampai
-              <span class="font-medium">{{ store.meta.to }}</span>
-              dari
-              <span class="font-medium">{{ store.meta.total }}</span>
-              hasil
-            </p>
-          </div>
-          <div>
-            <nav
-              class="isolate inline-flex -space-x-px rounded-md shadow-sm"
-              aria-label="Pagination"
-            >
-              <button
-                :disabled="store.meta.current_page === 1"
-                class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                @click="changePage(store.meta.current_page - 1)"
-              >
-                Previous
-              </button>
-              <button
-                :disabled="store.meta.current_page === store.meta.last_page"
-                class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 ml-2"
-                @click="changePage(store.meta.current_page + 1)"
-              >
-                Next
-              </button>
-            </nav>
-          </div>
+        <div class="text-[11px] text-gray-600">
+          Menampilkan <span class="font-semibold text-gray-900">{{ store.meta.from }}</span> sampai <span class="font-semibold text-gray-900">{{ store.meta.to }}</span> dari <span class="font-semibold text-gray-900">{{ store.meta.total }}</span> hasil
+        </div>
+        <div class="flex gap-1.5">
+          <button
+            :disabled="store.meta.current_page <= 1"
+            class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            @click="changePage(store.meta.current_page - 1)"
+          >
+            Sebelumnya
+          </button>
+          <button
+            :disabled="store.meta.current_page >= store.meta.last_page"
+            class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            @click="changePage(store.meta.current_page + 1)"
+          >
+            Selanjutnya
+          </button>
         </div>
       </div>
     </div>
@@ -381,7 +429,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, computed, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useStockCardReportStore } from '../stores/useStockCardReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
@@ -399,6 +447,7 @@ const showProductDropdown = ref(false);
 const selectedProduct = ref(null);
 const localValidationError = ref('');
 const hasFetchedData = ref(false);
+const showDateRow = ref(false);
 
 const filters = reactive({
     product_id: '',
@@ -426,7 +475,7 @@ const onProductSearch = () => {
         if (productSearch.value.trim().length >= 2) {
             masterStore.searchProducts(productSearch.value);
         }
-    }, 400);
+    }, 300);
 };
 
 const selectProduct = (prod) => {
@@ -449,7 +498,7 @@ watch(productSearch, (val) => {
 });
 
 const canFetch = computed(() => {
-    return filters.product_id && filters.location_id && filters.start_date && filters.end_date;
+    return Boolean(filters.product_id && filters.location_id && filters.start_date && filters.end_date);
 });
 
 const validateFilters = () => {

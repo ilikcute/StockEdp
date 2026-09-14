@@ -124,7 +124,7 @@
             {{ formatRupiah(item.product?.unit_price) }}
           </td>
           <td class="py-1.5 px-2 text-[11px] font-mono text-right text-gray-900 font-semibold whitespace-nowrap">
-            {{ formatQuantity(item.quantity) }}
+            {{ formatQuantity(item.quantity, false) }}
           </td>
           <td class="py-1.5 px-2 text-[11px] font-mono text-right text-indigo-700 font-semibold whitespace-nowrap">
             {{ formatRupiah(item.total_amount) }}

@@ -1,43 +1,65 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
-          Detail Penyesuaian Stok
-        </h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Rincian dokumen koreksi pergerakan saldo stok.
-        </p>
-      </div>
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex gap-2">
+  <div class="space-y-3">
+    <!-- TOP Header & Action Strip Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-center gap-3">
         <router-link
           to="/inventory/adjustments"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          class="inline-flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg border border-gray-200 transition-colors"
         >
-          Kembali
+          &larr; Kembali
         </router-link>
 
+        <div class="h-4 w-px bg-gray-200" />
+
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-gray-900 tracking-tight font-mono">
+              {{ adjustment?.adjustment_number || 'Detail Penyesuaian Stok' }}
+            </h1>
+            <span
+              v-if="adjustment"
+              class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full"
+              :class="{
+                'bg-yellow-100 text-yellow-800': adjustment.status === 'DRAFT',
+                'bg-green-100 text-green-800': adjustment.status === 'POSTED',
+                'bg-gray-100 text-gray-800': adjustment.status === 'CANCELED'
+              }"
+            >
+              {{ adjustment.status_label || adjustment.status }}
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-500">
+            Rincian dokumen koreksi pergerakan saldo stok.
+          </p>
+        </div>
+      </div>
+
+      <div
+        v-if="adjustment"
+        class="flex items-center gap-2 flex-wrap"
+      >
         <router-link
-          v-if="adjustment?.status === 'DRAFT' && adjustment?.abilities?.can_update"
+          v-if="adjustment.status === 'DRAFT' && adjustment.abilities?.can_update"
           :to="`/inventory/adjustments/${adjustment.id}/edit`"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          class="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50"
         >
           Edit Draft
         </router-link>
 
         <button
-          v-if="adjustment?.status === 'DRAFT' && adjustment?.abilities?.can_cancel"
+          v-if="adjustment.status === 'DRAFT' && adjustment.abilities?.can_cancel"
           :disabled="store.loadingAction"
-          class="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 disabled:opacity-50"
+          class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 shadow-2xs hover:bg-rose-100 disabled:opacity-50 cursor-pointer"
           @click="openConfirmModal('cancel')"
         >
           Batalkan Draft
         </button>
 
         <button
-          v-if="adjustment?.status === 'DRAFT' && adjustment?.abilities?.can_post"
+          v-if="adjustment.status === 'DRAFT' && adjustment.abilities?.can_post"
           :disabled="store.loadingAction"
-          class="block rounded-md bg-green-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-500 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
           @click="openConfirmModal('post')"
         >
           Posting Adjustment
@@ -48,9 +70,9 @@
     <!-- Alert Error Global -->
     <div
       v-if="store.error"
-      class="mt-4 rounded-md bg-red-50 p-4 border border-red-200"
+      class="rounded-xl bg-rose-50 p-3 border border-rose-200"
     >
-      <p class="text-sm font-medium text-red-800">
+      <p class="text-xs font-medium text-rose-800">
         {{ store.error }}
       </p>
     </div>
@@ -58,17 +80,17 @@
     <!-- Alert Success Feedback -->
     <div
       v-if="actionSuccessMessage"
-      class="mt-4 rounded-md bg-green-50 p-4 border border-green-200 flex items-center justify-between"
+      class="rounded-xl bg-emerald-50 p-3 border border-emerald-200 flex items-center justify-between"
     >
-      <div class="flex items-center gap-3">
-        <span class="text-green-600 font-bold text-lg">✓</span>
-        <p class="text-sm font-medium text-green-800">
+      <div class="flex items-center gap-2">
+        <span class="text-emerald-600 font-bold text-sm">✓</span>
+        <p class="text-xs font-medium text-emerald-800">
           {{ actionSuccessMessage }}
         </p>
       </div>
       <button
         type="button"
-        class="text-green-600 hover:text-green-800 text-sm font-bold cursor-pointer"
+        class="text-emerald-600 hover:text-emerald-800 text-xs font-bold cursor-pointer"
         @click="actionSuccessMessage = ''"
       >
         ✕
@@ -78,160 +100,73 @@
     <!-- Banner Maker-Checker untuk Pembuat Draft -->
     <div
       v-if="adjustment?.status === 'DRAFT' && !adjustment?.abilities?.can_post"
-      class="mt-4 rounded-md bg-blue-50 p-4 border border-blue-200"
+      class="rounded-xl bg-blue-50 p-3 border border-blue-200"
     >
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <span class="text-blue-500 font-bold">ℹ</span>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm font-medium text-blue-800">
-            Adjustment ini harus diposting oleh pengguna lain yang memiliki izin (Maker-Checker Rule).
-          </p>
-        </div>
+      <div class="flex items-center gap-2">
+        <span class="text-blue-500 font-bold text-xs">ℹ</span>
+        <p class="text-xs font-medium text-blue-800">
+          Adjustment ini harus diposting oleh pengguna lain yang memiliki izin (Maker-Checker Rule).
+        </p>
       </div>
     </div>
 
     <div
       v-if="store.loadingDetail && !adjustment"
-      class="mt-8 text-center text-gray-500"
+      class="p-8 text-center text-xs text-gray-500"
     >
       Memuat data adjustment...
     </div>
 
     <div
       v-else-if="adjustment"
-      class="mt-8"
+      class="space-y-3"
     >
-      <div class="overflow-hidden bg-white shadow sm:rounded-lg">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
-            Informasi Dokumen Adjustment
-          </h3>
-        </div>
-        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Nomor Adjustment
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-medium">
-                {{ adjustment.adjustment_number }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Status
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <span
-                  class="px-2 py-1 text-xs font-semibold rounded-full"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800': adjustment.status === 'DRAFT',
-                    'bg-green-100 text-green-800': adjustment.status === 'POSTED',
-                    'bg-gray-100 text-gray-800': adjustment.status === 'CANCELED'
-                  }"
-                >
-                  {{ adjustment.status_label || adjustment.status }}
-                </span>
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Lokasi Gudang
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ adjustment.location_name || '-' }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Arah Penyesuaian (Direction)
-              </dt>
-              <dd class="mt-1 text-sm sm:col-span-2 sm:mt-0">
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium"
-                  :class="adjustment.direction === 'INCREASE' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'"
-                >
-                  {{ adjustment.direction === 'INCREASE' ? '↑ Penambahan Stok (INCREASE)' : '↓ Pengurangan Stok (DECREASE)' }}
-                </span>
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Alasan (Reason Code)
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ adjustment.reason_label || adjustment.reason_code }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Tanggal Adjustment
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ adjustment.adjustment_date }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Catatan Dokumen
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 whitespace-pre-line">
-                {{ adjustment.notes || '-' }}
-              </dd>
-            </div>
-            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Dibuat Oleh / Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ adjustment.created_by || '-' }} ({{ adjustment.created_at }})
-              </dd>
-            </div>
-            <div
-              v-if="adjustment.updated_by"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
+      <!-- Compact Metadata Card -->
+      <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Lokasi Gudang</span>
+            <span class="font-semibold text-gray-800">{{ adjustment.location_name || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Arah (Direction)</span>
+            <span
+              class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold"
+              :class="adjustment.direction === 'INCREASE' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'"
             >
-              <dt class="text-sm font-medium text-gray-500">
-                Diperbarui Oleh / Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {{ adjustment.updated_by }} ({{ adjustment.updated_at }})
-              </dd>
-            </div>
-            <div
-              v-if="adjustment.posted_at"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Diposting Oleh / Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-medium text-green-700">
-                {{ adjustment.posted_by || '-' }} ({{ adjustment.posted_at }})
-              </dd>
-            </div>
-            <div
-              v-if="adjustment.canceled_at"
-              class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-            >
-              <dt class="text-sm font-medium text-gray-500">
-                Dibatalkan Oleh / Pada
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 text-red-700">
-                {{ adjustment.canceled_by || '-' }} ({{ adjustment.canceled_at }})
-              </dd>
-            </div>
-          </dl>
+              {{ adjustment.direction === 'INCREASE' ? '↑ Tambah (INCREASE)' : '↓ Kurang (DECREASE)' }}
+            </span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Alasan (Reason)</span>
+            <span class="font-semibold text-gray-800">{{ adjustment.reason_label || adjustment.reason_code }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Tanggal Adjustment</span>
+            <span class="font-semibold text-gray-800">{{ adjustment.adjustment_date }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Dibuat Oleh</span>
+            <span class="font-semibold text-gray-800">{{ adjustment.created_by || '-' }}</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Catatan</span>
+            <span class="text-gray-700 truncate block">{{ adjustment.notes || '-' }}</span>
+          </div>
         </div>
       </div>
 
       <!-- Informational Notice -->
-      <div class="mt-4 p-4 rounded-md bg-yellow-50 border border-yellow-200">
-        <p class="text-xs text-yellow-800">
+      <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+        <p class="text-[11px] text-amber-900">
           <strong>Perhatian:</strong> Kuantitas pada item adalah delta perubahan stok, bukan saldo akhir persediaan.
           <span v-if="adjustment.status === 'POSTED'">
-            Dokumen yang sudah diposting bersifat <strong>immutable</strong> dan pergerakan stoknya telah dicatat secara permanen di ledger pergerakan stok.
+            Dokumen yang sudah diposting bersifat <strong>immutable</strong> dan pergerakan stok telah dicatat secara permanen di ledger.
           </span>
         </p>
       </div>
@@ -311,7 +246,7 @@
                 </td>
                 <td class="py-1.5 px-2 text-[11px] font-mono text-right font-medium whitespace-nowrap">
                   <span :class="adjustment.direction === 'INCREASE' ? 'text-emerald-700' : 'text-orange-700'">
-                    {{ adjustment.direction === 'INCREASE' ? '+' : '-' }}{{ formatQuantity(item.quantity) }}
+                    {{ adjustment.direction === 'INCREASE' ? '+' : '-' }}{{ formatQuantity(item.quantity, false) }}
                   </span>
                 </td>
                 <td class="py-1.5 px-2 text-[11px] font-mono text-right font-medium text-gray-900 whitespace-nowrap">
