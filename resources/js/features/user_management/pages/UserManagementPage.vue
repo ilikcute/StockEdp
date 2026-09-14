@@ -83,14 +83,14 @@
           class="flex items-center gap-2 flex-wrap sm:flex-nowrap"
         >
           <div class="w-full sm:w-48">
-            <input
+            <BaseSearchInput
               id="user-search"
-              v-model="filters.search"
-              type="text"
+              :model-value="filters.search"
               placeholder="Cari nama, username..."
-              class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
-              @input="onSearchInput"
-            >
+              size="sm"
+              @update:model-value="filters.search = $event"
+              @search="onSearch"
+            />
           </div>
 
           <select
@@ -230,6 +230,7 @@ import { useUserManagement } from '../composables/use_user_management.js';
 import BaseButton from '@/shared/components/BaseButton.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
 import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
 import UserTable from '../components/UserTable.vue';
 import UserFormModal from '../components/UserFormModal.vue';
 import RolePermissionMatrix from '../components/RolePermissionMatrix.vue';
@@ -279,13 +280,9 @@ const {
   resetFilters,
 } = useUserManagement();
 
-let searchTimeout = null;
-const onSearchInput = () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    filters.page = 1;
-    fetchUsers();
-  }, 350);
+const onSearch = () => {
+  filters.page = 1;
+  fetchUsers();
 };
 
 const onSelectRolesTab = () => {

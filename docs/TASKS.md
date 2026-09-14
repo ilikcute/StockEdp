@@ -1249,3 +1249,34 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - **Automated Feature Testing (PHPUnit)**:
     - Seluruh suite feature test Master Data & User Management (`tests/Feature/Product`, `Category`, `Unit`, `Supplier`, `Location`, `Store`, `User`) -> **142 tests PASSED, 1222 assertions PASSED, 0 failures**.
 - **Status**: SELESAI & TERVERIFIKASI 100%.
+
+---
+
+### [2026-09-14] Penyesuaian Ukuran Form Pencarian Compact (BaseSearchInput size="sm") di Seluruh Halaman TOP Header Master Data
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna menemukan bahwa form pencarian (search input) terlihat lebih besar/tinggi secara visual dibandingkan form kontrol lainnya (select dropdown dan button) di dalam TOP Header seluruh modul Master Data.
+- **Penyebab Masalah (Root Cause)**:
+  Komponen `BaseSearchInput.vue` sebelumnya memiliki styling default berukuran standar/besar:
+  - Padding input vertikal `py-2` (dibandingkan `py-1.5` pada select/button).
+  - Ukuran teks `text-sm` (dibandingkan `text-xs` pada select/button).
+  - Padding horizontal `pl-10 pr-9` dengan ukuran ikon pencarian `h-4 w-4` (border radius `rounded-md`, shadow `shadow-xs`).
+  Hal tersebut menyebabkan tinggi fisik search input mencapai ~38-40px, sedangkan tombol dan dropdown select berukuran compact ~30px (`py-1.5 text-xs rounded-lg shadow-2xs`).
+- **Implementasi yang Diterapkan**:
+  1. **Komponen `BaseSearchInput.vue`**:
+     - Menambahkan prop `size` dengan default `'sm'` (mendukung opsi `'sm'` dan `'md'`).
+     - Mode `size="sm"`:
+       - Input classes: `rounded-lg py-1.5 pl-8 pr-7 text-xs shadow-2xs` (presisi tinggi ~30px, setara 100% dengan select dan tombol `size="sm"`).
+       - Ikon pencarian: compact `left-2.5 h-3.5 w-3.5`.
+       - Tombol clear `x`: compact `right-2 p-0.5 h-3.5 w-3.5`.
+  2. **Penyelarasan Seluruh 7 Modul Master Data**:
+     - `ProductPage.vue`: `<BaseSearchInput size="sm">` dalam container `w-full sm:w-48`.
+     - `CategoryPage.vue`: `<BaseSearchInput size="sm">` dalam container `w-full sm:w-48`.
+     - `UnitPage.vue`: `<BaseSearchInput size="sm">` dalam container `w-full sm:w-48`.
+     - `SupplierPage.vue`: Lebar container distandarisasi dari `sm:w-52` menjadi `sm:w-48`, `<BaseSearchInput size="sm">`.
+     - `LocationPage.vue`: `<BaseSearchInput size="sm">` dalam container `w-full sm:w-48`.
+     - `StorePage.vue`: `<BaseSearchInput size="sm">` dalam container `w-full sm:w-48`.
+     - `UserManagementPage.vue`: Mengganti input manual dengan `<BaseSearchInput size="sm">` (`sm:w-48`) lengkap dengan ikon pencarian, tombol clear, dan debounce terintegrasi.
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 errors, 0 warnings).
+  - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed, ~3.1s).
+- **Status**: SELESAI & TERVERIFIKASI.

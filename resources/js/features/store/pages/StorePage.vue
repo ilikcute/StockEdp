@@ -34,6 +34,7 @@
             <BaseSearchInput
               :model-value="searchQuery"
               placeholder="Cari kode, nama, atau alamat..."
+              size="sm"
               @update:model-value="searchQuery = $event"
               @search="onSearch"
             />

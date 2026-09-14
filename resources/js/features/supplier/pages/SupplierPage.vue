@@ -30,10 +30,11 @@
         <!-- Primary Controls (Search, Filters, Reset, Action Button) -->
         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <!-- Search Input -->
-          <div class="w-full sm:w-52">
+          <div class="w-full sm:w-48">
             <BaseSearchInput
               :model-value="searchQuery"
               placeholder="Cari kode atau nama..."
+              size="sm"
               @update:model-value="searchQuery = $event"
               @search="onSearch"
             />
