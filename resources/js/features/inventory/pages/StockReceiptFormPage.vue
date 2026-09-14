@@ -512,11 +512,12 @@ const {
     submitForm,
 } = useDocumentForm({
     store,
-    isEdit: route.name === 'stockReceiptsEdit',
+    isEdit: Boolean(route.params.id),
     basePath: '/inventory/receipts',
     headerKey: 'supplier_id',
     locationNoun: 'gudang tujuan',
     hasStockColumn: false,
+    redirectToList: true,
     extraFields: {
         memo_number: '',
         source_type: 'GA_PROCUREMENT',

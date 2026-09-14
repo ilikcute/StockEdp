@@ -1417,3 +1417,46 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - **Browser Verification**: Screenshot `inventory_movement_report_1789375499885.png` mengonfirmasi pemisahan tata letak tabel dan BasePagination yang rapi serta 0 console error.
 - **Status**: SELESAI & TERVERIFIKASI 100%.
 
+---
+
+### [2026-09-14] Penyelarasan & Refactor Compact Style pada ProductFormModal.vue
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar tampilan modal form produk pada [ProductFormModal.vue](file:///d:/laragon/www/StockEdp/resources/js/features/product/components/ProductFormModal.vue) disamakan dengan gaya compact halaman/komponen lain di StockEdp agar tampil lebih ringkas dan proporsional.
+- **Implementasi yang Diterapkan**:
+  1. **Container & Backdrop**:
+     - Menggunakan backdrop gelap lembut `bg-gray-900/50 backdrop-blur-xs` dengan transisi Tailwind yang halus (`Transition`).
+     - Mengubah lebar modal dari `max-w-2xl` menjadi `max-w-xl` dengan batas tepi `rounded-xl`, border tipis `border-gray-200`, dan bayangan `shadow-xl`.
+  2. **Header Compact**:
+     - Mengganti header lama dengan header compact (`px-4 py-2.5 bg-gray-50/80 border-b border-gray-200`).
+     - Menambahkan badge icon produk (`bg-indigo-50 text-indigo-600 border border-indigo-100`) serta tombol silang (`X`) untuk menutup modal.
+  3. **Form Controls Compact**:
+     - Label menggunakan font ringkas `text-[11px] font-semibold text-gray-700 mb-1`.
+     - Input, select, dan textarea menggunakan padding ringkas `px-2.5 py-1.5`, ukuran `text-xs`, sudut `rounded-lg`, dan bayangan mikro `shadow-2xs`.
+     - Grid layout 2 kolom (`gap-3`) untuk SKU/Barcode, Kategori/Satuan, dan Stok Minimum/Harga Satuan (dengan prefix Rp yang proporsional).
+     - Textarea deskripsi dibuat `rows="2"`.
+  4. **Footer Compact**:
+     - Menjadikan footer sejajar dengan padding `px-4 py-2.5 bg-gray-50/50 border-t border-gray-200`.
+     - Tombol `Batal` dan `Simpan` disesuaikan dengan ukuran compact `px-3 py-1.5 text-xs rounded-lg shadow-2xs`.
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed cleanly).
+  - **Browser Verification**: Screenshot `product_modal_compact_1789376166694.png` mengonfirmasi tampilan form modal produk yang compact, rapi, dan responsif tanpa error pada console browser.
+- **Status**: SELESAI & TERVERIFIKASI 100%.
+
+---
+
+### [2026-09-14] Pengalihan (Redirect) Otomatis ke Halaman Daftar Penerimaan setelah POST di StockReceiptFormPage
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna melaporkan bahwa setelah berhasil melakukan aksi POST (pembuatan dokumen penerimaan stok) di [StockReceiptFormPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/inventory/pages/StockReceiptFormPage.vue), sistem sebelumnya mengalihkan ke halaman detail dokumen, bukan ke halaman daftar penerimaan [StockReceiptListPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/inventory/pages/StockReceiptListPage.vue).
+- **Implementasi yang Diterapkan**:
+  1. Memperbarui [use_document_form.js](file:///d:/laragon/www/StockEdp/resources/js/features/inventory/composables/use_document_form.js) dengan opsi konfigurasi `redirectToList` dan `redirectToListOnCreate`.
+  2. Saat penyimpanan dokumen (POST/create) berhasil, menampilkan toast sukses dan melakukan `router.push(basePath)` (ke `/inventory/receipts`).
+  3. Mengonfigurasi `redirectToList: true` dan `isEdit: Boolean(route.params.id)` pada `useDocumentForm` di [StockReceiptFormPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/inventory/pages/StockReceiptFormPage.vue).
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed cleanly).
+  - **Browser Testing**: Mengisi form penerimaan baru di browser, menekan tombol *Simpan Draft*, dan terverifikasi berhasil dialihkan langsung ke `http://stockedp.test/inventory/receipts` (`StockReceiptListPage.vue`) dengan dokumen draft baru `REC-202609-0001` tampil di tabel daftar dan 0 console error.
+- **Status**: SELESAI & TERVERIFIKASI 100%.
+
+
+

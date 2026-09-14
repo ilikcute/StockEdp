@@ -19,7 +19,16 @@ const cleanQuantity = (qStr) => {
 };
 
 export function useDocumentForm(config) {
-    const { store, isEdit, basePath, headerKey, locationNoun, hasStockColumn } = config;
+    const {
+        store,
+        isEdit,
+        basePath,
+        headerKey,
+        locationNoun,
+        hasStockColumn,
+        redirectToList = false,
+        redirectToListOnCreate = false,
+    } = config;
 
     const route = useRoute();
     const router = useRouter();
@@ -301,12 +310,23 @@ export function useDocumentForm(config) {
             if (payload.supplier_id === '') {
                 payload.supplier_id = null;
             }
+            const docTitle = config.documentTitle || (headerKey === 'supplier_id' ? 'Penerimaan stok' : 'Pengeluaran stok');
             if (isEdit) {
                 await store.update(route.params.id, payload);
-                router.push(`${basePath}/${route.params.id}`);
+                showToast(`${docTitle} berhasil diperbarui.`, { type: 'success' });
+                if (redirectToList) {
+                    router.push(basePath);
+                } else {
+                    router.push(`${basePath}/${route.params.id}`);
+                }
             } else {
                 const data = await store.create(payload);
-                router.push(`${basePath}/${data.data.id}`);
+                showToast(`${docTitle} berhasil disimpan.`, { type: 'success' });
+                if (redirectToList || redirectToListOnCreate) {
+                    router.push(basePath);
+                } else {
+                    router.push(`${basePath}/${data.data.id}`);
+                }
             }
         } catch (e) {
             errorMsg.value = store.error || e.response?.data?.message || 'Gagal menyimpan dokumen.';
