@@ -19,6 +19,8 @@ class StoreAllocationResource extends JsonResource
             'store_id' => $this->store_id,
             'store_name' => $this->whenLoaded('store', fn () => $this->store?->name),
             'store_code' => $this->whenLoaded('store', fn () => $this->store?->code),
+            'store_address' => $this->whenLoaded('store', fn () => $this->store?->address),
+            'store_phone' => $this->whenLoaded('store', fn () => $this->store?->phone),
             'allocated_at' => $this->allocated_at?->format('Y-m-d'),
             'notes' => $this->notes,
             'created_by' => $this->created_by,

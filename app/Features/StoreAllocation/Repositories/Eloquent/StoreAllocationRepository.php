@@ -17,8 +17,8 @@ class StoreAllocationRepository implements StoreAllocationRepositoryInterface
             'location',
             'store',
             'creator',
-            'items.product',
-            'items.pulledProduct',
+            'items.product.unit',
+            'items.pulledProduct.unit',
         ]);
 
         if (! empty($filters['search'])) {
@@ -70,8 +70,8 @@ class StoreAllocationRepository implements StoreAllocationRepositoryInterface
             'location',
             'store',
             'creator',
-            'items.product',
-            'items.pulledProduct',
+            'items.product.unit',
+            'items.pulledProduct.unit',
         ])->find($id);
     }
 
@@ -82,8 +82,8 @@ class StoreAllocationRepository implements StoreAllocationRepositoryInterface
             'location',
             'store',
             'creator',
-            'items.product',
-            'items.pulledProduct',
+            'items.product.unit',
+            'items.pulledProduct.unit',
         ])->where('allocation_number', $number)->first();
     }
 

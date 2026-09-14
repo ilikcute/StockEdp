@@ -684,7 +684,7 @@ export function printDocument(options = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Cetak Dokumen Bukti Alokasi & Penggantian Unit Toko.
+ * Cetak Dokumen Surat Jalan & Berita Acara Serah Terima Alokasi Toko.
  *
  * @param {Object} doc StoreAllocation document
  * @param {Object} [extraOptions={}]
@@ -697,79 +697,252 @@ export function printStoreAllocation(doc, extraOptions = {}) {
     let totalInstalledAmount = 0;
     let totalPulledQty = 0;
 
-    const tableHeaders = [
-        { label: 'No.', width: '28px', align: 'center' },
-        { label: 'Unit Baru Dipasang', align: 'left' },
-        { label: 'S/N Baru', width: '90px', align: 'center', mono: true },
-        { label: 'Qty', width: '40px', align: 'right' },
-        { label: 'Harga (Rp)', width: '80px', align: 'right', mono: true },
-        { label: 'Total (Rp)', width: '85px', align: 'right', mono: true },
-        { label: 'Unit Lama Ditarik (RUSAK)', align: 'left' },
-        { label: 'S/N Tarik', width: '90px', align: 'center', mono: true },
-        { label: 'Qty', width: '40px', align: 'right' },
-        { label: 'Alasan Kerusakan', align: 'left' },
-    ];
-
-    const tableRows = items.map((item, idx) => {
-        const instQty = Number(item.installed_quantity || 0);
-        const instPrice = Number(item.unit_price || 0);
-        const instSubtotal = Number(item.installed_subtotal ?? (instQty * instPrice));
-        const pullQty = Number(item.pulled_quantity || 0);
+    // Installed rows (BAGIAN A: UNIT BARU / DIPASANG)
+    const installedRowsHtml = items.map((item, idx) => {
+        const instQty = Number(item.quantity ?? item.installed_quantity ?? 0);
+        const instPrice = Number(item.unit_price ?? item.product?.unit_price ?? 0);
+        const instSubtotal = Number(item.total_value ?? item.installed_subtotal ?? (instQty * instPrice));
+        const instUnit = item.unit_symbol || item.product?.unit?.symbol || 'UNIT';
+        const instSerial = item.serial_number || item.installed_serial_number || '-';
+        const instName = item.product_name || item.product?.name || '-';
+        const instSku = item.product_sku || item.product?.sku || '-';
 
         totalInstalledQty += instQty;
         totalInstalledAmount += instSubtotal;
-        totalPulledQty += pullQty;
 
-        return [
-            String(idx + 1),
-            `<div style="font-weight:600;">${escapeHtml(item.product_name || '-')}</div><div style="font-size:8.5px;color:#64748b;font-family:monospace;">${escapeHtml(item.product_sku || '')}</div>`,
-            escapeHtml(item.installed_serial_number || '-'),
-            formatQuantity(instQty),
-            formatRupiah(instPrice, false),
-            formatRupiah(instSubtotal, false),
-            item.pulled_product_name ? `<div style="font-weight:600;color:#991b1b;">${escapeHtml(item.pulled_product_name)}</div>` : '<span style="color:#94a3b8;">-</span>',
-            escapeHtml(item.pulled_serial_number || '-'),
-            pullQty > 0 ? formatQuantity(pullQty) : '<span style="color:#94a3b8;">-</span>',
-            escapeHtml(item.pulled_reason || '-'),
-        ];
-    });
+        return `
+            <tr ${idx % 2 === 1 ? 'class="tr-alt"' : ''}>
+                <td style="text-align:center;color:#64748b;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;">${idx + 1}</td>
+                <td style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:9.5px;color:#475569;">${escapeHtml(instSku)}</td>
+                <td>
+                    <div style="font-weight:700;color:#0f172a;">${escapeHtml(instName)}</div>
+                </td>
+                <td style="text-align:center;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600;color:#1e293b;">${escapeHtml(instSerial)}</td>
+                <td style="text-align:right;font-weight:700;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#047857;">${formatQuantity(instQty)}</td>
+                <td style="text-align:center;font-size:9px;color:#64748b;text-transform:uppercase;">${escapeHtml(instUnit)}</td>
+                <td style="text-align:right;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;">${formatRupiah(instPrice, false)}</td>
+                <td style="text-align:right;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;color:#1e1b4b;">${formatRupiah(instSubtotal, false)}</td>
+            </tr>
+        `;
+    }).join('');
 
-    const totals = [
-        {
-            label: `Total Pasang: ${formatQuantity(totalInstalledQty)} unit | Total Tarik: ${formatQuantity(totalPulledQty)} unit | Grand Total Nilai Pasang:`,
-            value: formatRupiah(totalInstalledAmount),
-            labelSpan: 5,
-            valSpan: 5,
-            align: 'right',
-        },
-    ];
+    // Pulled items list (BAGIAN B: UNIT LAMA / DITARIK)
+    const pulledItems = items.filter(
+        (item) => (Number(item.pulled_quantity || 0) > 0) || Boolean(item.pulled_product_name || item.pulledProduct?.name)
+    );
 
-    const storeInfo = doc.store_name ? `${doc.store_name} ${doc.store_code ? `(${doc.store_code})` : ''}` : '-';
-    const techInfo = doc.technician_name ? `${doc.technician_name} ${doc.technician_location_name ? `(${doc.technician_location_name})` : ''}` : '-';
+    const pulledRowsHtml = pulledItems.length > 0
+        ? pulledItems.map((item, idx) => {
+            const pullQty = Number(item.pulled_quantity || 0);
+            const pullUnit = item.pulled_unit_symbol || item.pulledProduct?.unit?.symbol || 'UNIT';
+            const pullSerial = item.pulled_serial_number || '-';
+            const pullName = item.pulled_product_name || item.pulledProduct?.name || '-';
+            const pullSku = item.pulled_product_sku || item.pulledProduct?.sku || '-';
+            const pullReason = item.defective_reason || item.pulled_reason || '-';
+
+            totalPulledQty += pullQty;
+
+            return `
+                <tr ${idx % 2 === 1 ? 'class="tr-alt"' : ''}>
+                    <td style="text-align:center;color:#64748b;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;">${idx + 1}</td>
+                    <td style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:9.5px;color:#475569;">${escapeHtml(pullSku)}</td>
+                    <td>
+                        <div style="font-weight:700;color:#991b1b;">${escapeHtml(pullName)}</div>
+                    </td>
+                    <td style="text-align:center;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600;color:#b91c1c;">${escapeHtml(pullSerial)}</td>
+                    <td style="text-align:right;font-weight:700;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#b91c1c;">${formatQuantity(pullQty)}</td>
+                    <td style="text-align:center;font-size:9px;color:#64748b;text-transform:uppercase;">${escapeHtml(pullUnit)}</td>
+                    <td style="color:#475569;font-size:9.5px;">${escapeHtml(pullReason)}</td>
+                </tr>
+            `;
+        }).join('')
+        : `
+            <tr>
+                <td colspan="7" style="text-align:center;color:#64748b;font-style:italic;padding:8px 6px;">
+                    Tidak ada unit lama yang ditarik dari toko untuk transaksi ini.
+                </td>
+            </tr>
+        `;
+
+    const customHeaderHtml = `
+        <div style="display:flex;gap:12px;margin-bottom:12px;">
+            <!-- Box Pengirim -->
+            <div style="flex:1;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
+                <div style="background:#f1f5f9;padding:4px 8px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#1e293b;border-bottom:1px solid #cbd5e1;display:flex;justify-content:space-between;align-items:center;">
+                    <span>Pengirim / Asal Perangkat</span>
+                    <span style="font-size:8px;background:#e2e8f0;padding:1px 5px;border-radius:3px;color:#475569;font-weight:600;">ASAL (ORIGIN)</span>
+                </div>
+                <div style="padding:7px 9px;font-size:10px;line-height:1.45;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr>
+                            <td style="width:95px;color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Lokasi Asal</td>
+                            <td style="width:10px;color:#94a3b8;padding:2px 0;">:</td>
+                            <td style="font-weight:700;color:#0f172a;padding:2px 0;">${escapeHtml(doc.technician_location_name || 'Gudang EDP')}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Teknisi / PIC</td>
+                            <td style="color:#94a3b8;padding:2px 0;">:</td>
+                            <td style="font-weight:600;color:#1e293b;padding:2px 0;">${escapeHtml(doc.technician_name || '-')}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">No. Dokumen</td>
+                            <td style="color:#94a3b8;padding:2px 0;">:</td>
+                            <td style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;color:#4338ca;padding:2px 0;">${escapeHtml(doc.allocation_number || '-')}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Box Penerima -->
+            <div style="flex:1;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
+                <div style="background:#f1f5f9;padding:4px 8px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#1e293b;border-bottom:1px solid #cbd5e1;display:flex;justify-content:space-between;align-items:center;">
+                    <span>Kepada Yth. / Penerima Toko</span>
+                    <span style="font-size:8px;background:#e0e7ff;padding:1px 5px;border-radius:3px;color:#3730a3;font-weight:600;">TUJUAN (DESTINATION)</span>
+                </div>
+                <div style="padding:7px 9px;font-size:10px;line-height:1.45;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr>
+                            <td style="width:95px;color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Nama Toko</td>
+                            <td style="width:10px;color:#94a3b8;padding:2px 0;">:</td>
+                            <td style="font-weight:700;color:#0f172a;padding:2px 0;">
+                                ${escapeHtml(doc.store_name || '-')}
+                                ${doc.store_code ? `<span style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#4f46e5;font-size:9px;">(${escapeHtml(doc.store_code)})</span>` : ''}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Alamat Toko</td>
+                            <td style="color:#94a3b8;padding:2px 0;">:</td>
+                            <td style="color:#334155;padding:2px 0;">${escapeHtml(doc.store_address || '-')}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Telepon / Kontak</td>
+                            <td style="color:#94a3b8;padding:2px 0;">:</td>
+                            <td style="color:#334155;padding:2px 0;">${escapeHtml(doc.store_phone || '-')}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Tanggal Alokasi</td>
+                            <td style="color:#94a3b8;padding:2px 0;">:</td>
+                            <td style="font-weight:600;color:#0f172a;padding:2px 0;">${escapeHtml(doc.allocated_at || '-')}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const customBodyHtml = `
+        <!-- TABEL A: UNIT DIKIRIM & DIPASANG -->
+        <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+                <span style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;padding:1px 6px;border-radius:3px;font-size:8.5px;font-weight:800;">BAGIAN A</span>
+                <span>RINCIAN BARANG DIKIRIM &amp; DIPASANG DI TOKO (KONDISI: BAGUS / BARU)</span>
+            </div>
+            <table class="data-table" style="margin-bottom:0;">
+                <thead>
+                    <tr>
+                        <th style="width:28px;text-align:center;">No.</th>
+                        <th style="width:85px;text-align:left;">Kode SKU</th>
+                        <th style="text-align:left;">Nama Barang &amp; Deskripsi</th>
+                        <th style="width:105px;text-align:center;">Nomor Seri (S/N)</th>
+                        <th style="width:48px;text-align:right;">Qty</th>
+                        <th style="width:45px;text-align:center;">Satuan</th>
+                        <th style="width:85px;text-align:right;">Harga Satuan</th>
+                        <th style="width:95px;text-align:right;">Total Nilai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${installedRowsHtml}
+                </tbody>
+                <tfoot>
+                    <tr class="tfoot-row">
+                        <td colspan="4" class="tfoot-label">Total Barang Dikirim &amp; Dipasang (${items.length} Item):</td>
+                        <td class="tfoot-value" style="text-align:right;color:#047857;">${formatQuantity(totalInstalledQty)}</td>
+                        <td class="tfoot-value" style="text-align:center;font-size:9px;">UNIT</td>
+                        <td class="tfoot-label" style="font-size:8.5px;">Grand Total Nilai:</td>
+                        <td class="tfoot-value" style="text-align:right;color:#1e1b4b;">${formatRupiah(totalInstalledAmount)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- TABEL B: UNIT DITARIK DARI TOKO -->
+        <div style="margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+                <span style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:1px 6px;border-radius:3px;font-size:8.5px;font-weight:800;">BAGIAN B</span>
+                <span>RINCIAN BARANG DITARIK DARI TOKO (KONDISI: RUSAK / DIGANTI)</span>
+            </div>
+            <table class="data-table" style="margin-bottom:0;">
+                <thead>
+                    <tr>
+                        <th style="width:28px;text-align:center;">No.</th>
+                        <th style="width:85px;text-align:left;">Kode SKU</th>
+                        <th style="text-align:left;">Nama Barang yang Ditarik</th>
+                        <th style="width:105px;text-align:center;">S/N Rusak</th>
+                        <th style="width:48px;text-align:right;">Qty Tarik</th>
+                        <th style="width:45px;text-align:center;">Satuan</th>
+                        <th style="text-align:left;">Keluhan / Alasan Kerusakan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pulledRowsHtml}
+                </tbody>
+                ${pulledItems.length > 0 ? `
+                <tfoot>
+                    <tr class="tfoot-row">
+                        <td colspan="4" class="tfoot-label">Total Barang Ditarik (${pulledItems.length} Item):</td>
+                        <td class="tfoot-value" style="text-align:right;color:#b91c1c;">${formatQuantity(totalPulledQty)}</td>
+                        <td class="tfoot-value" style="text-align:center;font-size:9px;">UNIT</td>
+                        <td class="tfoot-value" style="color:#64748b;font-size:9px;">Diserahkan untuk perbaikan / servis GA</td>
+                    </tr>
+                </tfoot>
+                ` : ''}
+            </table>
+        </div>
+
+        <!-- KLAUSUL SERAH TERIMA SURAT JALAN -->
+        <div style="margin:10px 0;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc;padding:7px 10px;font-size:9px;line-height:1.45;color:#334155;">
+            <div style="font-weight:700;text-transform:uppercase;color:#0f172a;margin-bottom:3px;letter-spacing:0.3px;">
+                Ketentuan &amp; Klausul Serah Terima Surat Jalan:
+            </div>
+            <ol style="margin:0;padding-left:16px;">
+                <li>Barang yang diserahkan telah diperiksa bersama dalam kondisi baru/baik, berfungsi normal, dan nomor seri (S/N) sesuai tertera pada dokumen ini.</li>
+                <li>Barang lama/rusak yang ditarik diserahkan kembali kepada Petugas/Teknisi EDP untuk diproses perbaikan (servis GA/Vendor) atau penghapusan aset.</li>
+                <li>Dokumen ini berlaku sebagai Surat Jalan Pengiriman dan Berita Acara Serah Terima (BAST) fisik yang sah antara Departemen EDP dan Manajemen Toko.</li>
+            </ol>
+        </div>
+    `;
 
     return printDocument({
-        title: 'BUKTI ALOKASI & PENGGANTIAN UNIT TOKO',
-        subtitle: 'Berita Acara Pemasangan Perangkat EDP Baru dan Penarikan Perangkat Rusak di Toko',
+        title: 'SURAT JALAN & BERITA ACARA SERAH TERIMA',
+        subtitle: 'Pengiriman & Penggantian Perangkat EDP Toko',
         docNumber: doc.allocation_number || '-',
         docDate: doc.allocated_at || doc.created_at || '-',
-        status: 'SELESAI',
-        statusLabel: 'COMPLETED',
-        meta: [
-            { label: 'Nomor Alokasi', value: doc.allocation_number },
-            { label: 'Tanggal Alokasi', value: doc.allocated_at },
-            { label: 'Toko Tujuan', value: storeInfo },
-            { label: 'Teknisi Pelaksana', value: techInfo },
-            { label: 'Waktu Input', value: doc.created_at || '-' },
-            { label: 'Status Dokumen', value: 'SELESAI (TERPOSTING)' },
-        ],
-        tableHeaders,
-        tableRows,
-        totals,
+        status: 'POSTED',
+        statusLabel: 'SURAT JALAN RESMI',
+        customHeaderHtml,
+        customBodyHtml,
         notes: doc.notes,
         signatures: [
-            { role: 'Yang Menyerahkan (Teknisi)', name: doc.technician_name || '............................................', title: doc.technician_location_name || 'Teknisi EDP' },
-            { role: 'Yang Menerima (Toko)', name: '............................................', title: `Kepala Toko / PIC ${doc.store_name || ''}` },
-            { role: 'Mengetahui / Disetujui', name: '............................................', title: 'Supervisor EDP / Logistik' },
+            {
+                role: 'Yang Menyerahkan (Pengirim)',
+                name: doc.technician_name || '............................................',
+                title: doc.technician_location_name || 'Teknisi EDP'
+            },
+            {
+                role: 'Petugas Pengantar / Driver',
+                name: '............................................',
+                title: 'Ekspedisi / Pengantar'
+            },
+            {
+                role: 'Yang Menerima (Pihak Toko)',
+                name: '............................................',
+                title: `Kepala Toko / Staff ${doc.store_name || ''} (Cap & Ttd)`
+            },
+            {
+                role: 'Mengetahui / Disetujui',
+                name: '............................................',
+                title: 'Supervisor IT & EDP Logistik'
+            },
         ],
         ...extraOptions,
     });
