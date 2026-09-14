@@ -420,43 +420,11 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="store.meta?.total > 0"
-      class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-3 py-2.5 sm:px-4 rounded-lg shadow-xs"
-    >
-      <div class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <p class="text-xs text-gray-700">
-            Menampilkan
-            <span class="font-semibold text-gray-900">{{ store.meta.from }}</span>
-            sampai
-            <span class="font-semibold text-gray-900">{{ store.meta.to }}</span>
-            dari
-            <span class="font-semibold text-gray-900">{{ store.meta.total }}</span>
-            item persediaan
-          </p>
-        </div>
-        <div class="flex items-center gap-1.5 self-end sm:self-auto">
-          <button
-            :disabled="store.meta.current_page === 1"
-            class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium text-gray-700 bg-white ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-            @click="changePage(store.meta.current_page - 1)"
-          >
-            &larr; Sebelumnya
-          </button>
-          <span class="text-xs text-gray-500 font-mono px-1.5">
-            Hal. {{ store.meta.current_page }} / {{ store.meta.last_page }}
-          </span>
-          <button
-            :disabled="store.meta.current_page === store.meta.last_page"
-            class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium text-gray-700 bg-white ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-            @click="changePage(store.meta.current_page + 1)"
-          >
-            Berikutnya &rarr;
-          </button>
-        </div>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.meta"
+      :loading="store.loading"
+      @change="changePage"
+    />
   </div>
 </template>
 
@@ -467,6 +435,7 @@ import { useInventoryBalanceReportStore } from '../stores/useInventoryBalanceRep
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import { cleanReportExportFilters } from '../utils/reportHelpers';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
