@@ -1331,3 +1331,27 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed, ~3.5s).
   - **PHPUnit Feature Testing**: `tests/Feature/StoreAllocation`, `tests/Feature/Replenishment`, `tests/Feature/Inventory/InventoryApiTest.php` -> **100% PASS** (46 tests, 308 assertions).
 - **Status**: SELESAI & TERVERIFIKASI 100%.
+
+---
+
+### [2026-09-14] Standarisasi Komponen Pagination pada FieldBalanceReportPage dengan BasePagination
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar pagination pada halaman [FieldBalanceReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/FieldBalanceReportPage.vue) diganti menggunakan komponen standar [BasePagination](file:///d:/laragon/www/StockEdp/resources/js/shared/components/BasePagination.vue) dari folder komponen bersama `@/shared/components/BasePagination.vue`.
+- **Implementasi yang Diterapkan**:
+  1. Mengimpor `BasePagination` dari `@/shared/components/BasePagination.vue` pada [FieldBalanceReportPage.vue](file:///d:/laragon/www/StockEdp/resources/js/features/reporting/pages/FieldBalanceReportPage.vue).
+  2. Mengganti markup pagination kustom sebelumnya dengan:
+     ```vue
+     <BasePagination
+       :pagination="store.pagination"
+       :loading="store.loading"
+       @change="fetchData"
+     />
+     ```
+  3. Memastikan styling dan fungsionalitas paginasi sinkron secara otomatis dengan respons API backend (`store.pagination` dan `fetchData(page)`).
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed cleanly).
+  - **PHPUnit Feature Testing**: `vendor/bin/phpunit tests/Feature/Reporting/FieldBalanceReportTest.php` -> **100% PASS** (3 tests, 34 assertions).
+  - **Browser Verification**: Terverifikasi langsung via subagent dengan tangkapan layar `field_balance_pagination_1789374578436.png`.
+- **Status**: SELESAI & TERVERIFIKASI 100%.
+

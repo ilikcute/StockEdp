@@ -355,41 +355,11 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="store.pagination && store.pagination.total > 0"
-      class="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 py-2 bg-white rounded-xl border border-gray-200 text-xs text-gray-600 shadow-2xs"
-    >
-      <div>
-        Menampilkan
-        <span class="font-medium text-gray-900">{{ ((store.pagination.current_page - 1) * store.pagination.per_page) + 1 }}</span>
-        sampai
-        <span class="font-medium text-gray-900">{{ Math.min(store.pagination.current_page * store.pagination.per_page, store.pagination.total) }}</span>
-        dari
-        <span class="font-medium text-gray-900">{{ store.pagination.total }}</span> item
-      </div>
-
-      <div class="flex items-center gap-1.5">
-        <button
-          type="button"
-          :disabled="store.pagination.current_page <= 1"
-          class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
-          @click="fetchData(store.pagination.current_page - 1)"
-        >
-          Sebelumnya
-        </button>
-        <span class="text-xs text-gray-500 px-1 font-mono">
-          {{ store.pagination.current_page }} / {{ store.pagination.last_page }}
-        </span>
-        <button
-          type="button"
-          :disabled="store.pagination.current_page >= store.pagination.last_page"
-          class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
-          @click="fetchData(store.pagination.current_page + 1)"
-        >
-          Selanjutnya
-        </button>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.pagination"
+      :loading="store.loading"
+      @change="fetchData"
+    />
   </div>
 </template>
 
@@ -401,6 +371,7 @@ import { locationApi } from '@/features/location/api/location_api';
 import { reportingApi } from '../api/reportingApi';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 import BaseCombobox from '@/shared/components/BaseCombobox.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 import { formatRupiah, formatQuantity, rowNumber as calcRowNumber } from '@/shared/utils/formatters';
 
 const store = useFieldBalanceReportStore();
