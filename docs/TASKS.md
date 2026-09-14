@@ -1173,3 +1173,42 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
      - `npm run build` -> **PASSED** (308 modules transformed).
      - `vendor/bin/phpunit --filter=FieldBalanceReportTest` -> **PASSED** (3 tests, 34 assertions).
      - E2E browser subagent verifikasi visual (collapsed, expanded, active search filter, reset action).
+
+---
+
+### [2026-09-14] - Standarisasi Penuh Seluruh Halaman Menu Master Data ke High-Density Compact Layout & Zero-Scroll Architecture
+- **Latar Belakang**:
+  Audit terhadap 7 modul/entitas di bawah menu **Master Data** (`/products`, `/categories`, `/units`, `/suppliers`, `/locations`, `/stores`, `/users`) menunjukkan bahwa beberapa halaman (`CategoryPage.vue`, `UnitPage.vue`, `UserManagementPage.vue`) masih menggunakan struktur lama dengan `BasePageHeader` terpisah, wrapper `px-4 sm:px-6 lg:px-8` atau `space-y-6`, card filter terpisah yang boros ruang vertikal, dan tombol aksi berukuran standar.
+- **Implementasi yang Diterapkan**:
+  1. **Master Kategori (`CategoryPage.vue`)**:
+     - Migrasi root ke `<div class="space-y-3">`.
+     - TOP Header Card terpadu (`bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5`) yang menyatukan baris judul, subtitle, tombol `BaseButton size="sm"` ("Import CSV" & "+ Tambah Kategori"), serta filter row rapat terintegrasi (`BaseSearchInput`, select status & sort by).
+     - Mengeliminasi dependensi komponen `BasePageHeader` yang usang.
+     - Penyesuaian `BaseAlert` dan tabel high-density compact dengan cell `py-1.5 px-2 text-[11px]`.
+  2. **Master Satuan (`UnitPage.vue`)**:
+     - Migrasi root ke `<div class="space-y-3">`.
+     - TOP Header Card terpadu (`bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5`) dengan ikon timbangan persediaan, tombol aksi `size="sm"` ("Import CSV" & "+ Tambah Satuan"), serta search filter rapat.
+     - Mengeliminasi dependensi komponen `BasePageHeader`.
+     - Tabel high-density compact dengan cell `py-1.5 px-2 text-[11px]`.
+  3. **Pengelolaan Pengguna & Hak Akses (`UserManagementPage.vue`)**:
+     - Mengubah root dari `space-y-6` ke standardisasi `space-y-3`.
+     - Menyatukan header, tombol `BaseButton size="sm"` ("+ Tambah Pengguna"), navigasi tab rapat ("Daftar Pengguna" ber-pill total dan "Peran & Hak Akses"), serta filter toolbar tab pengguna (pencarian nama/email, filter role, filter akses lokasi gudang, filter status, tombol Reset Filter) ke dalam satu TOP Header Card terpadu.
+     - Mengeliminasi card filter raksasa `p-4 shadow-xs` yang boros ruang layar, sehingga tabel pengguna langsung terlihat tanpa perlu scroll (zero-scroll).
+     - Standardisasi peringatan error dengan `BaseAlert`.
+  4. **Matriks Peran & Hak Akses (`RolePermissionMatrix.vue`)**:
+     - Standardisasi layout root `space-y-3` dan shadow `shadow-2xs`.
+     - Role Overview Card dirapatkan (`p-3.5`, font `text-xs`/`text-[11px]`, badge role compact).
+     - Matriks izin dirapatkan (`p-3.5 space-y-2`, item izin `p-2` dengan tag peran ringkas).
+  5. **Navigasi Master Data Konsisten (`MobileNavigation.vue`)**:
+     - Menambahkan entitas `Pengguna` (`/users`, permission `users.manage`) pada array `masterNavLinks` navigasi mobile agar 100% konsisten dan selaras dengan `AppSidebar.vue` dan `DesktopNavigation.vue`.
+  6. **Pembersihan Import & Format Standar (`ProductPage.vue`)**:
+     - Konsolidasi import duplikat formatters (`formatQuantity`, `formatRupiah`, `rowNumber`).
+     - Memastikan display minimum stock menggunakan format bilangan bulat tanpa desimal trailing (`formatQuantity()`).
+- **Verifikasi Quality Gates**:
+  - **JavaScript / Vue Linter (ESLint)**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Asset Bundle Compilation (Vite)**: `npm run build` -> **100% PASS** (307 modules transformed cleanly).
+  - **Automated Feature & Unit Testing (PHPUnit)**:
+    - `CategoryManagementTest.php` -> **PASSED** (27 tests, 73 assertions).
+    - `ProductManagementTest.php` + `LocationManagementTest.php` -> **PASSED** (35 tests, 99 assertions).
+    - `UnitManagementTest.php` + `SupplierManagementTest.php` + `StoreManagementTest.php` + `UserAuthorizationTest.php` + `UserCrudTest.php` + `UserSecurityGuardTest.php` -> **PASSED** (63 tests, 214 assertions).
+    - **Total 125 Feature Tests Master Data 100% LULUS**.
