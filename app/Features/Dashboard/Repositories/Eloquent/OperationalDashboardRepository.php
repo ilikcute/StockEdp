@@ -191,7 +191,10 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         // 1. Receipt
         $receiptQuery = StockMovement::query()
             ->whereIn('stock_movements.location_id', $targetLocationIds)
-            ->where('stock_movements.movement_type', MovementType::RECEIPT->value)
+            ->whereIn('stock_movements.movement_type', [
+                MovementType::RECEIPT->value,
+                MovementType::RECEIPT_GA->value,
+            ])
             ->where('stock_movements.reference_type', StockReceipt::class)
             ->where('stock_movements.created_at', '>=', $startDateTime)
             ->where('stock_movements.created_at', '<', $endNextDateTime);
@@ -394,8 +397,10 @@ class OperationalDashboardRepository implements OperationalDashboardRepositoryIn
         $results = DB::table('stock_movements')
             ->join('products', 'products.id', '=', 'stock_movements.product_id')
             ->leftJoin('units', 'units.id', '=', 'products.unit_id')
-            ->whereIn('stock_movements.location_id', $targetLocationIds)
-            ->where('stock_movements.movement_type', '=', MovementType::RECEIPT->value)
+            ->whereIn('stock_movements.movement_type', [
+                MovementType::RECEIPT->value,
+                MovementType::RECEIPT_GA->value,
+            ])
             ->where('stock_movements.created_at', '>=', $startDateTime)
             ->where('stock_movements.created_at', '<', $endNextDateTime)
             ->select([

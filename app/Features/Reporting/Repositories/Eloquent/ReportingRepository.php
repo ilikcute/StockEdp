@@ -3,6 +3,7 @@
 namespace App\Features\Reporting\Repositories\Eloquent;
 
 use App\Features\Category\Models\Category;
+use App\Features\Inventory\Enums\MovementType;
 use App\Features\Inventory\Models\InventoryBalance;
 use App\Features\Inventory\Models\StockAdjustmentItem;
 use App\Features\Inventory\Models\StockIssue;
@@ -286,7 +287,10 @@ class ReportingRepository implements ReportingRepositoryInterface
                     ->where('stock_movements.reference_type', '=', StockReceipt::class)
                     ->on('stock_movements.product_id', '=', 'stock_receipt_items.product_id')
                     ->on('stock_movements.location_id', '=', 'stock_receipt_items.location_id')
-                    ->where('stock_movements.movement_type', '=', 'RECEIPT');
+                    ->whereIn('stock_movements.movement_type', [
+                        MovementType::RECEIPT->value,
+                        MovementType::RECEIPT_GA->value,
+                    ]);
             })
             ->where('stock_receipts.status', 'POSTED')
             ->whereIn('stock_receipt_items.location_id', $allowedLocationIds);
@@ -320,7 +324,10 @@ class ReportingRepository implements ReportingRepositoryInterface
                     ->where('stock_movements.reference_type', '=', StockReceipt::class)
                     ->on('stock_movements.product_id', '=', 'stock_receipt_items.product_id')
                     ->on('stock_movements.location_id', '=', 'stock_receipt_items.location_id')
-                    ->where('stock_movements.movement_type', '=', 'RECEIPT');
+                    ->whereIn('stock_movements.movement_type', [
+                        MovementType::RECEIPT->value,
+                        MovementType::RECEIPT_GA->value,
+                    ]);
             })
             ->where('stock_receipts.status', 'POSTED')
             ->whereIn('stock_receipt_items.location_id', $allowedLocationIds);
@@ -1108,7 +1115,10 @@ class ReportingRepository implements ReportingRepositoryInterface
                     ->where('stock_movements.reference_type', '=', StockReceipt::class)
                     ->on('stock_movements.product_id', '=', 'stock_receipt_items.product_id')
                     ->on('stock_movements.location_id', '=', 'stock_receipt_items.location_id')
-                    ->where('stock_movements.movement_type', '=', 'RECEIPT');
+                    ->whereIn('stock_movements.movement_type', [
+                        MovementType::RECEIPT->value,
+                        MovementType::RECEIPT_GA->value,
+                    ]);
             })
             ->select([
                 'stock_receipt_items.id as item_id',
