@@ -1155,3 +1155,21 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - `ReportingPhase8A1Test.php` -> **PASSED** (all test suites passing).
 
 **Kesimpulan**: Sistem telah memenuhi seluruh spesifikasi fungsional, performa, estetika UI compact, dan siap untuk fase operasional (Ready for Release).
+
+---
+
+### [2026-09-14] - Penyelarasan TOP Header FieldBalanceReportPage dengan LowStockReportPage
+- **Latar Belakang**: TOP Header pada `FieldBalanceReportPage.vue` sebelumnya belum mengadopsi struktur 2-tier (Primary Row + Collapsible Advanced Filters) dan `BaseCombobox` yang seragam dengan `LowStockReportPage.vue`.
+- **Implementasi yang Diterapkan**:
+  1. **Struktur Header 2-Tier**:
+     - Memperbarui wrapper kartu menjadi `bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5`.
+     - **Primary Row**: Menyatukan judul + subtitle, `BaseCombobox` pemilihan lokasi teknisi (`options=fieldLocations`), search input SKU/produk dengan debounce, tombol toggle **Filter** dengan badge filter aktif, tombol **Reset** reaktif, dan kontrol **Ekspor CSV** (`ReportCsvExportControl size="sm"`).
+     - **Secondary Row (Collapsible)**: Mengakomodasi filter Kategori dan pilihan jumlah Baris per halaman (`15`, `50`, `100` / hal).
+  2. **Error Alert & Pagination Footer Modern**:
+     - Menstandarisasi alert error dengan ikon peringatan, tombol **Coba Lagi**, dan tombol **Tutup**.
+     - Mengganti pagination footer lama menjadi kartu ringkas `Menampilkan X sampai Y dari Z item` dengan tombol navigasi compact dan counter halaman font monospace.
+  3. **Verifikasi**:
+     - `npm run lint` -> **PASSED** (0 error, 0 warning).
+     - `npm run build` -> **PASSED** (308 modules transformed).
+     - `vendor/bin/phpunit --filter=FieldBalanceReportTest` -> **PASSED** (3 tests, 34 assertions).
+     - E2E browser subagent verifikasi visual (collapsed, expanded, active search filter, reset action).

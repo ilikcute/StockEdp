@@ -317,13 +317,12 @@ import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import BaseButton from '@/shared/components/BaseButton.vue';
 import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
-import { rowNumber } from '@/shared/utils/formatters';
 import ProductFormModal from '../components/ProductFormModal.vue';
 import ProductStatusModal from '../components/ProductStatusModal.vue';
 import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import apiClient from '@/shared/api/api_client';
-import { formatQuantity, formatRupiah } from '@/shared/utils/formatters';
+import { formatQuantity, formatRupiah, rowNumber } from '@/shared/utils/formatters';
 
 const store = useProductStore();
 const authStore = useAuthStore();

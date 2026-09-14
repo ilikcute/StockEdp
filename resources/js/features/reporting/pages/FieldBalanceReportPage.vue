@@ -1,103 +1,162 @@
 <template>
   <div class="space-y-3">
     <!-- Top Header & Filter Toolbar (Compact) -->
-    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-      <div>
-        <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
-          <svg
-            class="w-4 h-4 text-indigo-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          Laporan Persediaan Lapangan Teknisi
-        </h1>
-        <p class="text-[11px] text-gray-500 mt-0.5">
-          Monitoring persediaan unit di tangan teknisi: unit siap pasang (GOOD) vs unit rusak tarikan (DEFECTIVE).
-        </p>
-      </div>
-
-      <!-- Actions, Filter & Search (Unified in Top Header) -->
-      <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-        <!-- Search Input -->
-        <div class="w-full sm:w-52">
-          <input
-            id="field-search"
-            v-model="filters.search"
-            type="text"
-            placeholder="SKU, nama produk, teknisi..."
-            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            @input="handleSearch"
-            @keydown.enter="fetchData(1)"
-          >
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Primary Header Row: Title & Primary Controls -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <!-- Title & Subtitle -->
+        <div>
+          <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            Laporan Persediaan Lapangan Teknisi
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Monitoring persediaan unit di tangan teknisi: unit siap pasang (GOOD) vs unit rusak tarikan (DEFECTIVE).
+          </p>
         </div>
 
-        <!-- Location Filter -->
-        <select
-          v-model="filters.location_id"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          @change="fetchData(1)"
-        >
-          <option value="">
-            Semua Teknisi / Lokasi
-          </option>
-          <option
-            v-for="loc in fieldLocations"
-            :key="loc.id"
-            :value="loc.id"
+        <!-- Primary Controls (Location, Search, Filter Toggle, Reset, Export) -->
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <!-- Location Selector -->
+          <div class="w-full sm:w-56 min-w-[200px]">
+            <BaseCombobox
+              id="filter-location"
+              v-model="filters.location_id"
+              :options="fieldLocations"
+              placeholder="Pilih teknisi / lokasi..."
+              size="sm"
+              :max-render-limit="100"
+            />
+          </div>
+
+          <!-- Search Input -->
+          <div class="w-full sm:w-48">
+            <input
+              id="field-search"
+              v-model="filters.search"
+              type="text"
+              class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Cari SKU atau nama produk..."
+              @keydown.enter="fetchData(1)"
+            >
+          </div>
+
+          <!-- Toggle Advanced Filters -->
+          <button
+            type="button"
+            :class="[
+              'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-2xs transition-colors cursor-pointer whitespace-nowrap',
+              showAdvancedFilters || activeExtraFiltersCount > 0
+                ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+            @click="showAdvancedFilters = !showAdvancedFilters"
           >
-            {{ loc.name }} ({{ loc.code }}) - {{ loc.user?.name || 'Teknisi' }}
-          </option>
-        </select>
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
+            </svg>
+            <span>Filter</span>
+            <span
+              v-if="activeExtraFiltersCount > 0"
+              class="inline-flex items-center justify-center px-1.5 py-0.2 text-[10px] font-bold text-white bg-indigo-600 rounded-full"
+            >
+              {{ activeExtraFiltersCount }}
+            </span>
+          </button>
 
-        <!-- Category Filter -->
-        <select
-          v-model="filters.category_id"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          @change="fetchData(1)"
-        >
-          <option value="">
-            Semua Kategori
-          </option>
-          <option
-            v-for="cat in categories"
-            :key="cat.id"
-            :value="cat.id"
+          <!-- Reset Filter -->
+          <button
+            v-if="isAnyFilterActive"
+            type="button"
+            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
+            title="Reset Filter"
+            @click="resetAllFilters"
           >
-            {{ cat.name }}
-          </option>
-        </select>
+            Reset
+          </button>
 
-        <!-- Reset Filter Button -->
-        <button
-          v-if="filters.search || filters.location_id || filters.category_id"
-          type="button"
-          class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
-          title="Reset Filter"
-          @click="resetFilters"
-        >
-          Reset
-        </button>
+          <!-- Export CSV Control -->
+          <ReportCsvExportControl
+            size="sm"
+            :loading="exportStore.isExporting('field-balances')"
+            :disabled="false"
+            :error="exportStore.errorFor('field-balances')"
+            :status="exportStore.statusFor('field-balances')"
+            :validation-errors="exportStore.validationErrorsFor('field-balances')"
+            :success-message="exportStore.successFor('field-balances')"
+            @export="exportCsv"
+            @dismiss="exportStore.clearFeedback('field-balances')"
+          />
+        </div>
+      </div>
 
-        <!-- Export CSV Control -->
-        <ReportCsvExportControl
-          size="sm"
-          :loading="exportStore.isExporting('field-balances')"
-          :disabled="false"
-          :error="exportStore.errorFor('field-balances')"
-          :status="exportStore.statusFor('field-balances')"
-          :validation-errors="exportStore.validationErrorsFor('field-balances')"
-          :success-message="exportStore.successFor('field-balances')"
-          @export="exportCsv"
-          @dismiss="exportStore.clearFeedback('field-balances')"
-        />
+      <!-- Secondary Row: Advanced Filters (Category, Sorting / Per Page) -->
+      <div
+        v-show="showAdvancedFilters"
+        class="border-t border-gray-100 pt-2 flex flex-wrap items-center justify-between gap-2.5 text-xs"
+      >
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Kategori -->
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Kategori:</span>
+            <select
+              v-model="filters.category_id"
+              class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="">
+                Semua Kategori
+              </option>
+              <option
+                v-for="cat in categories"
+                :key="cat.id"
+                :value="cat.id"
+              >
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sorting & Pagination Count -->
+        <div class="flex items-center gap-1.5 flex-wrap ml-auto">
+          <span class="text-[11px] text-gray-500 font-medium whitespace-nowrap">Baris:</span>
+          <select
+            v-model="filters.per_page"
+            class="block rounded-lg border border-gray-300 bg-white py-1 pl-2 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="15">
+              15 / hal
+            </option>
+            <option value="50">
+              50 / hal
+            </option>
+            <option value="100">
+              100 / hal
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -106,14 +165,38 @@
       v-if="store.error"
       class="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
-      <span>{{ store.error }}</span>
-      <button
-        type="button"
-        class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
-        @click="store.error = null"
-      >
-        Tutup
-      </button>
+      <div class="flex items-center gap-2">
+        <svg
+          class="w-4 h-4 text-rose-600 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{{ store.error }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="font-semibold text-rose-700 hover:text-rose-900 bg-rose-100 px-2.5 py-1 rounded text-xs cursor-pointer"
+          @click="fetchData(1)"
+        >
+          Coba Lagi
+        </button>
+        <button
+          type="button"
+          class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+          @click="store.error = null"
+        >
+          Tutup
+        </button>
+      </div>
     </div>
 
     <!-- Summary Badges (Compact) -->
@@ -273,23 +356,34 @@
 
     <!-- Pagination -->
     <div
-      v-if="store.pagination?.last_page > 1"
-      class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6"
+      v-if="store.pagination && store.pagination.total > 0"
+      class="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 py-2 bg-white rounded-xl border border-gray-200 text-xs text-gray-600 shadow-2xs"
     >
-      <div class="text-xs text-gray-700">
-        Halaman {{ store.pagination.current_page }} dari {{ store.pagination.last_page }} (Total: {{ store.pagination.total }} baris)
+      <div>
+        Menampilkan
+        <span class="font-medium text-gray-900">{{ ((store.pagination.current_page - 1) * store.pagination.per_page) + 1 }}</span>
+        sampai
+        <span class="font-medium text-gray-900">{{ Math.min(store.pagination.current_page * store.pagination.per_page, store.pagination.total) }}</span>
+        dari
+        <span class="font-medium text-gray-900">{{ store.pagination.total }}</span> item
       </div>
-      <div class="flex gap-2">
+
+      <div class="flex items-center gap-1.5">
         <button
+          type="button"
           :disabled="store.pagination.current_page <= 1"
-          class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
+          class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
           @click="fetchData(store.pagination.current_page - 1)"
         >
           Sebelumnya
         </button>
+        <span class="text-xs text-gray-500 px-1 font-mono">
+          {{ store.pagination.current_page }} / {{ store.pagination.last_page }}
+        </span>
         <button
+          type="button"
           :disabled="store.pagination.current_page >= store.pagination.last_page"
-          class="rounded border border-gray-300 px-2.5 py-1 text-xs disabled:opacity-50"
+          class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs cursor-pointer"
           @click="fetchData(store.pagination.current_page + 1)"
         >
           Selanjutnya
@@ -300,17 +394,19 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, computed, watch, onMounted } from 'vue';
 import { useFieldBalanceReportStore } from '../stores/useFieldBalanceReportStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { locationApi } from '@/features/location/api/location_api';
 import { reportingApi } from '../api/reportingApi';
 import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
-import { formatRupiah, formatQuantity } from '@/shared/utils/formatters';
+import BaseCombobox from '@/shared/components/BaseCombobox.vue';
+import { formatRupiah, formatQuantity, rowNumber as calcRowNumber } from '@/shared/utils/formatters';
 
 const store = useFieldBalanceReportStore();
 const exportStore = useReportCsvExportStore();
 
+const showAdvancedFilters = ref(false);
 const fieldLocations = ref([]);
 const categories = ref([]);
 
@@ -318,7 +414,43 @@ const filters = reactive({
     location_id: '',
     category_id: '',
     search: '',
+    per_page: '15',
 });
+
+const activeExtraFiltersCount = computed(() => {
+    let count = 0;
+    if (filters.category_id) count++;
+    if (filters.per_page !== '15') count++;
+    return count;
+});
+
+const isAnyFilterActive = computed(() => {
+    return !!(
+        filters.location_id ||
+        filters.search ||
+        filters.category_id ||
+        filters.per_page !== '15'
+    );
+});
+
+const resetAllFilters = () => {
+    filters.location_id = '';
+    filters.category_id = '';
+    filters.search = '';
+    filters.per_page = '15';
+    clearTimeout(debounceTimer);
+    fetchData(1);
+};
+
+let debounceTimer = null;
+const debouncedFetch = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        fetchData(1);
+    }, 400);
+};
+
+watch(() => ({ ...filters }), debouncedFetch, { deep: true });
 
 const loadMetadata = async () => {
     try {
@@ -327,10 +459,12 @@ const loadMetadata = async () => {
             reportingApi.getFilterBaseOptions(),
         ]);
         const allLocs = locRes.data?.data?.data || locRes.data?.data || [];
-        fieldLocations.value = allLocs.filter((l) => l.type === 'FIELD_PERSONNEL');
-        if (fieldLocations.value.length === 0) {
-            fieldLocations.value = allLocs;
-        }
+        const filtered = allLocs.filter((l) => l.type === 'FIELD_PERSONNEL');
+        const list = filtered.length > 0 ? filtered : allLocs;
+        fieldLocations.value = list.map((loc) => ({
+            ...loc,
+            name: loc.user?.name ? `${loc.name} (${loc.user.name})` : loc.name,
+        }));
         categories.value = baseRes.data?.data?.categories || baseRes.data?.categories || [];
     } catch {
         // quiet error
@@ -343,23 +477,9 @@ const fetchData = (page = 1) => {
         location_id: filters.location_id || undefined,
         category_id: filters.category_id || undefined,
         search: filters.search || undefined,
+        per_page: Number(filters.per_page) || 15,
     };
     store.fetchReport(params);
-};
-
-let searchTimer = null;
-const handleSearch = () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-        fetchData(1);
-    }, 300);
-};
-
-const resetFilters = () => {
-    filters.location_id = '';
-    filters.category_id = '';
-    filters.search = '';
-    fetchData(1);
 };
 
 const exportCsv = () => {
@@ -372,8 +492,7 @@ const exportCsv = () => {
 };
 
 const rowNumber = (idx) => {
-    if (!store.pagination) return idx + 1;
-    return (store.pagination.current_page - 1) * store.pagination.per_page + idx + 1;
+    return calcRowNumber(store.pagination, idx);
 };
 
 onMounted(() => {

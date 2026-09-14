@@ -1,68 +1,91 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <!-- Header -->
-    <BasePageHeader
-      title="Master Kategori"
-      description="Kelola daftar kategori produk inventory."
-    >
-      <template #actions>
-        <BaseButton
-          v-if="authStore.hasPermission('categories.import')"
-          id="btn-import-category"
-          variant="secondary"
-          @click="showImportModal = true"
-        >
-          📥 Import CSV
-        </BaseButton>
-        <BaseButton
-          v-if="authStore.hasPermission('categories.create')"
-          id="btn-create-category"
-          @click="openCreateModal"
-        >
-          Tambah Kategori
-        </BaseButton>
-      </template>
-    </BasePageHeader>
-
-    <!-- Search & Filter Controls -->
-    <div class="mt-3 flex flex-col sm:flex-row justify-between gap-2.5">
-      <div class="w-full sm:max-w-xs">
-        <BaseSearchInput
-          :model-value="searchQuery"
-          placeholder="Cari kode atau nama..."
-          @update:model-value="searchQuery = $event"
-          @search="onSearch"
-        />
+  <div class="space-y-3">
+    <!-- TOP Header & Filter Toolbar Compact -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Primary Controls Row -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+              />
+            </svg>
+            Master Kategori
+          </h1>
+          <p class="text-[11px] text-gray-500 mt-0.5">
+            Kelola daftar kategori produk inventory.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <BaseButton
+            v-if="authStore.hasPermission('categories.import')"
+            id="btn-import-category"
+            variant="secondary"
+            size="sm"
+            @click="showImportModal = true"
+          >
+            📥 Import CSV
+          </BaseButton>
+          <BaseButton
+            v-if="authStore.hasPermission('categories.create')"
+            id="btn-create-category"
+            size="sm"
+            @click="openCreateModal"
+          >
+            + Tambah Kategori
+          </BaseButton>
+        </div>
       </div>
-      <div class="flex gap-2 flex-wrap sm:flex-nowrap">
-        <select
-          v-model="filterActive"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Status
-          </option>
-          <option value="true">
-            Aktif
-          </option>
-          <option value="false">
-            Nonaktif
-          </option>
-        </select>
-        <select
-          v-model="sortBy"
-          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="created_at">
-            Terbaru
-          </option>
-          <option value="code">
-            Kode
-          </option>
-          <option value="name">
-            Nama
-          </option>
-        </select>
+
+      <!-- Filters & Search Row -->
+      <div class="flex flex-col sm:flex-row justify-between gap-2 pt-2 border-t border-gray-100">
+        <div class="w-full sm:max-w-xs">
+          <BaseSearchInput
+            :model-value="searchQuery"
+            placeholder="Cari kode atau nama..."
+            @update:model-value="searchQuery = $event"
+            @search="onSearch"
+          />
+        </div>
+        <div class="flex gap-2 flex-wrap sm:flex-nowrap">
+          <select
+            v-model="filterActive"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Status
+            </option>
+            <option value="true">
+              Aktif
+            </option>
+            <option value="false">
+              Nonaktif
+            </option>
+          </select>
+          <select
+            v-model="sortBy"
+            class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="created_at">
+              Terbaru
+            </option>
+            <option value="code">
+              Kode
+            </option>
+            <option value="name">
+              Nama
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -82,7 +105,7 @@
     <!-- Forbidden Message -->
     <div
       v-if="isForbidden"
-      class="mt-4 text-center py-12 bg-white rounded-lg border border-gray-300 shadow-sm"
+      class="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-2xs"
     >
       <p class="text-gray-500 text-xs">
         Anda tidak memiliki izin untuk melihat data kategori.
@@ -92,7 +115,7 @@
     <!-- Table -->
     <div
       v-else
-      class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar"
+      class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar"
     >
       <table class="w-full text-left text-xs border-collapse">
         <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
@@ -240,7 +263,6 @@ import BasePagination from '@/shared/components/BasePagination.vue';
 import BaseButton from '@/shared/components/BaseButton.vue';
 import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
-import BasePageHeader from '@/shared/components/BasePageHeader.vue';
 import { rowNumber } from '@/shared/utils/formatters.js';
 import CategoryFormModal from '../components/CategoryFormModal.vue';
 import CategoryStatusModal from '../components/CategoryStatusModal.vue';

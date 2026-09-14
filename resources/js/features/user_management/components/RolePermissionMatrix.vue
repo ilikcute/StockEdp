@@ -1,22 +1,22 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-3">
     <!-- Role Cards Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       <div
         v-for="role in roles"
         :key="role.id"
-        class="rounded-xl p-5 border border-gray-200 bg-white shadow-xs flex flex-col justify-between"
+        class="rounded-xl p-3.5 border border-gray-200 bg-white shadow-2xs flex flex-col justify-between"
       >
         <div>
           <div class="flex items-start justify-between gap-2">
             <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-sm font-bold text-gray-900">
+              <div class="flex items-center gap-1.5">
+                <h3 class="text-xs font-bold text-gray-900">
                   {{ role.name }}
                 </h3>
                 <span
                   :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold ring-1 ring-inset',
+                    'inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-mono font-semibold ring-1 ring-inset',
                     role.code === 'ADMIN'
                       ? 'bg-purple-50 text-purple-700 ring-purple-600/20'
                       : role.code === 'INVENTORY_SUPERVISOR'
@@ -27,13 +27,13 @@
                   {{ role.code }}
                 </span>
               </div>
-              <p class="text-xs text-gray-500 mt-1">
+              <p class="text-[11px] text-gray-500 mt-0.5">
                 {{ role.description || 'Peran otorisasi sistem persediaan.' }}
               </p>
             </div>
           </div>
 
-          <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+          <div class="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
             <span class="text-gray-500">
               Total Pengguna: <strong class="text-gray-800">{{ role.users_count ?? 0 }}</strong>
             </span>
@@ -43,11 +43,11 @@
           </div>
         </div>
 
-        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-end">
+        <div class="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-end">
           <button
             v-if="role.code !== 'ADMIN'"
             type="button"
-            class="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+            class="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
             @click="$emit('edit-role-permissions', role)"
           >
             <svg
@@ -67,7 +67,7 @@
           </button>
           <span
             v-else
-            class="text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded ring-1 ring-inset ring-purple-600/20"
+            class="text-[10px] font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded ring-1 ring-inset ring-purple-600/20"
           >
             Akses Penuh Permanen
           </span>
@@ -76,13 +76,13 @@
     </div>
 
     <!-- Permissions Breakdown Matrix by Group -->
-    <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-      <div class="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+    <div class="bg-white rounded-xl shadow-2xs border border-gray-200 overflow-hidden">
+      <div class="px-3.5 py-2.5 border-b border-gray-200 bg-gray-50/70 flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-bold text-gray-900">
+          <h3 class="text-xs font-bold text-gray-900">
             Matriks Hak Akses Berdasarkan Fitur
           </h3>
-          <p class="text-xs text-gray-500 mt-0.5">
+          <p class="text-[11px] text-gray-500 mt-0.5">
             Daftar izin operasional dan modul yang diberikan untuk masing-masing peran.
           </p>
         </div>
@@ -113,7 +113,7 @@
               d="M4 12a8 8 0 018-8v8H4z"
             />
           </svg>
-          <span class="text-sm font-medium">Memuat rincian hak akses...</span>
+          <span class="text-xs font-medium">Memuat rincian hak akses...</span>
         </div>
       </div>
 
@@ -124,21 +124,21 @@
         <div
           v-for="(perms, groupName) in allPermissions"
           :key="groupName"
-          class="p-5 space-y-3"
+          class="p-3.5 space-y-2"
         >
           <div class="flex items-center gap-2">
-            <span class="h-2 w-2 rounded-full bg-indigo-600" />
-            <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">
+            <span class="h-1.5 w-1.5 rounded-full bg-indigo-600" />
+            <h4 class="text-[11px] font-bold text-gray-900 uppercase tracking-wider">
               {{ formatGroupName(groupName) }}
             </h4>
-            <span class="text-xs text-gray-400">({{ perms.length }} izin)</span>
+            <span class="text-[11px] text-gray-400">({{ perms.length }} izin)</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <div
               v-for="perm in perms"
               :key="perm.id"
-              class="p-2.5 rounded-lg border border-gray-100 bg-gray-50/60 text-xs space-y-1"
+              class="p-2 rounded-lg border border-gray-100 bg-gray-50/60 text-xs space-y-1"
             >
               <div class="font-semibold text-gray-900">
                 {{ perm.name }}
