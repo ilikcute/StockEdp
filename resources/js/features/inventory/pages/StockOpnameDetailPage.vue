@@ -32,6 +32,10 @@
         v-if="opname"
         class="flex items-center gap-2 flex-wrap"
       >
+        <BasePrintButton
+          label="Cetak Hasil Opname"
+          @click="handlePrint"
+        />
         <!-- Edit Draft -->
         <router-link
           v-if="abilities.can_update"
@@ -424,17 +428,28 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStockOpnameStore } from '../stores/useStockOpnameStore';
+import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import StockOpnameStatusBadge from '../components/StockOpnameStatusBadge.vue';
 import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import BasePrintButton from '@/shared/components/BasePrintButton.vue';
 import ReopenOpnameDialog from '../components/ReopenOpnameDialog.vue';
 import CancelOpnameDialog from '../components/CancelOpnameDialog.vue';
 import { formatRupiah, formatQuantity } from '@/shared/utils/formatters.js';
+import { printStockOpname } from '@/shared/utils/printDocument';
 
 const route = useRoute();
 const store = useStockOpnameStore();
+const authStore = useAuthStore();
 
 const opname = computed(() => store.currentOpname);
 const abilities = computed(() => store.abilities);
+
+const handlePrint = () => {
+    if (!opname.value) return;
+    printStockOpname(opname.value, {
+        printedBy: authStore.user?.name || 'Sistem StockEdp',
+    });
+};
 
 const confirmType = ref(null);
 const showReopenDialog = ref(false);

@@ -146,14 +146,14 @@
             />
           </div>
 
-          <!-- Teknisi / Lokasi Lapangan -->
+          <!-- Lokasi Asal (Gudang Induk / Teknisi) -->
           <div>
             <div class="flex items-center justify-between mb-1">
               <label
                 for="technician_location_id"
                 class="block text-[11px] font-semibold text-gray-600"
               >
-                Teknisi / Lokasi Lapangan *
+                Lokasi Asal (Gudang Induk / Teknisi) *
               </label>
               <div
                 v-if="isLoadingBalances"
@@ -186,7 +186,7 @@
               v-model="form.technician_location_id"
               :options="locationOptions"
               size="xs"
-              placeholder="Pilih lokasi teknisi..."
+              placeholder="Pilih gudang induk atau lokasi teknisi..."
               required
               @change="onLocationChanged"
             />
@@ -582,7 +582,9 @@ const locationOptions = computed(() => {
     return fieldLocations.value.map((loc) => ({
         id: loc.id,
         code: loc.code,
-        name: `${loc.name} (${loc.user?.name || 'Teknisi'})`,
+        name: loc.type === 'MAIN_WAREHOUSE'
+            ? `${loc.name} [Gudang Induk]`
+            : `${loc.name} (${loc.user?.name || 'Teknisi Lapangan'})`,
         type: loc.type,
     }));
 });
@@ -651,7 +653,7 @@ const loadDependencies = async () => {
 
         stores.value = storeRes.data?.data?.data || storeRes.data?.data || [];
         const allLocs = locRes.data?.data?.data || locRes.data?.data || [];
-        fieldLocations.value = allLocs.filter((l) => l.type === 'FIELD_PERSONNEL');
+        fieldLocations.value = allLocs.filter((l) => l.type === 'FIELD_PERSONNEL' || l.type === 'MAIN_WAREHOUSE');
         if (fieldLocations.value.length === 0) {
             fieldLocations.value = allLocs;
         }
@@ -754,7 +756,7 @@ const submitAllocation = async () => {
     }
 
     if (!form.value.technician_location_id) {
-        errorMsg.value = 'Harap pilih lokasi teknisi.';
+        errorMsg.value = 'Harap pilih lokasi asal (gudang induk atau teknisi).';
         return;
     }
 

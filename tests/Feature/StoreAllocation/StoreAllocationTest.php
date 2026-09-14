@@ -192,19 +192,19 @@ class StoreAllocationTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_cannot_create_store_allocation_on_non_field_personnel_location(): void
+    public function test_cannot_create_store_allocation_on_damaged_storage_location(): void
     {
-        $warehouse = Location::create([
-            'code' => 'LOC-WH-'.substr(uniqid(), -5),
-            'name' => 'Gudang Induk',
-            'type' => 'MAIN_WAREHOUSE',
+        $damagedStorage = Location::create([
+            'code' => 'LOC-DMG-'.substr(uniqid(), -5),
+            'name' => 'Gudang Rusak',
+            'type' => 'DAMAGED_STORAGE',
             'is_active' => true,
         ]);
 
         $payload = [
             'store_id' => $this->store->id,
             'technician_user_id' => $this->technician->id,
-            'technician_location_id' => $warehouse->id,
+            'technician_location_id' => $damagedStorage->id,
             'allocated_at' => now()->toDateString(),
             'items' => [
                 [
@@ -217,5 +217,51 @@ class StoreAllocationTest extends TestCase
         $response = $this->actingAs($this->technician)->postJson('/api/v1/store-allocations', $payload);
 
         $response->assertStatus(422);
+    }
+
+    public function test_can_create_store_allocation_from_main_warehouse_location(): void
+    {
+        $warehouse = Location::create([
+            'code' => 'LOC-WH-'.substr(uniqid(), -5),
+            'name' => 'Gudang Induk',
+            'type' => 'MAIN_WAREHOUSE',
+            'is_active' => true,
+        ]);
+
+        \App\Features\Inventory\Models\InventoryBalance::create([
+            'product_id' => $this->productA->id,
+            'location_id' => $warehouse->id,
+            'quantity' => 10,
+            'condition' => 'GOOD',
+        ]);
+
+        $payload = [
+            'store_id' => $this->store->id,
+            'technician_user_id' => $this->technician->id,
+            'technician_location_id' => $warehouse->id,
+            'allocated_at' => now()->toDateString(),
+            'items' => [
+                [
+                    'product_id' => $this->productA->id,
+                    'quantity' => 2,
+                    'serial_number' => 'SN-WH-001',
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->technician)->postJson('/api/v1/store-allocations', $payload);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('store_allocations', [
+            'technician_location_id' => $warehouse->id,
+            'store_id' => $this->store->id,
+        ]);
+
+        $this->assertDatabaseHas('inventory_balances', [
+            'product_id' => $this->productA->id,
+            'location_id' => $warehouse->id,
+            'quantity' => 8,
+            'condition' => 'GOOD',
+        ]);
     }
 }

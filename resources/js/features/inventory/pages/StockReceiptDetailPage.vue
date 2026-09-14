@@ -33,6 +33,10 @@
         v-if="doc"
         class="flex items-center gap-2 flex-wrap"
       >
+        <BasePrintButton
+          @click="handlePrint"
+        />
+
         <router-link
           v-if="doc.status === 'DRAFT' && hasPermission('stock_receipts.update')"
           :to="`/inventory/receipts/${doc.id}/edit`"
@@ -172,10 +176,14 @@ import { useStockReceiptStore } from '../stores/useStockReceiptStore';
 import { useDocumentDetail } from '../composables/use_document_detail';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
 import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import BasePrintButton from '@/shared/components/BasePrintButton.vue';
 import DocumentStatusBadge from '../components/DocumentStatusBadge.vue';
 import DocumentItemsTable from '../components/DocumentItemsTable.vue';
+import { useAuthStore } from '@features/auth/stores/use_auth_store';
+import { printStockReceipt } from '@/shared/utils/printDocument';
 
 const store = useStockReceiptStore();
+const authStore = useAuthStore();
 
 const {
     doc,
@@ -195,4 +203,11 @@ const {
     id: useRoute().params.id,
     toastTitle: 'Penerimaan Stok',
 });
+
+const handlePrint = () => {
+    if (!doc.value) return;
+    printStockReceipt(doc.value, {
+        printedBy: authStore.user?.name || 'Sistem StockEdp',
+    });
+};
 </script>

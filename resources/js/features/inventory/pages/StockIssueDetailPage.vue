@@ -33,6 +33,9 @@
         v-if="doc"
         class="flex items-center gap-2 flex-wrap"
       >
+        <BasePrintButton
+          @click="handlePrint"
+        />
         <router-link
           v-if="doc.status === 'DRAFT' && hasPermission('stock_issues.update')"
           :to="`/inventory/issues/${doc.id}/edit`"
@@ -157,10 +160,14 @@ import { useStockIssueStore } from '../stores/useStockIssueStore';
 import { useDocumentDetail } from '../composables/use_document_detail';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
 import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import BasePrintButton from '@/shared/components/BasePrintButton.vue';
 import DocumentStatusBadge from '../components/DocumentStatusBadge.vue';
 import DocumentItemsTable from '../components/DocumentItemsTable.vue';
+import { useAuthStore } from '@features/auth/stores/use_auth_store';
+import { printStockIssue } from '@/shared/utils/printDocument';
 
 const store = useStockIssueStore();
+const authStore = useAuthStore();
 
 const {
     doc,
@@ -180,4 +187,11 @@ const {
     id: useRoute().params.id,
     toastTitle: 'Pengeluaran Stok',
 });
+
+const handlePrint = () => {
+    if (!doc.value) return;
+    printStockIssue(doc.value, {
+        printedBy: authStore.user?.name || 'Sistem StockEdp',
+    });
+};
 </script>

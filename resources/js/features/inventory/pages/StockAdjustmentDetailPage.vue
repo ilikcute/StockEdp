@@ -39,6 +39,10 @@
         v-if="adjustment"
         class="flex items-center gap-2 flex-wrap"
       >
+        <BasePrintButton
+          label="Cetak Berita Acara"
+          @click="handlePrint"
+        />
         <router-link
           v-if="adjustment.status === 'DRAFT' && adjustment.abilities?.can_update"
           :to="`/inventory/adjustments/${adjustment.id}/edit`"
@@ -371,12 +375,23 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStockAdjustmentStore } from '../stores/useStockAdjustmentStore';
+import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { formatRupiah, formatQuantity } from '@/shared/utils/formatters.js';
+import { printStockAdjustment } from '@/shared/utils/printDocument';
+import BasePrintButton from '@/shared/components/BasePrintButton.vue';
 
 const route = useRoute();
 const store = useStockAdjustmentStore();
+const authStore = useAuthStore();
 
 const adjustment = computed(() => store.currentAdjustment);
+
+const handlePrint = () => {
+  if (!adjustment.value) return;
+  printStockAdjustment(adjustment.value, {
+    printedBy: authStore.user?.name || 'Sistem StockEdp',
+  });
+};
 
 const confirmActionType = ref(null);
 const actionSuccessMessage = ref('');

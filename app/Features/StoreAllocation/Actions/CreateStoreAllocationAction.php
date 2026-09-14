@@ -39,20 +39,20 @@ class CreateStoreAllocationAction
 
                     $location = Location::find($data['technician_location_id']);
                     if (! $location || ! $location->is_active) {
-                        throw new DomainException('Lokasi teknisi tidak aktif atau tidak ditemukan.', 422);
+                        throw new DomainException('Lokasi asal alokasi tidak aktif atau tidak ditemukan.', 422);
                     }
 
-                    if ($location->type !== LocationType::FIELD_PERSONNEL->value) {
-                        throw new DomainException('Lokasi stok teknisi harus bertipe FIELD_PERSONNEL.', 422);
+                    if (! in_array($location->type, [LocationType::FIELD_PERSONNEL->value, LocationType::MAIN_WAREHOUSE->value], true)) {
+                        throw new DomainException('Lokasi asal alokasi harus bertipe FIELD_PERSONNEL atau MAIN_WAREHOUSE.', 422);
                     }
 
                     $technician = User::find($data['technician_user_id']);
                     if (! $technician) {
-                        throw new DomainException('Teknisi/lokasi stok tidak ditemukan.', 422);
+                        throw new DomainException('Teknisi/petugas pelaksana alokasi tidak ditemukan.', 422);
                     }
 
-                    if ((int) $location->user_id !== (int) $technician->id) {
-                        throw new DomainException('Lokasi stok harus terdaftar sebagai lokasi milik teknisi bersangkutan.', 422);
+                    if ($location->type === LocationType::FIELD_PERSONNEL->value && (int) $location->user_id !== (int) $technician->id) {
+                        throw new DomainException('Lokasi stok teknisi harus terdaftar sebagai lokasi milik teknisi bersangkutan.', 422);
                     }
 
                     $allocationNumber = $this->repository->getNextAllocationNumber();

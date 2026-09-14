@@ -30,26 +30,11 @@
         >
           Kembali
         </router-link>
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 cursor-pointer"
-          @click="windowPrint"
-        >
-          <svg
-            class="w-3.5 h-3.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-            />
-          </svg>
-          <span>Cetak Dokumen</span>
-        </button>
+        <BasePrintButton
+          variant="primary"
+          :disabled="!doc"
+          @click="handlePrint"
+        />
       </div>
     </div>
 
@@ -251,15 +236,22 @@
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStoreAllocationStore } from '../stores/useStoreAllocationStore';
+import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { formatQuantity, formatRupiah } from '@/shared/utils/formatters';
+import { printStoreAllocation } from '@/shared/utils/printDocument';
+import BasePrintButton from '@/shared/components/BasePrintButton.vue';
 
 const route = useRoute();
 const store = useStoreAllocationStore();
+const authStore = useAuthStore();
 
 const doc = computed(() => store.currentAllocation);
 
-const windowPrint = () => {
-    window.print();
+const handlePrint = () => {
+    if (!doc.value) return;
+    printStoreAllocation(doc.value, {
+        printedBy: authStore.user?.name || 'Sistem StockEdp',
+    });
 };
 
 onMounted(() => {

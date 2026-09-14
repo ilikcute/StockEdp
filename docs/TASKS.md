@@ -1458,5 +1458,68 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - **Browser Testing**: Mengisi form penerimaan baru di browser, menekan tombol *Simpan Draft*, dan terverifikasi berhasil dialihkan langsung ke `http://stockedp.test/inventory/receipts` (`StockReceiptListPage.vue`) dengan dokumen draft baru `REC-202609-0001` tampil di tabel daftar dan 0 console error.
 - **Status**: SELESAI & TERVERIFIKASI 100%.
 
+---
 
+### [2026-09-14] Pembuatan Modul Reusable Cetak Dokumen / PDF Reprint untuk Hard Copy Inventaris
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta dibuatkan reusable file untuk cetak ke PDF agar dokumen-dokumen inventaris di StockEdp dapat dilakukan cetak ulang (reprint) secara fisik/hard copy secara rapi dan profesional.
+- **Implementasi yang Diterapkan**:
+  1. **Core Printing & PDF Engine (`resources/js/shared/utils/printDocument.js`)**:
+     - Mengimplementasikan fungsi `printDocument(options)` berbasis iframe terisolasi yang tidak menampilkan UI navigasi web (sidebar, navbar, URL browser).
+     - Mengatur layout khusus kertas **A4 Portrait** (`@page { size: A4 portrait; margin: 10mm 12mm 12mm 12mm; }`, `@media print`).
+     - **Kop Surat Perusahaan Resmi**: Logo StockEdp, "StockEdp - INVENTORY & FIELD ASSETS MANAGEMENT SYSTEM", Departemen EDP & IT / Logistik, garis pemisah kop ganda.
+     - **Header Dokumen & Metadata Grid**: Nomor Dokumen (monospace), Tanggal, Status Dokumen (POSTED / COMPLETED / DRAFT / IN_TRANSIT), Tag `SALINAN REPRINT`, serta informasi relasi (Toko/Lokasi/Supplier/Teknisi/Memo/Catatan).
+     - **Tabel Rincian Barang**: Border bersih (`1px solid #cbd5e1`), header `#f1f5f9`, font monospace untuk angka dan Rupiah, grand totals.
+     - **Blok Tanda Tangan 3 Pihak (Serah Terima & Audit Fisik)**:
+       - *Yang Menyerahkan* (Petugas Gudang / Vendor / Teknisi)
+       - *Yang Menerima* (Teknisi / Kepala Toko / Pemohon)
+       - *Mengetahui / Disetujui* (Supervisor EDP / Logistik)
+     - **Footer Sistem**: Timestamp pencetakan komputerisasi (`DD/MM/YYYY HH:mm:ss`) dan nama user yang mencetak.
+     - **Adapters Dokumen Spesifik**:
+       - `printStoreAllocation(doc)`: Dokumen Bukti Alokasi & Penggantian Unit Toko (Unit Baru Dipasang vs Unit Rusak Ditarik, S/N, Alasan).
+       - `printStockReceipt(doc)`: Bukti Penerimaan Barang (Goods Receipt).
+       - `printStockIssue(doc)`: Bukti Pengeluaran Barang (Goods Issue).
+       - `printStockTransfer(transfer)`: Surat Jalan Transfer Antar Lokasi / Retur ke Gudang.
+       - `printStockAdjustment(adjustment)`: Berita Acara Penyesuaian Stok (Stock Adjustment).
+       - `printStockOpname(opname)`: Berita Acara Hasil Stock Opname.
+  2. **Komponen Reusable (`resources/js/shared/components/BasePrintButton.vue`)**:
+     - Komponen tombol cetak seragam dengan ikon printer SVG, state loading, dan kompatibel dengan design system StockEdp.
+  3. **Integrasi ke Halaman Detail Dokumen**:
+     - `StoreAllocationDetailPage.vue`: Menggantikan `window.print()` mentah dengan `printStoreAllocation(doc)`.
+     - `StockReceiptDetailPage.vue`: Menambahkan tombol `Cetak Dokumen` dengan `printStockReceipt(doc)`.
+     - `StockIssueDetailPage.vue`: Menambahkan tombol `Cetak Dokumen` dengan `printStockIssue(doc)`.
+     - `StockTransferDetailPage.vue`: Menambahkan tombol `Cetak Surat Jalan` dengan `printStockTransfer(transfer)`.
+     - `StockAdjustmentDetailPage.vue`: Menambahkan tombol `Cetak Berita Acara` dengan `printStockAdjustment(adjustment)`.
+     - `StockOpnameDetailPage.vue`: Menambahkan tombol `Cetak Hasil Opname` dengan `printStockOpname(opname)`.
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 error, 0 warning).
+  - **Vite Build**: `npm run build` -> **100% PASS** (309 modules transformed cleanly).
+  - **Browser Testing**: Terverifikasi melalui browser subagent pada Alokasi Toko (`ALC-20260914-0019`) dan Penerimaan Stok (`REC-202609-0001`), tombol cetak memicu dialog browser dan iframe tercetak rapi dengan Kop Surat, tabel rincian, dan 3 kolom tanda tangan.
+- **Status**: SELESAI & TERVERIFIKASI 100%.
 
+---
+
+### [2026-09-14] Dukungan Alokasi Unit Toko Langsung dari Gudang Induk (Main Warehouse)
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar pada pembuatan alokasi toko (`/inventory/store-allocations/create`), selain dari lokasi teknisi lapangan (`FIELD_PERSONNEL`), alokasi unit langsung dari lokasi **Gudang Induk (`MAIN_WAREHOUSE`)** juga didukung dan dimunculkan pada dropdown pilihan lokasi.
+- **Implementasi yang Diterapkan**:
+  1. **Backend Validation & Action (`CreateStoreAllocationAction.php`)**:
+     - Memperbarui pengecekan tipe lokasi agar menerima `FIELD_PERSONNEL` maupun `MAIN_WAREHOUSE`.
+     - Validasi kepemilikan teknisi (`location->user_id === technician->id`) hanya diberlakukan jika lokasi bertipe `FIELD_PERSONNEL`.
+     - Untuk `MAIN_WAREHOUSE`, transaksi alokasi dapat dijalankan oleh user yang berwenang (misal Admin atau Petugas Gudang).
+  2. **Automated Feature Test (`StoreAllocationTest.php`)**:
+     - Memperbarui `test_cannot_create_store_allocation_on_damaged_storage_location` (memvalidasi penolakan 422 untuk gudang rusak `DAMAGED_STORAGE`).
+     - Menambahkan `test_can_create_store_allocation_from_main_warehouse_location` (memvalidasi alokasi unit toko langsung dari `MAIN_WAREHOUSE` berhasil dibuat dengan status 201 dan pengurangan saldo stok `GOOD` di gudang induk).
+  3. **Frontend UI Form (`StoreAllocationFormPage.vue`)**:
+     - Memperbarui filter lokasi pada `loadDependencies` agar menyertakan lokasi dengan tipe `MAIN_WAREHOUSE` dan `FIELD_PERSONNEL`.
+     - Memformat opsi dropdown pada `locationOptions`:
+       - Lokasi Gudang Induk diberi label pembeda: `${loc.name} [Gudang Induk]`.
+       - Lokasi Teknisi: `${loc.name} (${loc.user?.name || 'Teknisi Lapangan'})`.
+     - Memperbarui label form menjadi `Lokasi Asal (Gudang Induk / Teknisi) *` dan placeholder `Pilih gudang induk atau lokasi teknisi...`.
+     - Mengatur `technician_user_id` fallback ke `authStore.user?.id` saat lokasi yang dipilih tidak terikat teknisi khusus (seperti gudang induk).
+- **Verifikasi Quality Gates**:
+  - **PHPUnit**: `php artisan test --filter=StoreAllocationTest` -> **5/5 PASS (16 assertions)**.
+  - **ESLint**: `npm run lint` -> **100% PASS (0 error, 0 warning)**.
+  - **Vite Build**: `npm run build` -> **100% PASS (309 modules transformed cleanly)**.
+  - **Browser Testing**: Menggunakan browser subagent di `http://stockedp.test/inventory/store-allocations/create`, terverifikasi bahwa opsi `ADM — ADM EDP [Gudang Induk] (Gudang Induk)` muncul di dropdown dan dapat dipilih dengan sukses.
+- **Status**: SELESAI & TERVERIFIKASI 100%.

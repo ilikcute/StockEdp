@@ -41,6 +41,10 @@
         v-if="transfer"
         class="flex items-center gap-2 flex-wrap"
       >
+        <BasePrintButton
+          label="Cetak Surat Jalan"
+          @click="handlePrint"
+        />
         <router-link
           v-if="transfer.status === 'DRAFT' && hasPermission('stock_transfers.update')"
           :to="`/inventory/transfers/${transfer.id}/edit`"
@@ -389,12 +393,21 @@ import { useRoute } from 'vue-router';
 import { useStockTransferStore } from '../stores/useStockTransferStore';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { formatQuantity, formatRupiah } from '@/shared/utils/formatters';
+import { printStockTransfer } from '@/shared/utils/printDocument';
+import BasePrintButton from '@/shared/components/BasePrintButton.vue';
 
 const route = useRoute();
 const store = useStockTransferStore();
 const authStore = useAuthStore();
 
 const transfer = computed(() => store.currentTransfer);
+
+const handlePrint = () => {
+  if (!transfer.value) return;
+  printStockTransfer(transfer.value, {
+    printedBy: authStore.user?.name || 'Sistem StockEdp',
+  });
+};
 
 const grandTotal = computed(() => {
   if (!transfer.value?.items) return 0;
