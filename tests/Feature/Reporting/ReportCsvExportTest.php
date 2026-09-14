@@ -319,8 +319,8 @@ class ReportCsvExportTest extends TestCase
         $this->assertStringContainsString('REF-001', $content);
         $this->assertStringContainsString('REF-002', $content);
         $this->assertStringContainsString('REF-003', $content);
-        $this->assertStringContainsString('10.0000', $content);
-        $this->assertStringContainsString('2.5000', $content);
+        $this->assertStringContainsString(',10,', $content);
+        $this->assertStringContainsString(',2.5,', $content);
         $this->assertStringContainsString('0.0001', $content);
     }
 

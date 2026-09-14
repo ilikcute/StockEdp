@@ -139,4 +139,25 @@ class DecimalQuantityHelperTest extends TestCase
         $this->assertSame('-0.0001', DecimalQuantity::normalize('-0.0001'));
         $this->assertSame('-999.9999', DecimalQuantity::normalize('-999.9999'));
     }
+
+    public function test_format_for_export_removes_trailing_zeros(): void
+    {
+        $this->assertSame('0', DecimalQuantity::formatForExport(null));
+        $this->assertSame('0', DecimalQuantity::formatForExport(''));
+        $this->assertSame('0', DecimalQuantity::formatForExport(0));
+        $this->assertSame('0', DecimalQuantity::formatForExport('0'));
+        $this->assertSame('0', DecimalQuantity::formatForExport('0.0000'));
+        $this->assertSame('0', DecimalQuantity::formatForExport('-0.0000'));
+        $this->assertSame('10', DecimalQuantity::formatForExport(10));
+        $this->assertSame('10', DecimalQuantity::formatForExport('10'));
+        $this->assertSame('10', DecimalQuantity::formatForExport('10.0000'));
+        $this->assertSame('100', DecimalQuantity::formatForExport('100.0000'));
+        $this->assertSame('10.5', DecimalQuantity::formatForExport('10.5000'));
+        $this->assertSame('10.25', DecimalQuantity::formatForExport('10.2500'));
+        $this->assertSame('10.1234', DecimalQuantity::formatForExport('10.1234'));
+        $this->assertSame('-5', DecimalQuantity::formatForExport('-5.0000'));
+        $this->assertSame('-5.5', DecimalQuantity::formatForExport('-5.5000'));
+        $this->assertSame('0.0001', DecimalQuantity::formatForExport('0.0001'));
+        $this->assertSame('-0.0001', DecimalQuantity::formatForExport('-0.0001'));
+    }
 }

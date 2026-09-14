@@ -39,8 +39,8 @@ class ReportExportService
                     $item->location_code ?? '',
                     $item->location_name ?? '',
                     ($item->condition ?? 'GOOD') === 'DEFECTIVE' ? 'RUSAK (DEFECTIVE)' : 'BAGUS (GOOD)',
-                    DecimalQuantity::normalize($item->quantity),
-                    DecimalQuantity::normalize($item->minimum_stock ?? 0),
+                    DecimalQuantity::formatForExport($item->quantity),
+                    DecimalQuantity::formatForExport($item->minimum_stock ?? 0),
                     ($item->is_product_active ?? true) ? 'Aktif' : 'Nonaktif',
                     ($item->is_frozen ?? false) ? 'Dibekukan' : 'Normal',
                 ];
@@ -72,9 +72,9 @@ class ReportExportService
                     $item->unit_name ?? '',
                     $item->location_code ?? '',
                     $item->location_name ?? '',
-                    DecimalQuantity::normalize($item->on_hand_quantity),
-                    DecimalQuantity::normalize($item->minimum_stock),
-                    DecimalQuantity::normalize($item->shortage_quantity),
+                    DecimalQuantity::formatForExport($item->on_hand_quantity),
+                    DecimalQuantity::formatForExport($item->minimum_stock),
+                    DecimalQuantity::formatForExport($item->shortage_quantity),
                     $item->is_product_active ? 'Aktif' : 'Nonaktif',
                 ];
             }
@@ -139,10 +139,10 @@ class ReportExportService
                     $m->product_name ?? '',
                     $m->location_code ?? '',
                     $m->location_name ?? '',
-                    $quantityBefore,
-                    $quantityIn,
-                    $quantityOut,
-                    $quantityAfter,
+                    DecimalQuantity::formatForExport($quantityBefore),
+                    DecimalQuantity::formatForExport($quantityIn),
+                    DecimalQuantity::formatForExport($quantityOut),
+                    DecimalQuantity::formatForExport($quantityAfter),
                     $m->creator_name ?? ($m->creator_username ?? '-'),
                     $m->notes ?? '',
                 ];
@@ -184,7 +184,7 @@ class ReportExportService
                     $item->sku ?? '',
                     $item->product_name ?? '',
                     $item->unit_name ?? '',
-                    DecimalQuantity::normalize($item->quantity),
+                    DecimalQuantity::formatForExport($item->quantity),
                     $item->creator_name ?? ($item->creator_username ?? '-'),
                     $item->poster_name ?? ($item->poster_username ?? '-'),
                     $item->notes ?? '',
@@ -227,7 +227,7 @@ class ReportExportService
                     $item->sku ?? '',
                     $item->product_name ?? '',
                     $item->unit_name ?? '',
-                    DecimalQuantity::normalize($item->quantity),
+                    DecimalQuantity::formatForExport($item->quantity),
                     $item->creator_name ?? ($item->creator_username ?? '-'),
                     $item->poster_name ?? ($item->poster_username ?? '-'),
                     $item->notes ?? '',
@@ -276,7 +276,7 @@ class ReportExportService
                     $item->sku ?? '',
                     $item->product_name ?? '',
                     $item->unit_name ?? '',
-                    DecimalQuantity::normalize($item->quantity),
+                    DecimalQuantity::formatForExport($item->quantity),
                     $item->sender_name ?? ($item->sender_username ?? '-'),
                     $sentAt,
                     $item->receiver_name ?? ($item->receiver_username ?? '-'),
@@ -334,7 +334,7 @@ class ReportExportService
                     $item->sku ?? '',
                     $item->product_name ?? '',
                     $item->unit_name ?? '',
-                    DecimalQuantity::normalize($item->quantity),
+                    DecimalQuantity::formatForExport($item->quantity),
                     $unitPrice,
                     $totalAmount,
                     $item->poster_name ?? ($item->poster_username ?? '-'),
@@ -365,13 +365,14 @@ class ReportExportService
                 $postedAt = $item->posted_at ? CarbonImmutable::parse($item->posted_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
                 $docDate = $item->opname_date ? CarbonImmutable::parse($item->opname_date, 'Asia/Jakarta')->format('Y-m-d') : '-';
 
-                $variance = DecimalQuantity::normalize($item->variance_quantity);
-                $signedVariance = ((float) $item->variance_quantity >= 0 ? '+' : '').$variance;
+                $variance = DecimalQuantity::formatForExport($item->variance_quantity);
+                $comp = bccomp(DecimalQuantity::normalize($item->variance_quantity ?? '0'), '0.0000', 4);
+                $signedVariance = ($comp > 0 ? '+' : '').$variance;
 
                 $movementDirection = '-';
-                if ((float) $item->variance_quantity > 0) {
+                if ($comp > 0) {
                     $movementDirection = 'Selisih Masuk';
-                } elseif ((float) $item->variance_quantity < 0) {
+                } elseif ($comp < 0) {
                     $movementDirection = 'Selisih Keluar';
                 }
 
@@ -384,8 +385,8 @@ class ReportExportService
                     $item->sku ?? '',
                     $item->product_name ?? '',
                     $item->unit_name ?? '',
-                    DecimalQuantity::normalize($item->snapshot_quantity),
-                    DecimalQuantity::normalize($item->counted_quantity),
+                    DecimalQuantity::formatForExport($item->snapshot_quantity),
+                    DecimalQuantity::formatForExport($item->counted_quantity),
                     $signedVariance,
                     $movementDirection,
                     $item->is_unexpected ? 'Ya' : 'Tidak',
@@ -455,12 +456,12 @@ class ReportExportService
                         $item->unit_symbol ?: ($item->unit_code ?: ''),
                         $item->location_code ?? '',
                         $item->location_name ?? '',
-                        DecimalQuantity::normalize((string) ($item->raw_current_stock ?? '0.0000')),
-                        $totalOutbound,
+                        DecimalQuantity::formatForExport((string) ($item->raw_current_stock ?? '0')),
+                        DecimalQuantity::formatForExport($totalOutbound),
                         (string) ($item->outbound_movement_count ?? 0),
                         (string) ($item->movement_days ?? 0),
-                        $avgDaily,
-                        $avgDaily,
+                        DecimalQuantity::formatForExport($avgDaily),
+                        DecimalQuantity::formatForExport($avgDaily),
                         $lastOutbound,
                     ];
                 }
@@ -508,7 +509,7 @@ class ReportExportService
                     $item->unit_symbol ?: ($item->unit_code ?: ''),
                     $item->location_code ?? '',
                     $item->location_name ?? '',
-                    DecimalQuantity::normalize((string) ($item->raw_current_stock ?? '0.0000')),
+                    DecimalQuantity::formatForExport((string) ($item->raw_current_stock ?? '0')),
                     $lastFormatted,
                     $daysSince,
                     '0',
@@ -542,12 +543,12 @@ class ReportExportService
                     $item->product_name ?? '',
                     $item->product_sku ?? '',
                     isset($item->unit_price) ? (string) $item->unit_price : '0',
-                    DecimalQuantity::normalize($item->quantity),
+                    DecimalQuantity::formatForExport($item->quantity),
                     isset($item->total_value) ? (string) $item->total_value : '0',
                     $item->serial_number ?? '',
                     $item->pulled_product_name ?? '',
                     $item->pulled_product_sku ?? '',
-                    $item->pulled_quantity !== null ? DecimalQuantity::normalize($item->pulled_quantity) : '',
+                    $item->pulled_quantity !== null ? DecimalQuantity::formatForExport($item->pulled_quantity) : '',
                     $item->pulled_serial_number ?? '',
                     $item->defective_reason ?? '',
                     $item->notes ?? '',
@@ -581,9 +582,9 @@ class ReportExportService
                     $item->category_name ?? '',
                     $item->unit_name ?? '',
                     (float) ($item->unit_price ?? 0),
-                    DecimalQuantity::normalize($item->good_quantity),
-                    DecimalQuantity::normalize($item->defective_quantity),
-                    DecimalQuantity::normalize($item->total_quantity),
+                    DecimalQuantity::formatForExport($item->good_quantity),
+                    DecimalQuantity::formatForExport($item->defective_quantity),
+                    DecimalQuantity::formatForExport($item->total_quantity),
                     (float) ($item->total_value ?? ((float) ($item->total_quantity ?? 0) * (float) ($item->unit_price ?? 0))),
                 ];
             }

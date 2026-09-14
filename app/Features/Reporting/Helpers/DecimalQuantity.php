@@ -62,4 +62,60 @@ final class DecimalQuantity
 
         return $normalized;
     }
+
+    /**
+     * Format a quantity value cleanly for CSV/Excel export without unnecessary trailing zeros.
+     *
+     * Example:
+     * - '10.0000' -> '10'
+     * - '0.0000'  -> '0'
+     * - '10.5000' -> '10.5'
+     * - '10.2500' -> '10.25'
+     * - '-5.0000' -> '-5'
+     * - null      -> '0'
+     */
+    public static function formatForExport(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '0';
+        }
+
+        if (is_int($value) || is_float($value)) {
+            $value = (string) $value;
+        }
+
+        if (! is_string($value)) {
+            throw new TypeError(sprintf(
+                '%s::formatForExport(): Argument #1 ($value) must be of type string|int|float|null, %s given',
+                self::class,
+                get_debug_type($value),
+            ));
+        }
+
+        $value = trim($value);
+
+        if ($value === '') {
+            return '0';
+        }
+
+        if (! preg_match('/^-?\d+(?:\.\d+)?$/D', $value)) {
+            throw new InvalidArgumentException(
+                "Invalid decimal quantity value for export: [{$value}]"
+            );
+        }
+
+        $normalized = bcadd($value, '0', self::SCALE);
+
+        if (bccomp($normalized, '0', self::SCALE) === 0) {
+            return '0';
+        }
+
+        if (str_contains($normalized, '.')) {
+            $trimmed = rtrim(rtrim($normalized, '0'), '.');
+
+            return ($trimmed === '-0' || $trimmed === '') ? '0' : $trimmed;
+        }
+
+        return $normalized;
+    }
 }
