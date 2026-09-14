@@ -110,43 +110,17 @@
       @review-transfer-items="openReviewModal"
     />
 
-    <!-- 7. Pagination & Informational Disclaimer -->
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1 text-[11px] text-gray-500">
-      <div class="italic max-w-lg">
-        Rekomendasi dihitung dari kondisi stok saat ini. Validasi stok final tetap dilakukan secara live sebelum formulir transfer disiapkan.
+    <!-- 7. Informational Disclaimer & Pagination -->
+    <div class="space-y-2">
+      <div class="text-[11px] text-gray-500 italic">
+        * Rekomendasi dihitung dari kondisi stok saat ini. Validasi stok final tetap dilakukan secara live sebelum formulir transfer disiapkan.
       </div>
 
-      <!-- Pagination Controls -->
-      <div
-        v-if="meta.total > 0"
-        class="flex items-center gap-1.5"
-      >
-        <span class="text-[11px] font-medium mr-1.5 text-gray-600">
-          Menampilkan {{ meta.from || 0 }} - {{ meta.to || 0 }} dari {{ meta.total }} produk
-        </span>
-
-        <button
-          type="button"
-          :disabled="meta.current_page <= 1 || loading"
-          class="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          @click="changePage(meta.current_page - 1)"
-        >
-          Sebelumnya
-        </button>
-
-        <span class="px-1.5 font-medium text-gray-700 font-mono text-xs">
-          {{ meta.current_page }} / {{ meta.last_page }}
-        </span>
-
-        <button
-          type="button"
-          :disabled="meta.current_page >= meta.last_page || loading"
-          class="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          @click="changePage(meta.current_page + 1)"
-        >
-          Berikutnya
-        </button>
-      </div>
+      <BasePagination
+        :pagination="meta"
+        :loading="loading"
+        @change="changePage"
+      />
     </div>
 
     <!-- 8. Action Review Modal -->
@@ -173,6 +147,7 @@ import ReplenishmentSummaryCards from '../components/ReplenishmentSummaryCards.v
 import ReplenishmentFilterBar from '../components/ReplenishmentFilterBar.vue';
 import ReplenishmentRecommendationTable from '../components/ReplenishmentRecommendationTable.vue';
 import ReplenishmentActionReviewModal from '../components/ReplenishmentActionReviewModal.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
 
 const router = useRouter();
 

@@ -1301,3 +1301,33 @@ Berdasarkan hasil audit menyeluruh terhadap `docs/TASKS.md` dan penelusuran arsi
   - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed, ~3.17s).
   - **PHPUnit Feature Testing**: `tests/Feature/User` -> **100% PASS** (19 tests, 870 assertions).
 - **Status**: SELESAI & TERVERIFIKASI 100%.
+
+---
+
+### [2026-09-14] Standarisasi Komponen Pagination di Seluruh Halaman Menu Persediaan (Inventory) dengan BasePagination
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar pagination pada seluruh halaman di bawah menu **Persediaan** distandarisasi dan diselaraskan agar 100% konsisten dengan pagination yang digunakan di bawah menu Master Data.
+- **Pemeriksaan & Audit Halaman Persediaan**:
+  Dari 8 modul/halaman di bawah menu Persediaan:
+  1. `StockMovementPage.vue` (Riwayat Pergerakan) -> Sudah menggunakan `BasePagination`.
+  2. `StoreAllocationListPage.vue` (Alokasi Toko) -> Masih menggunakan pagination custom hardcoded ("Sebelumnya", "Selanjutnya" di dalam kartu tabel).
+  3. `StockReceiptListPage.vue` (Penerimaan Stok) -> Sudah menggunakan `BasePagination`.
+  4. `StockIssueListPage.vue` (Pengeluaran Stok) -> Sudah menggunakan `BasePagination`.
+  5. `StockTransferListPage.vue` (Transfer Stok) -> Sudah menggunakan `BasePagination`.
+  6. `ReplenishmentPage.vue` (Rekomendasi Reorder) -> Masih menggunakan pagination custom hardcoded ("Sebelumnya", `1 / 1`, "Berikutnya").
+  7. `StockAdjustmentListPage.vue` (Penyesuaian Stok) -> Sudah menggunakan `BasePagination`.
+  8. `StockOpnameListPage.vue` (Stock Opname) -> Sudah menggunakan `BasePagination`.
+- **Implementasi yang Diterapkan**:
+  1. **Alokasi Unit Toko (`StoreAllocationListPage.vue`)**:
+     - Menghapus pagination bar custom yang tertanam di dalam tabel.
+     - Menyematkan komponen [`BasePagination.vue`](file:///D:/laragon/www/StockEdp/resources/js/shared/components/BasePagination.vue) tepat di bawah card tabel (`:pagination="store.allocations?.meta" :loading="store.loading" @change="changePage"`).
+  2. **Rekomendasi Reorder (`ReplenishmentPage.vue`)**:
+     - Menghapus kontrol pagination custom di samping disclaimer.
+     - Menyematkan komponen [`BasePagination.vue`](file:///D:/laragon/www/StockEdp/resources/js/shared/components/BasePagination.vue) (`:pagination="meta" :loading="loading" @change="changePage"`).
+  3. **Konsistensi Visual & Interaksi**:
+     - Seluruh 8 halaman di menu Persediaan kini menggunakan styling `BasePagination` yang seragam (ringkasan "Menampilkan X sampai Y dari Z data", tombol `«`, `‹`, nomor-nomor halaman dengan badge aktif indigo, tombol `›`, `»`).
+- **Verifikasi Quality Gates**:
+  - **ESLint**: `npm run lint` -> **100% PASS** (0 errors, 0 warnings).
+  - **Vite Build**: `npm run build` -> **100% PASS** (307 modules transformed, ~3.5s).
+  - **PHPUnit Feature Testing**: `tests/Feature/StoreAllocation`, `tests/Feature/Replenishment`, `tests/Feature/Inventory/InventoryApiTest.php` -> **100% PASS** (46 tests, 308 assertions).
+- **Status**: SELESAI & TERVERIFIKASI 100%.

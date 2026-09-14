@@ -231,30 +231,11 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="store.allocations?.meta?.last_page > 1"
-      class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6"
-    >
-      <div class="text-sm text-gray-700">
-        Menampilkan halaman {{ store.allocations.meta.current_page }} dari {{ store.allocations.meta.last_page }}
-      </div>
-      <div class="flex gap-2">
-        <button
-          :disabled="store.allocations.meta.current_page <= 1"
-          class="rounded border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-          @click="changePage(store.allocations.meta.current_page - 1)"
-        >
-          Sebelumnya
-        </button>
-        <button
-          :disabled="store.allocations.meta.current_page >= store.allocations.meta.last_page"
-          class="rounded border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-          @click="changePage(store.allocations.meta.current_page + 1)"
-        >
-          Selanjutnya
-        </button>
-      </div>
-    </div>
+    <BasePagination
+      :pagination="store.allocations?.meta"
+      :loading="store.loading"
+      @change="changePage"
+    />
   </div>
 </template>
 
@@ -263,6 +244,7 @@ import { ref, onMounted } from 'vue';
 import { useStoreAllocationStore } from '../stores/useStoreAllocationStore';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import { storeApi } from '@/features/store/api/store_api';
+import BasePagination from '@/shared/components/BasePagination.vue';
 
 const store = useStoreAllocationStore();
 const authStore = useAuthStore();
