@@ -46,7 +46,10 @@
             Semua Jenis Mutasi
           </option>
           <option value="RECEIPT">
-            Penerimaan
+            Penerimaan (Semua)
+          </option>
+          <option value="RECEIPT_GA">
+            Penerimaan GA
           </option>
           <option value="ISSUE">
             Pengeluaran
@@ -57,11 +60,29 @@
           <option value="TRANSFER_OUT">
             Transfer Keluar
           </option>
+          <option value="STORE_ALLOCATION">
+            Alokasi Toko
+          </option>
+          <option value="REPLACEMENT_PULL">
+            Tarik Unit Bekas
+          </option>
+          <option value="RETURN_TO_WAREHOUSE">
+            Retur ke Gudang
+          </option>
           <option value="ADJUSTMENT_IN">
             Penyesuaian (+)
           </option>
           <option value="ADJUSTMENT_OUT">
             Penyesuaian (-)
+          </option>
+          <option value="OPNAME_IN">
+            Opname (+)
+          </option>
+          <option value="OPNAME_OUT">
+            Opname (-)
+          </option>
+          <option value="REVERSAL">
+            Pembatalan
           </option>
         </select>
       </div>
@@ -343,15 +364,19 @@ const changePage = (page) => {
 };
 
 const isPositiveMovement = (type) => {
-    return ['RECEIPT', 'TRANSFER_IN', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type);
+    return ['RECEIPT', 'RECEIPT_GA', 'TRANSFER_IN', 'REPLACEMENT_PULL', 'RETURN_TO_WAREHOUSE', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type);
 };
 
 const formatMovementType = (type) => {
     const map = {
         RECEIPT: "Penerimaan",
+        RECEIPT_GA: "Penerimaan GA",
         ISSUE: "Pengeluaran",
         TRANSFER_IN: "Transfer Masuk",
         TRANSFER_OUT: "Transfer Keluar",
+        STORE_ALLOCATION: "Alokasi Toko",
+        REPLACEMENT_PULL: "Tarik Unit Bekas",
+        RETURN_TO_WAREHOUSE: "Retur ke Gudang",
         ADJUSTMENT_IN: "Penyesuaian (+)",
         ADJUSTMENT_OUT: "Penyesuaian (-)",
         OPNAME_IN: "Opname (+)",
@@ -362,11 +387,14 @@ const formatMovementType = (type) => {
 };
 
 const getBadgeClass = (type) => {
-    if (['RECEIPT', 'TRANSFER_IN', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type)) {
+    if (['RECEIPT', 'RECEIPT_GA', 'TRANSFER_IN', 'REPLACEMENT_PULL', 'RETURN_TO_WAREHOUSE', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type)) {
         return 'bg-emerald-100 text-emerald-800';
     }
-    if (['ISSUE', 'TRANSFER_OUT', 'ADJUSTMENT_OUT', 'OPNAME_OUT'].includes(type)) {
+    if (['ISSUE', 'TRANSFER_OUT', 'STORE_ALLOCATION', 'ADJUSTMENT_OUT', 'OPNAME_OUT'].includes(type)) {
         return 'bg-amber-100 text-amber-800';
+    }
+    if (type === 'REVERSAL') {
+        return 'bg-rose-100 text-rose-800';
     }
     return 'bg-gray-100 text-gray-800';
 };

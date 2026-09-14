@@ -2,6 +2,7 @@
 
 namespace App\Features\Inventory\Repositories\Eloquent;
 
+use App\Features\Inventory\Enums\MovementType;
 use App\Features\Inventory\Models\StockMovement;
 use App\Features\Inventory\Repositories\Contracts\StockMovementRepositoryInterface;
 
@@ -28,7 +29,14 @@ class StockMovementRepository implements StockMovementRepositoryInterface
         }
 
         if (! empty($filters['movement_type'])) {
-            $query->where('movement_type', $filters['movement_type']);
+            if ($filters['movement_type'] === MovementType::RECEIPT->value) {
+                $query->whereIn('movement_type', [
+                    MovementType::RECEIPT->value,
+                    MovementType::RECEIPT_GA->value,
+                ]);
+            } else {
+                $query->where('movement_type', $filters['movement_type']);
+            }
         }
 
         if (! empty($filters['start_date']) && ! empty($filters['end_date'])) {

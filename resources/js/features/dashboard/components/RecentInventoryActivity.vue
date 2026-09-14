@@ -144,9 +144,13 @@ const calculateGross = (item) => {
 const formatTypeLabel = (type) => {
   const map = {
     RECEIPT: 'Penerimaan',
+    RECEIPT_GA: 'Penerimaan GA',
     ISSUE: 'Pengeluaran',
     TRANSFER_IN: 'Transfer Masuk',
     TRANSFER_OUT: 'Transfer Keluar',
+    STORE_ALLOCATION: 'Alokasi Toko',
+    REPLACEMENT_PULL: 'Tarik Unit Bekas',
+    RETURN_TO_WAREHOUSE: 'Retur ke Gudang',
     ADJUSTMENT_IN: 'Penyesuaian (+)',
     ADJUSTMENT_OUT: 'Penyesuaian (-)',
     OPNAME_IN: 'Opname (+)',
@@ -157,11 +161,14 @@ const formatTypeLabel = (type) => {
 };
 
 const typeBadgeClass = (type) => {
-  if (['RECEIPT', 'TRANSFER_IN', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type)) {
+  if (['RECEIPT', 'RECEIPT_GA', 'TRANSFER_IN', 'REPLACEMENT_PULL', 'RETURN_TO_WAREHOUSE', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type)) {
     return 'bg-emerald-100 text-emerald-800';
   }
-  if (['ISSUE', 'TRANSFER_OUT', 'ADJUSTMENT_OUT', 'OPNAME_OUT'].includes(type)) {
+  if (['ISSUE', 'TRANSFER_OUT', 'STORE_ALLOCATION', 'ADJUSTMENT_OUT', 'OPNAME_OUT'].includes(type)) {
     return 'bg-amber-100 text-amber-800';
+  }
+  if (type === 'REVERSAL') {
+    return 'bg-rose-100 text-rose-800';
   }
   return 'bg-gray-100 text-gray-800';
 };

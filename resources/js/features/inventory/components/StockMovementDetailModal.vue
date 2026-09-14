@@ -292,9 +292,13 @@ defineEmits(['update:modelValue']);
 const formatMovementType = (type) => {
   const map = {
     RECEIPT: 'Penerimaan',
+    RECEIPT_GA: 'Penerimaan GA',
     ISSUE: 'Pengeluaran',
     TRANSFER_IN: 'Transfer Masuk',
     TRANSFER_OUT: 'Transfer Keluar',
+    STORE_ALLOCATION: 'Alokasi Toko',
+    REPLACEMENT_PULL: 'Tarik Unit Bekas',
+    RETURN_TO_WAREHOUSE: 'Retur ke Gudang',
     ADJUSTMENT_IN: 'Penyesuaian (+)',
     ADJUSTMENT_OUT: 'Penyesuaian (-)',
     OPNAME_IN: 'Opname (+)',
@@ -319,10 +323,10 @@ const formatReferenceType = (type) => {
 };
 
 const getBadgeClass = (type) => {
-  if (['RECEIPT', 'TRANSFER_IN', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type)) {
+  if (['RECEIPT', 'RECEIPT_GA', 'TRANSFER_IN', 'REPLACEMENT_PULL', 'RETURN_TO_WAREHOUSE', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type)) {
     return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
   }
-  if (['ISSUE', 'TRANSFER_OUT', 'ADJUSTMENT_OUT', 'OPNAME_OUT'].includes(type)) {
+  if (['ISSUE', 'TRANSFER_OUT', 'STORE_ALLOCATION', 'ADJUSTMENT_OUT', 'OPNAME_OUT'].includes(type)) {
     return 'bg-amber-100 text-amber-800 border border-amber-200';
   }
   if (type === 'REVERSAL') {
@@ -331,7 +335,7 @@ const getBadgeClass = (type) => {
   return 'bg-gray-100 text-gray-800 border border-gray-200';
 };
 
-const isInbound = (type) => ['RECEIPT', 'TRANSFER_IN', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type);
+const isInbound = (type) => ['RECEIPT', 'RECEIPT_GA', 'TRANSFER_IN', 'REPLACEMENT_PULL', 'RETURN_TO_WAREHOUSE', 'ADJUSTMENT_IN', 'OPNAME_IN'].includes(type);
 </script>
 
 <style scoped>
