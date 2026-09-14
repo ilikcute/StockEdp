@@ -551,3 +551,181 @@ Dokumen ini mencatat setiap langkah, keputusan, dan fase pekerjaan yang dilakuka
   - Seluruh pengujian fitur Phase 2 lulus 100%.
 - **Status**: SELESAI & TERVERIFIKASI.
 
+---
+
+### [2026-09-14] Standarisasi Modal StockMovementDetailModal.vue ke Desain High-Density Compact
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar modal rincian mutasi pada berkas `resources/js/features/inventory/components/StockMovementDetailModal.vue` disesuaikan mengikuti standar desain High-Density Compact yang telah diterapkan pada seluruh tabel aplikasi sebelumnya.
+- **Pekerjaan yang Dilakukan**:
+  1. **Struktur Modal & Header Compact**:
+     - Mengubah container modal dari `max-w-lg rounded-2xl` dengan padding longgar menjadi `max-w-md rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col`.
+     - Mengubah header menjadi `px-4 py-2.5 border-b border-gray-200 bg-gray-50/80` dengan ikon ringkas, tipografi judul `text-xs font-bold`, dan subtitle ID mutasi `text-[10px] font-mono`.
+     - Tombol tutup ramping `p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100`.
+  2. **Tipe Mutasi & Waktu (Summary Strip)**:
+     - Mengubah badge besar menjadi baris strip ringkas `px-2.5 py-1.5 bg-gray-50/80 border border-gray-200/70 rounded-lg`.
+     - Menambahkan dukungan badge untuk jenis pergerakan lengkap: `RECEIPT`, `TRANSFER_IN`, `ADJUSTMENT_IN`, `OPNAME_IN` (emerald/hijau), `ISSUE`, `TRANSFER_OUT`, `ADJUSTMENT_OUT`, `OPNAME_OUT` (amber/kuning), serta `REVERSAL` (rose/merah).
+  3. **Spesifikasi Produk, Lokasi, dan Operator**:
+     - Menggantikan card tebal dengan kartu ringkas `border border-gray-200 rounded-lg p-2.5 bg-gray-50/60 text-[11px]` menampilkan nama produk, SKU, dan harga satuan dalam format Rupiah.
+     - Grid 2 kolom (`grid grid-cols-2 gap-2`) untuk Lokasi dan Operator dengan label uppercase mini `text-[10px] font-bold text-gray-400`.
+  4. **Alur Kuantitas Mutasi (Sebelum -> Perubahan -> Sesudah)**:
+     - Mengubah blok gradien besar menjadi kontainer rapi beraksen indigo `bg-indigo-50/40 border border-indigo-100 rounded-lg p-2.5`.
+     - Grid 3 kolom terstruktur menampilkan kuantitas sebelum, delta mutasi (+/-) dengan badge font mono, serta kuantitas sesudah.
+  5. **Referensi Dokumen Human-Readable**:
+     - Menambahkan fungsi helper `formatReferenceType` untuk menerjemahkan class model polymorphic (seperti `App\Features\Inventory\Models\StockTransfer`) menjadi label yang ramah pengguna (*Transfer Antar Gudang*, *Penyesuaian Stok*, *Penerimaan Barang*, dsb.).
+  6. **Footer Compact & Custom Scrollbar**:
+     - Footer hemat vertikal `px-4 py-2 border-t border-gray-200 bg-gray-50/50` dengan tombol tutup `px-3 py-1 text-xs font-semibold`.
+     - Scrollbar minimalis 4px bertema slate (`custom-scrollbar`).
+- **Hasil Verifikasi**:
+  - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+  - **Kompilasi Frontend (`npm run build`)**: PASSED (309 modules transformed, built in 4.27s).
+  - **Browser E2E Verification**: Modal diuji langsung via browser subagent pada `http://stockedp.test/inventory/movements`, tangkapan layar `compact_movement_detail_modal_v2` mengonfirmasi tampilan high-density rapi, proporsional, dan tanpa scrollbar yang tidak perlu.
+  - **Backend Test**: `php artisan test tests/Feature/Reporting/InventoryMovementIntegrityTest.php` -> 3 passed (15 assertions).
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Standarisasi TOP Header StoreAllocationListPage.vue ke Desain High-Density Compact
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar TOP Header pada halaman `resources/js/features/inventory/pages/StoreAllocationListPage.vue` disesuaikan agar gayanya sama dengan `StockMovementPage.vue` (dibuat lebih compact, rapi, dan seragam).
+- **Pekerjaan yang Dilakukan**:
+  1. Mengubah wrapper halaman dari `px-4 sm:px-6 lg:px-8 space-y-6` menjadi `space-y-3` standar aplikasi.
+  2. Membungkus header dan toolbar pencarian ke dalam kartu compact:
+     - Container: `bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3`.
+     - Judul: `text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5` dengan ikon SVG indigo.
+     - Subtitle: `text-[11px] text-gray-500 mt-0.5`.
+     - Sisi Kanan: Menggabungkan input pencarian (`w-full sm:w-64 py-1.5 px-2.5 text-xs shadow-2xs`) dan tombol aksi `Catat Alokasi Baru` (`px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600`) secara berdampingan.
+  3. Memperbarui banner error/alert dengan tombol tutup ringkas `text-xs font-semibold`.
+  4. Menyelaraskan jarak tabel tanpa margin berlebih (`overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar`).
+- **Hasil Verifikasi**:
+  - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+  - **Kompilasi Frontend (`npm run build`)**: PASSED (309 modules transformed, built in 3.40s).
+  - **Browser Verification**: Diuji langsung pada `http://stockedp.test/inventory/store-allocations`, header tampil proporsional, compact, dan selaras sempurna dengan halaman `StockMovementPage.vue`.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Standarisasi Halaman ReplenishmentPage.vue ke Desain High-Density Compact
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar halaman rekomendasi replenishment (`ReplenishmentPage.vue`) disesuaikan tampilannya agar lebih compact, rapi, dan seragam dengan standar desain yang telah diterapkan pada halaman lainnya.
+- **Pekerjaan yang Dilakukan**:
+  1. **Page Wrapper & Header Compact**:
+     - Mengubah spacing halaman dari `space-y-6` menjadi `space-y-3`.
+     - Mengubah top header menjadi kartu compact berlatar putih:
+       `bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3`.
+     - Tipografi judul `text-base font-bold text-gray-900` dengan ikon SVG indigo dan subtitle `text-[11px] text-gray-500`.
+     - Badge timestamp diperbarui menjadi pill compact font mono `text-[11px] bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200`.
+  2. **Banner Peringatan & Error Ramping**:
+     - Mengurangi padding banner dari `p-4` menjadi `p-2.5 rounded-xl text-xs shadow-2xs`.
+  3. **Kartu Metrik Ringkasan Compact (`ReplenishmentSummaryCards.vue`)**:
+     - Mengubah padding kartu dari `p-4` menjadi `px-3 py-2 rounded-xl shadow-2xs` dan gap antar kartu dari `gap-3` menjadi `gap-2`.
+     - Menstandarisasi judul metrik `text-[10px] font-bold uppercase`, angka metrik `text-lg font-bold font-mono`, dan subtitle `text-[10px]`.
+  4. **Filter Bar Compact (`ReplenishmentFilterBar.vue`)**:
+     - Mengurangi container padding menjadi `px-3.5 py-2.5 space-y-2.5`.
+     - Mengubah input dan select dropdown dari `py-2 pl-3 text-sm` menjadi compact `py-1.5 pl-2.5 text-xs shadow-2xs rounded-lg`.
+     - Menstandarisasi label input `text-[11px] font-semibold text-gray-700` serta tombol reset/segarkan `px-2.5 py-1 text-xs`.
+  5. **Disclaimer & Navigasi Paginasi**:
+     - Mengubah font disclaimer menjadi `text-[11px]` dan tombol navigasi paginasi menjadi `px-2.5 py-1 text-xs shadow-2xs`.
+- **Hasil Verifikasi**:
+  - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+  - **Kompilasi Frontend (`npm run build`)**: PASSED (309 modules transformed, built in 2.64s).
+  - **Browser Verification**: Diuji langsung pada `http://stockedp.test/inventory/replenishments`, tangkapan layar `replenishment_compact_page` mengonfirmasi tampilan seluruh halaman (header, 6-card metrics, filter bar, dan tabel) muat dalam viewport dengan sangat rapi dan proporsional.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Standarisasi TOP Header StockAdjustmentListPage.vue ke Desain High-Density Compact
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar TOP Header pada halaman `resources/js/features/inventory/pages/StockAdjustmentListPage.vue` disesuaikan agar tampilannya compact, rapi, dan seragam dengan `StoreAllocationListPage.vue` dan `StockMovementPage.vue`.
+- **Pekerjaan yang Dilakukan**:
+  1. **Page Container & Header Compact**:
+     - Mengubah root wrapper dari `px-4 sm:px-6 lg:px-8` menjadi `space-y-3`.
+     - Mengubah top header menjadi kartu compact putih:
+       `bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3`.
+     - Tipografi judul `text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5` dengan ikon SVG sliders adjustment.
+     - Subtitle dokumen `text-[11px] text-gray-500 mt-0.5`.
+     - Tombol aksi `Buat Adjustment Baru` diselaraskan ke ukuran compact `px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 shadow-xs hover:bg-indigo-700`.
+  2. **Kartu Filter Tab & Dropdown Compact**:
+     - Membungkus tab status dan filter input/select ke dalam kartu terpadu `bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5`.
+     - Quick tabs diperbarui dengan padding hemat vertikal `pb-1.5 text-xs`.
+     - Grid 5 kolom filter (Cari, Arah/Direction, Alasan/Reason, Lokasi, Status) menggunakan padding `py-1.5 px-2.5 text-xs shadow-2xs rounded-lg`.
+  3. **Alert Error & Tabel**:
+     - Banner error diperbarui menjadi `rounded-lg bg-rose-50 p-2.5 border border-rose-200 text-xs text-rose-800 flex items-center justify-between shadow-2xs` dengan tombol tutup.
+     - Spacing tabel menyatu secara proporsional di bawah bilah filter.
+- **Hasil Verifikasi**:
+  - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+  - **Kompilasi Frontend (`npm run build`)**: PASSED (309 modules transformed, built in 2.79s).
+  - **Browser Verification**: Diuji langsung pada `http://stockedp.test/inventory/adjustments`, tangkapan layar `stock_adjustment_compact_page` mengonfirmasi tampilan compact yang sangat rapi, selaras, dan ergonomis.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Penyatuan Filter dan Search Bar ke dalam TOP Header Compact (StoreAllocationListPage & StockReceiptListPage)
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar bilah Filter dan Search Bar yang sebelumnya masih berada di kontainer terpisah pada halaman `StoreAllocationListPage.vue` dan `StockReceiptListPage.vue` dimasukkan langsung ke dalam kartu TOP Header compact, sehingga layout menjadi lebih rapat, hemat ruang vertikal, dan ergonomis.
+- **Pekerjaan yang Dilakukan**:
+  1. **StockReceiptListPage.vue**:
+     - Memindahkan `BaseSearchInput` (`searchQuery`) dan dropdown `statusFilter` (`DRAFT`, `POSTED`, `CANCELED`) langsung ke dalam kartu Top Header di sebelah kiri tombol `+ Buat Draft Baru`.
+     - Menghapus kontainer toolbar filter kedua (`<!-- Filter & Search Toolbar -->`) yang sebelumnya memakan ruang vertikal tersendiri.
+     - Menyesuaikan tata letak header dengan `flex flex-col lg:flex-row lg:items-center justify-between gap-3` agar responsif dan tidak terpotong di berbagai resolusi layar.
+  2. **StoreAllocationListPage.vue**:
+     - Mengintegrasikan pengambilan data daftar toko via `storeApi.getAll({ is_active: 1, per_page: 1000 })` pada `onMounted`.
+     - Memindahkan search input (`searchQuery`) dan menambahkan filter dropdown Toko (`selectedStoreId`) langsung ke dalam Top Header berdampingan dengan tombol `+ Catat Alokasi Baru`.
+     - Menghapus kontainer filter kedua yang terpisah.
+  3. **Pengujian & Verifikasi**:
+     - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+     - **Kompilasi Frontend (`npm run build`)**: PASSED (309 modules transformed, built cleanly).
+     - **Browser E2E Verification**: Diuji dan diverifikasi pada `http://stockedp.test/inventory/receipts` dan `http://stockedp.test/inventory/store-allocations`. Seluruh komponen header (judul dokumen, search bar, dropdown filter, dan tombol aksi utama) menyatu dalam satu kartu compact dengan proporsi visual yang rapi.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Penyatuan Filter dan Search Bar ke dalam TOP Header Compact (StockIssueListPage)
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar halaman `StockIssueListPage.vue` juga diselaraskan dengan menyatukan search bar dan filter status langsung ke dalam kartu TOP Header compact sehingga tidak lagi menggunakan kontainer filter terpisah di bawahnya.
+- **Pekerjaan yang Dilakukan**:
+  1. **StockIssueListPage.vue**:
+     - Memindahkan `BaseSearchInput` (`searchQuery`) dan dropdown `statusFilter` (`DRAFT`, `POSTED`, `CANCELED`) langsung ke dalam Top Header card di sebelah kiri tombol `+ Buat Draft Baru`.
+     - Menghapus kontainer filter terpisah `<!-- Filter & Search Toolbar -->`.
+     - Menstandarisasi tata letak header dengan `flex flex-col lg:flex-row lg:items-center justify-between gap-3`.
+  2. **Pengujian & Verifikasi**:
+     - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+     - **Kompilasi Frontend (`npm run build`)**: PASSED (309 modules transformed, built cleanly).
+     - **Browser E2E Verification**: Diuji dan diverifikasi pada `http://stockedp.test/inventory/issues`. Judul dokumen, search input, status filter, dan tombol aksi menyatu dalam satu kartu compact putih bergaris tipis.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Penyelarasan Standar Form Pencarian TOP Header Sesuai Referensi StoreAllocationListPage
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar gaya visual form pencarian pada TOP Header compact diselaraskan 100% dengan referensi terbaik pada halaman `StoreAllocationListPage.vue`, di mana input pencarian menggunakan elemen compact berukuran rapat (`py-1.5 px-2.5 text-xs shadow-2xs rounded-lg border-gray-300`) sehingga tingginya serasi dengan select dropdown dan tombol aksi utama.
+- **Pekerjaan yang Dilakukan**:
+  1. **StockReceiptListPage.vue**:
+     - Mengganti `BaseSearchInput` (yang memiliki padding tebal default `py-2 text-sm`) dengan input search compact native (`py-1.5 px-2.5 text-xs shadow-2xs rounded-lg border-gray-300`) lengkap dengan debounce input 300ms (`handleSearch`).
+     - Menyelaraskan breakpoint container menjadi `flex flex-col sm:flex-row sm:items-center justify-between gap-3`.
+  2. **StockIssueListPage.vue**:
+     - Menerapkan input search compact native yang sama persis (`py-1.5 px-2.5 text-xs shadow-2xs rounded-lg border-gray-300`) dengan debounce input 300ms (`handleSearch`).
+     - Menyelaraskan breakpoint container menjadi `flex flex-col sm:flex-row sm:items-center justify-between gap-3`.
+  3. **Pengujian & Verifikasi**:
+     - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+     - **Kompilasi Frontend (`npm run build`)**: PASSED (309 modules transformed, built cleanly).
+     - **Browser E2E Verification**: Diuji secara komparatif pada `StoreAllocationListPage`, `StockReceiptListPage`, dan `StockIssueListPage`. Ketiga halaman kini memiliki bentuk, tinggi baris, proporsi font, dan keselarasan vertikal elemen input/filter/tombol yang identik dan ramping.
+- **Status**: SELESAI & TERVERIFIKASI.
+
+---
+
+### [2026-09-14] Penyatuan Filter dan Form Pencarian ke TOP Header Compact (StockOpnameListPage)
+- **Konteks & Kebutuhan Pengguna**:
+  Pengguna meminta agar halaman `StockOpnameListPage.vue` diperbaiki agar TOP Header-nya compact dan seluruh fitur filter pencarian tergabung langsung ke dalam kartu TOP Header.
+- **Pekerjaan yang Dilakukan**:
+  1. **StockOpnameListPage.vue**:
+     - Mengubah root wrapper dari `px-4 sm:px-6 lg:px-8` menjadi `space-y-3`.
+     - Mengintegrasikan Top Header compact (`bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3`).
+     - Menyematkan input pencarian compact native (`searchQuery`, `w-full sm:w-48`), select filter status (`statusFilter`), dan select filter lokasi gudang (`locationFilter`), beserta tombol Reset dinamis langsung ke sisi kanan header berdampingan dengan tombol **`+ Buat Sesi Baru`**.
+     - Mengeliminasi komponen usang `StockOpnameFilters.vue` yang sebelumnya memakan container terpisah di bawah header.
+     - Menambahkan penanganan debounce 300ms pada input pencarian (`handleSearch`).
+     - Memperbarui komponen alert error ke style compact dengan tombol tutup.
+  2. **Pengujian & Verifikasi**:
+     - **Linter (`npm run lint`)**: PASSED (0 errors, 0 warnings).
+     - **Kompilasi Frontend (`npm run build`)**: PASSED (308 modules transformed, built cleanly).
+     - **Browser E2E Verification**: Diuji langsung pada `http://stockedp.test/inventory/opnames`. Header tampil compact, input pencarian, dropdown status, dropdown lokasi, dan tombol aksi terpadu rapi dalam satu kartu putih bergaris tipis.
+- **Status**: SELESAI & TERVERIFIKASI.

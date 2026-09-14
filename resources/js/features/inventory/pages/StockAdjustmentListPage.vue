@@ -1,172 +1,209 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
+  <div class="space-y-3">
+    <!-- Top Header Toolbar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+          <svg
+            class="w-4 h-4 text-indigo-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+            />
+          </svg>
           Penyesuaian Stok (Stock Adjustment)
         </h1>
-        <p class="mt-2 text-sm text-gray-700">
+        <p class="text-[11px] text-gray-500 mt-0.5">
           Daftar dokumen koreksi saldo stok karena barang ditemukan, rusak, kedaluwarsa, atau selisih fisik.
         </p>
       </div>
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2">
         <router-link
           v-if="hasPermission('stock_adjustments.create')"
           to="/inventory/adjustments/create"
-          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer whitespace-nowrap"
         >
-          Buat Adjustment Baru
+          <svg
+            class="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span>Buat Adjustment Baru</span>
         </router-link>
       </div>
     </div>
 
-    <!-- Quick Tab Filters -->
-    <div class="mt-3 border-b border-gray-200">
-      <nav
-        class="-mb-px flex space-x-6"
-        aria-label="Tabs"
-      >
-        <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          type="button"
-          :class="[
-            activeTab === tab.value
-              ? 'border-indigo-600 text-indigo-600 font-semibold'
-              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-            'whitespace-nowrap border-b-2 py-2 px-1 text-xs cursor-pointer'
-          ]"
-          @click="selectTab(tab.value)"
+    <!-- Quick Tab Filters & Filter Bar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs space-y-2.5">
+      <!-- Quick Tab Filters -->
+      <div class="border-b border-gray-100 pb-1.5">
+        <nav
+          class="-mb-px flex space-x-4"
+          aria-label="Tabs"
         >
-          {{ tab.name }}
-        </button>
-      </nav>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
-      <div>
-        <label
-          for="search"
-          class="sr-only"
-        >Cari Nomor / Catatan</label>
-        <input
-          id="search"
-          v-model="searchQuery"
-          type="text"
-          class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          placeholder="Cari Nomor / Catatan..."
-        >
-      </div>
-
-      <div>
-        <select
-          id="directionFilter"
-          v-model="directionFilter"
-          aria-label="Filter Direction"
-          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Arah (Direction)
-          </option>
-          <option value="INCREASE">
-            Penambahan Stok (INCREASE)
-          </option>
-          <option value="DECREASE">
-            Pengurangan Stok (DECREASE)
-          </option>
-        </select>
-      </div>
-
-      <div>
-        <select
-          id="reasonFilter"
-          v-model="reasonFilter"
-          aria-label="Filter Alasan"
-          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Alasan (Reason)
-          </option>
-          <option value="FOUND">
-            Barang ditemukan
-          </option>
-          <option value="DAMAGED">
-            Barang rusak
-          </option>
-          <option value="EXPIRED">
-            Barang kedaluwarsa
-          </option>
-          <option value="LOST">
-            Kehilangan barang
-          </option>
-          <option value="RECORDING_ERROR">
-            Kesalahan pencatatan
-          </option>
-          <option value="ADMINISTRATIVE">
-            Koreksi administratif
-          </option>
-          <option value="OTHER">
-            Lain-lain
-          </option>
-        </select>
-      </div>
-
-      <div>
-        <select
-          id="locationFilter"
-          v-model="locationFilter"
-          aria-label="Filter Lokasi"
-          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Lokasi
-          </option>
-          <option
-            v-for="loc in locations"
-            :key="loc.id"
-            :value="loc.id"
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            type="button"
+            :class="[
+              activeTab === tab.value
+                ? 'border-indigo-600 text-indigo-600 font-bold'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 font-medium',
+              'whitespace-nowrap border-b-2 pb-1 px-1 text-xs cursor-pointer transition-colors'
+            ]"
+            @click="selectTab(tab.value)"
           >
-            {{ loc.name }}
-          </option>
-        </select>
+            {{ tab.name }}
+          </button>
+        </nav>
       </div>
 
-      <div>
-        <select
-          id="statusFilter"
-          v-model="statusFilter"
-          aria-label="Filter Status"
-          class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">
-            Semua Status
-          </option>
-          <option value="DRAFT">
-            Draft
-          </option>
-          <option value="POSTED">
-            Diposting
-          </option>
-          <option value="CANCELED">
-            Dibatalkan
-          </option>
-        </select>
+      <!-- Filters Section -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+        <div>
+          <label
+            for="search"
+            class="sr-only"
+          >Cari Nomor / Catatan</label>
+          <input
+            id="search"
+            v-model="searchQuery"
+            type="text"
+            class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="Cari Nomor / Catatan..."
+          >
+        </div>
+
+        <div>
+          <select
+            id="directionFilter"
+            v-model="directionFilter"
+            aria-label="Filter Direction"
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Arah (Direction)
+            </option>
+            <option value="INCREASE">
+              Penambahan Stok (INCREASE)
+            </option>
+            <option value="DECREASE">
+              Pengurangan Stok (DECREASE)
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <select
+            id="reasonFilter"
+            v-model="reasonFilter"
+            aria-label="Filter Alasan"
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Alasan (Reason)
+            </option>
+            <option value="FOUND">
+              Barang ditemukan
+            </option>
+            <option value="DAMAGED">
+              Barang rusak
+            </option>
+            <option value="EXPIRED">
+              Barang kedaluwarsa
+            </option>
+            <option value="LOST">
+              Kehilangan barang
+            </option>
+            <option value="RECORDING_ERROR">
+              Kesalahan pencatatan
+            </option>
+            <option value="ADMINISTRATIVE">
+              Koreksi administratif
+            </option>
+            <option value="OTHER">
+              Lain-lain
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <select
+            id="locationFilter"
+            v-model="locationFilter"
+            aria-label="Filter Lokasi"
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Lokasi
+            </option>
+            <option
+              v-for="loc in locations"
+              :key="loc.id"
+              :value="loc.id"
+            >
+              {{ loc.name }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <select
+            id="statusFilter"
+            v-model="statusFilter"
+            aria-label="Filter Status"
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="">
+              Semua Status
+            </option>
+            <option value="DRAFT">
+              Draft
+            </option>
+            <option value="POSTED">
+              Diposting
+            </option>
+            <option value="CANCELED">
+              Dibatalkan
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
     <!-- Error Alert -->
     <div
       v-if="store.error"
-      class="mt-3 rounded-md bg-red-50 p-3 border border-red-200"
+      class="rounded-lg bg-rose-50 p-2.5 border border-rose-200 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
-      <p class="text-xs font-medium text-red-800">
-        {{ store.error }}
-      </p>
+      <span>{{ store.error }}</span>
+      <button
+        type="button"
+        class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+        @click="store.error = null"
+      >
+        Tutup
+      </button>
     </div>
 
     <!-- Table -->
-    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
       <table class="w-full text-left text-xs border-collapse">
         <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
           <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">

@@ -1,48 +1,102 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 space-y-6">
-    <div class="sm:flex sm:items-center justify-between">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">
+  <div class="space-y-3">
+    <!-- Top Header & Filter Toolbar (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+          <svg
+            class="w-4 h-4 text-indigo-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+            />
+          </svg>
           Alokasi Unit Toko
         </h1>
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="text-[11px] text-gray-500 mt-0.5">
           Pencatatan alokasi unit bagus (GOOD) ke toko dan penarikan unit rusak (DEFECTIVE) oleh teknisi lapangan.
         </p>
       </div>
-      <div class="mt-4 sm:mt-0 sm:flex-none">
+
+      <!-- Actions, Filter & Search (Unified in Top Header) -->
+      <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <!-- Search Input -->
+        <div class="w-full sm:w-56">
+          <input
+            id="search-allocations"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari No. Alokasi / Toko..."
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @input="handleSearch"
+          >
+        </div>
+
+        <!-- Store Filter -->
+        <select
+          v-model="selectedStoreId"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          @change="loadData(1)"
+        >
+          <option value="">
+            Semua Toko
+          </option>
+          <option
+            v-for="storeOption in stores"
+            :key="storeOption.id"
+            :value="storeOption.id"
+          >
+            {{ storeOption.name }}
+          </option>
+        </select>
+
+        <!-- Add Allocation Button -->
         <router-link
           v-if="hasPermission('store_allocations.create')"
           to="/inventory/store-allocations/create"
-          class="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 cursor-pointer"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer whitespace-nowrap"
         >
-          <span>+ Catat Alokasi Baru</span>
+          <svg
+            class="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span>Catat Alokasi Baru</span>
         </router-link>
-      </div>
-    </div>
-
-    <!-- Filter & Search Bar -->
-    <div class="mt-3 flex flex-col sm:flex-row gap-2.5">
-      <div class="flex-1">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Cari nomor alokasi, toko, atau teknisi..."
-          class="block w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-900 shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          @input="handleSearch"
-        >
       </div>
     </div>
 
     <!-- Alert / Error -->
     <div
       v-if="store.error"
-      class="mt-3 rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800"
+      class="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-center justify-between"
     >
-      {{ store.error }}
+      <span>{{ store.error }}</span>
+      <button
+        type="button"
+        class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+        @click="store.error = null"
+      >
+        Tutup
+      </button>
     </div>
 
     <!-- Table -->
-    <div class="mt-4 overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar">
       <table class="w-full text-left text-xs border-collapse">
         <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
           <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
@@ -208,11 +262,14 @@
 import { ref, onMounted } from 'vue';
 import { useStoreAllocationStore } from '../stores/useStoreAllocationStore';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
+import { storeApi } from '@/features/store/api/store_api';
 
 const store = useStoreAllocationStore();
 const authStore = useAuthStore();
 
 const searchQuery = ref('');
+const selectedStoreId = ref('');
+const stores = ref([]);
 let searchTimer = null;
 
 const hasPermission = (perm) => authStore.hasPermission(perm);
@@ -221,6 +278,7 @@ const loadData = (page = 1) => {
     store.fetchAllocations({
         page,
         search: searchQuery.value || undefined,
+        store_id: selectedStoreId.value || undefined,
     });
 };
 
@@ -250,7 +308,13 @@ const countPulled = (allocation) => {
     return allocation.items.reduce((sum, i) => sum + Number(i.pulled_quantity || 0), 0);
 };
 
-onMounted(() => {
+onMounted(async () => {
+    try {
+        const res = await storeApi.getAll({ is_active: 1, per_page: 1000 });
+        stores.value = res.data?.data || res.data || [];
+    } catch {
+        // ignore
+    }
     loadData();
 });
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <!-- Top Header Toolbar (Compact) -->
+    <!-- Top Header & Filter Toolbar (Compact) -->
     <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
         <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
@@ -24,42 +24,20 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
-        <router-link
-          v-if="hasPermission('stock_receipts.create')"
-          to="/inventory/receipts/create"
-          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
-        >
-          <svg
-            class="w-3.5 h-3.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      <!-- Actions, Filter & Search (Unified in Top Header) -->
+      <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <!-- Search Input -->
+        <div class="w-full sm:w-56">
+          <input
+            id="search-receipts"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari No. Ref / SPB..."
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 px-2.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            @input="handleSearch"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          <span>Buat Draft Baru</span>
-        </router-link>
-      </div>
-    </div>
+        </div>
 
-    <!-- Filter & Search Toolbar -->
-    <div class="flex flex-col sm:flex-row justify-between gap-2.5">
-      <div class="w-full sm:w-64">
-        <BaseSearchInput
-          id="search"
-          v-model="searchQuery"
-          placeholder="Cari Nomor Referensi / SPB..."
-          size="sm"
-          @search="onSearch"
-        />
-      </div>
-      <div class="flex gap-2 flex-wrap sm:flex-nowrap">
         <select
           v-model="statusFilter"
           class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -77,6 +55,27 @@
             Canceled
           </option>
         </select>
+
+        <router-link
+          v-if="hasPermission('stock_receipts.create')"
+          to="/inventory/receipts/create"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer whitespace-nowrap"
+        >
+          <svg
+            class="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span>Buat Draft Baru</span>
+        </router-link>
       </div>
     </div>
 
@@ -221,7 +220,6 @@ import { useStockReceiptStore } from '../stores/useStockReceiptStore';
 import { useDocumentList } from '../composables/use_document_list';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
-import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
 import DocumentStatusBadge from '../components/DocumentStatusBadge.vue';
 
@@ -232,6 +230,14 @@ const { searchQuery, statusFilter, onSearch, changePage, hasPermission } = useDo
     fetch: (params) => store.fetchList(params),
     collection: 'receipts',
 });
+
+let searchTimer = null;
+const handleSearch = () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        onSearch();
+    }, 300);
+};
 </script>
 
 <style scoped>

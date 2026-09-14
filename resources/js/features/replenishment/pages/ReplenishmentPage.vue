@@ -1,32 +1,45 @@
 <template>
-  <div class="space-y-6">
-    <!-- 1. Header & Title -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  <div class="space-y-3">
+    <!-- 1. Header & Title (Compact) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+        <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+          <svg
+            class="w-4 h-4 text-indigo-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
+          </svg>
           Pusat Rekomendasi Reorder & Action Center
         </h1>
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="text-[11px] text-gray-500 mt-0.5">
           Analisis kekurangan stok, transfer in-transit, dan alokasi surplus gudang internal untuk dukungan keputusan reorder dan persiapan transfer.
         </p>
       </div>
 
       <div
         v-if="generatedAt"
-        class="text-xs text-gray-500 text-right bg-white px-3 py-1.5 rounded-lg border border-gray-200 self-start sm:self-auto shadow-xs"
+        class="flex items-center gap-1.5 text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200 shrink-0 font-mono shadow-2xs"
       >
-        <span class="text-gray-400">Terakhir diperbarui:</span>
-        <span class="font-medium text-gray-700 ml-1">{{ formatTimestamp(generatedAt) }}</span>
+        <span class="text-gray-400">Diperbarui:</span>
+        <span class="font-medium text-gray-700">{{ formatTimestamp(generatedAt) }}</span>
       </div>
     </div>
 
     <!-- 2. Target Frozen Warning Banner -->
     <div
       v-if="isTargetLocationFrozen"
-      class="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3 shadow-xs"
+      class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 shadow-2xs text-xs text-amber-800"
     >
       <svg
-        class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"
+        class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -38,8 +51,8 @@
           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
         />
       </svg>
-      <div class="text-sm text-amber-800">
-        <span class="font-semibold">Lokasi Target Dibekukan (Frozen):</span>
+      <div>
+        <span class="font-bold">Lokasi Target Dibekukan (Frozen):</span>
         Lokasi target saat ini sedang dibekukan oleh sesi Stock Opname aktif. Rekomendasi tetap ditampilkan untuk perencanaan, namun pembuatan dokumen transfer dinonaktifkan hingga lokasi dibuka kembali.
       </div>
     </div>
@@ -47,7 +60,7 @@
     <!-- 3. Error Banner -->
     <div
       v-if="error"
-      class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-800 flex items-center justify-between shadow-xs"
+      class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
     >
       <div class="flex items-center gap-2">
         <svg
@@ -98,7 +111,7 @@
     />
 
     <!-- 7. Pagination & Informational Disclaimer -->
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 text-xs text-gray-500">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1 text-[11px] text-gray-500">
       <div class="italic max-w-lg">
         Rekomendasi dihitung dari kondisi stok saat ini. Validasi stok final tetap dilakukan secara live sebelum formulir transfer disiapkan.
       </div>
@@ -106,29 +119,29 @@
       <!-- Pagination Controls -->
       <div
         v-if="meta.total > 0"
-        class="flex items-center gap-2"
+        class="flex items-center gap-1.5"
       >
-        <span class="text-xs font-medium mr-2 text-gray-600">
+        <span class="text-[11px] font-medium mr-1.5 text-gray-600">
           Menampilkan {{ meta.from || 0 }} - {{ meta.to || 0 }} dari {{ meta.total }} produk
         </span>
 
         <button
           type="button"
           :disabled="meta.current_page <= 1 || loading"
-          class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          class="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           @click="changePage(meta.current_page - 1)"
         >
           Sebelumnya
         </button>
 
-        <span class="px-2 font-medium text-gray-700">
+        <span class="px-1.5 font-medium text-gray-700 font-mono text-xs">
           {{ meta.current_page }} / {{ meta.last_page }}
         </span>
 
         <button
           type="button"
           :disabled="meta.current_page >= meta.last_page || loading"
-          class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          class="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           @click="changePage(meta.current_page + 1)"
         >
           Berikutnya
