@@ -20,6 +20,11 @@ class CreateStockIssueAction
             throw new InvalidArgumentException('Issue must have at least one item.');
         }
 
+        app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+            $data['date'] ?? null,
+            'membuat Pengeluaran Barang'
+        );
+
         return DB::transaction(function () use ($data, $userId) {
             $issueData = [
                 'issue_number' => $this->repository->generateIssueNumber(),

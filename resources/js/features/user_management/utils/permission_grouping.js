@@ -26,6 +26,7 @@ export const KNOWN_SUBGROUP_LABELS = {
     stock_adjustments: 'Penyesuaian Stok (Stock Adjustment)',
     stock_opnames: 'Stock Opname Fisik',
     replenishment: 'Rekomendasi Reorder / Replenishment',
+    month_end: 'Tutup Buku Bulanan (Month-End)',
 
     // 4. Laporan
     reports: 'Laporan & Ekspor Persediaan',
@@ -74,6 +75,7 @@ export const SIDEBAR_MENU_SECTIONS = [
             'stock_adjustments',
             'stock_opnames',
             'replenishment',
+            'month_end',
         ],
     },
     {

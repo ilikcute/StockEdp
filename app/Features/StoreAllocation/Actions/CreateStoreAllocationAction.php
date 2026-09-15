@@ -26,6 +26,11 @@ class CreateStoreAllocationAction
 
     public function execute(array $data, ?int $userId = null): StoreAllocation
     {
+        app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+            $data['allocated_at'] ?? now()->toDateString(),
+            'membuat Alokasi Toko (Store Allocation)'
+        );
+
         $maxRetries = 3;
         $attempt = 0;
 

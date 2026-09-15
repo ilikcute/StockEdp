@@ -15,6 +15,12 @@ class UpdateStockIssueAction
             throw new InvalidArgumentException('Issue must have at least one item.');
         }
 
+        $periodLock = app(\App\Features\MonthEnd\Services\PeriodLockService::class);
+        $periodLock->ensureDateIsOpen($issue->date, 'mengubah Pengeluaran Barang');
+        if (isset($data['date']) && $data['date'] !== $issue->date) {
+            $periodLock->ensureDateIsOpen($data['date'], 'mengubah tanggal Pengeluaran Barang');
+        }
+
         return DB::transaction(function () use ($issue, $data) {
             $lockedIssue = StockIssue::where('id', $issue->id)->lockForUpdate()->first();
 

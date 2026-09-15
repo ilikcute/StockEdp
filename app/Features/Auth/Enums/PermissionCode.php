@@ -104,6 +104,11 @@ enum PermissionCode: string
     case REPORTS_EXPORT = 'reports.export';
     case USERS_MANAGE = 'users.manage';
 
+    // Month-End Closing (Tutup Buku Bulanan)
+    case MONTH_END_VIEW = 'month_end.view';
+    case MONTH_END_CLOSE = 'month_end.close';
+    case MONTH_END_REOPEN = 'month_end.reopen';
+
     public function group(): string
     {
         return explode('.', $this->value)[0];

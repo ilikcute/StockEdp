@@ -20,6 +20,12 @@ class UpdateStockAdjustmentAction
 
     public function execute(StockAdjustment $adjustment, array $data, int $userId): StockAdjustment
     {
+        $periodLock = app(\App\Features\MonthEnd\Services\PeriodLockService::class);
+        $periodLock->ensureDateIsOpen($adjustment->adjustment_date, 'mengubah Penyesuaian Stok (Stock Adjustment)');
+        if (isset($data['adjustment_date']) && $data['adjustment_date'] !== $adjustment->adjustment_date) {
+            $periodLock->ensureDateIsOpen($data['adjustment_date'], 'mengubah tanggal Penyesuaian Stok');
+        }
+
         return DB::transaction(function () use ($adjustment, $data, $userId) {
             $lockedAdjustment = StockAdjustment::where('id', $adjustment->id)->lockForUpdate()->first();
 

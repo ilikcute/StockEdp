@@ -44,6 +44,11 @@ class PostStockReceiptAction
                 throw new DomainException('Only DRAFT receipts can be posted.', 409);
             }
 
+            app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+                $lockedReceipt->date,
+                'memposting Penerimaan Barang'
+            );
+
             $lockedReceipt->load('items');
             if ($lockedReceipt->items->isEmpty()) {
                 throw new DomainException('Cannot post an empty receipt.', 422);

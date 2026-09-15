@@ -19,6 +19,11 @@ class CreateStockAdjustmentAction
 
     public function execute(array $data, int $userId): StockAdjustment
     {
+        app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+            $data['adjustment_date'] ?? null,
+            'membuat Penyesuaian Stok (Stock Adjustment)'
+        );
+
         return DB::transaction(function () use ($data, $userId) {
             // Trim notes
             if (isset($data['notes'])) {

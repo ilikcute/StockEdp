@@ -40,6 +40,11 @@ class PostStockAdjustmentAction
                 throw new DomainException('Hanya adjustment berstatus DRAFT yang dapat diposting.', 409);
             }
 
+            app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+                $lockedAdjustment->adjustment_date,
+                'memposting Penyesuaian Stok (Stock Adjustment)'
+            );
+
             // 3. Maker-Checker check: created_by wajib berbeda dengan posted_by
             if ($lockedAdjustment->created_by === $userId) {
                 throw new DomainException('Pembuat adjustment tidak boleh mem-posting dokumen miliknya sendiri (maker-checker violation).', 403);

@@ -28,6 +28,11 @@ class CreateStockOpnameAction
             throw new DomainException('Tanggal stock opname tidak boleh melebihi tanggal hari ini.', 422);
         }
 
+        app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+            $data['opname_date'] ?? null,
+            'membuat Stock Opname'
+        );
+
         $attempts = 0;
         $maxAttempts = 5;
 

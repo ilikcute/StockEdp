@@ -30,6 +30,11 @@ class ReceiveStockTransferAction
                 throw new DomainException('Only IN_TRANSIT transfers can be received.', 409);
             }
 
+            app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+                $lockedTransfer->transfer_date,
+                'menerima Transfer Antar Gudang'
+            );
+
             $lockedTransfer->load('items');
 
             // Authorization: User must have access to destination location

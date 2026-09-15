@@ -12,6 +12,7 @@ import { productRoutes } from '../features/product/router/product_routes.js';
 import { inventoryRoutes } from '../features/inventory/routes/index.js';
 import { replenishmentRoutes } from '../features/replenishment/router/replenishment_routes.js';
 import { reportingRoutes } from '../features/reporting/routes/index.js';
+import { monthEndRoutes } from '../features/month_end/router/month_end_routes.js';
 import { userRoutes } from '../features/user_management/router/user_routes.js';
 import { useAuthStore } from '../features/auth/stores/use_auth_store.js';
 const router = createRouter({
@@ -31,6 +32,7 @@ const router = createRouter({
         ...inventoryRoutes,
         ...replenishmentRoutes,
         ...reportingRoutes,
+        ...monthEndRoutes,
 
         {
             path: '/inventory/balances',

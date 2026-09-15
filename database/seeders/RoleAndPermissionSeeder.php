@@ -133,6 +133,11 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_FIELD_BALANCES_VIEW->value => 'Melihat Laporan Persediaan Lapangan Teknisi',
             PermissionCode::REPORTS_EXPORT->value => 'Mengekspor Laporan',
             PermissionCode::USERS_MANAGE->value => 'Mengelola Pengguna & Hak Akses',
+
+            // Month-End Closing (Tutup Buku Bulanan)
+            PermissionCode::MONTH_END_VIEW->value => 'Melihat Tutup Buku Bulanan',
+            PermissionCode::MONTH_END_CLOSE->value => 'Menutup Buku Periode Bulanan',
+            PermissionCode::MONTH_END_REOPEN->value => 'Membuka Kembali Periode Tutup Buku',
         ];
 
         $permissionModels = [];
@@ -248,6 +253,9 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::REPORTS_STORE_ALLOCATIONS_VIEW->value,
             PermissionCode::REPORTS_FIELD_BALANCES_VIEW->value,
             PermissionCode::REPORTS_EXPORT->value,
+            PermissionCode::MONTH_END_VIEW->value,
+            PermissionCode::MONTH_END_CLOSE->value,
+            PermissionCode::MONTH_END_REOPEN->value,
         ];
         $supervisorRole->permissions()->sync(
             array_map(fn ($code) => $permissionModels[$code]->id, $supervisorPermissions)

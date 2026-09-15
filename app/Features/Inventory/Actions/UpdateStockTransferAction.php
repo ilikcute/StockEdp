@@ -15,6 +15,12 @@ class UpdateStockTransferAction
 
     public function execute(StockTransfer $transfer, array $data, ?int $userId = null): StockTransfer
     {
+        $periodLock = app(\App\Features\MonthEnd\Services\PeriodLockService::class);
+        $periodLock->ensureDateIsOpen($transfer->transfer_date, 'mengubah Transfer Antar Gudang');
+        if (isset($data['transfer_date']) && $data['transfer_date'] !== $transfer->transfer_date) {
+            $periodLock->ensureDateIsOpen($data['transfer_date'], 'mengubah tanggal Transfer Antar Gudang');
+        }
+
         return DB::transaction(function () use ($transfer, $data, $userId) {
             $lockedTransfer = StockTransfer::where('id', $transfer->id)->lockForUpdate()->first();
 

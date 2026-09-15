@@ -17,6 +17,12 @@ class UpdateStockOpnameAction
                 throw new DomainException('Hanya dokumen berstatus DRAFT yang dapat diperbarui.', 409);
             }
 
+            $periodLock = app(\App\Features\MonthEnd\Services\PeriodLockService::class);
+            $periodLock->ensureDateIsOpen($lockedOpname->opname_date, 'mengubah Stock Opname');
+            if (isset($data['opname_date']) && $data['opname_date'] !== $lockedOpname->opname_date) {
+                $periodLock->ensureDateIsOpen($data['opname_date'], 'mengubah tanggal Stock Opname');
+            }
+
             if (isset($data['opname_date']) && $data['opname_date'] > now()->format('Y-m-d')) {
                 throw new DomainException('Tanggal stock opname tidak boleh melebihi tanggal hari ini.', 422);
             }

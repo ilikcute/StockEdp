@@ -28,6 +28,11 @@ class SendStockTransferAction
                 throw new DomainException('Only DRAFT transfers can be sent.', 409);
             }
 
+            app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+                $lockedTransfer->transfer_date,
+                'mengirim Transfer Antar Gudang'
+            );
+
             $lockedTransfer->load('items');
             if ($lockedTransfer->items->isEmpty()) {
                 throw new DomainException('Cannot send an empty transfer.', 422);

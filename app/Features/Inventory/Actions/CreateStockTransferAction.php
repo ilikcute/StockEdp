@@ -19,6 +19,11 @@ class CreateStockTransferAction
 
     public function execute(array $data, ?int $userId = null): StockTransfer
     {
+        app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+            $data['transfer_date'] ?? null,
+            'membuat Transfer Antar Gudang'
+        );
+
         return DB::transaction(function () use ($data, $userId) {
             $data['transfer_type'] = $data['transfer_type'] ?? TransferType::TRANSFER->value;
 

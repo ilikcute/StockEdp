@@ -20,6 +20,11 @@ class CreateStockReceiptAction
             throw new InvalidArgumentException('Receipt must have at least one item.');
         }
 
+        app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+            $data['date'] ?? null,
+            'membuat Penerimaan Barang'
+        );
+
         return DB::transaction(function () use ($data, $userId) {
             $receiptData = [
                 'receipt_number' => $this->repository->generateReceiptNumber(),

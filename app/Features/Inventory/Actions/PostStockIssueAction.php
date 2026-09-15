@@ -38,6 +38,11 @@ class PostStockIssueAction
                 throw new DomainException('Only DRAFT issues can be posted.', 409);
             }
 
+            app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+                $lockedIssue->date,
+                'memposting Pengeluaran Barang'
+            );
+
             // Check authorization
             $locationIds = $lockedIssue->items->pluck('location_id')->unique()->toArray();
             $user = User::find($userId);

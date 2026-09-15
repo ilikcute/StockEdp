@@ -15,6 +15,12 @@ class UpdateStockReceiptAction
             throw new InvalidArgumentException('Receipt must have at least one item.');
         }
 
+        $periodLock = app(\App\Features\MonthEnd\Services\PeriodLockService::class);
+        $periodLock->ensureDateIsOpen($receipt->date, 'mengubah Penerimaan Barang');
+        if (isset($data['date']) && $data['date'] !== $receipt->date) {
+            $periodLock->ensureDateIsOpen($data['date'], 'mengubah tanggal Penerimaan Barang');
+        }
+
         return DB::transaction(function () use ($receipt, $data) {
             $lockedReceipt = StockReceipt::where('id', $receipt->id)->lockForUpdate()->first();
 

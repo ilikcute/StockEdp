@@ -31,6 +31,11 @@ class PostStockOpnameAction
                 throw new DomainException('Hanya dokumen berstatus COUNTED yang dapat diposting.', 409, ['code' => 'INVALID_STATUS_TRANSITION']);
             }
 
+            app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
+                $lockedOpname->opname_date,
+                'memposting Stock Opname'
+            );
+
             $user = User::find($userId);
             if (! $user || ! $this->policy->post($user, $lockedOpname)) {
                 throw new DomainException(
