@@ -250,7 +250,7 @@ const doc = computed(() => store.currentAllocation);
 const handlePrint = () => {
     if (!doc.value) return;
     printStoreAllocation(doc.value, {
-        printedBy: authStore.user?.name || 'Sistem StockEdp',
+        printedBy: authStore.user?.username || authStore.user?.name || 'EDP_YOG',
     });
 };
 

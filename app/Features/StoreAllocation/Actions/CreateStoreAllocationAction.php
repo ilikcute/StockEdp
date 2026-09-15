@@ -124,8 +124,31 @@ class CreateStoreAllocationAction
                         }
                     }
 
+                    // Consolidate movement DTOs by (productId, locationId, condition, movementType) to aggregate quantities
+                    $consolidatedMovements = [];
+                    foreach ($movementDtos as $dto) {
+                        $key = "{$dto->productId}_{$dto->locationId}_{$dto->condition->value}_{$dto->movementType->value}";
+                        if (isset($consolidatedMovements[$key])) {
+                            $existing = $consolidatedMovements[$key];
+                            $consolidatedMovements[$key] = new StockChangeDTO(
+                                productId: $existing->productId,
+                                locationId: $existing->locationId,
+                                quantity: bcadd($existing->quantity, $dto->quantity, 4),
+                                movementType: $existing->movementType,
+                                referenceType: $existing->referenceType,
+                                referenceId: $existing->referenceId,
+                                referenceNumber: $existing->referenceNumber,
+                                userId: $existing->userId,
+                                occurredAt: $existing->occurredAt,
+                                condition: $existing->condition
+                            );
+                        } else {
+                            $consolidatedMovements[$key] = $dto;
+                        }
+                    }
+
                     // Record all inventory movements
-                    $this->stockMovementService->recordMultipleMovements($movementDtos);
+                    $this->stockMovementService->recordMultipleMovements(array_values($consolidatedMovements));
 
                     return $allocation->fresh([
                         'technician',

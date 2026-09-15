@@ -92,7 +92,7 @@ class StockMovementService
         usort($dtos, function (StockChangeDTO $a, StockChangeDTO $b) {
             if ($a->productId === $b->productId) {
                 if ($a->locationId === $b->locationId) {
-                    return strcmp($a->condition, $b->condition);
+                    return strcmp($a->condition->value, $b->condition->value);
                 }
 
                 return $a->locationId <=> $b->locationId;

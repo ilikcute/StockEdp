@@ -633,7 +633,9 @@ export function generatePrintDocumentHtml(options = {}) {
  */
 export function printDocument(options = {}) {
     return new Promise((resolve) => {
-        const html = generatePrintDocumentHtml(options);
+        const html = typeof options === 'string'
+            ? options
+            : (options.rawHtml || generatePrintDocumentHtml(options));
 
         // Remove any pre-existing print iframe
         const existingFrame = document.getElementById('stockedp-print-frame');
@@ -683,269 +685,497 @@ export function printDocument(options = {}) {
 // ADAPTERS KHUSUS DOKUMEN INVENTARIS STOCK EDP
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Code 128 Set B pattern table (widths of 6 elements: 3 bars, 3 spaces; stop has 7 elements)
+const CODE128_PATTERNS = [
+    '212222', '222122', '222221', '121223', '121322', '131222', '122213', '122312', '132212', '221213',
+    '221312', '231212', '112232', '122132', '122231', '113222', '123122', '123221', '223211', '221132',
+    '221231', '213212', '223112', '312131', '311222', '321122', '321221', '312212', '322112', '322211',
+    '212123', '212321', '232121', '111323', '131123', '131321', '112313', '132113', '132311', '211313',
+    '231113', '231311', '112133', '112331', '132131', '113123', '113321', '133121', '313121', '211331',
+    '231131', '213113', '213311', '213131', '311123', '311321', '331121', '312113', '312311', '332111',
+    '314111', '221411', '431111', '111224', '111422', '121124', '121421', '141122', '141221', '112214',
+    '112412', '122114', '122411', '142112', '142211', '241211', '221114', '413111', '241112', '134111',
+    '111242', '121142', '121241', '114212', '124112', '124211', '411212', '421112', '421211', '212141',
+    '214121', '412121', '111143', '111341', '131141', '114113', '114311', '411113', '411311', '113141',
+    '114131', '311141', '411131', '211412', '211214', '211232', '2331112'
+];
+
 /**
- * Cetak Dokumen Surat Jalan & Berita Acara Serah Terima Alokasi Toko.
+ * Menghasilkan string SVG barcode Code 128 vektor tajam tanpa ketergantungan library eksternal.
+ *
+ * @param {string} text
+ * @param {Object} [options={}]
+ * @returns {string}
+ */
+export function generateBarcodeSvg(text, options = {}) {
+    const raw = String(text || '').trim();
+    if (!raw) return '';
+
+    const height = options.height || 42;
+    const moduleWidth = options.moduleWidth || 1.35;
+    const quietZone = options.quietZone !== undefined ? options.quietZone : 12;
+
+    const codes = [104]; // START B
+    let checksum = 104;
+
+    for (let i = 0; i < raw.length; i++) {
+        const charCode = raw.charCodeAt(i);
+        const code = (charCode >= 32 && charCode <= 126) ? (charCode - 32) : 0;
+        codes.push(code);
+        checksum += (i + 1) * code;
+    }
+
+    codes.push(checksum % 103);
+    codes.push(106); // STOP
+
+    let currentX = quietZone;
+    const rects = [];
+
+    for (let s = 0; s < codes.length; s++) {
+        const pattern = CODE128_PATTERNS[codes[s]];
+        if (!pattern) continue;
+
+        for (let p = 0; p < pattern.length; p++) {
+            const barUnits = parseInt(pattern[p], 10);
+            const w = barUnits * moduleWidth;
+            const isBar = p % 2 === 0;
+            if (isBar) {
+                rects.push(`<rect x="${currentX.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${height}" fill="#000000" />`);
+            }
+            currentX += w;
+        }
+    }
+
+    currentX += quietZone;
+    const totalWidth = Math.ceil(currentX);
+
+    return `<svg width="${totalWidth}" height="${height}" viewBox="0 0 ${totalWidth} ${height}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;">${rects.join('')}</svg>`;
+}
+
+/**
+ * Format tanggal Indonesia resmi: DD MMMM YYYY atau DD MMM YYYY.
+ *
+ * @param {string|Date} val
+ * @param {boolean} [shortMonth=false]
+ * @returns {string}
+ */
+export function formatIndoDate(val, shortMonth = false) {
+    if (!val) return '-';
+    let d, m, y;
+
+    if (typeof val === 'string' && val.includes('-')) {
+        const parts = val.split('T')[0].split('-');
+        if (parts.length === 3) {
+            y = parseInt(parts[0], 10);
+            m = parseInt(parts[1], 10) - 1;
+            d = parseInt(parts[2], 10);
+        }
+    }
+
+    if (d === undefined || isNaN(d)) {
+        const dateObj = new Date(val);
+        if (isNaN(dateObj.getTime())) return String(val);
+        d = dateObj.getDate();
+        m = dateObj.getMonth();
+        y = dateObj.getFullYear();
+    }
+
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Des'];
+    const monthsLong = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    const monthName = shortMonth ? (monthsShort[m] || '') : (monthsLong[m] || '');
+    return `${d} ${monthName} ${y}`;
+}
+
+/**
+ * Format jam resmi: HH:mm:ss.
+ *
+ * @param {Date} [date=new Date()]
+ * @returns {string}
+ */
+export function formatIndoTime(date = new Date()) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+/**
+ * Menghasilkan dokumen HTML lengkap untuk Surat Jalan Alokasi Unit Toko
+ * persis sesuai format standar PT. INDOMARCO PRISMATAMA - IDM YOGYAKARTA.
+ *
+ * @param {Object} doc StoreAllocation document
+ * @param {Object} [extraOptions={}]
+ * @returns {string}
+ */
+export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
+    if (!doc) return '';
+
+    const companyName = extraOptions.companyName || 'PT. INDOMARCO PRISMATAMA';
+    const branchName = extraOptions.branchName || 'IDM YOGYAKARTA';
+    const branchAddress = extraOptions.branchAddress || 'JL.ARTERI (LINGKAR LUAR BARAT)<br>DESA TRIHANGGO KEC GAMPING<br>KAB SLEMAN YOGYAKARTA';
+
+    const printedBy = extraOptions.printedBy || doc.creator_name || 'EDP_YOG';
+    const createdBy = doc.creator_name || doc.technician_name || printedBy;
+    const currentDateIndo = formatIndoDate(new Date(), false);
+    const currentTimeIndo = formatIndoTime(new Date());
+
+    const docNumber = doc.allocation_number || '-';
+    const docDateIndo = formatIndoDate(doc.allocated_at || doc.created_at, true);
+
+    const storeCode = doc.store_code || '';
+    const storeName = doc.store_name || '';
+    const storeAddress = doc.store_address || '';
+    const storeDisplay = storeAddress
+        ? `${storeCode ? storeCode + ' - ' : ''}${storeAddress}`
+        : `${storeCode ? storeCode + ' - ' : ''}${storeName}`;
+
+    const barcodeSvg = generateBarcodeSvg(docNumber, { height: 42, moduleWidth: 1.35 });
+
+    const items = doc.items || [];
+    const rows = [];
+    let rowNumber = 1;
+
+    items.forEach((item) => {
+        // Unit terpasang / dikirim (BA Perbaikan / Unit Pasang)
+        const instQty = Number(item.quantity ?? item.installed_quantity ?? 1);
+        const instSerial = item.serial_number || item.installed_serial_number || '-';
+        const instSku = item.product_sku || item.product?.sku || '-';
+        const instName = item.product_name || item.product?.name || '-';
+        const instType = item.item_type || 'BA Perbaikan';
+        const instNotes = item.notes || '';
+        const refBkb = doc.allocation_number || '';
+        const refPb = doc.pb_number || doc.spb_number || doc.memo_number || '';
+
+        rows.push(`
+          <tr>
+            <td style="text-align: center;">${rowNumber++}</td>
+            <td style="text-align: left;">${escapeHtml(instSku)}</td>
+            <td style="text-align: left;">${escapeHtml(instName)}</td>
+            <td style="text-align: left;">${escapeHtml(instType)}</td>
+            <td style="text-align: right;">${formatQuantity(instQty)}</td>
+            <td style="text-align: left;">${escapeHtml(instSerial)}</td>
+            <td style="text-align: left;">${escapeHtml(instNotes)}</td>
+            <td style="text-align: left;">${escapeHtml(refBkb)}</td>
+            <td style="text-align: left;">${escapeHtml(refPb)}</td>
+          </tr>
+        `);
+
+        // Unit lama ditarik dari toko (jika ada)
+        const pullQty = Number(item.pulled_quantity || 0);
+        const hasPulled = pullQty > 0 || Boolean(item.pulled_product_name || item.pulledProduct?.name);
+        if (hasPulled) {
+            const pullSku = item.pulled_product_sku || item.pulledProduct?.sku || instSku;
+            const pullName = item.pulled_product_name || item.pulledProduct?.name || instName;
+            const pullSerial = item.pulled_serial_number || '-';
+            const pullNotes = item.defective_reason || item.pulled_reason || 'Tarik unit rusak';
+
+            rows.push(`
+              <tr>
+                <td style="text-align: center;">${rowNumber++}</td>
+                <td style="text-align: left;">${escapeHtml(pullSku)}</td>
+                <td style="text-align: left;">${escapeHtml(pullName)}</td>
+                <td style="text-align: left;">Tarik Unit Rusak</td>
+                <td style="text-align: right;">${formatQuantity(pullQty)}</td>
+                <td style="text-align: left;">${escapeHtml(pullSerial)}</td>
+                <td style="text-align: left;">${escapeHtml(pullNotes)}</td>
+                <td style="text-align: left;">${escapeHtml(refBkb)}</td>
+                <td style="text-align: left;">${escapeHtml(refPb)}</td>
+              </tr>
+            `);
+        }
+    });
+
+    if (rows.length === 0) {
+        rows.push(`
+          <tr>
+            <td style="text-align: center;">1</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">BA Perbaikan</td>
+            <td style="text-align: right;">1</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">${escapeHtml(docNumber)}</td>
+            <td style="text-align: left;">-</td>
+          </tr>
+        `);
+    }
+
+    return `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>SURAT JALAN - ${escapeHtml(docNumber)}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 15mm 15mm 15mm 15mm;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000000;
+      background: #ffffff;
+      font-size: 11px;
+      line-height: 1.35;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sj-container {
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 12mm 12mm 12mm;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .sj-container {
+        max-width: 100%;
+        padding: 0;
+      }
+    }
+    .sj-top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .sj-company-info {
+      font-style: italic;
+      font-weight: bold;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .sj-print-meta {
+      font-size: 11px;
+    }
+    .sj-meta-table {
+      border-collapse: collapse;
+    }
+    .sj-meta-table td {
+      padding: 1px 0;
+      vertical-align: top;
+      font-size: 11px;
+    }
+    .sj-meta-label {
+      width: 95px;
+    }
+    .sj-meta-colon {
+      width: 14px;
+      text-align: center;
+    }
+    .sj-title-section {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .sj-title {
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .sj-barcode-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .sj-doc-meta-block {
+      display: inline-block;
+      text-align: left;
+      font-size: 11px;
+    }
+    .sj-recipient-section {
+      margin-bottom: 18px;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .sj-recipient-title {
+      margin-bottom: 2px;
+    }
+    .sj-recipient-company {
+      margin-bottom: 10px;
+    }
+    .sj-recipient-store {
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .sj-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      font-size: 11px;
+    }
+    .sj-table th, .sj-table td {
+      border: 1px solid #000000;
+      padding: 4px 6px;
+      vertical-align: middle;
+    }
+    .sj-table th {
+      font-weight: bold;
+      background: #ffffff;
+    }
+    .sj-signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      page-break-inside: avoid;
+    }
+    .sj-sig-box {
+      width: 48%;
+    }
+    .sj-sig-title {
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+    .sj-sig-subtitle {
+      font-size: 11px;
+      font-weight: normal;
+      margin-bottom: 2px;
+    }
+    .sj-sig-space {
+      height: 60px;
+    }
+    .sj-sig-note {
+      font-style: italic;
+      font-size: 10.5px;
+      margin-bottom: 2px;
+    }
+    .sj-sig-line {
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sj-container">
+    <!-- Header Atas -->
+    <div class="sj-top-header">
+      <div class="sj-company-info">
+        ${escapeHtml(companyName)}<br>
+        ${escapeHtml(branchName)}<br>
+        ${branchAddress}
+      </div>
+      <div class="sj-print-meta">
+        <table class="sj-meta-table">
+          <tr>
+            <td class="sj-meta-label">Dicetak Oleh</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(printedBy)}</td>
+          </tr>
+          <tr>
+            <td class="sj-meta-label">Dibuat Oleh</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(createdBy)}</td>
+          </tr>
+          <tr>
+            <td class="sj-meta-label">Tanggal Cetak</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(currentDateIndo)}</td>
+          </tr>
+          <tr>
+            <td class="sj-meta-label">Jam Cetak</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(currentTimeIndo)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Judul & Barcode Tengah -->
+    <div class="sj-title-section">
+      <div class="sj-title">SURAT JALAN</div>
+      <div class="sj-barcode-wrap">
+        ${barcodeSvg}
+      </div>
+      <div class="sj-doc-meta-block">
+        <table class="sj-meta-table">
+          <tr>
+            <td style="width:55px;">Nomor</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(docNumber)}</td>
+          </tr>
+          <tr>
+            <td>Tanggal</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(docDateIndo)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tujuan / Kepada Yth. -->
+    <div class="sj-recipient-section">
+      <div class="sj-recipient-title">Kepada Yth.</div>
+      <div class="sj-recipient-company">${escapeHtml(companyName)}</div>
+
+      <div class="sj-recipient-store">
+        <div>${escapeHtml(branchName)}</div>
+        <div>${escapeHtml(storeDisplay)}</div>
+      </div>
+
+      <div>Ditujukan ke : &nbsp;-</div>
+    </div>
+
+    <!-- Tabel Rincian Barang -->
+    <table class="sj-table">
+      <thead>
+        <tr>
+          <th style="width: 35px; text-align: center;">No</th>
+          <th style="width: 65px; text-align: left;">PLU</th>
+          <th style="text-align: left;">Nama dan Spesifikasi</th>
+          <th style="width: 100px; text-align: left;">Tipe Barang</th>
+          <th style="width: 65px; text-align: right;">Kuantitas</th>
+          <th style="width: 130px; text-align: left;">Nomor Serial</th>
+          <th style="width: 90px; text-align: left;">Keterangan</th>
+          <th style="width: 100px; text-align: left;"><i>Ref. Kode BKB</i></th>
+          <th style="width: 100px; text-align: left;"><i>Ref. Kode PB</i></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.join('')}
+      </tbody>
+    </table>
+
+    <!-- Tanda Tangan -->
+    <div class="sj-signatures">
+      <div class="sj-sig-box">
+        <div class="sj-sig-title">Diterima Oleh :</div>
+        <div class="sj-sig-space"></div>
+        <div class="sj-sig-note">(tandatangan dan cap Perusahaan)</div>
+        <div class="sj-sig-line">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+      </div>
+      <div class="sj-sig-box" style="margin-left: 50px;">
+        <div class="sj-sig-title">Dikirim Oleh :</div>
+        <div class="sj-sig-subtitle">${(branchName === 'IDM YOGYAKARTA' && companyName === 'PT. INDOMARCO PRISMATAMA') ? 'PT. INDOMARCO PRISMATAMA - IDM<br>YOGYAKARTA' : `${escapeHtml(companyName)} - ${escapeHtml(branchName)}`}</div>
+        <div class="sj-sig-space" style="height: 44px;"></div>
+        <div class="sj-sig-note">(tandatangan dan cap Perusahaan)</div>
+        <div class="sj-sig-line">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+/**
+ * Cetak Dokumen Surat Jalan Alokasi Unit Toko (Format Resmi PT. Indomarco Prismatama).
  *
  * @param {Object} doc StoreAllocation document
  * @param {Object} [extraOptions={}]
  */
 export function printStoreAllocation(doc, extraOptions = {}) {
     if (!doc) return;
-
-    const items = doc.items || [];
-    let totalInstalledQty = 0;
-    let totalInstalledAmount = 0;
-    let totalPulledQty = 0;
-
-    // Installed rows (BAGIAN A: UNIT BARU / DIPASANG)
-    const installedRowsHtml = items.map((item, idx) => {
-        const instQty = Number(item.quantity ?? item.installed_quantity ?? 0);
-        const instPrice = Number(item.unit_price ?? item.product?.unit_price ?? 0);
-        const instSubtotal = Number(item.total_value ?? item.installed_subtotal ?? (instQty * instPrice));
-        const instUnit = item.unit_symbol || item.product?.unit?.symbol || 'UNIT';
-        const instSerial = item.serial_number || item.installed_serial_number || '-';
-        const instName = item.product_name || item.product?.name || '-';
-        const instSku = item.product_sku || item.product?.sku || '-';
-
-        totalInstalledQty += instQty;
-        totalInstalledAmount += instSubtotal;
-
-        return `
-            <tr ${idx % 2 === 1 ? 'class="tr-alt"' : ''}>
-                <td style="text-align:center;color:#64748b;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;">${idx + 1}</td>
-                <td style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:9.5px;color:#475569;">${escapeHtml(instSku)}</td>
-                <td>
-                    <div style="font-weight:700;color:#0f172a;">${escapeHtml(instName)}</div>
-                </td>
-                <td style="text-align:center;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600;color:#1e293b;">${escapeHtml(instSerial)}</td>
-                <td style="text-align:right;font-weight:700;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#047857;">${formatQuantity(instQty)}</td>
-                <td style="text-align:center;font-size:9px;color:#64748b;text-transform:uppercase;">${escapeHtml(instUnit)}</td>
-                <td style="text-align:right;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;">${formatRupiah(instPrice, false)}</td>
-                <td style="text-align:right;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;color:#1e1b4b;">${formatRupiah(instSubtotal, false)}</td>
-            </tr>
-        `;
-    }).join('');
-
-    // Pulled items list (BAGIAN B: UNIT LAMA / DITARIK)
-    const pulledItems = items.filter(
-        (item) => (Number(item.pulled_quantity || 0) > 0) || Boolean(item.pulled_product_name || item.pulledProduct?.name)
-    );
-
-    const pulledRowsHtml = pulledItems.length > 0
-        ? pulledItems.map((item, idx) => {
-            const pullQty = Number(item.pulled_quantity || 0);
-            const pullUnit = item.pulled_unit_symbol || item.pulledProduct?.unit?.symbol || 'UNIT';
-            const pullSerial = item.pulled_serial_number || '-';
-            const pullName = item.pulled_product_name || item.pulledProduct?.name || '-';
-            const pullSku = item.pulled_product_sku || item.pulledProduct?.sku || '-';
-            const pullReason = item.defective_reason || item.pulled_reason || '-';
-
-            totalPulledQty += pullQty;
-
-            return `
-                <tr ${idx % 2 === 1 ? 'class="tr-alt"' : ''}>
-                    <td style="text-align:center;color:#64748b;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;">${idx + 1}</td>
-                    <td style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:9.5px;color:#475569;">${escapeHtml(pullSku)}</td>
-                    <td>
-                        <div style="font-weight:700;color:#991b1b;">${escapeHtml(pullName)}</div>
-                    </td>
-                    <td style="text-align:center;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600;color:#b91c1c;">${escapeHtml(pullSerial)}</td>
-                    <td style="text-align:right;font-weight:700;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#b91c1c;">${formatQuantity(pullQty)}</td>
-                    <td style="text-align:center;font-size:9px;color:#64748b;text-transform:uppercase;">${escapeHtml(pullUnit)}</td>
-                    <td style="color:#475569;font-size:9.5px;">${escapeHtml(pullReason)}</td>
-                </tr>
-            `;
-        }).join('')
-        : `
-            <tr>
-                <td colspan="7" style="text-align:center;color:#64748b;font-style:italic;padding:8px 6px;">
-                    Tidak ada unit lama yang ditarik dari toko untuk transaksi ini.
-                </td>
-            </tr>
-        `;
-
-    const customHeaderHtml = `
-        <div style="display:flex;gap:12px;margin-bottom:12px;">
-            <!-- Box Pengirim -->
-            <div style="flex:1;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
-                <div style="background:#f1f5f9;padding:4px 8px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#1e293b;border-bottom:1px solid #cbd5e1;display:flex;justify-content:space-between;align-items:center;">
-                    <span>Pengirim / Asal Perangkat</span>
-                    <span style="font-size:8px;background:#e2e8f0;padding:1px 5px;border-radius:3px;color:#475569;font-weight:600;">ASAL (ORIGIN)</span>
-                </div>
-                <div style="padding:7px 9px;font-size:10px;line-height:1.45;">
-                    <table style="width:100%;border-collapse:collapse;">
-                        <tr>
-                            <td style="width:95px;color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Lokasi Asal</td>
-                            <td style="width:10px;color:#94a3b8;padding:2px 0;">:</td>
-                            <td style="font-weight:700;color:#0f172a;padding:2px 0;">${escapeHtml(doc.technician_location_name || 'Gudang EDP')}</td>
-                        </tr>
-                        <tr>
-                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Teknisi / PIC</td>
-                            <td style="color:#94a3b8;padding:2px 0;">:</td>
-                            <td style="font-weight:600;color:#1e293b;padding:2px 0;">${escapeHtml(doc.technician_name || '-')}</td>
-                        </tr>
-                        <tr>
-                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">No. Dokumen</td>
-                            <td style="color:#94a3b8;padding:2px 0;">:</td>
-                            <td style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;color:#4338ca;padding:2px 0;">${escapeHtml(doc.allocation_number || '-')}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Box Penerima -->
-            <div style="flex:1;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
-                <div style="background:#f1f5f9;padding:4px 8px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#1e293b;border-bottom:1px solid #cbd5e1;display:flex;justify-content:space-between;align-items:center;">
-                    <span>Kepada Yth. / Penerima Toko</span>
-                    <span style="font-size:8px;background:#e0e7ff;padding:1px 5px;border-radius:3px;color:#3730a3;font-weight:600;">TUJUAN (DESTINATION)</span>
-                </div>
-                <div style="padding:7px 9px;font-size:10px;line-height:1.45;">
-                    <table style="width:100%;border-collapse:collapse;">
-                        <tr>
-                            <td style="width:95px;color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Nama Toko</td>
-                            <td style="width:10px;color:#94a3b8;padding:2px 0;">:</td>
-                            <td style="font-weight:700;color:#0f172a;padding:2px 0;">
-                                ${escapeHtml(doc.store_name || '-')}
-                                ${doc.store_code ? `<span style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#4f46e5;font-size:9px;">(${escapeHtml(doc.store_code)})</span>` : ''}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Alamat Toko</td>
-                            <td style="color:#94a3b8;padding:2px 0;">:</td>
-                            <td style="color:#334155;padding:2px 0;">${escapeHtml(doc.store_address || '-')}</td>
-                        </tr>
-                        <tr>
-                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Telepon / Kontak</td>
-                            <td style="color:#94a3b8;padding:2px 0;">:</td>
-                            <td style="color:#334155;padding:2px 0;">${escapeHtml(doc.store_phone || '-')}</td>
-                        </tr>
-                        <tr>
-                            <td style="color:#64748b;font-size:9px;font-weight:600;padding:2px 0;">Tanggal Alokasi</td>
-                            <td style="color:#94a3b8;padding:2px 0;">:</td>
-                            <td style="font-weight:600;color:#0f172a;padding:2px 0;">${escapeHtml(doc.allocated_at || '-')}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-    `;
-
-    const customBodyHtml = `
-        <!-- TABEL A: UNIT DIKIRIM & DIPASANG -->
-        <div style="margin-bottom:12px;">
-            <div style="font-size:10px;font-weight:800;text-transform:uppercase;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-                <span style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;padding:1px 6px;border-radius:3px;font-size:8.5px;font-weight:800;">BAGIAN A</span>
-                <span>RINCIAN BARANG DIKIRIM &amp; DIPASANG DI TOKO (KONDISI: BAGUS / BARU)</span>
-            </div>
-            <table class="data-table" style="margin-bottom:0;">
-                <thead>
-                    <tr>
-                        <th style="width:28px;text-align:center;">No.</th>
-                        <th style="width:85px;text-align:left;">Kode SKU</th>
-                        <th style="text-align:left;">Nama Barang &amp; Deskripsi</th>
-                        <th style="width:105px;text-align:center;">Nomor Seri (S/N)</th>
-                        <th style="width:48px;text-align:right;">Qty</th>
-                        <th style="width:45px;text-align:center;">Satuan</th>
-                        <th style="width:85px;text-align:right;">Harga Satuan</th>
-                        <th style="width:95px;text-align:right;">Total Nilai</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${installedRowsHtml}
-                </tbody>
-                <tfoot>
-                    <tr class="tfoot-row">
-                        <td colspan="4" class="tfoot-label">Total Barang Dikirim &amp; Dipasang (${items.length} Item):</td>
-                        <td class="tfoot-value" style="text-align:right;color:#047857;">${formatQuantity(totalInstalledQty)}</td>
-                        <td class="tfoot-value" style="text-align:center;font-size:9px;">UNIT</td>
-                        <td class="tfoot-label" style="font-size:8.5px;">Grand Total Nilai:</td>
-                        <td class="tfoot-value" style="text-align:right;color:#1e1b4b;">${formatRupiah(totalInstalledAmount)}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <!-- TABEL B: UNIT DITARIK DARI TOKO -->
-        <div style="margin-bottom:10px;">
-            <div style="font-size:10px;font-weight:800;text-transform:uppercase;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-                <span style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:1px 6px;border-radius:3px;font-size:8.5px;font-weight:800;">BAGIAN B</span>
-                <span>RINCIAN BARANG DITARIK DARI TOKO (KONDISI: RUSAK / DIGANTI)</span>
-            </div>
-            <table class="data-table" style="margin-bottom:0;">
-                <thead>
-                    <tr>
-                        <th style="width:28px;text-align:center;">No.</th>
-                        <th style="width:85px;text-align:left;">Kode SKU</th>
-                        <th style="text-align:left;">Nama Barang yang Ditarik</th>
-                        <th style="width:105px;text-align:center;">S/N Rusak</th>
-                        <th style="width:48px;text-align:right;">Qty Tarik</th>
-                        <th style="width:45px;text-align:center;">Satuan</th>
-                        <th style="text-align:left;">Keluhan / Alasan Kerusakan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${pulledRowsHtml}
-                </tbody>
-                ${pulledItems.length > 0 ? `
-                <tfoot>
-                    <tr class="tfoot-row">
-                        <td colspan="4" class="tfoot-label">Total Barang Ditarik (${pulledItems.length} Item):</td>
-                        <td class="tfoot-value" style="text-align:right;color:#b91c1c;">${formatQuantity(totalPulledQty)}</td>
-                        <td class="tfoot-value" style="text-align:center;font-size:9px;">UNIT</td>
-                        <td class="tfoot-value" style="color:#64748b;font-size:9px;">Diserahkan untuk perbaikan / servis GA</td>
-                    </tr>
-                </tfoot>
-                ` : ''}
-            </table>
-        </div>
-
-        <!-- KLAUSUL SERAH TERIMA SURAT JALAN -->
-        <div style="margin:10px 0;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc;padding:7px 10px;font-size:9px;line-height:1.45;color:#334155;">
-            <div style="font-weight:700;text-transform:uppercase;color:#0f172a;margin-bottom:3px;letter-spacing:0.3px;">
-                Ketentuan &amp; Klausul Serah Terima Surat Jalan:
-            </div>
-            <ol style="margin:0;padding-left:16px;">
-                <li>Barang yang diserahkan telah diperiksa bersama dalam kondisi baru/baik, berfungsi normal, dan nomor seri (S/N) sesuai tertera pada dokumen ini.</li>
-                <li>Barang lama/rusak yang ditarik diserahkan kembali kepada Petugas/Teknisi EDP untuk diproses perbaikan (servis GA/Vendor) atau penghapusan aset.</li>
-                <li>Dokumen ini berlaku sebagai Surat Jalan Pengiriman dan Berita Acara Serah Terima (BAST) fisik yang sah antara Departemen EDP dan Manajemen Toko.</li>
-            </ol>
-        </div>
-    `;
-
-    return printDocument({
-        title: 'SURAT JALAN & BERITA ACARA SERAH TERIMA',
-        subtitle: 'Pengiriman & Penggantian Perangkat EDP Toko',
-        docNumber: doc.allocation_number || '-',
-        docDate: doc.allocated_at || doc.created_at || '-',
-        status: 'POSTED',
-        statusLabel: 'SURAT JALAN RESMI',
-        customHeaderHtml,
-        customBodyHtml,
-        notes: doc.notes,
-        signatures: [
-            {
-                role: 'Yang Menyerahkan (Pengirim)',
-                name: doc.technician_name || '............................................',
-                title: doc.technician_location_name || 'Teknisi EDP'
-            },
-            {
-                role: 'Petugas Pengantar / Driver',
-                name: '............................................',
-                title: 'Ekspedisi / Pengantar'
-            },
-            {
-                role: 'Yang Menerima (Pihak Toko)',
-                name: '............................................',
-                title: `Kepala Toko / Staff ${doc.store_name || ''} (Cap & Ttd)`
-            },
-            {
-                role: 'Mengetahui / Disetujui',
-                name: '............................................',
-                title: 'Supervisor IT & EDP Logistik'
-            },
-        ],
-        ...extraOptions,
-    });
+    const html = generateStoreAllocationSuratJalanHtml(doc, extraOptions);
+    return printDocument({ rawHtml: html, ...extraOptions });
 }
 
 /**

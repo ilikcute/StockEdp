@@ -163,6 +163,82 @@ class StoreAllocationTest extends TestCase
         ]);
     }
 
+    public function test_technician_can_create_store_allocation_with_same_pulled_product(): void
+    {
+        $payload = [
+            'store_id' => $this->store->id,
+            'technician_user_id' => $this->technician->id,
+            'technician_location_id' => $this->technicianLocation->id,
+            'allocated_at' => now()->toDateString(),
+            'notes' => 'Penggantian unit rusak dengan model sama',
+            'items' => [
+                [
+                    'product_id' => $this->productA->id,
+                    'quantity' => 1,
+                    'serial_number' => 'SN-EPSON-NEW',
+                    'pulled_product_id' => $this->productA->id,
+                    'pulled_quantity' => 1,
+                    'pulled_serial_number' => 'SN-EPSON-OLD',
+                    'defective_reason' => 'Port USB rusak',
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->technician)->postJson('/api/v1/store-allocations', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_technician_can_create_store_allocation_with_multiple_rows_of_same_product(): void
+    {
+        $payload = [
+            'store_id' => $this->store->id,
+            'technician_user_id' => $this->technician->id,
+            'technician_location_id' => $this->technicianLocation->id,
+            'allocated_at' => now()->toDateString(),
+            'notes' => 'Pemasangan 2 unit dengan serial number berbeda',
+            'items' => [
+                [
+                    'product_id' => $this->productA->id,
+                    'quantity' => 1,
+                    'serial_number' => 'SN-EPSON-001',
+                    'pulled_product_id' => $this->productA->id,
+                    'pulled_quantity' => 1,
+                    'pulled_serial_number' => 'SN-OLD-001',
+                    'defective_reason' => 'Port USB rusak',
+                ],
+                [
+                    'product_id' => $this->productA->id,
+                    'quantity' => 2,
+                    'serial_number' => 'SN-EPSON-002',
+                    'pulled_product_id' => $this->productA->id,
+                    'pulled_quantity' => 1,
+                    'pulled_serial_number' => 'SN-OLD-002',
+                    'defective_reason' => 'Mati total',
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->technician)->postJson('/api/v1/store-allocations', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('success', true);
+
+        // Check balances: 5 - 3 = 2 GOOD, 0 + 2 = 2 DEFECTIVE
+        $goodBalance = InventoryBalance::where('product_id', $this->productA->id)
+            ->where('location_id', $this->technicianLocation->id)
+            ->where('condition', 'GOOD')
+            ->first();
+        $this->assertEquals('2.0000', $goodBalance->quantity);
+
+        $defectiveBalance = InventoryBalance::where('product_id', $this->productA->id)
+            ->where('location_id', $this->technicianLocation->id)
+            ->where('condition', 'DEFECTIVE')
+            ->first();
+        $this->assertEquals('2.0000', $defectiveBalance->quantity);
+    }
+
     public function test_cannot_create_store_allocation_for_location_of_another_technician(): void
     {
         $otherTechnician = User::factory()->create(['is_active' => true]);
@@ -228,7 +304,7 @@ class StoreAllocationTest extends TestCase
             'is_active' => true,
         ]);
 
-        \App\Features\Inventory\Models\InventoryBalance::create([
+        InventoryBalance::create([
             'product_id' => $this->productA->id,
             'location_id' => $warehouse->id,
             'quantity' => 10,
