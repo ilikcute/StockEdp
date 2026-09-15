@@ -1136,12 +1136,7 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
       <div class="sj-recipient-title">Kepada Yth.</div>
       <div class="sj-recipient-company">${escapeHtml(companyName)}</div>
 
-      <div class="sj-recipient-store">
-        <div>${escapeHtml(branchName)}</div>
-        <div>${escapeHtml(storeDisplay)}</div>
-      </div>
-
-      <div>Ditujukan ke : &nbsp;-</div>
+      <div>Ditujukan ke : &nbsp;${escapeHtml(storeDisplay ? `${storeDisplay} ${branchName}` : (branchName || '-'))}</div>
     </div>
 
     <!-- Tabel Rincian Barang -->
