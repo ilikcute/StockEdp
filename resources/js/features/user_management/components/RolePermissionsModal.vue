@@ -519,21 +519,21 @@ const getSectionTotalCount = (section) => {
 };
 
 watch(
-  () => props.isOpen,
-  (open) => {
+  [() => props.isOpen, () => props.role],
+  ([open, roleVal]) => {
     if (open) {
       searchQuery.value = '';
       selectedSectionFilter.value = 'ALL';
-      if (props.role?.permissions) {
-        selectedPermissionIds.value = props.role.permissions.map((p) => p.id);
-      } else if (Array.isArray(props.role?.permission_ids)) {
-        selectedPermissionIds.value = [...props.role.permission_ids];
+      if (roleVal?.permissions) {
+        selectedPermissionIds.value = roleVal.permissions.map((p) => p.id);
+      } else if (Array.isArray(roleVal?.permission_ids)) {
+        selectedPermissionIds.value = [...roleVal.permission_ids];
       } else {
         selectedPermissionIds.value = [];
       }
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
 const selectSubgroup = (subgroup) => {

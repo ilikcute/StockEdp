@@ -297,15 +297,14 @@ const onSearch = () => {
 
 const onSelectRolesTab = () => {
   activeTab.value = 'roles';
-  if (roleListWithPermissions.value.length === 0) {
-    fetchRolesAndPermissions();
-  }
+  fetchRolesAndPermissions();
 };
 
 onMounted(async () => {
   await Promise.all([
     fetchUsers(),
     fetchFormOptions(),
+    fetchRolesAndPermissions(),
   ]);
 });
 </script>

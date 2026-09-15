@@ -137,10 +137,15 @@ export function useUserManagement() {
         formErrors.value = {};
     };
 
-    const openRolePermissionsModal = (role) => {
+    const openRolePermissionsModal = async (role) => {
         editingRole.value = { ...role };
         roleError.value = null;
         isRoleModalOpen.value = true;
+        await fetchRolesAndPermissions();
+        const updated = roleListWithPermissions.value.find((r) => r.id === role.id);
+        if (updated) {
+            editingRole.value = { ...updated };
+        }
     };
 
     const closeRolePermissionsModal = () => {
