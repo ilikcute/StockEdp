@@ -1,8 +1,9 @@
 <template>
   <div
+    ref="panelContainerRef"
     :class="[
       compact ? 'bg-transparent p-0' : 'bg-white border border-blue-200 rounded-xl p-4 shadow-xs',
-      'transition-all'
+      'transition-all relative'
     ]"
   >
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
@@ -57,7 +58,12 @@
               'block w-full pl-9 pr-9 font-mono border border-gray-300 rounded-lg text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 transition-colors',
               compact ? 'py-1.5 text-xs bg-white min-h-[36px]' : 'py-2.5 text-sm bg-gray-50 min-h-[44px]'
             ]"
-            @keydown.enter.prevent="handleScan"
+            @input="onInput"
+            @focus="onFocus"
+            @keydown.down.prevent="onKeyDown"
+            @keydown.up.prevent="onKeyUp"
+            @keydown.enter.prevent="onKeyEnter"
+            @keydown.esc.prevent="closeDropdown"
           >
           <button
             v-if="scanInput"
@@ -68,6 +74,113 @@
           >
             &times;
           </button>
+        </div>
+
+        <!-- Live Search Suggestions Popover Dropdown -->
+        <div
+          v-if="enableLiveSearch && isDropdownOpen && (searchResults.length > 0 || isLiveSearching || scanInput.trim().length >= 2)"
+          class="absolute left-0 right-0 top-full mt-1 z-50 bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden text-xs"
+        >
+          <!-- Header Status -->
+          <div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
+            <span v-if="isLiveSearching" class="inline-flex items-center gap-1.5 text-indigo-600 font-medium">
+              <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              Mencari produk...
+            </span>
+            <span v-else class="font-medium text-gray-700">
+              Ditemukan {{ searchResults.length }} produk (gunakan ↑↓ lalu Enter)
+            </span>
+            <span class="text-[10px] text-gray-400 font-mono">ESC untuk tutup</span>
+          </div>
+
+          <!-- Items list -->
+          <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 custom-scrollbar">
+            <div
+              v-for="(product, idx) in searchResults"
+              :key="product.id"
+              :class="[
+                'px-3 py-2 flex items-center justify-between gap-2.5 cursor-pointer transition-colors',
+                highlightedIndex === idx
+                  ? 'bg-teal-50/90 text-teal-950 ring-1 ring-inset ring-teal-400/40'
+                  : 'hover:bg-gray-50 text-gray-800'
+              ]"
+              @click="selectProduct(product)"
+              @mouseenter="highlightedIndex = idx"
+            >
+              <!-- Info Produk -->
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-gray-900 leading-tight">
+                    {{ product.name }}
+                  </span>
+                  <span
+                    v-if="product.category?.name"
+                    class="text-[9px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.2 rounded"
+                  >
+                    {{ product.category.name }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 mt-0.5 text-[10px] text-gray-500 font-mono flex-wrap">
+                  <span class="bg-gray-100 px-1 rounded border border-gray-200 text-gray-700 font-bold">
+                    SKU: {{ product.sku }}
+                  </span>
+                  <span v-if="product.barcode" class="text-gray-400">
+                    Barcode: {{ product.barcode }}
+                  </span>
+                  <span v-if="product.unit?.name" class="text-gray-400">
+                    ({{ product.unit.name }})
+                  </span>
+                </div>
+              </div>
+
+              <!-- Stock & Action Button -->
+              <div class="shrink-0 flex items-center gap-2">
+                <div
+                  v-if="product.stockText !== undefined"
+                  class="text-right"
+                >
+                  <div class="text-[9px] text-gray-400 uppercase font-semibold">
+                    Saldo
+                  </div>
+                  <span
+                    :class="[
+                      'inline-block px-1.5 py-0.5 rounded text-[10px] font-bold font-mono',
+                      product.hasStock
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200'
+                    ]"
+                  >
+                    {{ product.stockText }}
+                  </span>
+                </div>
+
+                <span
+                  class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md text-[10px] font-semibold border transition-colors cursor-pointer"
+                  :class="highlightedIndex === idx
+                    ? 'bg-teal-600 text-white border-teal-600 shadow-xs'
+                    : 'bg-white text-gray-700 border-gray-200'"
+                >
+                  + Tambah
+                </span>
+              </div>
+            </div>
+
+            <!-- Empty Search State -->
+            <div
+              v-if="!isLiveSearching && searchResults.length === 0 && scanInput.trim().length >= 2"
+              class="p-4 text-center text-xs text-gray-500 space-y-1"
+            >
+              <div class="font-medium text-gray-700">
+                Tidak ada produk yang cocok dengan "{{ scanInput.trim() }}".
+              </div>
+              <div class="text-[11px] text-gray-400">
+                Tekan Enter untuk mencoba lookup scanner langsung ke server.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -81,7 +194,7 @@
             'w-full sm:w-auto inline-flex items-center justify-center font-semibold rounded-lg shadow-xs transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer',
             compact ? 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs min-h-[36px]' : 'px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs min-h-[44px]'
           ]"
-          @click="handleScan"
+          @click="onKeyEnter"
         >
           <svg
             v-if="isProcessing && !scanInput.trim()"
@@ -103,7 +216,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span>🔍 Scan</span>
+          <span>🔍 Scan / Tambah</span>
         </button>
       </div>
     </div>
@@ -156,8 +269,9 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue';
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue';
 import { useInventoryBarcodeScanner } from '../composables/use_inventory_barcode_scanner';
+import { productApi } from '@/features/product/api/product_api.js';
 
 const props = defineProps({
   label: { type: String, default: 'Scan Barcode / Masukkan SKU Produk (Scanner / Input Cepat)' },
@@ -165,11 +279,21 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   locationSelected: { type: Boolean, default: true },
   compact: { type: Boolean, default: false },
+  enableLiveSearch: { type: Boolean, default: false },
+  products: { type: Array, default: () => [] },
+  debounceMs: { type: Number, default: 250 },
 });
 
 const emit = defineEmits(['scan-success', 'scan-error']);
 
 const inputRef = ref(null);
+const panelContainerRef = ref(null);
+
+const isDropdownOpen = ref(false);
+const isLiveSearching = ref(false);
+const searchResults = ref([]);
+const highlightedIndex = ref(0);
+let debounceTimer = null;
 
 const focusInput = () => {
   nextTick(() => {
@@ -222,6 +346,101 @@ const statusClasses = computed(() => {
   }
 });
 
+const closeDropdown = () => {
+  isDropdownOpen.value = false;
+  isLiveSearching.value = false;
+};
+
+const performSearch = async (query) => {
+  const q = query.toLowerCase().trim();
+  if (!q) {
+    searchResults.value = [];
+    isLiveSearching.value = false;
+    return;
+  }
+
+  // 1. Search locally in props.products if provided
+  let matches = [];
+  if (Array.isArray(props.products) && props.products.length > 0) {
+    matches = props.products.filter((p) => {
+      const nameMatch = p.name && p.name.toLowerCase().includes(q);
+      const skuMatch = p.sku && p.sku.toLowerCase().includes(q);
+      const barcodeMatch = p.barcode && p.barcode.toLowerCase().includes(q);
+      const catMatch = p.category?.name && p.category.name.toLowerCase().includes(q);
+      return nameMatch || skuMatch || barcodeMatch || catMatch;
+    });
+  }
+
+  // 2. Fallback to API if no local matches
+  if (matches.length === 0) {
+    try {
+      const res = await productApi.getAll({ search: query, is_active: 1, per_page: 20 });
+      const backendItems = res.data?.data?.data || res.data?.data || [];
+      matches = backendItems;
+    } catch {
+      matches = [];
+    }
+  }
+
+  searchResults.value = matches.slice(0, 20);
+  highlightedIndex.value = 0;
+  isLiveSearching.value = false;
+  isDropdownOpen.value = true;
+};
+
+const onInput = () => {
+  if (!props.enableLiveSearch) return;
+
+  clearTimeout(debounceTimer);
+  const q = (scanInput.value || '').trim();
+
+  if (q.length < 2) {
+    searchResults.value = [];
+    isDropdownOpen.value = false;
+    isLiveSearching.value = false;
+    return;
+  }
+
+  isLiveSearching.value = true;
+  debounceTimer = setTimeout(() => {
+    performSearch(q);
+  }, props.debounceMs);
+};
+
+const onFocus = () => {
+  if (!props.enableLiveSearch) return;
+  const q = (scanInput.value || '').trim();
+  if (q.length >= 2 && searchResults.value.length > 0) {
+    isDropdownOpen.value = true;
+  }
+};
+
+const onKeyDown = () => {
+  if (!isDropdownOpen.value || searchResults.value.length === 0) return;
+  highlightedIndex.value = (highlightedIndex.value + 1) % searchResults.value.length;
+};
+
+const onKeyUp = () => {
+  if (!isDropdownOpen.value || searchResults.value.length === 0) return;
+  highlightedIndex.value = (highlightedIndex.value - 1 + searchResults.value.length) % searchResults.value.length;
+};
+
+const selectProduct = (product) => {
+  if (!product || !product.id) return;
+
+  if (!props.locationSelected) {
+    emit('scan-error', 'Lokasi belum dipilih.');
+    return;
+  }
+
+  closeDropdown();
+  scanInput.value = '';
+  status.value = 'FOUND';
+  statusMessage.value = `✓ ${product.name} (${product.sku}) dipilih.`;
+  emit('scan-success', product);
+  focusInput();
+};
+
 const handleScan = () => {
   if (!props.locationSelected) {
     emit('scan-error', 'Lokasi belum dipilih.');
@@ -231,15 +450,80 @@ const handleScan = () => {
   const code = scanInput.value.trim();
   if (!code) return;
 
+  closeDropdown();
+
+  // If local exact match exists
+  if (props.enableLiveSearch && Array.isArray(props.products) && props.products.length > 0) {
+    const exactMatch = props.products.find(
+      (p) => (p.barcode && String(p.barcode).trim().toLowerCase() === code.toLowerCase()) ||
+             (p.sku && String(p.sku).trim().toLowerCase() === code.toLowerCase())
+    );
+    if (exactMatch) {
+      selectProduct(exactMatch);
+      return;
+    }
+  }
+
   scanInput.value = '';
   enqueueScan(code);
   focusInput();
 };
 
+const onKeyEnter = () => {
+  if (!props.locationSelected) {
+    emit('scan-error', 'Lokasi belum dipilih.');
+    return;
+  }
+
+  // 1. If dropdown is open and user has an item highlighted or available
+  if (props.enableLiveSearch && isDropdownOpen.value && searchResults.value.length > 0 && highlightedIndex.value >= 0) {
+    const selected = searchResults.value[highlightedIndex.value];
+    if (selected) {
+      selectProduct(selected);
+      return;
+    }
+  }
+
+  // 2. Check if the typed input matches an exact barcode or SKU in local products
+  const code = (scanInput.value || '').trim();
+  if (!code) return;
+
+  if (props.enableLiveSearch && Array.isArray(props.products) && props.products.length > 0) {
+    const exactMatch = props.products.find(
+      (p) => (p.barcode && String(p.barcode).trim().toLowerCase() === code.toLowerCase()) ||
+             (p.sku && String(p.sku).trim().toLowerCase() === code.toLowerCase())
+    );
+    if (exactMatch) {
+      selectProduct(exactMatch);
+      return;
+    }
+  }
+
+  // 3. Fallback to standard scanner lookup
+  closeDropdown();
+  handleScan();
+};
+
 const clearInput = () => {
   scanInput.value = '';
+  closeDropdown();
   focusInput();
 };
+
+const handleClickOutside = (event) => {
+  if (panelContainerRef.value && !panelContainerRef.value.contains(event.target)) {
+    closeDropdown();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+  clearTimeout(debounceTimer);
+});
 
 defineExpose({
   focusInput,

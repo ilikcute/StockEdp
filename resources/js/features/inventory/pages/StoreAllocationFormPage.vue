@@ -252,14 +252,17 @@
           </div>
         </div>
 
-        <!-- Scanner Barcode Panel -->
+        <!-- Scanner Barcode & Live Search Panel -->
         <div class="flex-1 min-w-[200px]">
           <BarcodeScannerPanel
             ref="scannerPanelRef"
             :compact="true"
             :location-selected="Boolean(form.technician_location_id)"
-            label="Scan Barcode / SKU Unit Pasang"
-            placeholder="Scan barcode / ketik SKU produk dipasang [F2] lalu Enter..."
+            :enable-live-search="true"
+            :products="installProductOptions"
+            :debounce-ms="250"
+            label="Scan Barcode / Cari Produk Unit Pasang"
+            placeholder="Scan barcode / ketik nama produk / SKU [F2]..."
             @scan-success="handleProductScanned"
             @scan-error="(msg) => { errorMsg = msg; }"
           />
@@ -305,7 +308,7 @@
             </span>
           </div>
           <span class="text-[11px] text-gray-400 font-mono hidden md:inline-block">
-            Tekan <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F2</kbd> ke Scanner &bull; <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F9</kbd> Simpan
+            Tekan <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F2</kbd> ke Scanner / Cari Produk &bull; <kbd class="px-1 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 font-bold">F9</kbd> Simpan
           </span>
         </div>
 
