@@ -837,6 +837,10 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
     items.forEach((item) => {
         // Unit terpasang / dikirim (BA Perbaikan / Unit Pasang)
         const instQty = Number(item.quantity ?? item.installed_quantity ?? 1);
+        const instPrice = Number(item.unit_price ?? item.product?.unit_price ?? 0);
+        const instSubtotal = Number(item.total_value ?? (instQty * instPrice));
+        const instPriceStr = instPrice > 0 ? formatRupiah(instPrice, false) : '-';
+        const instSubtotalStr = instSubtotal > 0 ? formatRupiah(instSubtotal, false) : (instPrice > 0 ? '0' : '-');
         const instSerial = item.serial_number || item.installed_serial_number || '-';
         const instSku = item.product_sku || item.product?.sku || '-';
         const instName = item.product_name || item.product?.name || '-';
@@ -852,6 +856,8 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
             <td style="text-align: left;">${escapeHtml(instName)}</td>
             <td style="text-align: left;">${escapeHtml(instType)}</td>
             <td style="text-align: right;">${formatQuantity(instQty)}</td>
+            <td style="text-align: right;">${instPriceStr}</td>
+            <td style="text-align: right;">${instSubtotalStr}</td>
             <td style="text-align: left;">${escapeHtml(instSerial)}</td>
             <td style="text-align: left;">${escapeHtml(instNotes)}</td>
             <td style="text-align: left;">${escapeHtml(refBkb)}</td>
@@ -875,6 +881,8 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
                 <td style="text-align: left;">${escapeHtml(pullName)}</td>
                 <td style="text-align: left;">Tarik Unit Rusak</td>
                 <td style="text-align: right;">${formatQuantity(pullQty)}</td>
+                <td style="text-align: right;">-</td>
+                <td style="text-align: right;">-</td>
                 <td style="text-align: left;">${escapeHtml(pullSerial)}</td>
                 <td style="text-align: left;">${escapeHtml(pullNotes)}</td>
                 <td style="text-align: left;">${escapeHtml(refBkb)}</td>
@@ -892,6 +900,8 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
             <td style="text-align: left;">-</td>
             <td style="text-align: left;">BA Perbaikan</td>
             <td style="text-align: right;">1</td>
+            <td style="text-align: right;">-</td>
+            <td style="text-align: right;">-</td>
             <td style="text-align: left;">-</td>
             <td style="text-align: left;">-</td>
             <td style="text-align: left;">${escapeHtml(docNumber)}</td>
@@ -1013,11 +1023,11 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 30px;
-      font-size: 11px;
+      font-size: 10.5px;
     }
     .sj-table th, .sj-table td {
       border: 1px solid #000000;
-      padding: 4px 6px;
+      padding: 4px 5px;
       vertical-align: middle;
     }
     .sj-table th {
@@ -1129,15 +1139,17 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
     <table class="sj-table">
       <thead>
         <tr>
-          <th style="width: 35px; text-align: center;">No</th>
-          <th style="width: 65px; text-align: left;">PLU</th>
+          <th style="width: 30px; text-align: center;">No</th>
+          <th style="width: 55px; text-align: left;">PLU</th>
           <th style="text-align: left;">Nama dan Spesifikasi</th>
-          <th style="width: 100px; text-align: left;">Tipe Barang</th>
-          <th style="width: 65px; text-align: right;">Kuantitas</th>
-          <th style="width: 130px; text-align: left;">Nomor Serial</th>
-          <th style="width: 90px; text-align: left;">Keterangan</th>
-          <th style="width: 100px; text-align: left;"><i>Ref. Kode BKB</i></th>
-          <th style="width: 100px; text-align: left;"><i>Ref. Kode PB</i></th>
+          <th style="width: 85px; text-align: left;">Tipe Barang</th>
+          <th style="width: 48px; text-align: right;">Kuantitas</th>
+          <th style="width: 78px; text-align: right;">Harga Satuan</th>
+          <th style="width: 82px; text-align: right;">Total Nilai</th>
+          <th style="width: 110px; text-align: left;">Nomor Serial</th>
+          <th style="width: 75px; text-align: left;">Keterangan</th>
+          <th style="width: 85px; text-align: left;"><i>Ref. Kode BKB</i></th>
+          <th style="width: 85px; text-align: left;"><i>Ref. Kode PB</i></th>
         </tr>
       </thead>
       <tbody>
