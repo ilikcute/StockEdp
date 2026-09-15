@@ -13,7 +13,7 @@ class StockIssueRepository implements StockIssueRepositoryInterface
 {
     public function getPaginatedIssues(array $filters, string $sortField, string $sortDirection, int $perPage): LengthAwarePaginator
     {
-        $query = StockIssue::with(['creator']);
+        $query = StockIssue::with(['creator', 'department']);
 
         $allowedLocations = auth()->user() ? auth()->user()->getAllowedLocationIds() : [];
         $query->whereDoesntHave('items', function ($q) use ($allowedLocations) {
@@ -22,6 +22,10 @@ class StockIssueRepository implements StockIssueRepositoryInterface
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['department_id'])) {
+            $query->where('department_id', $filters['department_id']);
         }
 
         if (! empty($filters['start_date'])) {
@@ -37,7 +41,11 @@ class StockIssueRepository implements StockIssueRepositoryInterface
             $query->where(function ($q) use ($search) {
                 $q->where('issue_number', 'like', "%{$search}%")
                     ->orWhere('purpose', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%");
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhereHas('department', function ($dq) use ($search) {
+                        $dq->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -53,7 +61,7 @@ class StockIssueRepository implements StockIssueRepositoryInterface
 
     public function findById(int $id): ?StockIssue
     {
-        return StockIssue::with(['items.product.unit', 'items.location', 'creator'])->find($id);
+        return StockIssue::with(['items.product.unit', 'items.location', 'creator', 'department'])->find($id);
     }
 
     public function create(array $data): StockIssue

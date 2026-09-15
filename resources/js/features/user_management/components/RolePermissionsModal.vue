@@ -2,14 +2,16 @@
   <div
     v-if="isOpen"
     class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 backdrop-blur-xs flex items-center justify-center p-4"
+    role="dialog"
+    aria-modal="true"
     @click.self="$emit('close')"
   >
-    <div class="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden">
+    <div class="relative w-full max-w-5xl max-h-[92vh] flex flex-col rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
       <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-gray-100 flex items-start justify-between bg-white shrink-0">
+      <div class="px-6 py-3.5 border-b border-gray-100 flex items-start justify-between bg-white shrink-0">
         <div>
           <div class="flex items-center gap-2.5">
-            <h2 class="text-lg font-bold text-gray-900">
+            <h2 class="text-base font-bold text-gray-900">
               Kelola Hak Akses: {{ role?.name }}
             </h2>
             <span
@@ -23,14 +25,15 @@
               {{ role?.code }}
             </span>
           </div>
-          <p class="text-xs text-gray-500 mt-1">
-            Centang atau batalkan centang izin operasional untuk menentukan akses halaman dan fitur bagi peran ini.
+          <p class="text-xs text-gray-500 mt-0.5">
+            Hak akses dikelompokkan hierarkis sesuai menu navigasi sistem. Fitur atau modul baru otomatis muncul pada daftar ini.
           </p>
         </div>
 
         <button
           type="button"
-          class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100 cursor-pointer"
+          class="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer"
+          title="Tutup Modal"
           @click="$emit('close')"
         >
           <svg
@@ -49,46 +52,49 @@
         </button>
       </div>
 
-      <!-- Quick Search & Stats Bar -->
-      <div class="px-6 py-3 bg-gray-50/80 border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+      <!-- Quick Search, Stats & Global Controls Bar -->
+      <div class="px-6 py-2.5 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <!-- Search Input -->
         <div class="w-full sm:max-w-xs relative">
           <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <svg
               class="h-4 w-4 text-gray-400"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
               <path
-                fill-rule="evenodd"
-                d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                clip-rule="evenodd"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
           </div>
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Cari nama atau kode izin..."
-            class="block w-full rounded-md border border-gray-300 bg-white pl-9 pr-3 py-1.5 text-xs shadow-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
+            placeholder="Cari izin, nama modul, kode..."
+            class="block w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-1.5 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
           >
         </div>
 
-        <div class="flex items-center gap-3 text-xs text-gray-600">
+        <!-- Global Select/Deselect & Counter -->
+        <div class="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
           <div>
-            Total Terpilih: <strong class="text-indigo-600 font-bold">{{ selectedPermissionIds.length }}</strong> dari {{ totalPermissionsCount }} izin
+            Total Terpilih: <strong class="text-indigo-600 font-bold font-mono">{{ selectedPermissionIds.length }}</strong> dari {{ totalPermissionsCount }} izin
           </div>
-          <div class="h-4 w-px bg-gray-300" />
+          <div class="h-4 w-px bg-gray-300 hidden sm:block" />
           <button
             type="button"
-            class="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
+            class="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer transition-colors"
             @click="selectAllGlobal"
           >
-            Pilih Semua
+            Pilih Semua Global
           </button>
           <button
             type="button"
-            class="text-gray-500 hover:text-gray-700 cursor-pointer"
+            class="text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
             @click="deselectAllGlobal"
           >
             Kosongkan
@@ -96,10 +102,51 @@
         </div>
       </div>
 
+      <!-- Section Navigation Filter Tabs (Pills) -->
+      <div class="px-6 py-2 bg-white border-b border-gray-100 flex items-center gap-1.5 overflow-x-auto shrink-0 custom-scrollbar">
+        <button
+          type="button"
+          :class="[
+            'px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer',
+            selectedSectionFilter === 'ALL'
+              ? 'bg-indigo-600 text-white shadow-2xs'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200/80 hover:text-gray-900'
+          ]"
+          @click="selectedSectionFilter = 'ALL'"
+        >
+          Semua Menu ({{ totalPermissionsCount }})
+        </button>
+
+        <button
+          v-for="section in groupedSections"
+          :key="section.id"
+          type="button"
+          :class="[
+            'px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5',
+            selectedSectionFilter === section.id
+              ? 'bg-indigo-600 text-white shadow-2xs'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200/80 hover:text-gray-900'
+          ]"
+          @click="selectedSectionFilter = section.id"
+        >
+          <span>{{ section.title }}</span>
+          <span
+            :class="[
+              'px-1.5 py-0.2 rounded-full text-[10px] font-mono',
+              selectedSectionFilter === section.id
+                ? 'bg-indigo-700 text-white'
+                : 'bg-white text-gray-600 border border-gray-200'
+            ]"
+          >
+            {{ getSectionSelectedCount(section) }}/{{ getSectionTotalCount(section) }}
+          </span>
+        </button>
+      </div>
+
       <!-- Error Alert -->
       <div
         v-if="error"
-        class="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs flex items-center gap-2 shrink-0"
+        class="mx-6 mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs flex items-center gap-2 shrink-0"
       >
         <svg
           class="w-4 h-4 text-rose-600 shrink-0"
@@ -118,89 +165,240 @@
       </div>
 
       <!-- Permissions List Scrollable Body -->
-      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/50">
+        <!-- Loop Sections (Menu Utama, Master Data, Transaksi Persediaan, Laporan, Pengaturan, dll) -->
         <div
-          v-for="(perms, groupKey) in filteredPermissions"
-          :key="groupKey"
+          v-for="section in displayedSections"
+          :key="section.id"
           class="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-2xs"
         >
-          <!-- Group Header -->
-          <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="h-2 w-2 rounded-full bg-indigo-600" />
-              <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">
-                {{ formatGroupName(groupKey) }}
-              </h3>
-              <span class="text-xs text-gray-400">({{ perms.length }} izin)</span>
+          <!-- Section Major Header -->
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <!-- Section Icon -->
+              <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                <svg
+                  v-if="section.icon === 'dashboard'"
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                  />
+                </svg>
+                <svg
+                  v-else-if="section.icon === 'database'"
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+                  />
+                </svg>
+                <svg
+                  v-else-if="section.icon === 'transfer'"
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                  />
+                </svg>
+                <svg
+                  v-else-if="section.icon === 'chart'"
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                <svg
+                  v-else-if="section.icon === 'users'"
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </span>
+
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                    {{ section.title }}
+                  </h3>
+                  <span class="text-[11px] font-mono text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200 font-semibold">
+                    {{ getSectionSelectedCount(section) }} / {{ getSectionTotalCount(section) }} aktif
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-500">
+                  {{ section.description }}
+                </p>
+              </div>
             </div>
 
-            <div class="flex items-center gap-2 text-[11px]">
+            <!-- Section Quick Actions -->
+            <div class="flex items-center gap-2 text-xs self-end sm:self-auto">
               <button
                 type="button"
-                class="text-indigo-600 hover:underline font-medium cursor-pointer"
-                @click="selectGroup(perms)"
+                class="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
+                @click="selectAllInSection(section)"
               >
-                Pilih Semua
+                Pilih Semua {{ section.title }}
               </button>
               <span class="text-gray-300">|</span>
               <button
                 type="button"
-                class="text-gray-500 hover:underline cursor-pointer"
-                @click="deselectGroup(perms)"
+                class="text-gray-500 hover:text-gray-700 cursor-pointer"
+                @click="deselectAllInSection(section)"
               >
                 Batal
               </button>
             </div>
           </div>
 
-          <!-- Group Permission Items Grid -->
-          <div class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            <label
-              v-for="perm in perms"
-              :key="perm.id"
-              :class="[
-                'flex items-start p-2.5 rounded-lg border text-xs cursor-pointer transition-all',
-                selectedPermissionIds.includes(perm.id)
-                  ? 'border-indigo-500 bg-indigo-50/40 ring-1 ring-indigo-500'
-                  : 'border-gray-200 bg-white hover:bg-gray-50'
-              ]"
+          <!-- Subgroups inside Section (Cards) -->
+          <div class="p-4 space-y-4 divide-y divide-gray-100">
+            <div
+              v-for="subgroup in section.subgroups"
+              :key="subgroup.key"
+              class="pt-3 first:pt-0"
             >
-              <input
-                v-model="selectedPermissionIds"
-                type="checkbox"
-                :value="perm.id"
-                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mt-0.5 shrink-0"
-              >
-              <div class="ml-2.5">
-                <div class="font-semibold text-gray-900 leading-tight">
-                  {{ perm.name }}
+              <!-- Subgroup Header -->
+              <div class="flex items-center justify-between mb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  <h4 class="text-xs font-bold text-gray-800">
+                    {{ subgroup.label }}
+                  </h4>
+                  <span class="text-[11px] text-gray-400 font-mono">({{ getSubgroupSelectedCount(subgroup) }}/{{ subgroup.permissions.length }})</span>
                 </div>
-                <div class="text-[11px] font-mono text-gray-400 mt-0.5">
-                  {{ perm.code }}
+
+                <div class="flex items-center gap-2 text-[11px]">
+                  <button
+                    type="button"
+                    class="text-indigo-600 hover:underline font-medium cursor-pointer"
+                    @click="selectSubgroup(subgroup)"
+                  >
+                    Pilih
+                  </button>
+                  <span class="text-gray-300">|</span>
+                  <button
+                    type="button"
+                    class="text-gray-500 hover:underline cursor-pointer"
+                    @click="deselectSubgroup(subgroup)"
+                  >
+                    Batal
+                  </button>
                 </div>
               </div>
-            </label>
+
+              <!-- Permission Items Grid (Clean Responsive Card Checkboxes) -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <label
+                  v-for="perm in subgroup.permissions"
+                  :key="perm.id"
+                  :class="[
+                    'flex items-start p-2 rounded-lg border text-xs cursor-pointer transition-all',
+                    selectedPermissionIds.includes(perm.id)
+                      ? 'border-indigo-400 bg-indigo-50/50 shadow-2xs ring-1 ring-indigo-500/30'
+                      : 'border-gray-200 bg-white hover:bg-gray-50/80'
+                  ]"
+                >
+                  <input
+                    v-model="selectedPermissionIds"
+                    type="checkbox"
+                    :value="perm.id"
+                    class="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mt-0.5 shrink-0"
+                  >
+                  <div class="ml-2 min-w-0">
+                    <div class="font-semibold text-gray-900 leading-tight">
+                      {{ perm.name }}
+                    </div>
+                    <div class="text-[10px] font-mono text-gray-400 mt-0.5 truncate" :title="perm.code">
+                      {{ perm.code }}
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- Empty Search Result -->
         <div
-          v-if="Object.keys(filteredPermissions).length === 0"
-          class="py-8 text-center text-gray-400 text-xs"
+          v-if="displayedSections.length === 0"
+          class="py-12 text-center text-gray-400 text-xs bg-white rounded-xl border border-gray-200"
         >
-          Tidak ditemukan izin yang sesuai dengan kata kunci pencarian "{{ searchQuery }}".
+          <svg
+            class="w-8 h-8 text-gray-300 mx-auto mb-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div class="font-medium text-gray-600">Tidak ada izin yang sesuai.</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">Coba gunakan kata kunci pencarian yang berbeda.</div>
         </div>
       </div>
 
       <!-- Modal Footer -->
-      <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/80 flex items-center justify-between shrink-0">
-        <div class="text-xs text-gray-500">
-          Perubahan akan langsung berlaku bagi seluruh pengguna dengan peran ini.
+      <div class="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
+        <div class="text-xs text-gray-500 hidden sm:block">
+          Perubahan langsung berlaku bagi seluruh pengguna dengan peran ini.
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5 ml-auto">
           <button
             type="button"
-            class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+            class="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
             @click="$emit('close')"
           >
             Batal
@@ -208,12 +406,12 @@
           <button
             type="button"
             :disabled="saving"
-            class="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600 cursor-pointer"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-600 cursor-pointer"
             @click="handleSave"
           >
             <svg
               v-if="saving"
-              class="animate-spin -ml-0.5 mr-1 h-4 w-4 text-white"
+              class="animate-spin -ml-0.5 mr-1 h-3.5 w-3.5 text-white"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -242,6 +440,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+import { buildGroupedMenuSections } from '../utils/permission_grouping.js';
 
 const props = defineProps({
   isOpen: {
@@ -270,70 +469,61 @@ const emit = defineEmits(['close', 'save']);
 
 const selectedPermissionIds = ref([]);
 const searchQuery = ref('');
+const selectedSectionFilter = ref('ALL');
 
-const groupLabels = {
-  products: 'Master Data Produk',
-  categories: 'Master Data Kategori',
-  units: 'Master Data Satuan',
-  suppliers: 'Master Data Supplier',
-  locations: 'Master Data Lokasi Gudang',
-  inventory: 'Persediaan & Saldo Stok',
-  stock_receipts: 'Penerimaan Stok (Inbound)',
-  stock_issues: 'Pengeluaran Stok (Outbound)',
-  stock_transfers: 'Transfer Antar Gudang',
-  stock_adjustments: 'Penyesuaian Stok (Stock Adjustment)',
-  stock_opnames: 'Stock Opname Fisik',
-  dashboard: 'Dashboard Operasional',
-  replenishment: 'Rekomendasi Reorder',
-  reports: 'Laporan & Ekspor Persediaan',
-  users: 'Pengelolaan Pengguna & Hak Akses',
-};
-
-const formatGroupName = (group) => {
-  return groupLabels[group] || group.replace(/_/g, ' ');
-};
-
-const totalPermissionsCount = computed(() => {
-  let count = 0;
-  Object.values(props.allPermissions).forEach((perms) => {
-    count += perms.length;
-  });
-  return count;
+// Membangun daftar section terstruktur sesuai menu sidebar
+const groupedSections = computed(() => {
+  return buildGroupedMenuSections(props.allPermissions, searchQuery.value);
 });
 
+// Filter section berdasarkan pill tab yang dipilih
+const displayedSections = computed(() => {
+  if (selectedSectionFilter.value === 'ALL') {
+    return groupedSections.value;
+  }
+  return groupedSections.value.filter((s) => s.id === selectedSectionFilter.value);
+});
+
+// Menghitung seluruh permissions dalam bentuk flat list
 const allFlatPermissions = computed(() => {
   const list = [];
   Object.values(props.allPermissions).forEach((perms) => {
-    perms.forEach((p) => list.push(p));
+    if (Array.isArray(perms)) {
+      perms.forEach((p) => list.push(p));
+    }
   });
   return list;
 });
 
-const filteredPermissions = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return props.allPermissions;
-  }
+const totalPermissionsCount = computed(() => allFlatPermissions.value.length);
 
-  const query = searchQuery.value.toLowerCase().trim();
-  const result = {};
+const getSubgroupSelectedCount = (subgroup) => {
+  const ids = new Set(subgroup.permissions.map((p) => p.id));
+  return selectedPermissionIds.value.filter((id) => ids.has(id)).length;
+};
 
-  Object.entries(props.allPermissions).forEach(([group, perms]) => {
-    const matched = perms.filter(
-      (p) => p.name.toLowerCase().includes(query) || p.code.toLowerCase().includes(query)
-    );
-    if (matched.length > 0) {
-      result[group] = matched;
-    }
+const getSectionSelectedCount = (section) => {
+  const ids = new Set();
+  section.subgroups.forEach((sg) => {
+    sg.permissions.forEach((p) => ids.add(p.id));
   });
+  return selectedPermissionIds.value.filter((id) => ids.has(id)).length;
+};
 
-  return result;
-});
+const getSectionTotalCount = (section) => {
+  let count = 0;
+  section.subgroups.forEach((sg) => {
+    count += sg.permissions.length;
+  });
+  return count;
+};
 
 watch(
   () => props.isOpen,
   (open) => {
     if (open) {
       searchQuery.value = '';
+      selectedSectionFilter.value = 'ALL';
       if (props.role?.permissions) {
         selectedPermissionIds.value = props.role.permissions.map((p) => p.id);
       } else if (Array.isArray(props.role?.permission_ids)) {
@@ -346,15 +536,33 @@ watch(
   { immediate: true }
 );
 
-const selectGroup = (perms) => {
-  const idsToAdd = perms.map((p) => p.id);
+const selectSubgroup = (subgroup) => {
+  const idsToAdd = subgroup.permissions.map((p) => p.id);
   const currentSet = new Set(selectedPermissionIds.value);
   idsToAdd.forEach((id) => currentSet.add(id));
   selectedPermissionIds.value = Array.from(currentSet);
 };
 
-const deselectGroup = (perms) => {
-  const idsToRemove = new Set(perms.map((p) => p.id));
+const deselectSubgroup = (subgroup) => {
+  const idsToRemove = new Set(subgroup.permissions.map((p) => p.id));
+  selectedPermissionIds.value = selectedPermissionIds.value.filter((id) => !idsToRemove.has(id));
+};
+
+const selectAllInSection = (section) => {
+  const idsToAdd = [];
+  section.subgroups.forEach((sg) => {
+    sg.permissions.forEach((p) => idsToAdd.push(p.id));
+  });
+  const currentSet = new Set(selectedPermissionIds.value);
+  idsToAdd.forEach((id) => currentSet.add(id));
+  selectedPermissionIds.value = Array.from(currentSet);
+};
+
+const deselectAllInSection = (section) => {
+  const idsToRemove = new Set();
+  section.subgroups.forEach((sg) => {
+    sg.permissions.forEach((p) => idsToRemove.add(p.id));
+  });
   selectedPermissionIds.value = selectedPermissionIds.value.filter((id) => !idsToRemove.has(id));
 };
 
@@ -373,3 +581,20 @@ const handleSave = () => {
   });
 };
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

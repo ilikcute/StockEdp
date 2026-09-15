@@ -5,6 +5,7 @@ export const masterNavLinks = [
     { to: '/suppliers', label: 'Supplier', permission: 'suppliers.view' },
     { to: '/locations', label: 'Lokasi', permission: 'locations.view' },
     { to: '/stores', label: 'Toko', permission: 'stores.view' },
+    { to: '/departments', label: 'Departemen', permission: 'departments.view' },
     { to: '/users', label: 'Pengguna', permission: 'users.manage' },
 ];
 

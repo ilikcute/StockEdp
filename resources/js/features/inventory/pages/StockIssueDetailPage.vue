@@ -85,14 +85,28 @@
 
       <!-- Compact Metadata Card -->
       <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
           <div>
             <span class="block text-[11px] text-gray-400 font-medium">Tanggal Pengeluaran</span>
             <span class="font-semibold text-gray-800">{{ doc.date }}</span>
           </div>
 
           <div>
-            <span class="block text-[11px] text-gray-400 font-medium">Tujuan / Alasan</span>
+            <span class="block text-[11px] text-gray-400 font-medium">Departemen Tujuan</span>
+            <span
+              v-if="doc.department"
+              class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-700 border border-teal-200 mt-0.5"
+            >
+              {{ doc.department.code }} - {{ doc.department.name }}
+            </span>
+            <span
+              v-else
+              class="font-semibold text-gray-400"
+            >-</span>
+          </div>
+
+          <div>
+            <span class="block text-[11px] text-gray-400 font-medium">Tujuan / Keperluan</span>
             <span class="font-semibold text-gray-800">{{ doc.purpose || '-' }}</span>
           </div>
 

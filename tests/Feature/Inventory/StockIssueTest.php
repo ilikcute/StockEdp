@@ -185,4 +185,39 @@ class StockIssueTest extends TestCase
             'quantity' => '2.0000',
         ]);
     }
+
+    public function test_can_create_draft_issue_with_department()
+    {
+        $dept = \App\Features\Department\Models\Department::create([
+            'code' => 'FAD',
+            'name' => 'Finance, Accounting, Tax',
+            'is_active' => true,
+        ]);
+
+        $payload = [
+            'purpose' => 'Pergantian part PC Accounting',
+            'department_id' => $dept->id,
+            'date' => now()->format('Y-m-d'),
+            'notes' => 'Kerusakan PSU',
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'location_id' => $this->location->id,
+                    'quantity' => 1,
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->admin, 'sanctum')->postJson('/api/v1/stock-issues', $payload);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('data.department_id', $dept->id);
+        $response->assertJsonPath('data.department.code', 'FAD');
+        $response->assertJsonPath('data.department.name', 'Finance, Accounting, Tax');
+
+        $this->assertDatabaseHas('stock_issues', [
+            'purpose' => 'Pergantian part PC Accounting',
+            'department_id' => $dept->id,
+        ]);
+    }
 }

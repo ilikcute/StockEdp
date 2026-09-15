@@ -310,6 +310,9 @@ export function useDocumentForm(config) {
             if (payload.supplier_id === '') {
                 payload.supplier_id = null;
             }
+            if (payload.department_id === '') {
+                payload.department_id = null;
+            }
             const docTitle = config.documentTitle || (headerKey === 'supplier_id' ? 'Penerimaan stok' : 'Pengeluaran stok');
             if (isEdit) {
                 await store.update(route.params.id, payload);

@@ -56,6 +56,23 @@
           </option>
         </select>
 
+        <!-- Department Filter -->
+        <select
+          v-model="departmentFilter"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="">
+            Semua Departemen
+          </option>
+          <option
+            v-for="dept in departments"
+            :key="dept.id"
+            :value="dept.id"
+          >
+            {{ dept.code }} - {{ dept.name }}
+          </option>
+        </select>
+
         <router-link
           v-if="hasPermission('stock_issues.create')"
           to="/inventory/issues/create"
@@ -109,9 +126,15 @@
             </th>
             <th
               scope="col"
-              class="py-1.5 px-2 min-w-[200px]"
+              class="py-1.5 px-2 whitespace-nowrap min-w-[150px]"
             >
-              Tujuan / Alasan
+              Departemen Tujuan
+            </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 min-w-[180px]"
+            >
+              Tujuan / Keperluan
             </th>
             <th
               scope="col"
@@ -130,7 +153,7 @@
         <tbody class="divide-y divide-gray-100 bg-white">
           <tr v-if="store.loading && (!store.issues?.data || store.issues.data.length === 0)">
             <td
-              colspan="6"
+              colspan="7"
               class="py-8 text-center text-xs text-gray-500"
             >
               <div class="flex items-center justify-center gap-2">
@@ -159,7 +182,7 @@
           </tr>
           <tr v-else-if="!store.issues?.data || store.issues.data.length === 0">
             <td
-              colspan="6"
+              colspan="7"
               class="py-8 text-center text-xs text-gray-400"
             >
               Tidak ada data pengeluaran yang cocok.
@@ -178,6 +201,18 @@
             </td>
             <td class="py-1.5 px-2 whitespace-nowrap text-gray-600 text-[11px]">
               {{ item.date }}
+            </td>
+            <td class="py-1.5 px-2 whitespace-nowrap">
+              <span
+                v-if="item.department"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-700 border border-teal-200"
+              >
+                {{ item.department.code }} - {{ item.department.name }}
+              </span>
+              <span
+                v-else
+                class="text-gray-400 text-[11px]"
+              >-</span>
             </td>
             <td class="py-1.5 px-2 text-gray-800 text-[11px]">
               {{ item.purpose }}
@@ -208,19 +243,37 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue';
 import { useStockIssueStore } from '../stores/useStockIssueStore';
 import { useDocumentList } from '../composables/use_document_list';
+import { departmentApi } from '@/features/department/api/department_api.js';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
 import DocumentStatusBadge from '../components/DocumentStatusBadge.vue';
 
 const store = useStockIssueStore();
+const departments = ref([]);
+const departmentFilter = ref('');
+
+onMounted(async () => {
+    try {
+        const res = await departmentApi.getActive();
+        departments.value = res.data?.data || [];
+    } catch (e) {
+        console.error('Failed to load active departments', e);
+    }
+});
+
+const extraFilters = computed(() => ({
+    department_id: departmentFilter.value || undefined,
+}));
 
 const { searchQuery, statusFilter, onSearch, changePage, hasPermission } = useDocumentList({
     store,
     fetch: (params) => store.fetchList(params),
     collection: 'issues',
+    extraFilters,
 });
 
 let searchTimer = null;

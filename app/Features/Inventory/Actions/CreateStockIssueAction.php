@@ -24,6 +24,7 @@ class CreateStockIssueAction
             $issueData = [
                 'issue_number' => $this->repository->generateIssueNumber(),
                 'purpose' => $data['purpose'],
+                'department_id' => $data['department_id'] ?? null,
                 'date' => $data['date'],
                 'notes' => $data['notes'] ?? null,
                 'status' => IssueStatus::DRAFT,

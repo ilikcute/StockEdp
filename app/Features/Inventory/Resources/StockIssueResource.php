@@ -13,6 +13,12 @@ class StockIssueResource extends JsonResource
             'id' => $this->id,
             'issue_number' => $this->issue_number,
             'purpose' => $this->purpose,
+            'department_id' => $this->department_id,
+            'department' => $this->department ? [
+                'id' => $this->department->id,
+                'code' => $this->department->code,
+                'name' => $this->department->name,
+            ] : null,
             'status' => $this->status->value,
             'date' => $this->date ? $this->date->format('Y-m-d') : null,
             'notes' => $this->notes,

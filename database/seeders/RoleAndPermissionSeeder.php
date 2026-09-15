@@ -65,6 +65,10 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::STORES_UPDATE->value => 'Mengubah Toko',
             PermissionCode::STORES_CHANGE_STATUS->value => 'Mengubah Status Toko',
             PermissionCode::STORES_IMPORT->value => 'Mengimpor Toko Secara Masal',
+            PermissionCode::DEPARTMENTS_VIEW->value => 'Melihat Departemen',
+            PermissionCode::DEPARTMENTS_CREATE->value => 'Membuat Departemen',
+            PermissionCode::DEPARTMENTS_UPDATE->value => 'Mengubah Departemen',
+            PermissionCode::DEPARTMENTS_CHANGE_STATUS->value => 'Mengubah Status Departemen',
 
             // Transactions
             PermissionCode::INVENTORY_BALANCES_VIEW->value => 'Melihat Saldo Stok',
@@ -156,6 +160,9 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::STORES_VIEW->value,
             PermissionCode::STORES_CREATE->value,
             PermissionCode::STORES_UPDATE->value,
+            PermissionCode::DEPARTMENTS_VIEW->value,
+            PermissionCode::DEPARTMENTS_CREATE->value,
+            PermissionCode::DEPARTMENTS_UPDATE->value,
             PermissionCode::STORE_ALLOCATIONS_VIEW->value,
             PermissionCode::INVENTORY_BALANCES_VIEW->value,
             PermissionCode::INVENTORY_MOVEMENTS_VIEW->value,
@@ -212,6 +219,7 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::SUPPLIERS_VIEW->value,
             PermissionCode::LOCATIONS_VIEW->value,
             PermissionCode::STORES_VIEW->value,
+            PermissionCode::DEPARTMENTS_VIEW->value,
             PermissionCode::STORE_ALLOCATIONS_VIEW->value,
             PermissionCode::INVENTORY_BALANCES_VIEW->value,
             PermissionCode::INVENTORY_MOVEMENTS_VIEW->value,

@@ -1344,8 +1344,8 @@ export function printStockIssue(doc, extraOptions = {}) {
         meta: [
             { label: 'Nomor Pengeluaran', value: doc.issue_number },
             { label: 'Tanggal Pengeluaran', value: doc.date },
-            { label: 'Tujuan / Alasan', value: doc.purpose || '-' },
-            { label: 'Penerima Barang', value: doc.recipient || '-' },
+            { label: 'Departemen Tujuan', value: doc.department ? `${doc.department.code} - ${doc.department.name}` : '-' },
+            { label: 'Tujuan / Keperluan', value: doc.purpose || '-' },
             { label: 'Dibuat Oleh', value: doc.creator?.name || '-' },
             { label: 'Status Dokumen', value: doc.status || 'POSTED' },
         ],
@@ -1355,7 +1355,7 @@ export function printStockIssue(doc, extraOptions = {}) {
         notes: doc.notes,
         signatures: [
             { role: 'Yang Menyerahkan', name: doc.creator?.name || '............................................', title: 'Petugas Gudang / EDP' },
-            { role: 'Yang Menerima', name: doc.recipient || '............................................', title: 'Penerima / Pemohon' },
+            { role: 'Yang Menerima', name: doc.recipient || (doc.department ? `Dept. ${doc.department.code}` : '............................................'), title: 'Penerima / Pemohon' },
             { role: 'Mengetahui / Disetujui', name: '............................................', title: 'Supervisor / Kepala Bagian' },
         ],
         ...extraOptions,

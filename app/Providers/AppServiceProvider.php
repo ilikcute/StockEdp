@@ -8,6 +8,8 @@ use App\Features\Category\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Features\Category\Repositories\Eloquent\CategoryRepository;
 use App\Features\Dashboard\Repositories\Contracts\OperationalDashboardRepositoryInterface;
 use App\Features\Dashboard\Repositories\Eloquent\OperationalDashboardRepository;
+use App\Features\Department\Repositories\Contracts\DepartmentRepositoryInterface;
+use App\Features\Department\Repositories\Eloquent\DepartmentRepository;
 use App\Features\Inventory\Repositories\Contracts\InventoryBalanceRepositoryInterface;
 use App\Features\Inventory\Repositories\Contracts\StockAdjustmentRepositoryInterface;
 use App\Features\Inventory\Repositories\Contracts\StockIssueRepositoryInterface;
@@ -82,6 +84,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             StoreRepositoryInterface::class,
             StoreRepository::class
+        );
+
+        $this->app->bind(
+            DepartmentRepositoryInterface::class,
+            DepartmentRepository::class
         );
 
         $this->app->bind(

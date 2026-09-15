@@ -1,19 +1,21 @@
 import { ref, watch, onMounted } from 'vue';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
 
-export function useDocumentList({ store, fetch, collection }) {
+export function useDocumentList({ store, fetch, collection, extraFilters = ref({}) }) {
     const authStore = useAuthStore();
 
     const searchQuery = ref('');
     const statusFilter = ref('');
 
-    watch([statusFilter], () => fetchData(1));
+    watch([statusFilter, extraFilters], () => fetchData(1), { deep: true });
 
     const fetchData = (page = 1) => {
+        const extra = typeof extraFilters.value === 'object' ? extraFilters.value : {};
         fetch({
             page,
             search: searchQuery.value,
             status: statusFilter.value,
+            ...extra,
         });
     };
 

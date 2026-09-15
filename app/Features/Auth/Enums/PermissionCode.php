@@ -34,6 +34,10 @@ enum PermissionCode: string
     case STORES_UPDATE = 'stores.update';
     case STORES_CHANGE_STATUS = 'stores.change_status';
     case STORES_IMPORT = 'stores.import';
+    case DEPARTMENTS_VIEW = 'departments.view';
+    case DEPARTMENTS_CREATE = 'departments.create';
+    case DEPARTMENTS_UPDATE = 'departments.update';
+    case DEPARTMENTS_CHANGE_STATUS = 'departments.change_status';
 
     // Transactions
     case INVENTORY_BALANCES_VIEW = 'inventory.balances.view';

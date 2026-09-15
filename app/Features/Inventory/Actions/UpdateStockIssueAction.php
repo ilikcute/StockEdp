@@ -24,6 +24,7 @@ class UpdateStockIssueAction
 
             $lockedIssue->update([
                 'purpose' => $data['purpose'],
+                'department_id' => $data['department_id'] ?? null,
                 'date' => $data['date'],
                 'notes' => $data['notes'] ?? null,
             ]);

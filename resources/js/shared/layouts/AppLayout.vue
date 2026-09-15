@@ -215,6 +215,7 @@ const currentPageTitle = computed(() => {
   if (path.startsWith('/reports/store-allocations')) return 'Laporan Alokasi & Penarikan Toko';
   if (path.startsWith('/reports')) return 'Laporan & Intelijen Persediaan';
   if (path.startsWith('/stores')) return 'Master Toko Retail';
+  if (path.startsWith('/departments')) return 'Master Departemen';
   if (path.startsWith('/products')) return 'Master Produk';
   if (path.startsWith('/categories')) return 'Master Kategori';
   if (path.startsWith('/locations')) return 'Master Lokasi Persediaan';

@@ -29,6 +29,7 @@ class StockIssueRequest extends FormRequest
     {
         return [
             'purpose' => ['required', 'string', 'max:255'],
+            'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')->where('is_active', true)],
             'date' => ['required', 'date'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],

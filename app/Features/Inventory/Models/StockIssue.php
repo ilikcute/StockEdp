@@ -25,6 +25,11 @@ class StockIssue extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function department()
+    {
+        return $this->belongsTo(\App\Features\Department\Models\Department::class, 'department_id');
+    }
+
     public function isDraft(): bool
     {
         return $this->status === IssueStatus::DRAFT;

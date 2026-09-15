@@ -29,7 +29,7 @@ class StockIssueController extends Controller
     {
         Gate::authorize('viewAny', StockIssue::class);
 
-        $filters = $request->only(['status', 'start_date', 'end_date', 'search']);
+        $filters = $request->only(['status', 'start_date', 'end_date', 'search', 'department_id']);
         $sortField = $request->input('sort_field', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
         $perPage = (int) $request->input('per_page', 15);
@@ -45,7 +45,7 @@ class StockIssueController extends Controller
 
         $issue = $this->createAction->execute($request->validated(), $request->user()->id);
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator')), 'Success', 201);
+        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')), 'Success', 201);
     }
 
     public function show(StockIssue $stockIssue): JsonResponse
@@ -63,7 +63,7 @@ class StockIssueController extends Controller
 
         $issue = $this->updateAction->execute($stockIssue, $request->validated());
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator')));
+        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')));
     }
 
     public function post(Request $request, StockIssue $stockIssue): JsonResponse
@@ -72,7 +72,7 @@ class StockIssueController extends Controller
 
         $issue = $this->postAction->execute($stockIssue, $request->user()->id);
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator')));
+        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')));
     }
 
     public function cancel(Request $request, StockIssue $stockIssue): JsonResponse
@@ -81,6 +81,6 @@ class StockIssueController extends Controller
 
         $issue = $this->cancelAction->execute($stockIssue, $request->user()->id);
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator')));
+        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')));
     }
 }

@@ -144,37 +144,63 @@
             >
           </div>
 
+          <!-- Departemen Peminta / Tujuan -->
+          <div>
+            <label
+              for="department_id"
+              class="block text-[11px] font-semibold text-gray-600 mb-1"
+            >
+              Departemen Peminta / Tujuan
+            </label>
+            <select
+              id="department_id"
+              v-model="form.department_id"
+              class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500 bg-white"
+            >
+              <option value="">
+                -- Pilih Departemen (Opsional) --
+              </option>
+              <option
+                v-for="dept in departments"
+                :key="dept.id"
+                :value="dept.id"
+              >
+                {{ dept.code }} - {{ dept.name }}
+              </option>
+            </select>
+          </div>
+
           <!-- Tujuan / Alasan -->
           <div>
             <label
               for="purpose"
               class="block text-[11px] font-semibold text-gray-600 mb-1"
             >
-              Tujuan / Alasan *
+              Tujuan / Keterangan Kebutuhan *
             </label>
             <input
               id="purpose"
               v-model="form.purpose"
               type="text"
-              placeholder="Contoh: Produksi SPK-001, Pemakaian Internal..."
+              placeholder="Contoh: Penggantian part PC Kasir, Kabel UTP..."
               class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
               required
             >
           </div>
 
           <!-- Catatan -->
-          <div class="sm:col-span-2">
+          <div>
             <label
               for="notes"
               class="block text-[11px] font-semibold text-gray-600 mb-1"
             >
-              Catatan
+              Catatan Tambahan
             </label>
             <input
               id="notes"
               v-model="form.notes"
               type="text"
-              placeholder="Keterangan tambahan pengeluaran stok..."
+              placeholder="Keterangan tambahan..."
               class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
             >
           </div>
@@ -461,15 +487,27 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStockIssueStore } from '../stores/useStockIssueStore';
 import { useDocumentForm } from '../composables/use_document_form';
+import { departmentApi } from '@/features/department/api/department_api.js';
 import BarcodeScannerPanel from '../scanner/components/BarcodeScannerPanel.vue';
 import BaseCombobox from '@/shared/components/BaseCombobox.vue';
 import { formatRupiah, formatQuantity } from '@/shared/utils/formatters.js';
 
 const route = useRoute();
 const store = useStockIssueStore();
+const departments = ref([]);
+
+onMounted(async () => {
+    try {
+        const res = await departmentApi.getActive();
+        departments.value = res.data?.data || [];
+    } catch (e) {
+        console.error('Failed to load active departments', e);
+    }
+});
 
 const {
     isEdit,
@@ -500,5 +538,8 @@ const {
     headerKey: 'purpose',
     locationNoun: 'lokasi asal',
     hasStockColumn: true,
+    extraFields: {
+        department_id: '',
+    },
 });
 </script>
