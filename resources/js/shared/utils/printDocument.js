@@ -815,8 +815,17 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
 
     const printedBy = extraOptions.printedBy || doc.creator_name || 'EDP_YOG';
     const createdBy = doc.creator_name || doc.technician_name || printedBy;
+    const senderUser = extraOptions.senderUser || doc.creator_name || doc.technician_name || createdBy || '';
     const currentDateIndo = formatIndoDate(new Date(), false);
     const currentTimeIndo = formatIndoTime(new Date());
+
+    const senderCompanySubtitle = senderUser
+        ? ((branchName === 'IDM YOGYAKARTA' && companyName === 'PT. INDOMARCO PRISMATAMA')
+            ? `PT. INDOMARCO PRISMATAMA - IDM<br>YOGYAKARTA - ${escapeHtml(senderUser)}`
+            : `${escapeHtml(companyName)} - ${escapeHtml(branchName)} - ${escapeHtml(senderUser)}`)
+        : ((branchName === 'IDM YOGYAKARTA' && companyName === 'PT. INDOMARCO PRISMATAMA')
+            ? 'PT. INDOMARCO PRISMATAMA - IDM<br>YOGYAKARTA'
+            : `${escapeHtml(companyName)} - ${escapeHtml(branchName)}`);
 
     const docNumber = doc.allocation_number || '-';
     const docDateIndo = formatIndoDate(doc.allocated_at || doc.created_at, true);
@@ -1167,7 +1176,7 @@ export function generateStoreAllocationSuratJalanHtml(doc, extraOptions = {}) {
       </div>
       <div class="sj-sig-box" style="margin-left: 50px;">
         <div class="sj-sig-title">Dikirim Oleh :</div>
-        <div class="sj-sig-subtitle">${(branchName === 'IDM YOGYAKARTA' && companyName === 'PT. INDOMARCO PRISMATAMA') ? 'PT. INDOMARCO PRISMATAMA - IDM<br>YOGYAKARTA' : `${escapeHtml(companyName)} - ${escapeHtml(branchName)}`}</div>
+        <div class="sj-sig-subtitle">${senderCompanySubtitle}</div>
         <div class="sj-sig-space" style="height: 44px;"></div>
         <div class="sj-sig-note">(tandatangan dan cap Perusahaan)</div>
         <div class="sj-sig-line">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>

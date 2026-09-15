@@ -251,6 +251,7 @@ const handlePrint = () => {
     if (!doc.value) return;
     printStoreAllocation(doc.value, {
         printedBy: authStore.user?.username || authStore.user?.name || 'EDP_YOG',
+        senderUser: doc.value.creator_name || doc.value.technician_name || authStore.user?.name || authStore.user?.username || 'Admin User',
     });
 };
 
