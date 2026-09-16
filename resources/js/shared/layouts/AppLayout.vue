@@ -86,11 +86,11 @@
               class="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
               :class="healthStatusClass"
               :title="healthStatusTitle"
-              @click="checkHealth"
+              @click="checkHealth(true)"
             >
               <span
-                class="w-2 h-2 rounded-full animate-pulse"
-                :class="healthDotClass"
+                class="w-2 h-2 rounded-full"
+                :class="[healthDotClass, healthStatus === 'checking' ? 'animate-pulse' : '']"
               />
               {{ healthStatusLabel }}
             </button>
@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import { systemApi } from '@/shared/api/system_api';
@@ -177,8 +177,10 @@ const healthDotClass = computed(() => {
   return 'bg-red-500';
 });
 
-async function checkHealth() {
-  healthStatus.value = 'checking';
+async function checkHealth(isManual = false) {
+  if (isManual || healthStatus.value === 'checking') {
+    healthStatus.value = 'checking';
+  }
   try {
     const response = await systemApi.getHealth();
     healthStatus.value = response.data?.data?.status || 'healthy';
@@ -188,14 +190,35 @@ async function checkHealth() {
 }
 
 let healthInterval = null;
-onMounted(() => {
-  if (authStore.isAuthenticated) {
-    checkHealth();
-    healthInterval = setInterval(checkHealth, 60000); // check every 60s
-  }
-});
-onUnmounted(() => {
+
+function startHealthCheck() {
   if (healthInterval) clearInterval(healthInterval);
+  checkHealth();
+  healthInterval = setInterval(() => checkHealth(false), 60000); // check every 60s
+}
+
+function stopHealthCheck() {
+  if (healthInterval) {
+    clearInterval(healthInterval);
+    healthInterval = null;
+  }
+}
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuth) => {
+    if (isAuth) {
+      startHealthCheck();
+    } else {
+      stopHealthCheck();
+      healthStatus.value = 'checking';
+    }
+  },
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  stopHealthCheck();
 });
 // ---- End Health Check ----
 
