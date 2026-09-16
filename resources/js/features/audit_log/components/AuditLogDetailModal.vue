@@ -29,8 +29,18 @@
           class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
           @click="$emit('close')"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -44,7 +54,10 @@
             <div class="font-semibold text-gray-900 text-xs">
               {{ log.user ? log.user.name : (log.user_id ? `User ID #${log.user_id}` : 'Sistem / Tamu') }}
             </div>
-            <div v-if="log.user?.username" class="text-[11px] text-gray-500 font-mono">
+            <div
+              v-if="log.user?.username"
+              class="text-[11px] text-gray-500 font-mono"
+            >
               @{{ log.user.username }}
             </div>
           </div>
@@ -70,7 +83,10 @@
 
           <div>
             <span class="text-[10px] uppercase font-semibold tracking-wider text-gray-400 block mb-0.5">Entitas Subjek</span>
-            <div class="text-[11px] text-gray-700 truncate" :title="log.subject_type">
+            <div
+              class="text-[11px] text-gray-700 truncate"
+              :title="log.subject_type"
+            >
               {{ formatSubject(log.subject_type, log.subject_id) }}
             </div>
           </div>

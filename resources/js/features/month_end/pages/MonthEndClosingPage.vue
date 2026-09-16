@@ -4,8 +4,18 @@
     <div class="bg-white rounded-xl border border-gray-200 px-4 py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
         <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-2">
-          <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <svg
+            class="w-5 h-5 text-rose-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
           Tutup Buku Bulanan (Month-End Closing)
         </h1>
@@ -22,8 +32,19 @@
           :disabled="loading"
           @click="fetchPeriods"
         >
-          <svg class="w-3.5 h-3.5 text-gray-500" :class="{ 'animate-spin': loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg
+            class="w-3.5 h-3.5 text-gray-500"
+            :class="{ 'animate-spin': loading }"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
           </svg>
           <span>Refresh</span>
         </button>
@@ -34,8 +55,18 @@
           class="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 transition-colors cursor-pointer whitespace-nowrap"
           @click="openCloseModal()"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
           </svg>
           <span>Tutup Buku Periode</span>
         </button>
@@ -49,15 +80,43 @@
       :class="feedbackType === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'"
     >
       <div class="flex items-center gap-2">
-        <svg v-if="feedbackType === 'success'" class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        <svg
+          v-if="feedbackType === 'success'"
+          class="w-4 h-4 text-emerald-600 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
         </svg>
-        <svg v-else class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          v-else
+          class="w-4 h-4 text-rose-600 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
         <span>{{ feedbackMessage }}</span>
       </div>
-      <button type="button" class="text-gray-400 hover:text-gray-600 cursor-pointer" @click="feedbackMessage = ''">&times;</button>
+      <button
+        type="button"
+        class="text-gray-400 hover:text-gray-600 cursor-pointer"
+        @click="feedbackMessage = ''"
+      >
+        &times;
+      </button>
     </div>
 
     <!-- 2. Status & Metric Cards -->
@@ -66,21 +125,28 @@
       <div class="bg-white rounded-xl border border-gray-200 p-3.5 shadow-2xs flex flex-col justify-between">
         <div class="flex items-center justify-between text-xs text-gray-500">
           <span>Periode Bulan Ini</span>
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
             :class="currentMonthPeriod?.status === 'CLOSED' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'"
           >
             {{ currentMonthPeriod?.status === 'CLOSED' ? 'DITUTUP' : 'TERBUKA (OPEN)' }}
           </span>
         </div>
         <div class="mt-2">
-          <div class="text-sm font-bold text-gray-900">{{ currentMonthLabel }}</div>
-          <div class="text-[11px] text-gray-500 mt-0.5">Transaksi aktif diizinkan jika OPEN</div>
+          <div class="text-sm font-bold text-gray-900">
+            {{ currentMonthLabel }}
+          </div>
+          <div class="text-[11px] text-gray-500 mt-0.5">
+            Transaksi aktif diizinkan jika OPEN
+          </div>
         </div>
       </div>
 
       <!-- Card 2: Tutup Buku Terakhir -->
       <div class="bg-white rounded-xl border border-gray-200 p-3.5 shadow-2xs flex flex-col justify-between">
-        <div class="text-xs text-gray-500">Tutup Buku Terakhir</div>
+        <div class="text-xs text-gray-500">
+          Tutup Buku Terakhir
+        </div>
         <div class="mt-2">
           <div class="text-sm font-bold text-gray-900">
             {{ lastClosedPeriod ? lastClosedPeriod.month_name : 'Belum pernah' }}
@@ -89,14 +155,18 @@
             <template v-if="lastClosedPeriod">
               {{ formatTimestamp(lastClosedPeriod.closed_at) }} &bull; {{ lastClosedPeriod.closed_by?.name || 'Sistem' }}
             </template>
-            <template v-else>Belum ada data penutupan buku</template>
+            <template v-else>
+              Belum ada data penutupan buku
+            </template>
           </div>
         </div>
       </div>
 
       <!-- Card 3: Valuasi Persediaan Terakhir -->
       <div class="bg-white rounded-xl border border-gray-200 p-3.5 shadow-2xs flex flex-col justify-between">
-        <div class="text-xs text-gray-500">Total Valuasi Terakhir Dibekukan</div>
+        <div class="text-xs text-gray-500">
+          Total Valuasi Terakhir Dibekukan
+        </div>
         <div class="mt-2">
           <div class="text-base font-extrabold text-emerald-600">
             {{ formatRupiah(lastClosedPeriod?.total_valuation || 0) }}
@@ -122,7 +192,10 @@
           <div class="text-xs font-semibold text-gray-800">
             {{ pendingDraftsCount > 0 ? 'Ada transaksi belum diposting' : 'Semua transaksi terposting rapi' }}
           </div>
-          <div class="text-[11px] text-gray-500 mt-0.5 truncate" :title="pendingDraftsSummary">
+          <div
+            class="text-[11px] text-gray-500 mt-0.5 truncate"
+            :title="pendingDraftsSummary"
+          >
             {{ pendingDraftsSummary || 'Tidak ada draft tertinggal' }}
           </div>
         </div>
@@ -148,7 +221,7 @@
             type="text"
             placeholder="Cari bulan / tahun..."
             class="w-full text-xs rounded-lg border border-gray-200 px-3 py-1.5 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 focus:outline-hidden"
-          />
+          >
         </div>
       </div>
 
@@ -157,31 +230,98 @@
         <table class="min-w-full divide-y divide-gray-200 text-xs">
           <thead class="bg-gray-50 text-gray-600 font-semibold">
             <tr>
-              <th scope="col" class="py-2.5 px-3 text-left">Periode</th>
-              <th scope="col" class="py-2.5 px-3 text-left">Rentang Tanggal</th>
-              <th scope="col" class="py-2.5 px-3 text-center">Status</th>
-              <th scope="col" class="py-2.5 px-3 text-left">Ditutup Pada & Oleh</th>
-              <th scope="col" class="py-2.5 px-3 text-left">Audit Buka Kembali</th>
-              <th scope="col" class="py-2.5 px-3 text-right">Saldo Fisik</th>
-              <th scope="col" class="py-2.5 px-3 text-right">Valuasi Persediaan</th>
-              <th scope="col" class="py-2.5 px-3 text-center">Aksi</th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-left"
+              >
+                Periode
+              </th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-left"
+              >
+                Rentang Tanggal
+              </th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-center"
+              >
+                Status
+              </th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-left"
+              >
+                Ditutup Pada & Oleh
+              </th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-left"
+              >
+                Audit Buka Kembali
+              </th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-right"
+              >
+                Saldo Fisik
+              </th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-right"
+              >
+                Valuasi Persediaan
+              </th>
+              <th
+                scope="col"
+                class="py-2.5 px-3 text-center"
+              >
+                Aksi
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 bg-white">
-            <tr v-if="loading" class="text-center">
-              <td colspan="8" class="py-8 text-gray-400">
+            <tr
+              v-if="loading"
+              class="text-center"
+            >
+              <td
+                colspan="8"
+                class="py-8 text-gray-400"
+              >
                 <div class="flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4 animate-spin text-rose-600" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  <svg
+                    class="w-4 h-4 animate-spin text-rose-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    />
                   </svg>
                   <span>Memuat data periode...</span>
                 </div>
               </td>
             </tr>
 
-            <tr v-else-if="filteredPeriods.length === 0" class="text-center">
-              <td colspan="8" class="py-8 text-gray-400">
+            <tr
+              v-else-if="filteredPeriods.length === 0"
+              class="text-center"
+            >
+              <td
+                colspan="8"
+                class="py-8 text-gray-400"
+              >
                 Belum ada data periode yang cocok. Silakan lakukan tutup buku pertama.
               </td>
             </tr>
@@ -210,11 +350,33 @@
                   class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
                   :class="item.status === 'CLOSED' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
                 >
-                  <svg v-if="item.status === 'CLOSED'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg
+                    v-if="item.status === 'CLOSED'"
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
                   </svg>
-                  <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                  <svg
+                    v-else
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                    />
                   </svg>
                   <span>{{ item.status === 'CLOSED' ? 'Ditutup (Closed)' : 'Terbuka (Open)' }}</span>
                 </span>
@@ -223,10 +385,17 @@
               <!-- Ditutup Pada & Oleh -->
               <td class="py-2.5 px-3 whitespace-nowrap text-gray-600">
                 <template v-if="item.closed_at">
-                  <div class="font-medium text-gray-800">{{ item.closed_by?.name || 'Sistem' }}</div>
-                  <div class="text-[10px] text-gray-400">{{ formatTimestamp(item.closed_at) }}</div>
+                  <div class="font-medium text-gray-800">
+                    {{ item.closed_by?.name || 'Sistem' }}
+                  </div>
+                  <div class="text-[10px] text-gray-400">
+                    {{ formatTimestamp(item.closed_at) }}
+                  </div>
                 </template>
-                <span v-else class="text-gray-400 italic">-</span>
+                <span
+                  v-else
+                  class="text-gray-400 italic"
+                >-</span>
               </td>
 
               <!-- Jejak Buka Kembali -->
@@ -235,11 +404,17 @@
                   <div class="text-[11px] font-semibold text-amber-700 flex items-center gap-1">
                     <span>Re-open oleh {{ item.reopened_by?.name || 'User' }}</span>
                   </div>
-                  <div class="text-[10px] text-gray-400 truncate" :title="item.reopen_reason">
+                  <div
+                    class="text-[10px] text-gray-400 truncate"
+                    :title="item.reopen_reason"
+                  >
                     "{{ item.reopen_reason }}"
                   </div>
                 </template>
-                <span v-else class="text-gray-400 italic">-</span>
+                <span
+                  v-else
+                  class="text-gray-400 italic"
+                >-</span>
               </td>
 
               <!-- Saldo Fisik -->
@@ -248,7 +423,8 @@
               </td>
 
               <!-- Valuasi Persediaan -->
-              <td class="py-2.5 px-3 whitespace-nowrap text-right font-bold"
+              <td
+                class="py-2.5 px-3 whitespace-nowrap text-right font-bold"
                 :class="item.total_valuation > 0 ? 'text-emerald-700' : 'text-gray-400'"
               >
                 {{ item.snapshots_count > 0 ? formatRupiah(item.total_valuation) : '-' }}
@@ -265,9 +441,24 @@
                     title="Lihat Rincian Snapshot Saldo & Cetak Berita Acara"
                     @click="openSnapshotModal(item)"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
                     </svg>
                   </button>
 
@@ -279,8 +470,18 @@
                     title="Tutup Buku Periode Ini"
                     @click="openCloseModal(item.year, item.month)"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
                     </svg>
                   </button>
 
@@ -292,8 +493,18 @@
                     title="Buka Kembali Periode (Re-Open)"
                     @click="openReopenModal(item)"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -313,12 +524,28 @@
         <!-- Modal Header -->
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-rose-50/50">
           <div class="flex items-center gap-2 text-rose-700 font-bold text-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
             </svg>
             <span>Konfirmasi Tutup Buku Bulanan</span>
           </div>
-          <button type="button" class="text-gray-400 hover:text-gray-600 cursor-pointer" @click="showCloseModal = false">&times;</button>
+          <button
+            type="button"
+            class="text-gray-400 hover:text-gray-600 cursor-pointer"
+            @click="showCloseModal = false"
+          >
+            &times;
+          </button>
         </div>
 
         <!-- Modal Body -->
@@ -332,7 +559,13 @@
                 class="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
                 @change="checkTargetPending"
               >
-                <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
+                <option
+                  v-for="y in yearOptions"
+                  :key="y"
+                  :value="y"
+                >
+                  {{ y }}
+                </option>
               </select>
             </div>
             <div>
@@ -342,7 +575,13 @@
                 class="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
                 @change="checkTargetPending"
               >
-                <option v-for="(name, idx) in monthNames" :key="idx + 1" :value="idx + 1">{{ name }}</option>
+                <option
+                  v-for="(name, idx) in monthNames"
+                  :key="idx + 1"
+                  :value="idx + 1"
+                >
+                  {{ name }}
+                </option>
               </select>
             </div>
           </div>
@@ -353,8 +592,18 @@
             class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 space-y-1.5"
           >
             <div class="font-bold flex items-center gap-1.5 text-amber-800">
-              <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <svg
+                class="w-4 h-4 text-amber-600 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
               </svg>
               <span>Perhatian: Transaksi DRAFT Ditemukan</span>
             </div>
@@ -362,7 +611,12 @@
               Terdapat dokumen transaksi pada bulan ini yang belum diposting:
             </p>
             <ul class="list-disc list-inside text-[11px] text-amber-800 space-y-0.5 pl-1 font-medium">
-              <li v-for="(doc, i) in modalPendingDocs" :key="i">{{ doc }}</li>
+              <li
+                v-for="(doc, i) in modalPendingDocs"
+                :key="i"
+              >
+                {{ doc }}
+              </li>
             </ul>
             <div class="pt-2 border-t border-amber-200">
               <label class="flex items-center gap-2 cursor-pointer select-none">
@@ -370,7 +624,7 @@
                   v-model="closeForm.force"
                   type="checkbox"
                   class="rounded text-rose-600 focus:ring-rose-500 border-amber-300"
-                />
+                >
                 <span class="text-[11px] font-bold text-amber-900">
                   Tetap lanjutkan tutup buku (Abaikan peringatan draft)
                 </span>
@@ -386,12 +640,14 @@
               rows="2"
               placeholder="Contoh: Tutup buku persediaan bulanan per cut-off akhir bulan."
               class="w-full text-xs rounded-lg border border-gray-200 p-2.5 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
-            ></textarea>
+            />
           </div>
 
           <!-- Info Box -->
           <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-600 text-[11px] space-y-1">
-            <div class="font-bold text-gray-800">Dampak Penutupan Buku:</div>
+            <div class="font-bold text-gray-800">
+              Dampak Penutupan Buku:
+            </div>
             <ul class="list-disc list-inside space-y-0.5 text-gray-600 pl-1">
               <li>Seluruh transaksi persediaan pada bulan bersangkutan akan <strong>dikunci otomatis</strong>.</li>
               <li>Sistem menolak penyimpanan atau perubahan dokumen transaksi dengan tanggal mundur.</li>
@@ -415,9 +671,25 @@
             :disabled="actionLoading || (modalPendingDocs.length > 0 && !closeForm.force)"
             @click="submitClosePeriod"
           >
-            <svg v-if="actionLoading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            <svg
+              v-if="actionLoading"
+              class="w-3.5 h-3.5 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              />
             </svg>
             <span>Eksekusi Tutup Buku</span>
           </button>
@@ -434,12 +706,28 @@
         <!-- Header -->
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-amber-50/50">
           <div class="flex items-center gap-2 text-amber-800 font-bold text-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+              />
             </svg>
             <span>Buka Kembali Periode (Re-Open)</span>
           </div>
-          <button type="button" class="text-gray-400 hover:text-gray-600 cursor-pointer" @click="showReopenModal = false">&times;</button>
+          <button
+            type="button"
+            class="text-gray-400 hover:text-gray-600 cursor-pointer"
+            @click="showReopenModal = false"
+          >
+            &times;
+          </button>
         </div>
 
         <!-- Body -->
@@ -462,7 +750,7 @@
               rows="3"
               placeholder="Contoh: Penyesuaian koreksi faktur penerimaan yang tertinggal oleh Finance."
               class="w-full text-xs rounded-lg border border-gray-200 p-2.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-            ></textarea>
+            />
           </div>
         </div>
 
@@ -481,9 +769,25 @@
             :disabled="actionLoading || reopenForm.reopen_reason.trim().length < 5"
             @click="submitReopenPeriod"
           >
-            <svg v-if="actionLoading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            <svg
+              v-if="actionLoading"
+              class="w-3.5 h-3.5 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              />
             </svg>
             <span>Konfirmasi Buka Kembali</span>
           </button>
@@ -518,13 +822,29 @@
               class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors cursor-pointer"
               @click="printBeritaAcara"
             >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                />
               </svg>
               <span>Cetak Berita Acara</span>
             </button>
 
-            <button type="button" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer" @click="showSnapshotModal = false">&times;</button>
+            <button
+              type="button"
+              class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+              @click="showSnapshotModal = false"
+            >
+              &times;
+            </button>
           </div>
         </div>
 
@@ -533,19 +853,33 @@
           <!-- Summary Badges -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <div class="bg-gray-50 rounded-lg p-2 border border-gray-200">
-              <div class="text-[10px] text-gray-500 uppercase font-semibold">Total Item/SKU</div>
-              <div class="text-xs font-bold text-gray-900 mt-0.5">{{ snapshotSummary.total_items }} SKU</div>
+              <div class="text-[10px] text-gray-500 uppercase font-semibold">
+                Total Item/SKU
+              </div>
+              <div class="text-xs font-bold text-gray-900 mt-0.5">
+                {{ snapshotSummary.total_items }} SKU
+              </div>
             </div>
             <div class="bg-gray-50 rounded-lg p-2 border border-gray-200">
-              <div class="text-[10px] text-gray-500 uppercase font-semibold">Total Saldo Fisik</div>
-              <div class="text-xs font-bold text-gray-900 mt-0.5">{{ formatQuantity(snapshotSummary.total_closing_qty) }} unit</div>
+              <div class="text-[10px] text-gray-500 uppercase font-semibold">
+                Total Saldo Fisik
+              </div>
+              <div class="text-xs font-bold text-gray-900 mt-0.5">
+                {{ formatQuantity(snapshotSummary.total_closing_qty) }} unit
+              </div>
             </div>
             <div class="bg-emerald-50 rounded-lg p-2 border border-emerald-200">
-              <div class="text-[10px] text-emerald-700 uppercase font-semibold">Total Nilai Persediaan</div>
-              <div class="text-xs font-bold text-emerald-800 mt-0.5">{{ formatRupiah(snapshotSummary.total_valuation) }}</div>
+              <div class="text-[10px] text-emerald-700 uppercase font-semibold">
+                Total Nilai Persediaan
+              </div>
+              <div class="text-xs font-bold text-emerald-800 mt-0.5">
+                {{ formatRupiah(snapshotSummary.total_valuation) }}
+              </div>
             </div>
             <div class="bg-gray-50 rounded-lg p-2 border border-gray-200">
-              <div class="text-[10px] text-gray-500 uppercase font-semibold">Total Mutasi Bersih</div>
+              <div class="text-[10px] text-gray-500 uppercase font-semibold">
+                Total Mutasi Bersih
+              </div>
               <div class="text-xs font-bold text-gray-800 mt-0.5">
                 +{{ formatQuantity(snapshotSummary.total_in_qty) }} / -{{ formatQuantity(snapshotSummary.total_out_qty) }}
               </div>
@@ -561,7 +895,7 @@
                 placeholder="Cari SKU atau nama produk..."
                 class="w-full text-xs rounded-lg border border-gray-200 px-3 py-1.5 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
                 @input="debounceSnapshotFetch"
-              />
+              >
             </div>
             <div class="w-full sm:w-48">
               <select
@@ -569,9 +903,15 @@
                 class="w-full text-xs rounded-lg border border-gray-200 px-3 py-1.5 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
                 @change="fetchSnapshots(1)"
               >
-                <option value="">Semua Kondisi</option>
-                <option value="GOOD">Kondisi Baik (GOOD)</option>
-                <option value="DEFECTIVE">Kondisi Rusak (DEFECTIVE)</option>
+                <option value="">
+                  Semua Kondisi
+                </option>
+                <option value="GOOD">
+                  Kondisi Baik (GOOD)
+                </option>
+                <option value="DEFECTIVE">
+                  Kondisi Rusak (DEFECTIVE)
+                </option>
               </select>
             </div>
           </div>
@@ -582,34 +922,116 @@
           <table class="min-w-full divide-y divide-gray-200 text-xs">
             <thead class="bg-gray-50 text-gray-600 font-semibold sticky top-0 z-10 shadow-2xs">
               <tr>
-                <th scope="col" class="py-2 px-2.5 text-left">No</th>
-                <th scope="col" class="py-2 px-2.5 text-left">Produk / SKU</th>
-                <th scope="col" class="py-2 px-2.5 text-left">Lokasi Stok</th>
-                <th scope="col" class="py-2 px-2.5 text-center">Kondisi</th>
-                <th scope="col" class="py-2 px-2.5 text-right">Saldo Awal</th>
-                <th scope="col" class="py-2 px-2.5 text-right">Masuk</th>
-                <th scope="col" class="py-2 px-2.5 text-right">Keluar</th>
-                <th scope="col" class="py-2 px-2.5 text-right">Penyesuaian</th>
-                <th scope="col" class="py-2 px-2.5 text-right">Saldo Akhir</th>
-                <th scope="col" class="py-2 px-2.5 text-right">Harga Satuan</th>
-                <th scope="col" class="py-2 px-2.5 text-right">Total Nilai</th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-left"
+                >
+                  No
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-left"
+                >
+                  Produk / SKU
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-left"
+                >
+                  Lokasi Stok
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-center"
+                >
+                  Kondisi
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-right"
+                >
+                  Saldo Awal
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-right"
+                >
+                  Masuk
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-right"
+                >
+                  Keluar
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-right"
+                >
+                  Penyesuaian
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-right"
+                >
+                  Saldo Akhir
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-right"
+                >
+                  Harga Satuan
+                </th>
+                <th
+                  scope="col"
+                  class="py-2 px-2.5 text-right"
+                >
+                  Total Nilai
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white">
-              <tr v-if="snapshotLoading" class="text-center">
-                <td colspan="11" class="py-8 text-gray-400">
+              <tr
+                v-if="snapshotLoading"
+                class="text-center"
+              >
+                <td
+                  colspan="11"
+                  class="py-8 text-gray-400"
+                >
                   <div class="flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4 animate-spin text-rose-600" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    <svg
+                      class="w-4 h-4 animate-spin text-rose-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      />
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8H4z"
+                      />
                     </svg>
                     <span>Memuat rincian snapshot...</span>
                   </div>
                 </td>
               </tr>
 
-              <tr v-else-if="snapshotList.length === 0" class="text-center">
-                <td colspan="11" class="py-8 text-gray-400">
+              <tr
+                v-else-if="snapshotList.length === 0"
+                class="text-center"
+              >
+                <td
+                  colspan="11"
+                  class="py-8 text-gray-400"
+                >
                   Tidak ada data snapshot untuk filter yang dipilih.
                 </td>
               </tr>
@@ -623,15 +1045,21 @@
                   {{ (snapshotPagination.current_page - 1) * snapshotPagination.per_page + idx + 1 }}
                 </td>
                 <td class="py-2 px-2.5">
-                  <div class="font-bold text-gray-900">{{ row.product?.name || 'Item' }}</div>
+                  <div class="font-bold text-gray-900">
+                    {{ row.product?.name || 'Item' }}
+                  </div>
                   <div class="text-[10px] text-gray-400 font-mono flex items-center gap-1">
                     <span>{{ row.product?.sku }}</span>
                     <span v-if="row.product?.barcode">&bull; {{ row.product?.barcode }}</span>
                   </div>
                 </td>
                 <td class="py-2 px-2.5 text-gray-700">
-                  <div class="font-medium">{{ row.location?.name }}</div>
-                  <div class="text-[10px] text-gray-400">{{ row.location?.type }}</div>
+                  <div class="font-medium">
+                    {{ row.location?.name }}
+                  </div>
+                  <div class="text-[10px] text-gray-400">
+                    {{ row.location?.type }}
+                  </div>
                 </td>
                 <td class="py-2 px-2.5 text-center whitespace-nowrap">
                   <span
@@ -641,17 +1069,30 @@
                     {{ row.condition === 'GOOD' ? 'BAIK' : 'RUSAK' }}
                   </span>
                 </td>
-                <td class="py-2 px-2.5 text-right font-mono text-gray-600">{{ formatQuantity(row.opening_balance) }}</td>
-                <td class="py-2 px-2.5 text-right font-mono text-emerald-600">+{{ formatQuantity(row.total_in) }}</td>
-                <td class="py-2 px-2.5 text-right font-mono text-rose-600">-{{ formatQuantity(row.total_out) }}</td>
-                <td class="py-2 px-2.5 text-right font-mono" :class="row.total_adjustment >= 0 ? 'text-gray-600' : 'text-amber-600'">
+                <td class="py-2 px-2.5 text-right font-mono text-gray-600">
+                  {{ formatQuantity(row.opening_balance) }}
+                </td>
+                <td class="py-2 px-2.5 text-right font-mono text-emerald-600">
+                  +{{ formatQuantity(row.total_in) }}
+                </td>
+                <td class="py-2 px-2.5 text-right font-mono text-rose-600">
+                  -{{ formatQuantity(row.total_out) }}
+                </td>
+                <td
+                  class="py-2 px-2.5 text-right font-mono"
+                  :class="row.total_adjustment >= 0 ? 'text-gray-600' : 'text-amber-600'"
+                >
                   {{ row.total_adjustment > 0 ? '+' : '' }}{{ formatQuantity(row.total_adjustment) }}
                 </td>
                 <td class="py-2 px-2.5 text-right font-mono font-bold text-gray-900 bg-gray-50/50">
                   {{ formatQuantity(row.closing_balance) }}
                 </td>
-                <td class="py-2 px-2.5 text-right text-gray-600">{{ formatRupiah(row.unit_price) }}</td>
-                <td class="py-2 px-2.5 text-right font-bold text-emerald-700">{{ formatRupiah(row.total_value) }}</td>
+                <td class="py-2 px-2.5 text-right text-gray-600">
+                  {{ formatRupiah(row.unit_price) }}
+                </td>
+                <td class="py-2 px-2.5 text-right font-bold text-emerald-700">
+                  {{ formatRupiah(row.total_value) }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -1031,7 +1472,7 @@ function printBeritaAcara() {
           window.onload = function() {
             window.print();
           };
-        <\/script>
+        ${'<'}/script>
       </body>
     </html>
   `);

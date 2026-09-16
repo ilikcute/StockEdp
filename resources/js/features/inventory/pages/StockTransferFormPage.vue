@@ -577,10 +577,6 @@ const validateLocations = () => {
   }
 };
 
-const isProductSelectedInOtherRow = (productId, currentRowIndex) => {
-  return form.items.some((item, index) => index !== currentRowIndex && item.product_id === productId);
-};
-
 const getProductSku = (productId) => {
   if (!productId) return '';
   const prod = products.value.find((p) => p.id === productId);

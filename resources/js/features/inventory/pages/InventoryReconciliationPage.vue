@@ -107,7 +107,10 @@
       <div class="bg-white rounded-xl border border-gray-200 p-3.5 shadow-2xs">
         <span class="text-[11px] font-medium text-rose-600 block">Selisih Ditemukan</span>
         <div class="mt-1 flex items-baseline justify-between">
-          <span class="text-xl font-bold" :class="store.scanResults.summary.discrepant_pairs > 0 ? 'text-rose-600' : 'text-gray-900'">
+          <span
+            class="text-xl font-bold"
+            :class="store.scanResults.summary.discrepant_pairs > 0 ? 'text-rose-600' : 'text-gray-900'"
+          >
             {{ formatQuantity(store.scanResults.summary.discrepant_pairs) }}
           </span>
           <span
@@ -379,7 +382,10 @@
             class="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
             @change="toggleSelectAll"
           >
-          <label for="selectAll" class="text-xs font-medium text-gray-700 cursor-pointer">
+          <label
+            for="selectAll"
+            class="text-xs font-medium text-gray-700 cursor-pointer"
+          >
             Pilih Semua Baris ({{ selectedItems.length }} dipilih)
           </label>
         </div>
@@ -400,38 +406,65 @@
         <table class="w-full text-left text-xs border-collapse">
           <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
             <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
-              <th scope="col" class="py-2 px-2 w-8 text-center">
+              <th
+                scope="col"
+                class="py-2 px-2 w-8 text-center"
+              >
                 #
               </th>
-              <th scope="col" class="py-2 px-3 whitespace-nowrap">
+              <th
+                scope="col"
+                class="py-2 px-3 whitespace-nowrap"
+              >
                 Lokasi / Gudang
               </th>
-              <th scope="col" class="py-2 px-3 whitespace-nowrap">
+              <th
+                scope="col"
+                class="py-2 px-3 whitespace-nowrap"
+              >
                 SKU
               </th>
-              <th scope="col" class="py-2 px-3">
+              <th
+                scope="col"
+                class="py-2 px-3"
+              >
                 Nama Produk
               </th>
-              <th scope="col" class="py-2 px-2.5 text-center whitespace-nowrap">
+              <th
+                scope="col"
+                class="py-2 px-2.5 text-center whitespace-nowrap"
+              >
                 Kondisi
               </th>
-              <th scope="col" class="py-2 px-3 text-right whitespace-nowrap bg-rose-50/40 text-rose-900">
+              <th
+                scope="col"
+                class="py-2 px-3 text-right whitespace-nowrap bg-rose-50/40 text-rose-900"
+              >
                 Saldo Tercatat (Current)
               </th>
-              <th scope="col" class="py-2 px-3 text-right whitespace-nowrap bg-emerald-50/40 text-emerald-900">
+              <th
+                scope="col"
+                class="py-2 px-3 text-right whitespace-nowrap bg-emerald-50/40 text-emerald-900"
+              >
                 Saldo Harusnya (Ledger)
               </th>
-              <th scope="col" class="py-2 px-3 text-center whitespace-nowrap">
+              <th
+                scope="col"
+                class="py-2 px-3 text-center whitespace-nowrap"
+              >
                 Selisih (Delta)
               </th>
-              <th scope="col" class="py-2 px-3 text-center whitespace-nowrap w-24">
+              <th
+                scope="col"
+                class="py-2 px-3 text-center whitespace-nowrap w-24"
+              >
                 Aksi
               </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 bg-white">
             <tr
-              v-for="(item, idx) in store.filteredDiscrepancies"
+              v-for="item in store.filteredDiscrepancies"
               :key="item.key"
               class="hover:bg-indigo-50/30 transition-colors"
             >
@@ -457,8 +490,12 @@
 
               <!-- Product Name -->
               <td class="py-2 px-3 text-gray-900">
-                <div class="font-medium leading-snug">{{ item.product_name }}</div>
-                <div class="text-[10px] text-gray-400 mt-0.5">{{ item.unit_name || '-' }}</div>
+                <div class="font-medium leading-snug">
+                  {{ item.product_name }}
+                </div>
+                <div class="text-[10px] text-gray-400 mt-0.5">
+                  {{ item.unit_name || '-' }}
+                </div>
               </td>
 
               <!-- Condition -->

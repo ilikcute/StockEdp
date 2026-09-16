@@ -83,14 +83,35 @@
         >
           <!-- Header Status -->
           <div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
-            <span v-if="isLiveSearching" class="inline-flex items-center gap-1.5 text-indigo-600 font-medium">
-              <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            <span
+              v-if="isLiveSearching"
+              class="inline-flex items-center gap-1.5 text-indigo-600 font-medium"
+            >
+              <svg
+                class="animate-spin h-3.5 w-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
               </svg>
               Mencari produk...
             </span>
-            <span v-else class="font-medium text-gray-700">
+            <span
+              v-else
+              class="font-medium text-gray-700"
+            >
               Ditemukan {{ searchResults.length }} produk (gunakan ↑↓ lalu Enter)
             </span>
             <span class="text-[10px] text-gray-400 font-mono">ESC untuk tutup</span>
@@ -127,13 +148,22 @@
                   <span class="bg-gray-100 px-1 rounded border border-gray-200 text-gray-700 font-bold">
                     SKU: {{ product.sku }}
                   </span>
-                  <span v-if="product.barcode" class="text-gray-400">
+                  <span
+                    v-if="product.barcode"
+                    class="text-gray-400"
+                  >
                     Barcode: {{ product.barcode }}
                   </span>
-                  <span v-if="product.unit?.name" class="text-gray-400">
+                  <span
+                    v-if="product.unit?.name"
+                    class="text-gray-400"
+                  >
                     ({{ product.unit.name }})
                   </span>
-                  <span v-if="product.unit_price" class="text-indigo-600 font-semibold font-mono">
+                  <span
+                    v-if="product.unit_price"
+                    class="text-indigo-600 font-semibold font-mono"
+                  >
                     • Rp {{ Number(product.unit_price).toLocaleString('id-ID') }}
                   </span>
                 </div>

@@ -86,7 +86,11 @@
             stroke="currentColor"
             stroke-width="2"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
 
@@ -107,8 +111,12 @@
               XLS
             </div>
             <div class="flex-1">
-              <div class="font-semibold text-gray-800">Microsoft Excel (.xlsx)</div>
-              <div class="text-[10px] text-gray-400">Format native dengan styling</div>
+              <div class="font-semibold text-gray-800">
+                Microsoft Excel (.xlsx)
+              </div>
+              <div class="text-[10px] text-gray-400">
+                Format native dengan styling
+              </div>
             </div>
           </button>
 
@@ -124,8 +132,12 @@
               CSV
             </div>
             <div class="flex-1">
-              <div class="font-semibold text-gray-800">File CSV (.csv)</div>
-              <div class="text-[10px] text-gray-400">Format teks pemisah koma</div>
+              <div class="font-semibold text-gray-800">
+                File CSV (.csv)
+              </div>
+              <div class="text-[10px] text-gray-400">
+                Format teks pemisah koma
+              </div>
             </div>
           </button>
         </div>

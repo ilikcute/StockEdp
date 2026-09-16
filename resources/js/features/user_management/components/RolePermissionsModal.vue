@@ -356,7 +356,10 @@
                     <div class="font-semibold text-gray-900 leading-tight">
                       {{ perm.name }}
                     </div>
-                    <div class="text-[10px] font-mono text-gray-400 mt-0.5 truncate" :title="perm.code">
+                    <div
+                      class="text-[10px] font-mono text-gray-400 mt-0.5 truncate"
+                      :title="perm.code"
+                    >
                       {{ perm.code }}
                     </div>
                   </div>
@@ -384,8 +387,12 @@
               d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <div class="font-medium text-gray-600">Tidak ada izin yang sesuai.</div>
-          <div class="text-[11px] text-gray-400 mt-0.5">Coba gunakan kata kunci pencarian yang berbeda.</div>
+          <div class="font-medium text-gray-600">
+            Tidak ada izin yang sesuai.
+          </div>
+          <div class="text-[11px] text-gray-400 mt-0.5">
+            Coba gunakan kata kunci pencarian yang berbeda.
+          </div>
         </div>
       </div>
 

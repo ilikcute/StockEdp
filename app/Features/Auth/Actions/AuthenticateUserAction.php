@@ -11,8 +11,9 @@ class AuthenticateUserAction
 {
     public function execute(string $login, string $password): User
     {
-        // Cari pengguna berdasarkan email atau username
-        $user = User::where('email', $login)
+        /** @var User|null $user */
+        $user = User::query()
+            ->where('email', $login)
             ->orWhere('username', $login)
             ->first();
 

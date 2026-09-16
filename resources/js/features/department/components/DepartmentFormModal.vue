@@ -186,12 +186,9 @@ const onClose = () => {
 };
 
 const handleSubmit = async () => {
-    let success = false;
-    if (isEditing.value) {
-        success = await departmentStore.updateDepartment(props.departmentData.id, form.value);
-    } else {
-        success = await departmentStore.createDepartment(form.value);
-    }
+    const success = isEditing.value
+        ? await departmentStore.updateDepartment(props.departmentData.id, form.value)
+        : await departmentStore.createDepartment(form.value);
 
     if (success) {
         emit('saved');
