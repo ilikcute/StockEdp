@@ -133,6 +133,9 @@
                   <span v-if="product.unit?.name" class="text-gray-400">
                     ({{ product.unit.name }})
                   </span>
+                  <span v-if="product.unit_price" class="text-indigo-600 font-semibold font-mono">
+                    • Rp {{ Number(product.unit_price).toLocaleString('id-ID') }}
+                  </span>
                 </div>
               </div>
 
@@ -364,8 +367,8 @@ const performSearch = async (query) => {
   if (Array.isArray(props.products) && props.products.length > 0) {
     matches = props.products.filter((p) => {
       const nameMatch = p.name && p.name.toLowerCase().includes(q);
-      const skuMatch = p.sku && p.sku.toLowerCase().includes(q);
-      const barcodeMatch = p.barcode && p.barcode.toLowerCase().includes(q);
+      const skuMatch = p.sku && String(p.sku).toLowerCase().includes(q);
+      const barcodeMatch = p.barcode && String(p.barcode).toLowerCase().includes(q);
       const catMatch = p.category?.name && p.category.name.toLowerCase().includes(q);
       return nameMatch || skuMatch || barcodeMatch || catMatch;
     });

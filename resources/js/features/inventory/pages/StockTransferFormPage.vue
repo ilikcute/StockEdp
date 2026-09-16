@@ -297,14 +297,17 @@
           </div>
         </div>
 
-        <!-- Scanner Barcode Panel -->
+        <!-- Scanner Barcode & Live Search Panel -->
         <div class="flex-1 min-w-[200px]">
           <BarcodeScannerPanel
             ref="scannerPanelRef"
             :compact="true"
             :location-selected="Boolean(form.origin_location_id && form.destination_location_id && !locationError)"
-            label="Scan Barcode Transfer"
-            placeholder="Scan barcode produk ditransfer [F2] lalu Enter..."
+            :enable-live-search="true"
+            :products="products"
+            :debounce-ms="250"
+            label="Scan Barcode / Cari Produk Transfer"
+            placeholder="Scan barcode / ketik nama produk / SKU [F2]..."
             @scan-success="handleProductScanned"
             @scan-error="(msg) => { locationError = msg; }"
           />
@@ -362,7 +365,10 @@
                 <th class="py-2 px-2.5 w-10 text-center">
                   #
                 </th>
-                <th class="py-2 px-2.5 min-w-[280px]">
+                <th class="py-2 px-2.5 w-32">
+                  SKU / Barcode
+                </th>
+                <th class="py-2 px-2.5 min-w-[240px]">
                   Produk *
                 </th>
                 <th class="py-2 px-2.5 text-right w-32">
@@ -390,28 +396,26 @@
                   {{ index + 1 }}
                 </td>
 
-                <!-- Produk Select -->
+                <!-- SKU Input Cepat -->
                 <td class="py-1.5 px-2.5">
-                  <select
-                    v-model="item.product_id"
-                    class="block w-full rounded-md border-gray-300 text-xs py-1 px-2 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
+                  <input
+                    type="text"
+                    :value="getProductSku(item.product_id)"
+                    placeholder="Ketik SKU..."
+                    class="block w-full rounded-md border-gray-300 py-1 px-2 font-mono text-xs uppercase focus:border-indigo-500 focus:ring-indigo-500"
+                    @change="onSkuEntered($event.target.value, index)"
+                    @keydown.enter.prevent="onSkuEntered($event.target.value, index)"
                   >
-                    <option
-                      value=""
-                      disabled
-                    >
-                      Pilih Produk...
-                    </option>
-                    <option
-                      v-for="p in products"
-                      :key="p.id"
-                      :value="p.id"
-                      :disabled="isProductSelectedInOtherRow(p.id, index)"
-                    >
-                      {{ p.sku }} — {{ p.name }} {{ p.barcode ? `(${p.barcode})` : '' }} [• {{ formatRupiah(p.unit_price) }}]
-                    </option>
-                  </select>
+                </td>
+
+                <!-- Produk Select (BaseCombobox) -->
+                <td class="py-1.5 px-2.5">
+                  <BaseCombobox
+                    v-model="item.product_id"
+                    :options="products"
+                    size="xs"
+                    placeholder="Pilih produk..."
+                  />
                 </td>
 
                 <!-- Harga Satuan -->
@@ -496,7 +500,7 @@
             >
               <tr>
                 <td
-                  colspan="3"
+                  colspan="4"
                   class="py-2 px-2.5 text-right text-gray-600 uppercase text-[11px] tracking-wider"
                 >
                   Grand Total Estimasi Nilai Transfer:
@@ -524,6 +528,7 @@ import { useStockTransferStore } from '../stores/useStockTransferStore';
 import { locationApi } from '@features/location/api/location_api.js';
 import { productApi } from '@features/product/api/product_api.js';
 import BarcodeScannerPanel from '../scanner/components/BarcodeScannerPanel.vue';
+import BaseCombobox from '@/shared/components/BaseCombobox.vue';
 import { formatRupiah, formatQuantity } from '@/shared/utils/formatters';
 import {
   addDecimal4Strings,
@@ -574,6 +579,56 @@ const validateLocations = () => {
 
 const isProductSelectedInOtherRow = (productId, currentRowIndex) => {
   return form.items.some((item, index) => index !== currentRowIndex && item.product_id === productId);
+};
+
+const getProductSku = (productId) => {
+  if (!productId) return '';
+  const prod = products.value.find((p) => p.id === productId);
+  return prod ? prod.sku : '';
+};
+
+const onSkuEntered = async (typedSku, index) => {
+  const code = (typedSku || '').trim().toLowerCase();
+  if (!code) {
+    form.items[index].product_id = '';
+    return;
+  }
+
+  let matched = products.value.find(
+    (p) =>
+      (p.sku && String(p.sku).toLowerCase() === code) ||
+      (p.barcode && String(p.barcode).toLowerCase() === code)
+  );
+
+  if (!matched) {
+    matched = products.value.find(
+      (p) =>
+        (p.sku && String(p.sku).toLowerCase().startsWith(code)) ||
+        (p.barcode && String(p.barcode).toLowerCase().startsWith(code))
+    );
+  }
+
+  if (!matched) {
+    try {
+      const res = await productApi.getAll({ search: typedSku, is_active: true, per_page: 5 });
+      const found = res.data?.data?.data || res.data?.data || [];
+      if (found.length > 0) {
+        matched = found[0];
+        if (!products.value.some((p) => p.id === matched.id)) {
+          products.value.push(matched);
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  if (matched) {
+    form.items[index].product_id = matched.id;
+    locationError.value = '';
+  } else {
+    locationError.value = `Produk dengan SKU / Barcode "${typedSku}" tidak ditemukan.`;
+  }
 };
 
 const getItemUnitPrice = (productId) => {

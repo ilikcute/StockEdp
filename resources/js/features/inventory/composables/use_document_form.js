@@ -246,11 +246,34 @@ export function useDocumentForm(config) {
             return;
         }
 
-        const matched = products.value.find(
+        let matched = products.value.find(
             (p) =>
-                (p.sku && p.sku.toLowerCase() === code) ||
-                (p.barcode && p.barcode.toLowerCase() === code)
+                (p.sku && String(p.sku).toLowerCase() === code) ||
+                (p.barcode && String(p.barcode).toLowerCase() === code)
         );
+
+        if (!matched) {
+            matched = products.value.find(
+                (p) =>
+                    (p.sku && String(p.sku).toLowerCase().startsWith(code)) ||
+                    (p.barcode && String(p.barcode).toLowerCase().startsWith(code))
+            );
+        }
+
+        if (!matched) {
+            try {
+                const res = await productApi.getAll({ search: typedSku, is_active: 1, per_page: 5 });
+                const found = res.data?.data?.data || res.data?.data || [];
+                if (found.length > 0) {
+                    matched = found[0];
+                    if (!products.value.some((p) => p.id === matched.id)) {
+                        products.value.push(matched);
+                    }
+                }
+            } catch {
+                // Ignore API error
+            }
+        }
 
         if (matched) {
             form.value.items[index].product_id = matched.id;

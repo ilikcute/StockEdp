@@ -229,14 +229,17 @@
           />
         </div>
 
-        <!-- Scanner Barcode Panel -->
+        <!-- Scanner Barcode & Live Search Panel -->
         <div class="flex-1 min-w-[200px]">
           <BarcodeScannerPanel
             ref="scannerPanelRef"
             :compact="true"
             :location-selected="Boolean(scanLocationId)"
-            label="Scan Barcode / SKU"
-            placeholder="Scan barcode / ketik SKU pengeluaran [F2] lalu Enter..."
+            :enable-live-search="true"
+            :products="products"
+            :debounce-ms="250"
+            label="Scan Barcode / Cari Produk Pengeluaran"
+            placeholder="Scan barcode / ketik nama produk / SKU [F2]..."
             @scan-success="handleProductScanned"
             @scan-error="(msg) => { errorMsg = msg; }"
           />
