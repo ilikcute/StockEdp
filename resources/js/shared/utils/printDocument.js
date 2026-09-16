@@ -1363,102 +1363,368 @@ export function printStockIssue(doc, extraOptions = {}) {
 }
 
 /**
- * Cetak Surat Jalan Transfer Barang Antar Lokasi.
+ * Menghasilkan dokumen HTML lengkap untuk Surat Jalan Transfer Barang Antar Lokasi
+ * persis sesuai format standar Surat Jalan Alokasi Unit Toko (PT. INDOMARCO PRISMATAMA).
+ *
+ * @param {Object} transfer StockTransfer document
+ * @param {Object} [extraOptions={}]
+ * @returns {string}
+ */
+export function generateStockTransferSuratJalanHtml(transfer, extraOptions = {}) {
+    if (!transfer) return '';
+
+    const companyName = extraOptions.companyName || 'PT. INDOMARCO PRISMATAMA';
+    const branchName = extraOptions.branchName || 'IDM YOGYAKARTA';
+    const branchAddress = extraOptions.branchAddress || 'JL.ARTERI (LINGKAR LUAR BARAT)<br>DESA TRIHANGGO KEC GAMPING<br>KAB SLEMAN YOGYAKARTA';
+
+    const printedBy = extraOptions.printedBy || transfer.created_by || 'EDP_YOG';
+    const createdBy = transfer.created_by || printedBy;
+    const senderUser = extraOptions.senderUser || transfer.created_by || createdBy || '';
+    const currentDateIndo = formatIndoDate(new Date(), false);
+    const currentTimeIndo = formatIndoTime(new Date());
+
+    const senderCompanySubtitle = senderUser
+        ? ((branchName === 'IDM YOGYAKARTA' && companyName === 'PT. INDOMARCO PRISMATAMA')
+            ? `PT. INDOMARCO PRISMATAMA - IDM<br>YOGYAKARTA - ${escapeHtml(senderUser)}`
+            : `${escapeHtml(companyName)} - ${escapeHtml(branchName)} - ${escapeHtml(senderUser)}`)
+        : ((branchName === 'IDM YOGYAKARTA' && companyName === 'PT. INDOMARCO PRISMATAMA')
+            ? 'PT. INDOMARCO PRISMATAMA - IDM<br>YOGYAKARTA'
+            : `${escapeHtml(companyName)} - ${escapeHtml(branchName)}`);
+
+    const docNumber = transfer.transfer_number || '-';
+    const docDateIndo = formatIndoDate(transfer.transfer_date || transfer.created_at, true);
+
+    const isReturn = transfer.transfer_type === 'RETURN';
+    const defaultTransferType = isReturn ? 'Retur Barang' : 'Transfer Stock';
+
+    const originDisplay = transfer.origin_location_name || transfer.originLocation?.name || '-';
+    const destDisplay = transfer.destination_location_name || transfer.destinationLocation?.name || '-';
+
+    const barcodeSvg = generateBarcodeSvg(docNumber, { height: 42, moduleWidth: 1.35 });
+
+    const items = transfer.items || [];
+    const rows = [];
+    let rowNumber = 1;
+
+    items.forEach((item) => {
+        const qty = Number(item.sent_quantity ?? item.quantity ?? 1);
+        const price = Number(item.unit_price ?? item.product?.unit_price ?? item.product_unit_price ?? 0);
+        const subtotal = Number(item.subtotal ?? (qty * price));
+        const priceStr = price > 0 ? formatRupiah(price, false) : '-';
+        const subtotalStr = subtotal > 0 ? formatRupiah(subtotal, false) : (price > 0 ? '0' : '-');
+        const serial = item.serial_number || '-';
+        const sku = item.product_sku || item.product?.sku || '-';
+        const name = item.product_name || item.product?.name || '-';
+        const itemType = item.item_type || defaultTransferType;
+        const itemNotes = item.notes || (item.condition === 'DEFECTIVE' ? 'Kondisi Rusak' : (transfer.notes || '-'));
+        const refBkb = docNumber;
+        const refPb = transfer.reference_number || transfer.memo_number || '-';
+
+        rows.push(`
+          <tr>
+            <td style="text-align: center;">${rowNumber++}</td>
+            <td style="text-align: left;">${escapeHtml(sku)}</td>
+            <td style="text-align: left;">${escapeHtml(name)}</td>
+            <td style="text-align: left;">${escapeHtml(itemType)}</td>
+            <td style="text-align: right;">${formatQuantity(qty)}</td>
+            <td style="text-align: right;">${priceStr}</td>
+            <td style="text-align: right;">${subtotalStr}</td>
+            <td style="text-align: left;">${escapeHtml(serial)}</td>
+            <td style="text-align: left;">${escapeHtml(itemNotes)}</td>
+            <td style="text-align: left;">${escapeHtml(refBkb)}</td>
+            <td style="text-align: left;">${escapeHtml(refPb)}</td>
+          </tr>
+        `);
+    });
+
+    if (rows.length === 0) {
+        rows.push(`
+          <tr>
+            <td style="text-align: center;">1</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">${escapeHtml(defaultTransferType)}</td>
+            <td style="text-align: right;">1</td>
+            <td style="text-align: right;">-</td>
+            <td style="text-align: right;">-</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">-</td>
+            <td style="text-align: left;">${escapeHtml(docNumber)}</td>
+            <td style="text-align: left;">-</td>
+          </tr>
+        `);
+    }
+
+    return `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>SURAT JALAN - ${escapeHtml(docNumber)}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 15mm 15mm 15mm 15mm;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000000;
+      background: #ffffff;
+      font-size: 11px;
+      line-height: 1.35;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sj-container {
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 12mm 12mm 12mm;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .sj-container {
+        max-width: 100%;
+        padding: 0;
+      }
+    }
+    .sj-top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .sj-company-info {
+      font-style: italic;
+      font-weight: bold;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .sj-print-meta {
+      font-size: 11px;
+    }
+    .sj-meta-table {
+      border-collapse: collapse;
+    }
+    .sj-meta-table td {
+      padding: 1px 0;
+      vertical-align: top;
+      font-size: 11px;
+    }
+    .sj-meta-label {
+      width: 95px;
+    }
+    .sj-meta-colon {
+      width: 14px;
+      text-align: center;
+    }
+    .sj-title-section {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .sj-title {
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .sj-barcode-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .sj-doc-meta-block {
+      display: inline-block;
+      text-align: left;
+      font-size: 11px;
+    }
+    .sj-recipient-section {
+      margin-bottom: 18px;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .sj-recipient-title {
+      margin-bottom: 2px;
+    }
+    .sj-recipient-company {
+      margin-bottom: 10px;
+    }
+    .sj-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      font-size: 10.5px;
+    }
+    .sj-table th, .sj-table td {
+      border: 1px solid #000000;
+      padding: 4px 5px;
+      vertical-align: middle;
+    }
+    .sj-table th {
+      font-weight: bold;
+      background: #ffffff;
+    }
+    .sj-signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      page-break-inside: avoid;
+    }
+    .sj-sig-box {
+      width: 48%;
+    }
+    .sj-sig-title {
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+    .sj-sig-subtitle {
+      font-size: 11px;
+      font-weight: normal;
+      margin-bottom: 2px;
+    }
+    .sj-sig-space {
+      height: 60px;
+    }
+    .sj-sig-note {
+      font-style: italic;
+      font-size: 10.5px;
+      margin-bottom: 2px;
+    }
+    .sj-sig-line {
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sj-container">
+    <!-- Header Atas -->
+    <div class="sj-top-header">
+      <div class="sj-company-info">
+        ${escapeHtml(companyName)}<br>
+        ${escapeHtml(branchName)}<br>
+        ${branchAddress}
+      </div>
+      <div class="sj-print-meta">
+        <table class="sj-meta-table">
+          <tr>
+            <td class="sj-meta-label">Dicetak Oleh</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(printedBy)}</td>
+          </tr>
+          <tr>
+            <td class="sj-meta-label">Dibuat Oleh</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(createdBy)}</td>
+          </tr>
+          <tr>
+            <td class="sj-meta-label">Tanggal Cetak</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(currentDateIndo)}</td>
+          </tr>
+          <tr>
+            <td class="sj-meta-label">Jam Cetak</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(currentTimeIndo)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Judul & Barcode Tengah -->
+    <div class="sj-title-section">
+      <div class="sj-title">SURAT JALAN</div>
+      <div class="sj-barcode-wrap">
+        ${barcodeSvg}
+      </div>
+      <div class="sj-doc-meta-block">
+        <table class="sj-meta-table">
+          <tr>
+            <td style="width:55px;">Nomor</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(docNumber)}</td>
+          </tr>
+          <tr>
+            <td>Tanggal</td>
+            <td class="sj-meta-colon">:</td>
+            <td>${escapeHtml(docDateIndo)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tujuan / Kepada Yth. -->
+    <div class="sj-recipient-section">
+      <div class="sj-recipient-title">Kepada Yth.</div>
+      <div class="sj-recipient-company">${escapeHtml(companyName)}</div>
+
+      <div>Ditujukan ke : &nbsp;${escapeHtml(destDisplay ? `${destDisplay} ${branchName}` : (branchName || '-'))}</div>
+      <div>Dari Lokasi : &nbsp;${escapeHtml(originDisplay)}</div>
+    </div>
+
+    <!-- Tabel Rincian Barang -->
+    <table class="sj-table">
+      <thead>
+        <tr>
+          <th style="width: 30px; text-align: center;">No</th>
+          <th style="width: 55px; text-align: left;">PLU</th>
+          <th style="text-align: left;">Nama dan Spesifikasi</th>
+          <th style="width: 85px; text-align: left;">Tipe Barang</th>
+          <th style="width: 48px; text-align: right;">Kuantitas</th>
+          <th style="width: 78px; text-align: right;">Harga Satuan</th>
+          <th style="width: 82px; text-align: right;">Total Nilai</th>
+          <th style="width: 110px; text-align: left;">Nomor Serial</th>
+          <th style="width: 75px; text-align: left;">Keterangan</th>
+          <th style="width: 85px; text-align: left;"><i>Ref. Kode BKB</i></th>
+          <th style="width: 85px; text-align: left;"><i>Ref. Kode PB</i></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.join('')}
+      </tbody>
+    </table>
+
+    <!-- Tanda Tangan -->
+    <div class="sj-signatures">
+      <div class="sj-sig-box">
+        <div class="sj-sig-title">Diterima Oleh :</div>
+        <div class="sj-sig-space"></div>
+        <div class="sj-sig-note">(tandatangan dan cap Perusahaan)</div>
+        <div class="sj-sig-line">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+      </div>
+      <div class="sj-sig-box" style="margin-left: 50px;">
+        <div class="sj-sig-title">Dikirim Oleh :</div>
+        <div class="sj-sig-subtitle">${senderCompanySubtitle}</div>
+        <div class="sj-sig-space" style="height: 44px;"></div>
+        <div class="sj-sig-note">(tandatangan dan cap Perusahaan)</div>
+        <div class="sj-sig-line">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+/**
+ * Cetak Surat Jalan Transfer Barang Antar Lokasi (Format Resmi Standar PT. Indomarco Prismatama).
  *
  * @param {Object} transfer StockTransfer document
  * @param {Object} [extraOptions={}]
  */
 export function printStockTransfer(transfer, extraOptions = {}) {
     if (!transfer) return;
-
-    const items = transfer.items || [];
-    let totalSent = 0;
-    let totalReceived = 0;
-
-    const isReturn = transfer.transfer_type === 'RETURN';
-
-    const tableHeaders = [
-        { label: 'No.', width: '30px', align: 'center' },
-        { label: 'Nama Produk / Barang', align: 'left' },
-        { label: 'SKU / Kode', width: '90px', align: 'left', mono: true },
-        { label: 'Satuan', width: '55px', align: 'center' },
-        { label: 'Qty Kirim', width: '65px', align: 'right', mono: true },
-        { label: 'Qty Terima', width: '65px', align: 'right', mono: true },
-        { label: 'Selisih', width: '55px', align: 'right', mono: true },
-        { label: 'Catatan Item', align: 'left' },
-    ];
-
-    const tableRows = items.map((item, idx) => {
-        const sent = parseFloat(item.sent_quantity ?? item.quantity) || 0;
-        const rec = parseFloat(item.received_quantity) || 0;
-        const diff = item.difference !== undefined ? item.difference : (rec - sent);
-
-        totalSent += sent;
-        totalReceived += rec;
-
-        const diffDisplay = diff === 0
-            ? '<span style="color:#059669;">0</span>'
-            : (diff > 0 ? `<span style="color:#2563eb;font-weight:700;">+${diff}</span>` : `<span style="color:#dc2626;font-weight:700;">${diff}</span>`);
-
-        return [
-            String(idx + 1),
-            `<div style="font-weight:600;">${escapeHtml(item.product_name || item.product?.name || '-')}</div>`,
-            escapeHtml(item.product_sku || item.product?.sku || '-'),
-            escapeHtml(item.unit_symbol || item.product?.unit?.symbol || '-'),
-            formatQuantity(sent),
-            transfer.status === 'DRAFT' ? '<span style="color:#94a3b8;">-</span>' : formatQuantity(rec),
-            transfer.status === 'DRAFT' ? '<span style="color:#94a3b8;">-</span>' : diffDisplay,
-            escapeHtml(item.notes || '-'),
-        ];
-    });
-
-    const totals = [
-        {
-            label: `Total Barang Dikirim: ${formatQuantity(totalSent)} unit | Total Diterima: ${transfer.status === 'DRAFT' ? '-' : formatQuantity(totalReceived)} unit`,
-            value: '',
-            labelSpan: 4,
-            valSpan: 4,
-            align: 'right',
-        },
-    ];
-
-    const statusMap = {
-        DRAFT: 'Draft',
-        IN_TRANSIT: 'Dalam Pengiriman (In-Transit)',
-        RECEIVED: 'Selesai Diterima',
-        DISCREPANCY: 'Ada Selisih (Discrepancy)',
-        CANCELED: 'Dibatalkan',
-    };
-
-    return printDocument({
-        title: isReturn ? 'SURAT JALAN RETUR KE GUDANG PUSAT' : 'SURAT JALAN TRANSFER BARANG',
-        subtitle: 'Dokumen Bukti Mutasi & Pengiriman Fisik Barang Antar Lokasi Inventaris',
-        docNumber: transfer.transfer_number || '-',
-        docDate: transfer.transfer_date || '-',
-        status: transfer.status || 'DRAFT',
-        statusLabel: statusMap[transfer.status] || transfer.status,
-        meta: [
-            { label: 'Nomor Transfer', value: transfer.transfer_number },
-            { label: 'Tanggal Transfer', value: transfer.transfer_date },
-            { label: 'Jenis Transfer', value: isReturn ? 'Retur ke Gudang' : 'Transfer Antar Lokasi' },
-            { label: 'Lokasi Asal', value: transfer.origin_location_name || '-' },
-            { label: 'Lokasi Tujuan', value: transfer.destination_location_name || '-' },
-            { label: 'Dibuat Oleh', value: transfer.created_by || '-' },
-            { label: 'Waktu Kirim', value: transfer.shipped_at || '-' },
-            { label: 'Waktu Diterima', value: transfer.received_at || '-' },
-            { label: 'Status Pengiriman', value: statusMap[transfer.status] || transfer.status },
-        ],
-        tableHeaders,
-        tableRows,
-        totals,
-        notes: transfer.notes,
-        signatures: [
-            { role: 'Yang Menyerahkan (Pengirim)', name: transfer.created_by || '............................................', title: transfer.origin_location_name || 'Petugas Pengirim' },
-            { role: 'Petugas Pengantar / Ekspedisi', name: '............................................', title: 'Driver / Kurir' },
-            { role: 'Yang Menerima', name: '............................................', title: transfer.destination_location_name || 'Petugas Penerima' },
-        ],
-        ...extraOptions,
-    });
+    const html = generateStockTransferSuratJalanHtml(transfer, extraOptions);
+    return printDocument({ rawHtml: html, ...extraOptions });
 }
 
 /**
