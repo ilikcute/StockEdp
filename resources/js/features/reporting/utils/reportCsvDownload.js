@@ -13,7 +13,13 @@ export function validateCsvExportResponse(response) {
         };
     }
 
-    if (!contentType.includes('text/csv')) {
+    const isValidContentType = contentType.includes('text/csv')
+        || contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        || contentType.includes('spreadsheetml')
+        || contentType.includes('application/octet-stream')
+        || contentType.includes('excel');
+
+    if (!isValidContentType) {
         return {
             valid: false,
             message: 'Response export tidak valid.',
@@ -30,7 +36,7 @@ export function validateCsvExportResponse(response) {
     return { valid: true };
 }
 
-export function extractCsvFilename(contentDisposition, fallbackFilename = 'report.csv') {
+export function extractCsvFilename(contentDisposition, fallbackFilename = 'report.xlsx') {
     if (!contentDisposition || typeof contentDisposition !== 'string') {
         return sanitizeFilename(fallbackFilename);
     }
@@ -67,10 +73,11 @@ export function extractCsvFilename(contentDisposition, fallbackFilename = 'repor
         filename = fallbackFilename;
     }
 
-    return sanitizeFilename(filename);
+    const defaultExt = fallbackFilename.toLowerCase().endsWith('.csv') ? 'csv' : 'xlsx';
+    return sanitizeFilename(filename, defaultExt);
 }
 
-export function sanitizeFilename(rawFilename) {
+export function sanitizeFilename(rawFilename, defaultExt = 'xlsx') {
     let cleaned = (rawFilename || '')
         .replace(/[/\\]/g, '')
         // eslint-disable-next-line no-control-regex
@@ -78,11 +85,12 @@ export function sanitizeFilename(rawFilename) {
         .trim();
 
     if (!cleaned) {
-        cleaned = 'report.csv';
+        cleaned = `report.${defaultExt}`;
     }
 
-    if (!cleaned.toLowerCase().endsWith('.csv')) {
-        cleaned += '.csv';
+    const hasExt = cleaned.toLowerCase().endsWith('.csv') || cleaned.toLowerCase().endsWith('.xlsx');
+    if (!hasExt) {
+        cleaned += `.${defaultExt}`;
     }
 
     return cleaned;

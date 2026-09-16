@@ -453,11 +453,15 @@ const fetchData = (page = 1) => {
     store.fetchReport(params);
 };
 
-const exportCsv = () => {
+const exportCsv = (format = 'xlsx') => {
+    const exportFormat = typeof format === 'string' && (format.toLowerCase() === 'csv' || format.toLowerCase() === 'xlsx')
+        ? format.toLowerCase()
+        : 'xlsx';
     const params = {
         location_id: filters.location_id || undefined,
         category_id: filters.category_id || undefined,
         search: filters.search || undefined,
+        format: exportFormat,
     };
     exportStore.exportReport('field-balances', params);
 };

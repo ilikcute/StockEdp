@@ -29,6 +29,7 @@ class InventoryMovementReportRequest extends FormRequest
             'sort_order' => 'nullable|string|in:asc,desc,ASC,DESC',
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
+            'format' => 'nullable|string|in:csv,xlsx,CSV,XLSX',
         ];
     }
 }

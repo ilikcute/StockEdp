@@ -26,22 +26,25 @@ class ReportExportController extends Controller
     public function inventoryBalances(InventoryBalanceReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportBalances($allowedLocationIds, $request->validated());
+        return $this->exportService->exportBalances($allowedLocationIds, $request->validated(), $format);
     }
 
     public function lowStock(LowStockReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportLowStock($allowedLocationIds, $request->validated());
+        return $this->exportService->exportLowStock($allowedLocationIds, $request->validated(), $format);
     }
 
     public function inventoryMovement(InventoryMovementReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportInventoryMovement($allowedLocationIds, $request->validated());
+        return $this->exportService->exportInventoryMovement($allowedLocationIds, $request->validated(), $format);
     }
 
     public function stockCard(StockCardReportRequest $request): StreamedResponse
@@ -49,59 +52,68 @@ class ReportExportController extends Controller
         $allowedLocationIds = $request->user()
             ? $request->user()->getAllowedLocationIds()
             : [];
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
         return $this->exportService->exportStockCard(
             $allowedLocationIds,
-            $request->validated()
+            $request->validated(),
+            $format
         );
     }
 
     public function stockReceipts(StockReceiptReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportStockReceipts($allowedLocationIds, $request->validated());
+        return $this->exportService->exportStockReceipts($allowedLocationIds, $request->validated(), $format);
     }
 
     public function stockIssues(StockIssueReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportStockIssues($allowedLocationIds, $request->validated());
+        return $this->exportService->exportStockIssues($allowedLocationIds, $request->validated(), $format);
     }
 
     public function stockTransfers(StockTransferReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportStockTransfers($allowedLocationIds, $request->validated());
+        return $this->exportService->exportStockTransfers($allowedLocationIds, $request->validated(), $format);
     }
 
     public function stockAdjustments(StockAdjustmentReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportStockAdjustments($allowedLocationIds, $request->validated());
+        return $this->exportService->exportStockAdjustments($allowedLocationIds, $request->validated(), $format);
     }
 
     public function stockOpnames(StockOpnameReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportStockOpnames($allowedLocationIds, $request->validated());
+        return $this->exportService->exportStockOpnames($allowedLocationIds, $request->validated(), $format);
     }
 
     public function storeAllocations(StoreAllocationReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportStoreAllocations($allowedLocationIds, $request->validated());
+        return $this->exportService->exportStoreAllocations($allowedLocationIds, $request->validated(), $format);
     }
 
     public function fieldBalances(FieldBalanceReportRequest $request): StreamedResponse
     {
         $allowedLocationIds = $request->user()->getAllowedLocationIds();
+        $format = (string) ($request->validated('format') ?? $request->input('format', 'csv'));
 
-        return $this->exportService->exportFieldBalances($allowedLocationIds, $request->validated());
+        return $this->exportService->exportFieldBalances($allowedLocationIds, $request->validated(), $format);
     }
 }

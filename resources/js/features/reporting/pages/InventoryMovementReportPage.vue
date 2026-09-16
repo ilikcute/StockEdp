@@ -134,28 +134,18 @@
             Reset
           </button>
 
-          <!-- Ekspor CSV Button -->
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-            :disabled="isExporting || loading"
-            @click="onExportCsv"
-          >
-            <svg
-              class="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-            <span>{{ isExporting ? 'Mengekspor...' : 'Ekspor CSV' }}</span>
-          </button>
+          <!-- Ekspor Control -->
+          <ReportCsvExportControl
+            size="sm"
+            :loading="exportStore.isExporting(reportKey)"
+            :disabled="false"
+            :error="exportStore.errorFor(reportKey)"
+            :status="exportStore.statusFor(reportKey)"
+            :validation-errors="exportStore.validationErrorsFor(reportKey)"
+            :success-message="exportStore.successFor(reportKey)"
+            @export="onExport"
+            @dismiss="exportStore.clearFeedback(reportKey)"
+          />
         </div>
       </div>
 
@@ -751,6 +741,8 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reportingApi } from '../api/reportingApi';
+import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import { showToast } from '@/shared/utils/use_toast.js';
 import { formatTimestamp, formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
@@ -792,7 +784,8 @@ const items = ref([]);
 const meta = ref(null);
 const loading = ref(false);
 const error = ref(null);
-const isExporting = ref(false);
+const exportStore = useReportCsvExportStore();
+const reportKey = 'inventory-movement';
 
 onMounted(async () => {
     // 1. Sync query params from route
@@ -974,36 +967,24 @@ function changePage(newPage) {
     fetchReport();
 }
 
-async function onExportCsv() {
-    isExporting.value = true;
-    try {
-        const params = {
-            type: filters.type,
-            period: filters.period,
-        };
-        if (filters.location_id) params.location_id = filters.location_id;
-        if (filters.category_id) params.category_id = filters.category_id;
-        if (filters.unit_id) params.unit_id = filters.unit_id;
-        if (filters.search) params.search = filters.search;
-        if (filters.sort_by) params.sort_by = filters.sort_by;
-        if (filters.sort_order) params.sort_order = filters.sort_order;
+async function onExport(format = 'xlsx') {
+    const exportFormat = typeof format === 'string' && (format.toLowerCase() === 'csv' || format.toLowerCase() === 'xlsx')
+        ? format.toLowerCase()
+        : 'xlsx';
 
-        const res = await reportingApi.exportInventoryMovement(params);
-        const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${filters.type}-${filters.period}d-${new Date().toISOString().slice(0, 10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-    } catch (err) {
-        console.error('Failed to export inventory movement CSV:', err);
-        showToast('Gagal mengekspor laporan CSV.', { type: 'error', title: 'Ekspor CSV' });
-    } finally {
-        isExporting.value = false;
-    }
+    const params = {
+        type: filters.type,
+        period: filters.period,
+        format: exportFormat,
+    };
+    if (filters.location_id) params.location_id = filters.location_id;
+    if (filters.category_id) params.category_id = filters.category_id;
+    if (filters.unit_id) params.unit_id = filters.unit_id;
+    if (filters.search) params.search = filters.search;
+    if (filters.sort_by) params.sort_by = filters.sort_by;
+    if (filters.sort_order) params.sort_order = filters.sort_order;
+
+    await exportStore.exportReport(reportKey, params);
 }
 </script>
 

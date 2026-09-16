@@ -5,6 +5,7 @@ namespace App\Features\Reporting\Services;
 use App\Features\Inventory\Enums\AdjustmentReason;
 use App\Features\Inventory\Enums\MovementType;
 use App\Features\Reporting\Exports\CsvStreamWriter;
+use App\Features\Reporting\Exports\XlsxStreamWriter;
 use App\Features\Reporting\Helpers\DecimalQuantity;
 use App\Features\Reporting\Queries\InventoryMovementIntelligenceQuery;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
@@ -17,7 +18,7 @@ class ReportExportService
         private readonly ReportingRepositoryInterface $repository
     ) {}
 
-    public function exportBalances(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportBalances(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $sortField = $filters['sort_by'] ?? 'id';
         $sortDirection = $filters['sort_order'] ?? 'desc';
@@ -48,10 +49,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('inventory-balances', $headers, $generator());
+        return $this->downloadStream('inventory-balances', $headers, $generator(), $format);
     }
 
-    public function exportLowStock(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportLowStock(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $sortField = $filters['sort_by'] ?? 'shortage_quantity';
         $sortDirection = $filters['sort_order'] ?? 'desc';
@@ -81,10 +82,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('low-stock', $headers, $generator());
+        return $this->downloadStream('low-stock', $headers, $generator(), $format);
     }
 
-    public function exportStockCard(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportStockCard(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $productId = (int) $filters['product_id'];
         $locationId = (int) $filters['location_id'];
@@ -141,6 +142,8 @@ class ReportExportService
                     $counterpart = ! empty($m->transfer_destination_name)
                         ? 'Ke: '.($m->transfer_destination_code ? $m->transfer_destination_code.' - ' : '').$m->transfer_destination_name
                         : '';
+                } elseif (! empty($m->store_name)) {
+                    $counterpart = 'Toko: '.($m->store_code ? $m->store_code.' - ' : '').$m->store_name;
                 } else {
                     $counterpart = '';
                 }
@@ -165,10 +168,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('stock-card', $headers, $generator());
+        return $this->downloadStream('stock-card', $headers, $generator(), $format);
     }
 
-    public function exportStockReceipts(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportStockReceipts(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $sortField = $filters['sort_by'] ?? 'posted_at';
         $sortDirection = $filters['sort_order'] ?? 'desc';
@@ -208,10 +211,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('stock-receipts', $headers, $generator());
+        return $this->downloadStream('stock-receipts', $headers, $generator(), $format);
     }
 
-    public function exportStockIssues(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportStockIssues(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $sortField = $filters['sort_by'] ?? 'posted_at';
         $sortDirection = $filters['sort_order'] ?? 'desc';
@@ -251,10 +254,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('stock-issues', $headers, $generator());
+        return $this->downloadStream('stock-issues', $headers, $generator(), $format);
     }
 
-    public function exportStockTransfers(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportStockTransfers(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $dateBasis = strtoupper($filters['date_basis'] ?? 'SENT_AT');
         $sortField = $filters['sort_by'] ?? ($dateBasis === 'RECEIVED_AT' ? 'received_at' : 'sent_at');
@@ -303,10 +306,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('stock-transfers', $headers, $generator());
+        return $this->downloadStream('stock-transfers', $headers, $generator(), $format);
     }
 
-    public function exportStockAdjustments(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportStockAdjustments(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $sortField = $filters['sort_by'] ?? 'posted_at';
         $sortDirection = $filters['sort_order'] ?? 'desc';
@@ -359,10 +362,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('stock-adjustments', $headers, $generator());
+        return $this->downloadStream('stock-adjustments', $headers, $generator(), $format);
     }
 
-    public function exportStockOpnames(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportStockOpnames(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $sortField = $filters['sort_by'] ?? 'posted_at';
         $sortDirection = $filters['sort_order'] ?? 'desc';
@@ -413,10 +416,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('stock-opnames', $headers, $generator());
+        return $this->downloadStream('stock-opnames', $headers, $generator(), $format);
     }
 
-    public function exportInventoryMovement(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportInventoryMovement(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $type = ($filters['type'] ?? 'slow-moving') === 'fast-moving' ? 'fast-moving' : 'slow-moving';
         $periodDays = isset($filters['period']) && in_array((int) $filters['period'], InventoryMovementIntelligenceQuery::ALLOWED_PERIODS, true)
@@ -483,7 +486,7 @@ class ReportExportService
                 }
             };
 
-            return $this->downloadStream("fast-moving-{$periodDays}d", $headers, $generator());
+            return $this->downloadStream("fast-moving-{$periodDays}d", $headers, $generator(), $format);
         }
 
         $query = InventoryMovementIntelligenceQuery::buildSlowMovingBaseQuery($targetLocationIds, $periodInfo, $filters);
@@ -533,10 +536,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream("slow-moving-{$periodDays}d", $headers, $generator());
+        return $this->downloadStream("slow-moving-{$periodDays}d", $headers, $generator(), $format);
     }
 
-    public function exportStoreAllocations(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportStoreAllocations(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $cursor = $this->repository->getCursorStoreAllocationReport($allowedLocationIds, $filters);
 
@@ -572,10 +575,10 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('laporan-alokasi-toko', $headers, $generator());
+        return $this->downloadStream('laporan-alokasi-toko', $headers, $generator(), $format);
     }
 
-    public function exportFieldBalances(array $allowedLocationIds, array $filters): StreamedResponse
+    public function exportFieldBalances(array $allowedLocationIds, array $filters, string $format = 'csv'): StreamedResponse
     {
         $cursor = $this->repository->getCursorFieldBalances($allowedLocationIds, $filters);
 
@@ -606,13 +609,25 @@ class ReportExportService
             }
         };
 
-        return $this->downloadStream('laporan-saldo-teknisi-lapangan', $headers, $generator());
+        return $this->downloadStream('laporan-saldo-teknisi-lapangan', $headers, $generator(), $format);
     }
 
-    private function downloadStream(string $slug, array $headers, iterable $rows): StreamedResponse
+    private function downloadStream(string $slug, array $headers, iterable $rows, string $format = 'csv'): StreamedResponse
     {
+        $format = strtolower($format) === 'xlsx' ? 'xlsx' : 'csv';
         $timestamp = CarbonImmutable::now('Asia/Jakarta')->format('Ymd-His');
-        $filename = "{$slug}-{$timestamp}.csv";
+        $filename = "{$slug}-{$timestamp}.{$format}";
+
+        if ($format === 'xlsx') {
+            return response()->streamDownload(function () use ($headers, $rows) {
+                XlsxStreamWriter::writeStream('php://output', $headers, $rows);
+            }, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                'Cache-Control' => 'no-store, private',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
+        }
 
         return response()->streamDownload(function () use ($headers, $rows) {
             $handle = fopen('php://output', 'w');

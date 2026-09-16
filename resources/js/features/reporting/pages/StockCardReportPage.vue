@@ -387,12 +387,24 @@
               >
                 Saldo Sesudah
               </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap"
+              >
+                Harga Satuan
+              </th>
+              <th
+                scope="col"
+                class="py-1.5 px-2 text-right whitespace-nowrap"
+              >
+                Total Nilai
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 bg-white">
             <tr v-if="store.data.length === 0">
               <td
-                colspan="8"
+                colspan="10"
                 class="py-8 text-center text-xs text-gray-400"
               >
                 Tidak ada pergerakan stok pada periode ini.
@@ -420,14 +432,26 @@
                   {{ item.movement_type_label || item.movement_type }}
                 </div>
                 <div
-                  v-if="item.counterpart_label"
+                  v-if="item.store_name"
+                  class="text-[10px] mt-0.5 font-medium text-indigo-700 flex items-center gap-1"
+                >
+                  <span class="inline-block px-1 py-0.2 bg-indigo-50 text-indigo-700 rounded border border-indigo-200 text-[9px] font-semibold">Toko</span>
+                  <span>{{ item.store_code ? `${item.store_code} - ` : '' }}{{ item.store_name }}</span>
+                </div>
+                <div
+                  v-else-if="item.counterpart_label"
                   class="text-[10px] mt-0.5 font-medium"
-                  :class="item.movement_type === 'TRANSFER_IN' ? 'text-emerald-700' : 'text-rose-700'"
+                  :class="{
+                    'text-emerald-700': item.movement_type === 'TRANSFER_IN' || item.direction === 'IN',
+                    'text-rose-700': item.movement_type === 'TRANSFER_OUT' || item.movement_type === 'ISSUE',
+                    'text-indigo-700': item.movement_type === 'STORE_ALLOCATION' || item.movement_type === 'REPLACEMENT_PULL',
+                    'text-gray-600': !['TRANSFER_IN', 'TRANSFER_OUT', 'ISSUE', 'STORE_ALLOCATION', 'REPLACEMENT_PULL'].includes(item.movement_type) && item.direction !== 'IN'
+                  }"
                 >
                   {{ item.counterpart_label }}
                 </div>
                 <div
-                  v-if="item.counterpart_location_name && !item.counterpart_label"
+                  v-if="item.counterpart_location_name && !item.counterpart_label && !item.store_name"
                   class="text-[10px] mt-0.5 text-gray-500"
                 >
                   {{ item.direction === 'IN' ? 'Dari' : 'Ke' }}: {{ item.counterpart_location_name }}
@@ -444,6 +468,27 @@
               </td>
               <td class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold text-gray-900 whitespace-nowrap">
                 {{ formatQuantity(item.quantity_after) }}
+              </td>
+              <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-600 whitespace-nowrap">
+                {{ formatRupiah(item.unit_price) }}
+              </td>
+              <td
+                class="py-1.5 px-2 text-[11px] text-right font-mono font-semibold whitespace-nowrap"
+                :class="{
+                  'text-emerald-600': Number(item.quantity_in) > 0 || (item.direction === 'IN' && Number(item.total_amount) > 0),
+                  'text-rose-600': Number(item.quantity_out) > 0 || (item.direction === 'OUT' && Number(item.total_amount) > 0),
+                  'text-gray-400': !Number(item.total_amount)
+                }"
+              >
+                <span v-if="Number(item.quantity_in) > 0 || (item.direction === 'IN' && Number(item.total_amount) > 0)">
+                  +{{ formatRupiah(item.total_amount) }}
+                </span>
+                <span v-else-if="Number(item.quantity_out) > 0 || (item.direction === 'OUT' && Number(item.total_amount) > 0)">
+                  -{{ formatRupiah(item.total_amount) }}
+                </span>
+                <span v-else>
+                  -
+                </span>
               </td>
             </tr>
           </tbody>
@@ -609,9 +654,12 @@ const fetchData = async (page = 1) => {
     });
 };
 
-const exportCsv = async () => {
+const exportCsv = async (format = 'xlsx') => {
     if (!validateFilters()) return;
-    const params = cleanReportExportFilters({ ...filters });
+    const exportFormat = typeof format === 'string' && (format.toLowerCase() === 'csv' || format.toLowerCase() === 'xlsx')
+        ? format.toLowerCase()
+        : 'xlsx';
+    const params = cleanReportExportFilters({ ...filters, format: exportFormat });
     await exportStore.exportReport(reportKey, params);
 };
 

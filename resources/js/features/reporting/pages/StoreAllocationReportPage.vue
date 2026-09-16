@@ -502,12 +502,16 @@ const resetFilters = () => {
     fetchData(1);
 };
 
-const exportCsv = () => {
+const exportCsv = (format = 'xlsx') => {
+    const exportFormat = typeof format === 'string' && (format.toLowerCase() === 'csv' || format.toLowerCase() === 'xlsx')
+        ? format.toLowerCase()
+        : 'xlsx';
     const params = {
         start_date: filters.start_date || undefined,
         end_date: filters.end_date || undefined,
         store_id: filters.store_id || undefined,
         search: filters.search || undefined,
+        format: exportFormat,
     };
     exportStore.exportReport('store-allocations', params);
 };

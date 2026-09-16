@@ -23,6 +23,7 @@ class LowStockReportRequest extends FormRequest
             'sort_by' => 'nullable|string|in:shortage_quantity,minimum_stock,on_hand_quantity,product_name,sku',
             'sort_order' => 'nullable|string|in:asc,desc,ASC,DESC',
             'per_page' => 'nullable|integer|min:1|max:100',
+            'format' => 'nullable|string|in:csv,xlsx,CSV,XLSX',
         ];
     }
 }

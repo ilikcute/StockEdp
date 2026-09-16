@@ -8,16 +8,18 @@ import {
 } from '../utils/reportCsvDownload';
 
 const fallbackFilenames = {
-    'inventory-balances': 'inventory-balances.csv',
-    'low-stock': 'low-stock.csv',
-    'stock-card': 'stock-card.csv',
-    'stock-receipts': 'stock-receipts.csv',
-    'stock-issues': 'stock-issues.csv',
-    'stock-transfers': 'stock-transfers.csv',
-    'stock-adjustments': 'stock-adjustments.csv',
-    'stock-opnames': 'stock-opnames.csv',
-    'store-allocations': 'store-allocations.csv',
-    'field-balances': 'field-balances.csv',
+    'inventory-balances': 'inventory-balances',
+    'low-stock': 'low-stock',
+    'stock-card': 'stock-card',
+    'stock-receipts': 'stock-receipts',
+    'stock-issues': 'stock-issues',
+    'stock-transfers': 'stock-transfers',
+    'stock-adjustments': 'stock-adjustments',
+    'stock-opnames': 'stock-opnames',
+    'store-allocations': 'store-allocations',
+    'field-balances': 'field-balances',
+    'inventory-movement': 'inventory-movement',
+    'inventory-movements': 'inventory-movement',
 };
 
 const exportHandlers = {
@@ -31,6 +33,8 @@ const exportHandlers = {
     'stock-opnames': (params) => reportingApi.exportStockOpnames(params),
     'store-allocations': (params) => reportingApi.exportStoreAllocations(params),
     'field-balances': (params) => reportingApi.exportFieldBalances(params),
+    'inventory-movement': (params) => reportingApi.exportInventoryMovement(params),
+    'inventory-movements': (params) => reportingApi.exportInventoryMovement(params),
 };
 
 export const useReportCsvExportStore = defineStore('reportCsvExport', {
@@ -66,8 +70,11 @@ export const useReportCsvExportStore = defineStore('reportCsvExport', {
             this.clearFeedback(reportKey);
             this.exporting[reportKey] = true;
 
+            const format = (typeof params.format === 'string' && params.format.toLowerCase() === 'csv') ? 'csv' : 'xlsx';
+            const requestParams = { ...params, format };
+
             try {
-                const response = await handler({ ...params });
+                const response = await handler(requestParams);
 
                 const validation = validateCsvExportResponse(response);
                 if (!validation.valid) {
@@ -76,7 +83,8 @@ export const useReportCsvExportStore = defineStore('reportCsvExport', {
                 }
 
                 const disposition = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
-                const fallback = fallbackFilenames[reportKey] || `${reportKey}.csv`;
+                const baseFallback = fallbackFilenames[reportKey] || reportKey;
+                const fallback = `${baseFallback}.${format}`;
                 const filename = extractCsvFilename(disposition, fallback);
 
                 downloadCsvBlob(response.data, filename);
@@ -96,10 +104,10 @@ export const useReportCsvExportStore = defineStore('reportCsvExport', {
                     this.validationErrors[reportKey] = normalized.errors || {};
                     this.errors[reportKey] = null;
                 } else if (normalized.status === 500) {
-                    this.errors[reportKey] = 'Gagal mengekspor laporan CSV.';
+                    this.errors[reportKey] = 'Gagal mengekspor laporan.';
                     this.validationErrors[reportKey] = {};
                 } else {
-                    this.errors[reportKey] = normalized.message || 'Gagal mengekspor laporan CSV.';
+                    this.errors[reportKey] = normalized.message || 'Gagal mengekspor laporan.';
                     this.validationErrors[reportKey] = normalized.errors || {};
                 }
 

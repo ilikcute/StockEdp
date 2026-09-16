@@ -19,6 +19,7 @@ use App\Features\Product\Models\Product;
 use App\Features\Reporting\Helpers\DecimalQuantity;
 use App\Features\Reporting\Queries\LowStockQuery;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
+use App\Features\StoreAllocation\Models\StoreAllocation;
 use App\Features\Supplier\Models\Supplier;
 use App\Features\Unit\Models\Unit;
 use Carbon\CarbonImmutable;
@@ -1073,6 +1074,11 @@ class ReportingRepository implements ReportingRepositoryInterface
             })
             ->leftJoin('locations as transfer_origins', 'transfer_origins.id', '=', 'stock_transfers.origin_location_id')
             ->leftJoin('locations as transfer_destinations', 'transfer_destinations.id', '=', 'stock_transfers.destination_location_id')
+            ->leftJoin('store_allocations', function ($join) {
+                $join->on('store_allocations.id', '=', 'stock_movements.reference_id')
+                    ->where('stock_movements.reference_type', '=', StoreAllocation::class);
+            })
+            ->leftJoin('stores', 'stores.id', '=', 'store_allocations.store_id')
             ->select([
                 'stock_movements.id',
                 'stock_movements.occurred_at',
@@ -1088,6 +1094,8 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'transfer_origins.name as transfer_origin_name',
                 'transfer_destinations.code as transfer_destination_code',
                 'transfer_destinations.name as transfer_destination_name',
+                'stores.code as store_code',
+                'stores.name as store_name',
                 'stock_movements.quantity_before',
                 'stock_movements.quantity',
                 'stock_movements.quantity_after',

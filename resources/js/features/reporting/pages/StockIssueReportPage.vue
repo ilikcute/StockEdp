@@ -188,14 +188,17 @@ const fetchData = async (page = 1) => {
     await store.fetchReport(params);
 };
 
-const exportCsv = async () => {
+const exportCsv = async (format = 'xlsx') => {
+    const exportFormat = typeof format === 'string' && (format.toLowerCase() === 'csv' || format.toLowerCase() === 'xlsx')
+        ? format.toLowerCase()
+        : 'xlsx';
     const periodCheck = validatePeriod(filters.start_date, filters.end_date);
     if (!periodCheck.valid) {
         localValidationError.value = periodCheck.message;
         return;
     }
     localValidationError.value = '';
-    const params = cleanReportExportFilters({ ...filters });
+    const params = cleanReportExportFilters({ ...filters, format: exportFormat });
     await exportStore.exportReport(reportKey, params);
 };
 

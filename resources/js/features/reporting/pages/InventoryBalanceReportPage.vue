@@ -593,11 +593,15 @@ const fetchData = (page = 1) => {
     });
 };
 
-const exportCsv = async () => {
+const exportCsv = async (format = 'xlsx') => {
+    const exportFormat = typeof format === 'string' && (format.toLowerCase() === 'csv' || format.toLowerCase() === 'xlsx')
+        ? format.toLowerCase()
+        : 'xlsx';
     const params = cleanReportExportFilters({
         ...filters,
         positive_stock: filters.positive_stock ? 1 : null,
         zero_stock: filters.zero_stock ? 1 : null,
+        format: exportFormat,
     });
     await exportStore.exportReport(reportKey, params);
 };

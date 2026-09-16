@@ -21,6 +21,7 @@ class FieldBalanceReportRequest extends FormRequest
             'product_id' => 'nullable|integer|exists:products,id',
             'search' => 'nullable|string|max:100',
             'per_page' => 'nullable|integer|min:1|max:100',
+            'format' => 'nullable|string|in:csv,xlsx,CSV,XLSX',
         ];
     }
 }

@@ -14,6 +14,8 @@ use App\Features\Inventory\Models\InventoryLocationLock;
 use App\Features\Inventory\Models\StockMovement;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
+use App\Features\Store\Models\Store;
+use App\Features\StoreAllocation\Models\StoreAllocation;
 use App\Features\Unit\Models\Unit;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -457,5 +459,59 @@ class ReportingPhase8A1Test extends TestCase
         $this->actingAs($this->admin)->postJson('/api/v1/reports/inventory-balances')->assertStatus(405);
         $this->actingAs($this->admin)->postJson('/api/v1/reports/low-stock')->assertStatus(405);
         $this->actingAs($this->admin)->postJson('/api/v1/reports/stock-card')->assertStatus(405);
+    }
+
+    public function test_stock_card_report_includes_store_allocation_details_and_unit_price_and_total_amount(): void
+    {
+        $store = Store::create([
+            'code' => 'T100',
+            'name' => 'Toko Veteran',
+            'is_active' => true,
+        ]);
+
+        $allocation = StoreAllocation::create([
+            'allocation_number' => 'ALC-202608-0001',
+            'technician_user_id' => $this->admin->id,
+            'technician_location_id' => $this->loc1->id,
+            'store_id' => $store->id,
+            'allocated_at' => '2026-08-02',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->prod1->update(['unit_price' => 50000]);
+
+        StockMovement::create([
+            'movement_id' => Str::uuid()->toString(),
+            'product_id' => $this->prod1->id,
+            'location_id' => $this->loc1->id,
+            'movement_type' => MovementType::STORE_ALLOCATION->value,
+            'quantity' => '2.0000',
+            'quantity_before' => '10.0000',
+            'quantity_after' => '8.0000',
+            'reference_type' => StoreAllocation::class,
+            'reference_id' => $allocation->id,
+            'reference_number' => $allocation->allocation_number,
+            'occurred_at' => '2026-08-02 10:00:00',
+            'created_at' => '2026-08-02 10:00:00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson(
+            '/api/v1/reports/stock-card?product_id='.$this->prod1->id.'&location_id='.$this->loc1->id.'&start_date=2026-08-01&end_date=2026-08-05'
+        );
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+
+        $this->assertCount(1, $data);
+        $item = $data[0];
+
+        $this->assertEquals('STORE_ALLOCATION', $item['movement_type']);
+        $this->assertEquals('Alokasi Toko', $item['movement_type_label']);
+        $this->assertEquals('Toko: T100 - Toko Veteran', $item['counterpart_label']);
+        $this->assertEquals('T100', $item['store_code']);
+        $this->assertEquals('Toko Veteran', $item['store_name']);
+        $this->assertEquals(50000.0, $item['unit_price']);
+        $this->assertEquals(100000.0, $item['total_amount']); // 50000 * 2.0000
     }
 }

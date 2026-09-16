@@ -26,6 +26,7 @@ class StockIssueReportRequest extends FormRequest
             'sort_by' => 'nullable|string|in:posted_at,document_date,issue_number,id',
             'sort_order' => 'nullable|string|in:asc,desc,ASC,DESC',
             'per_page' => 'nullable|integer|min:1|max:100',
+            'format' => 'nullable|string|in:csv,xlsx,CSV,XLSX',
         ];
     }
 

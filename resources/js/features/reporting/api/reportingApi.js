@@ -5,7 +5,7 @@ const csvRequestConfig = (params = {}) => ({
     responseType: 'blob',
     timeout: 0,
     headers: {
-        Accept: 'text/csv, application/json',
+        Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv, application/json',
     },
 });
 

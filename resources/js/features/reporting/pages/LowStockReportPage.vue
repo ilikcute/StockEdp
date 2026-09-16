@@ -630,11 +630,15 @@ const fetchData = (page = 1) => {
     });
 };
 
-const exportCsv = async () => {
+const exportCsv = async (format = 'xlsx') => {
     if (!filters.location_id) return;
+    const exportFormat = typeof format === 'string' && (format.toLowerCase() === 'csv' || format.toLowerCase() === 'xlsx')
+        ? format.toLowerCase()
+        : 'xlsx';
     const params = cleanReportExportFilters({
         ...filters,
         include_inactive: filters.include_inactive ? 1 : null,
+        format: exportFormat,
     });
     await exportStore.exportReport(reportKey, params);
 };
