@@ -27,11 +27,11 @@ export const useStockCardReportStore = defineStore('stockCardReport', {
                 if (payload?.data && Array.isArray(payload.data.data)) {
                     this.data = payload.data.data;
                     this.meta = payload.data.meta || null;
-                    this.summary = payload.data.meta?.summary || payload.data.summary || null;
+                    this.summary = payload.data.meta?.summary || payload.data.meta || payload.data.summary || null;
                 } else if (Array.isArray(payload?.data)) {
                     this.data = payload.data;
                     this.meta = payload.meta || null;
-                    this.summary = payload.meta?.summary || payload.summary || null;
+                    this.summary = payload.meta?.summary || payload.meta || payload.summary || null;
                 } else {
                     this.data = [];
                     this.meta = null;

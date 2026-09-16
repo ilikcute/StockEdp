@@ -105,3 +105,60 @@ composer run dev
 ```
 
 Aplikasi web dapat diakses di browser melalui URL: `http://localhost:8000` (atau sesuai konfigurasi `APP_URL`).
+
+---
+
+## 4. Menjalankan Test Suite
+
+Suite test memakai database MySQL terpisah `stockedp_test` (lihat `phpunit.xml`).
+
+> **PENTING — Cara aman menjalankan test:**
+> 1. Hanya jalankan **satu** runner `php artisan test` pada satu waktu terhadap `stockedp_test`.
+>    Menjalankan dua runner secara paralel pada database yang sama akan saling me-robolob skema
+>    (menyebabkan error `1412`, `1615`, `deadlock 1213`, atau pesan "Table doesn't exist").
+> 2. Pastikan skema test bersih setiap kali memulai run (RefreshDatabase melakukannya otomatis).
+
+```powershell
+# Run penuh (default; kendala regresi — grup "benchmark" dikecualikan otomatis)
+php artisan test
+
+# Run penuh + benchmark performa (SLA waktu eksekusi)
+php artisan test --group=benchmark
+
+# Tanpa benchmark secara eksplisit
+php artisan test --exclude-group=benchmark
+```
+
+Test yang peka terhadap environment (SLA waktu, batas jumlah query, dataset integritas besar)
+dikategorikan sebagai grup `benchmark` agar tidak menyebabkan kegagalan flaky pada run regresi biasa.
+
+---
+
+## 5. Deployment Produksi (Checklist)
+
+Sebelum go-live, pastikan:
+
+### 5.1 Environment (`docs/ENVIRONMENT.md`)
+- `APP_ENV=production`, `APP_DEBUG=false` (wajib — jika `true`, detail error internal bocor ke pengguna).
+- `APP_URL` memakai domain publik + HTTPS.
+- `SESSION_SECURE_COOKIE=true` (default aktif otomatis saat `APP_ENV=production`, lihat `config/session.php`).
+- `CORS_ALLOWED_ORIGINS` dan `SANCTUM_STATEFUL_DOMAINS` dipersempit hanya ke domain frontend publik.
+- `LOG_LEVEL=info` (jangan `debug`).
+- Untuk skala lebih besar: `CACHE_STORE=redis`, `QUEUE_CONNECTION=redis` (opsional; default `database` masih aman).
+
+### 5.2 Proses latar yang harus berjalan
+- **Queue worker**: `php artisan queue:work` (di-supervisi systemd/Supervisor).
+- **Scheduler**: `php artisan schedule:work` (atau cron `* * * * * php /path/artisan schedule:run`).
+  Job terjadwal saat ini: pembersihan token Sanctum kedaluwarsa & failed queue harian.
+- **Reverb (real-time)**: `php artisan reverb:start` bila fitur realtime dipakai.
+
+### 5.3 Tata urutan deploy
+```powershell
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan optimize
+```

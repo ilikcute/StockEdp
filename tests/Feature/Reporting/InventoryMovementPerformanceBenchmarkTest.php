@@ -17,8 +17,10 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('benchmark')]
 class InventoryMovementPerformanceBenchmarkTest extends TestCase
 {
     use RefreshDatabase;

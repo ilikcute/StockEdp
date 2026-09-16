@@ -11,8 +11,10 @@ use App\Features\Unit\Models\Unit;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('benchmark')]
 class ReplenishmentPerformanceBenchmarkTest extends TestCase
 {
     use RefreshDatabase;

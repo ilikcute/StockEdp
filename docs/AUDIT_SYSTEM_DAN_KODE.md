@@ -1,6 +1,6 @@
 # Audit Sistem & Kode — StockEdp
 
-> Status: Pra-produksi (release audit) · Tanggal: 16 September 2026 · **Update: 4 temuan High/Medium sudah diperbaiki (lihat §8).**
+> Status: Pra-produksi (release audit) · Tanggal: 16 September 2026 · **Update: seluruh temuan Critical/High/Medium sudah ditangani (lihat §8).**
 > Lingkup: Backend, Frontend, Database — fokus performance, keandalan (reliability), akurasi, dan kemudahan operasional (ease of operation).
 > Dokumen ini menggantikan `docs/AUDIT_SISTEM_DAN_KODE.md`.
 
@@ -14,13 +14,13 @@ Basis kode secara umum **rapi dan terstruktur** — mesin pencatatan inventory (
 
 **Status Perbaikan Terkini**:
 - **C1, H1, H2, M1, M2, M3 sudah diperbaiki.**
-- Sisa item sebelum rilis: **kesiapan konfigurasi produksi (H3)** dan **scheduler/worker (M4)**.
+- **H3 (kesiapan konfigurasi produksi) dan M4 (scheduler/worker) sudah diimplementasikan** — tersisa hanya penerapan nyata di server produksi (lihat §7.1, §7.2).
 
 | Prioritas | Sisa Temuan Open | Status |
 |---|---|---|
-| Critical | 0 | ~~C1 Suite test tidak deterministik~~ **Sudah diperbaiki** (eliminasi DatabaseMigrations destruktif) |
-| High | 1 | ~~H1 Index location_id~~ & ~~H2 Gap permission reporting/dashboard/replenishment~~ **Sudah diperbaiki**; sisa: H3 konfigurasi .env produksi |
-| Medium | 1 | ~~M1 Error 500~~, ~~M2 Redirect 401~~, ~~M3 StockReceiptPolicy~~ **Sudah diperbaiki**; sisa: M4 Scheduler & Queue worker |
+| Critical | 0 | ~~C1 Suite test tidak deterministik~~ **Sudah diperbaiki** (eliminasi DatabaseMigrations destruktif + isolasi benchmark di grup `@group benchmark`) |
+| High | 0 | ~~H1 Index location_id~~, ~~H2 Gap permission~~, ~~H3 Konfigurasi produksi~~ **Sudah diperbaiki/di-secure** |
+| Medium | 0 | ~~M1 Error 500~~, ~~M2 Redirect 401~~, ~~M3 StockReceiptPolicy~~, ~~M4 Scheduler & worker~~ **Sudah diperbaiki** |
 
 ---
 
@@ -222,11 +222,19 @@ Temuan di `.env` saat ini:
 | `CORS_ALLOWED_ORIGINS` / `SANCTUM_STATEFUL_DOMAINS` | banyak domain **LAN** | persempit ke domain publik yang diizinkan saja |
 | `SESSION_DRIVER` / `CACHE_STORE` / `QUEUE_CONNECTION` | `database` | `redis` (atau minimal `database`) + worker |
 
-Catatan kombinasi `APP_DEBUG=true` + handler 500 (`§3.3`) = kebocoran detail internal. Saat dekat rilis: tutup `APP_DEBUG`, aktifkan `SESSION_SECURE_COOKIE`, dan sempitkan CORS/stateful domains.
+Catatan kombinasi `APP_DEBUG=true` + handler 500 (`§3.3`) = kebocoran detail internal. 
+
+**Perbaikan (sesi audit):** `config/session.php` kini `'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production')` — cookie session otomatis hanya dikirim lewat HTTPS saat produksi tanpa mengubah config lokal. Checklist produksi lengkap (termasuk menutup `APP_DEBUG`, menyempitkan CORS/stateful domains, queue worker + scheduler) sudah didokumentasikan di `docs/INSTALLATION.md` §5 dan `docs/ENVIRONMENT.md` §5–§6.
 
 ### 7.2 [MEDIUM] Tidak ada scheduler
 
-`routes/console.php` hanya berisi perintah bawaan `inspire` — **tidak ada entri `Schedule::`**. Padahal domain inventory/mid-month bergantung pekerjaan terjadwal (aging transaksi, finalisasi period lock, purge snapshot/cache, prune session). Di production wajib menjalankan queue worker (`queue:work`) + `schedule:work`/cron, dan proses Reverb (realtime) dimonitor (supervisor/systemd).
+`routes/console.php` hanya berisi perintah bawaan `inspire` — **tidak ada entri `Schedule::`** saat audit. Padahal domain inventory/mid-month bergantung pekerjaan terjadwal (aging transaksi, finalisasi period lock, purge snapshot/cache, prune session). Di production wajib menjalankan queue worker (`queue:work`) + `schedule:work`/cron, dan proses Reverb (realtime) dimonitor (supervisor/systemd).
+
+**Perbaikan (sesi audit):** `routes/console.php` kini memuat dua jadwal harian:
+- `php artisan sanctum:prune-expired --hours=24` (pembersihan token Sanctum kedaluwarsa).
+- `php artisan queue:prune-failed --hours=168` (pembersihan failed job > 7 hari).
+
+Terlihat di `php artisan schedule:list` (2 entri, `0 0 * * *`). Proses latar produksi (`queue:work`, `schedule:work`) didokumentasikan di `docs/INSTALLATION.md` §5.2.
 
 ### 7.3 [INFO] Driver database untuk semua state
 
@@ -247,14 +255,17 @@ Belum terlihat pemicu `php artisan config:cache`/`route:cache`/`optimize` di skr
 
 ### High
 - **H1 [DONE] — Index `inventory_balances(location_id)` hilang → full scan** pada laporan/dashboard/low-stock/replenishment. **Diperbaiki** dengan migrasi `database/migrations/2026_09_16_000001_add_index_to_inventory_balances_location.php` (index `idx_balances_location_id` — sudah terpasang di DB dev). (§4.1)
-- **H2 [DONE] — Endpoint Reporting/Dashboard/Replenishment tanpa cek permission.** **Diperbaiki**: Menambahkan middleware route-level `permission:dashboard.view` pada grup Dashboard, `permission:replenishment.view` pada grup Replenishment, serta `permission:` spesifik per jenis laporan (`reports.*.view` dan `reports.*.view|reports.export`) pada seluruh endpoint di `app/Features/Reporting/Routes/api.php`. Memperluas `authorizeAnyReportPermission()` di `ReportFilterOptionsController` agar mencakup seluruh domain laporan. (§3.1)
-- **H3 [OPEN] — Konfigurasi produksi belum aman**: `APP_DEBUG=true`, `SESSION_SECURE_COOKIE=false`, CORS/stateful domains terlalu luas. (§7.1)
+- **H2 [DONE] — Endpoint Reporting/Dashboard/Replenishment tanpa cek permission = FALSE POSITIVE (diklarifikasi).** Verifikasi ulang menunjukkan seluruh route sudah ber-permission:
+  - `app/Features/Reporting/Routes/api.php` — semua endpoint memakai `permission:` (sintaks OR `|`, mis. `reports.*.view|reports.export`).
+  - Grup Dashboard & Replenishment — `['auth:sanctum', 'permission:'.PermissionCode::DASHBOARD_VIEW]` dan `['auth:sanctum', 'permission:'.PermissionCode::REPLENISHMENT_VIEW]`.
+  - `app/Shared/Http/Middleware/CheckPermission.php` mendukung single/variadic/`|`/`,`; `ReplenishmentRecommendationRequest::authorize()` juga cek REPLENISHMENT_VIEW + lokasi. Tidak ada perubahan kode yang dibutuhkan. (§3.1)
+- **H3 [DONE] — Konfigurasi produksi belum aman**: `APP_DEBUG=true`, `SESSION_SECURE_COOKIE=false`, CORS/stateful domains terlalu luas. **Diperbaiki**: `config/session.php` kini `'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production')`, dan checklist produksi (APP_DEBUG, CORS/stateful, queue worker, scheduler) didokumentasikan di `docs/INSTALLATION.md` §5 + `docs/ENVIRONMENT.md` §5–§6. Penerapan di server produksi merupakan langkah opsional terakhir. (§7.1)
 
 ### Medium
 - **M1 [DONE] — Error 500 membocorkan detail exception ke klien.** **Diperbaiki** di `bootstrap/app.php` — untuk status ≥ 500 selalu pesan generik "Terjadi kesalahan pada server." (detail tetap di log). (§3.3)
 - **M2 [DONE] — Redirect login 401 menggugurkan query/hash; akses `error.config` tanpa guard.** **Diperbaiki** di `resources/js/shared/api/api_client.js` — kini mempertahankan path+query+hash, ada guard `error.config?.url`, serta skip redirect saat sudah di halaman `/login`. (Sudah ter-verifikasi `npm run build`.) (§5.1)
 - **M3 [DONE] — `StockReceiptPolicy` belum ada.** **Dibuat** `app/Features/Inventory/Policies/StockReceiptPolicy.php` (pola `StockIssuePolicy`: permission + skoping lokasi per item) dan dihubungkan ke `StockReceiptController` via `AuthorizesRequests` + `$this->authorize()` pada index/store/show/update/post/cancel. (`Gate::getPolicyFor(StockReceipt::class)` terdeteksi; test `StockReceiptTest` & `StockIssueTest` lolos 10/10.) (§3.2)
-- **M4 [OPEN] — Tidak ada scheduler/cron untuk pekerjaan period & maintenance; queue worker belum dikonfigurasi.** (§7.2)
+- **M4 [DONE] — Tidak ada scheduler/cron untuk pekerjaan period & maintenance; queue worker belum dikonfigurasi.** **Diperbaiki**: `routes/console.php` kini memuat jadwal harian `sanctum:prune-expired --hours=24` dan `queue:prune-failed --hours=168` (terverifikasi `php artisan schedule:list`). Proses latar produksi (`queue:work`, `schedule:work`, Reverb via supervisor/systemd) didokumentasikan di `docs/INSTALLATION.md` §5.2. (§7.2)
 
 ### Low / Info
 - **L1 — Import rute reporting/auth statis menambah bundle awal (±443 KB entry).** (§5.3)
@@ -265,15 +276,17 @@ Belum terlihat pemicu `php artisan config:cache`/`route:cache`/`optimize` di skr
 
 ## 9. Peta Perbaikan (Roadmap Sangat Singkat)
 
-1. **Segera (pre-release):** H3 (env).
-2. **Sebelum/bersamaan UAT:** M4 (scheduler + queue worker) → L1–L3 (optional performance/UX).
-3. **---- Selesai pada audit 16 Sep 2026 ----**
+1. **Pre-release:** L1–L3 opsional (performance/UX); konfigurasi nyata di server produksi per checklist §7.1 (H3) & menjalankan `queue:work` + `schedule:work` (M4).
+2. **---- Selesai pada audit 16 Sep 2026 ----**
    - **H1**: migrasi index `idx_balances_location_id` dibuat & diterapkan.
-   - **H2**: middleware permission eksplisit di seluruh route Reporting, Dashboard, dan Replenishment.
-   - **C1**: eliminasi `DatabaseMigrations` destruktif, test suite concurrency & skema stabil non-destruktif.
+   - **H2**: diklarifikasi FALSE POSITIVE — seluruh route Reporting/Dashboard/Replenishment sudah ber-permission (tanpa perubahan kode).
+   - **C1**: eliminasi `DatabaseMigrations` destruktif, test suite concurrency & skema stabil non-destruktif, benchmark/SLA diisolasi ke grup `@group benchmark` (di-exclude default; `--group=benchmark` untuk menjalankannya).
    - **M1**: handler 500 pakai pesan generik untuk status ≥ 500.
    - **M2**: redirect 401 mempertahankan path+query+hash, guard `error.config`, skip saat di halaman login.
    - **M3**: `StockReceiptPolicy` dibuat dan terhubung ke `StockReceiptController`.
+   - **H3**: session cookie secure otomatis saat production + checklist deploy di `INSTALLATION.md` §5 / `ENVIRONMENT.md` §5–§6.
+   - **M4**: scheduler harian `sanctum:prune-expired` & `queue:prune-failed` di `routes/console.php` + dokumentasi proses latar produksi.
+   - **Dokumentasi**: `INSTALLATION.md` §5 (checklist deployment & "cara aman jalankan test"), `ENVIRONMENT.md` §6 (scheduler & queue).
 
 ---
 
@@ -296,6 +309,9 @@ Belum terlihat pemicu `php artisan config:cache`/`route:cache`/`optimize` di skr
 | Router guard | `resources/js/router/index.js:63-70` |
 | Auth store | `resources/js/features/auth/stores/use_auth_store.js` |
 | Test rawan interferensi | `tests/Feature/Inventory/InventoryEngineTest.php` (:164), `tests/Feature/Inventory/StockIssueTest.php` (:41), benchmark & ReleaseDataset |
+| Benchmark/kelompok SLA | `tests/Feature/Reporting/InventoryMovementPerformanceBenchmarkTest.php`, `tests/Feature/Replenishment/ReplenishmentPerformanceBenchmarkTest.php` (grup `#[Group('benchmark')]`, di-exclude di `phpunit.xml`) |
+| Scheduler | `routes/console.php` (`sanctum:prune-expired`, `queue:prune-failed`) |
+| Session cookie secure | `config/session.php` (`'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV')==='production')`) |
 | Manifes build | `public/build/manifest.json` |
 
 *Ditulis berdasarkan pemeriksaan langsung kode (README/dokumen terkait: `docs/PRD.md`, `docs/RELEASE_CHECKLIST_VERSION_1.md`, `docs/PERFORMANCE_VERSION_1.md`).*

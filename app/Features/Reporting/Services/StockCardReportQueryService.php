@@ -79,6 +79,13 @@ class StockCardReportQueryService
                 'total_quantity_in' => $summary['total_quantity_in'],
                 'total_quantity_out' => $summary['total_quantity_out'],
                 'movement_count' => $summary['movement_count'],
+                'summary' => [
+                    'opening_balance' => $summary['opening_balance'],
+                    'closing_balance' => $summary['closing_balance'],
+                    'total_quantity_in' => $summary['total_quantity_in'],
+                    'total_quantity_out' => $summary['total_quantity_out'],
+                    'movement_count' => $summary['movement_count'],
+                ],
             ],
             'movements' => $movementsPaginator,
         ];

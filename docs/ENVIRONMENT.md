@@ -61,6 +61,21 @@ Dokumen ini mendokumentasikan setiap variable konfigurasi lingkungan yang diguna
 | `CORS_ALLOWED_ORIGINS` | Origin frontend yang diizinkan | `http://localhost:5173,http://localhost:8000` |
 | `SANCTUM_STATEFUL_DOMAINS` | Domain stateful cookie Sanctum | `localhost:5173,127.0.0.1:5173` |
 
+--- 
+## 6. Scheduler & Queue (Production)
+
+| Variable | Fungsi | Rekomendasi Production |
+| --- | --- | --- |
+| `APP_SCHEDULER_ENABLED` | Aktifkan/nonaktifkan maintenance scheduler di `routes/console.php` | `true` |
+| `QUEUE_CONNECTION` | Driver antrean job | `database` (standar) / `redis` (skala besar) |
+
+Job terjadwal (diaktifkan via `php artisan schedule:work` atau cron `schedule:run`):
+- Harian `sanctum:prune-expired --hours=24` — bersihkan token Sanctum kedaluwarsa.
+- Harian `queue:prune-failed --hours=168` — bersihkan failed queue job berumur > 7 hari.
+
+Di produksi jalankan proses latar terpisah: `php artisan queue:work` dan `php artisan schedule:work`
+(kelola oleh systemd/Supervisor). Detail selengkapnya: `docs/INSTALLATION.md` §5.
+
 ---
 
 > **CATATAN KEAMANAN**:  
