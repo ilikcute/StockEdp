@@ -14,13 +14,23 @@ use App\Features\Inventory\Models\StockOpname;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 class ConcurrencyStockOpnameTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseTruncation;
+
+    protected function exceptTables(): array
+    {
+        return [
+            'roles',
+            'permissions',
+            'permission_role',
+            'migrations',
+        ];
+    }
 
     protected function setUp(): void
     {
@@ -31,6 +41,12 @@ class ConcurrencyStockOpnameTest extends TestCase
         }
 
         $this->seed(RoleAndPermissionSeeder::class);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->truncateTablesForAllConnections();
+        parent::tearDown();
     }
 
     private function runWorkerCommand(string $type, int $id, int $userId): Process

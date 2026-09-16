@@ -11,13 +11,23 @@ use App\Features\Inventory\Models\StockReceipt;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use App\Features\Supplier\Models\Supplier;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 class ConcurrencyTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseTruncation;
+
+    protected function exceptTables(): array
+    {
+        return [
+            'roles',
+            'permissions',
+            'permission_role',
+            'migrations',
+        ];
+    }
 
     protected function setUp(): void
     {
@@ -26,6 +36,12 @@ class ConcurrencyTest extends TestCase
         if (config('database.default') === 'sqlite') {
             $this->markTestSkipped('Concurrency tests require MySQL/PostgreSQL to test row locking effectively.');
         }
+    }
+
+    protected function tearDown(): void
+    {
+        $this->truncateTablesForAllConnections();
+        parent::tearDown();
     }
 
     private function runWorkerCommand(string $type, int $id, int $userId): Process

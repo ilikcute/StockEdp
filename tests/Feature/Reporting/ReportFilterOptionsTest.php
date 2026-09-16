@@ -28,12 +28,12 @@ class ReportFilterOptionsTest extends TestCase
         Permission::firstOrCreate(['code' => 'suppliers.view'], ['name' => 'Suppliers View', 'group' => 'suppliers']);
     }
 
-    private function assignPermission(User $user, string $permissionCode): void
+    private function assignPermission(User $user, string $permissionCode, RoleCode $roleCode = RoleCode::WAREHOUSE_OFFICER): void
     {
         $perm = Permission::where('code', $permissionCode)->firstOrFail();
-        $role = Role::firstOrCreate(['code' => RoleCode::WAREHOUSE_OFFICER], ['name' => 'Petugas Gudang']);
-        $role->permissions()->syncWithoutDetaching([$perm->id]);
-        $user->roles()->syncWithoutDetaching([$role->id]);
+        $role = Role::firstOrCreate(['code' => $roleCode], ['name' => $roleCode->label()]);
+        $role->permissions()->sync([$perm->id]);
+        $user->roles()->sync([$role->id]);
     }
 
     public function test_unauthenticated_user_receives_401(): void
@@ -54,30 +54,30 @@ class ReportFilterOptionsTest extends TestCase
     public function test_each_report_permission_can_access_base_and_product_options(): void
     {
         $user1 = User::factory()->create();
-        $this->assignPermission($user1, 'reports.stock_receipts.view');
+        $this->assignPermission($user1, 'reports.stock_receipts.view', RoleCode::WAREHOUSE_OFFICER);
         $this->actingAs($user1)->getJson('/api/v1/reports/filter-options/base')->assertStatus(200);
 
         $user2 = User::factory()->create();
-        $this->assignPermission($user2, 'reports.stock_issues.view');
+        $this->assignPermission($user2, 'reports.stock_issues.view', RoleCode::INVENTORY_SUPERVISOR);
         $this->actingAs($user2)->getJson('/api/v1/reports/filter-options/products')->assertStatus(200);
     }
 
     public function test_suppliers_option_authorization_rules(): void
     {
         $issueOnlyUser = User::factory()->create();
-        $this->assignPermission($issueOnlyUser, 'reports.stock_issues.view');
+        $this->assignPermission($issueOnlyUser, 'reports.stock_issues.view', RoleCode::FIELD_TECHNICIAN);
         $this->actingAs($issueOnlyUser)->getJson('/api/v1/reports/filter-options/suppliers')->assertStatus(403);
 
         $receiptUser = User::factory()->create();
-        $this->assignPermission($receiptUser, 'reports.stock_receipts.view');
+        $this->assignPermission($receiptUser, 'reports.stock_receipts.view', RoleCode::WAREHOUSE_OFFICER);
         $this->actingAs($receiptUser)->getJson('/api/v1/reports/filter-options/suppliers')->assertStatus(200);
 
         $mainReportUser = User::factory()->create();
-        $this->assignPermission($mainReportUser, 'reports.view');
+        $this->assignPermission($mainReportUser, 'reports.view', RoleCode::INVENTORY_SUPERVISOR);
         $this->actingAs($mainReportUser)->getJson('/api/v1/reports/filter-options/suppliers')->assertStatus(200);
 
         $supplierMasterUser = User::factory()->create();
-        $this->assignPermission($supplierMasterUser, 'suppliers.view');
+        $this->assignPermission($supplierMasterUser, 'suppliers.view', RoleCode::WAREHOUSE_OFFICER);
         $this->actingAs($supplierMasterUser)->getJson('/api/v1/reports/filter-options/suppliers')->assertStatus(200);
     }
 

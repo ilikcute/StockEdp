@@ -25,10 +25,22 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('inventory_balances', function (Blueprint $table) {
-            if (Schema::hasIndex('inventory_balances', 'idx_balances_location_id')) {
+        if (! Schema::hasTable('inventory_balances')) {
+            return;
+        }
+
+        try {
+            Schema::table('inventory_balances', function (Blueprint $table) {
+                if (Schema::hasIndex('inventory_balances', 'idx_balances_location_id')) {
+                    $table->dropIndex('idx_balances_location_id');
+                }
+            });
+        } catch (\Throwable $e) {
+            Schema::table('inventory_balances', function (Blueprint $table) {
+                $table->dropForeign(['location_id']);
                 $table->dropIndex('idx_balances_location_id');
-            }
-        });
+                $table->foreign('location_id')->references('id')->on('locations')->restrictOnDelete();
+            });
+        }
     }
 };

@@ -1,9 +1,10 @@
 <?php
 
+use App\Features\Auth\Enums\PermissionCode;
 use App\Features\Replenishment\Http\Controllers\ReplenishmentRecommendationController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'permission:' . PermissionCode::REPLENISHMENT_VIEW->value])->group(function () {
     Route::get('replenishment-recommendations/filter-options', [ReplenishmentRecommendationController::class, 'filterOptions'])
         ->name('replenishment-recommendations.filter-options');
     Route::get('replenishment-recommendations', [ReplenishmentRecommendationController::class, 'index'])

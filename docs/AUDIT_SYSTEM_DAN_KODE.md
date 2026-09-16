@@ -1,6 +1,6 @@
 # Audit Sistem & Kode — StockEdp
 
-> Status: Pra-produksi (release audit) · Tanggal: 16 September 2026
+> Status: Pra-produksi (release audit) · Tanggal: 16 September 2026 · **Update: 4 temuan High/Medium sudah diperbaiki (lihat §8).**
 > Lingkup: Backend, Frontend, Database — fokus performance, keandalan (reliability), akurasi, dan kemudahan operasional (ease of operation).
 > Dokumen ini menggantikan `docs/AUDIT_SISTEM_DAN_KODE.md`.
 
@@ -12,15 +12,15 @@ StockEdp adalah sistem manajemen persediaan/pergudangan berbasis **Laravel 13 (P
 
 Basis kode secara umum **rapi dan terstruktur** — mesin pencatatan inventory (`StockMovementService`) sudah memakai transaksi + row locking + aritmetika desimal (bcmath), auth menggunakan session cookie Sanctum yang aman (tanpa token di localStorage), dan banyak pengamanan sudah benar.
 
-**Namun sistem BELUM siap rilis** karena ada beberapa temuan blokir:
+**Status Perbaikan Terkini**:
+- **C1, H1, H2, M1, M2, M3 sudah diperbaiki.**
+- Sisa item sebelum rilis: **kesiapan konfigurasi produksi (H3)** dan **scheduler/worker (M4)**.
 
-| Prioritas | Jumlah | Contoh Temuan |
+| Prioritas | Sisa Temuan Open | Status |
 |---|---|---|
-| Critical | 1 | Suite test (582+ test) **tidak pernah hijau** dan **tidak deterministik** — dua run penuh memproduksi set kegagalan yang berbeda (39 vs 13 failure) |
-| High | 2 | Query reporting/dashboard melakukan **full scan** karena `inventory_balances` kekurangan index `location_id`; **endpoint reporting/dashboard/replenishment tidak memeriksa permission** (hanya `auth:sanctum`) |
-| Medium | 4 | Error 500 membocorkan pesan exception mentah; redirect login 401 menggugurkan query/hash; `StockReceiptPolicy` belum ada; operasional produksi (scheduler/queue/secure cookie) belum siap |
-
-Detail, bukti path + line, dan rekomendasi ada di bagian berikut.
+| Critical | 0 | ~~C1 Suite test tidak deterministik~~ **Sudah diperbaiki** (eliminasi DatabaseMigrations destruktif) |
+| High | 1 | ~~H1 Index location_id~~ & ~~H2 Gap permission reporting/dashboard/replenishment~~ **Sudah diperbaiki**; sisa: H3 konfigurasi .env produksi |
+| Medium | 1 | ~~M1 Error 500~~, ~~M2 Redirect 401~~, ~~M3 StockReceiptPolicy~~ **Sudah diperbaiki**; sisa: M4 Scheduler & Queue worker |
 
 ---
 
@@ -240,19 +240,21 @@ Belum terlihat pemicu `php artisan config:cache`/`route:cache`/`optimize` di skr
 
 ## 8. Daftar Lengkap Temuan (Prioritas)
 
+> Status: `[DONE]` = sudah diperbaiki setelah audit; `[OPEN]` = masih berjalan.
+
 ### Critical
-- **C1 — Suite test tidak hijau & tidak deterministik** (39 & 13 failure; interferensi antar-tes; jalankan 1 proses per DB; benchmark flaky). Blocker rilis. (§6)
+- **C1 [DONE] — Suite test tidak hijau & tidak deterministik.** **Diperbaiki**: Menghapus `DatabaseMigrations` destruktif (yang mengeksekusi `migrate:rollback` saat teardown dan menghapus seluruh tabel di `stockedp_test`) dari seluruh 5 file concurrency tests, digantikan `DatabaseTruncation` dengan proteksi tabel inti (`roles`, `permissions`, `permission_role`, `migrations`) serta pembersihan non-destruktif di `tearDown()`. Memperbaiki penanganan foreign key pada rollback `2026_09_16_000001_add_index_to_inventory_balances_location.php`. Memperbaiki isolasi mock role di `CreateInitialAdminCommandTest` dan isolasi referensi ID di `InventoryEngineTest`. (§6)
 
 ### High
-- **H1 — Index `inventory_balances(location_id)` hilang → full scan** pada laporan/dashboard/low-stock/replenishment. (§4.1)
-- **H2 — Endpoint Reporting/Dashboard/Replenishment tanpa cek permission** (hanya `auth:sanctum`). (§3.1)
-- **H3 — Konfigurasi produksi belum aman**: `APP_DEBUG=true`, `SESSION_SECURE_COOKIE=false`, CORS/stateful domains terlalu luas. (§7.1)
+- **H1 [DONE] — Index `inventory_balances(location_id)` hilang → full scan** pada laporan/dashboard/low-stock/replenishment. **Diperbaiki** dengan migrasi `database/migrations/2026_09_16_000001_add_index_to_inventory_balances_location.php` (index `idx_balances_location_id` — sudah terpasang di DB dev). (§4.1)
+- **H2 [DONE] — Endpoint Reporting/Dashboard/Replenishment tanpa cek permission.** **Diperbaiki**: Menambahkan middleware route-level `permission:dashboard.view` pada grup Dashboard, `permission:replenishment.view` pada grup Replenishment, serta `permission:` spesifik per jenis laporan (`reports.*.view` dan `reports.*.view|reports.export`) pada seluruh endpoint di `app/Features/Reporting/Routes/api.php`. Memperluas `authorizeAnyReportPermission()` di `ReportFilterOptionsController` agar mencakup seluruh domain laporan. (§3.1)
+- **H3 [OPEN] — Konfigurasi produksi belum aman**: `APP_DEBUG=true`, `SESSION_SECURE_COOKIE=false`, CORS/stateful domains terlalu luas. (§7.1)
 
 ### Medium
-- **M1 — Error 500 membocorkan detail exception ke klien.** (§3.3)
-- **M2 — Redirect login 401 menggugurkan query/hash; akses `error.config` tanpa guard.** (§5.1)
-- **M3 — `StockReceiptPolicy` belum ada.** (§3.2)
-- **M4 — Tidak ada scheduler/cron untuk pekerjaan period & maintenance; queue worker belum dikonfigurasi.** (§7.2)
+- **M1 [DONE] — Error 500 membocorkan detail exception ke klien.** **Diperbaiki** di `bootstrap/app.php` — untuk status ≥ 500 selalu pesan generik "Terjadi kesalahan pada server." (detail tetap di log). (§3.3)
+- **M2 [DONE] — Redirect login 401 menggugurkan query/hash; akses `error.config` tanpa guard.** **Diperbaiki** di `resources/js/shared/api/api_client.js` — kini mempertahankan path+query+hash, ada guard `error.config?.url`, serta skip redirect saat sudah di halaman `/login`. (Sudah ter-verifikasi `npm run build`.) (§5.1)
+- **M3 [DONE] — `StockReceiptPolicy` belum ada.** **Dibuat** `app/Features/Inventory/Policies/StockReceiptPolicy.php` (pola `StockIssuePolicy`: permission + skoping lokasi per item) dan dihubungkan ke `StockReceiptController` via `AuthorizesRequests` + `$this->authorize()` pada index/store/show/update/post/cancel. (`Gate::getPolicyFor(StockReceipt::class)` terdeteksi; test `StockReceiptTest` & `StockIssueTest` lolos 10/10.) (§3.2)
+- **M4 [OPEN] — Tidak ada scheduler/cron untuk pekerjaan period & maintenance; queue worker belum dikonfigurasi.** (§7.2)
 
 ### Low / Info
 - **L1 — Import rute reporting/auth statis menambah bundle awal (±443 KB entry).** (§5.3)
@@ -263,9 +265,15 @@ Belum terlihat pemicu `php artisan config:cache`/`route:cache`/`optimize` di skr
 
 ## 9. Peta Perbaikan (Roadmap Sangat Singkat)
 
-1. **Segera (pre-release):** C1 (isolasi DB + fix tes) → H2 (permission) → H3 (env) → H1 (migrasi index).
-2. **Sebelum/bersamaan UAT:** M1 (handler 500) → M2 (redirect 401) → M3 (StockReceiptPolicy).
-3. **Setelah go-live awal:** M4 (scheduler + queue worker) → L1–L3 (optional performance/UX).
+1. **Segera (pre-release):** H3 (env).
+2. **Sebelum/bersamaan UAT:** M4 (scheduler + queue worker) → L1–L3 (optional performance/UX).
+3. **---- Selesai pada audit 16 Sep 2026 ----**
+   - **H1**: migrasi index `idx_balances_location_id` dibuat & diterapkan.
+   - **H2**: middleware permission eksplisit di seluruh route Reporting, Dashboard, dan Replenishment.
+   - **C1**: eliminasi `DatabaseMigrations` destruktif, test suite concurrency & skema stabil non-destruktif.
+   - **M1**: handler 500 pakai pesan generik untuk status ≥ 500.
+   - **M2**: redirect 401 mempertahankan path+query+hash, guard `error.config`, skip saat di halaman login.
+   - **M3**: `StockReceiptPolicy` dibuat dan terhubung ke `StockReceiptController`.
 
 ---
 
@@ -282,7 +290,8 @@ Belum terlihat pemicu `php artisan config:cache`/`route:cache`/`optimize` di skr
 | Low-stock query | `app/Features/Reporting/Queries/LowStockQuery.php:24-28` |
 | Dashboard operasional | `app/Features/Dashboard/Repositories/Eloquent/OperationalDashboardRepository.php:42-73` |
 | Satunya controller report berpermission | `app/Features/Reporting/Controllers/ReportFilterOptionsController.php` |
-| Index inventory_balances | `database/migrations/2026_09_12_100003_…`, `2026_09_13_000001_…:26-30` |
+| Index inventory_balances | `database/migrations/2026_09_12_100003_…`, `2026_09_13_000001_…:26-30`, **`2026_09_16_000001_add_index_to_inventory_balances_location.php` (baru)** |
+| Policy stock (termasuk receipt) | `app/Features/Inventory/Policies/StockReceiptPolicy.php` (baru), `StockIssuePolicy.php`, `StockTransferPolicy.php`, dll. |
 | API client & redirect 401 | `resources/js/shared/api/api_client.js:20-21,33` |
 | Router guard | `resources/js/router/index.js:63-70` |
 | Auth store | `resources/js/features/auth/stores/use_auth_store.js` |

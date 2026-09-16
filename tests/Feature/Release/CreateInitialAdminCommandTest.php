@@ -107,7 +107,8 @@ class CreateInitialAdminCommandTest extends TestCase
 
     public function test_command_fails_when_admin_role_missing(): void
     {
-        // Do not seed roles
+        Role::where('code', RoleCode::ADMIN->value)->delete();
+
         $this->artisan('app:create-initial-admin')
             ->expectsOutput('Administrator role belum tersedia.')
             ->expectsOutput('Jalankan RoleAndPermissionSeeder terlebih dahulu.')

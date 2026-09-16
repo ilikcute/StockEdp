@@ -69,7 +69,10 @@ class ReportFilterOptionsController extends Controller
             || $user->can(PermissionCode::REPORTS_STOCK_OPNAMES_VIEW->value)
             || $user->can(PermissionCode::REPORTS_STOCK_CARD_VIEW->value)
             || $user->can(PermissionCode::REPORTS_INVENTORY_BALANCE_VIEW->value)
-            || $user->can(PermissionCode::REPORTS_LOW_STOCK_VIEW->value);
+            || $user->can(PermissionCode::REPORTS_LOW_STOCK_VIEW->value)
+            || $user->can(PermissionCode::REPORTS_STORE_ALLOCATIONS_VIEW->value)
+            || $user->can(PermissionCode::REPORTS_FIELD_BALANCES_VIEW->value)
+            || $user->can(PermissionCode::REPORTS_INVENTORY_MOVEMENT_VIEW->value);
 
         if (! $hasPermission) {
             abort(403, 'Akses laporan tidak diizinkan.');

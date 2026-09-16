@@ -167,13 +167,15 @@ class InventoryEngineTest extends TestCase
         $location = Location::factory()->create();
 
         // 1st is okay, 2nd will fail due to insufficient balance
+        $refId1 = rand(100000, 999999);
+        $refId2 = rand(100000, 999999);
         $dto1 = new StockChangeDTO(
             productId: $product->id,
             locationId: $location->id,
             quantity: '10.0000',
             movementType: MovementType::RECEIPT,
             referenceType: 'test',
-            referenceId: 1
+            referenceId: $refId1
         );
         $dto2 = new StockChangeDTO(
             productId: $product->id,
@@ -181,7 +183,7 @@ class InventoryEngineTest extends TestCase
             quantity: '15.0000',
             movementType: MovementType::ISSUE,
             referenceType: 'test',
-            referenceId: 2
+            referenceId: $refId2
         );
 
         try {
@@ -191,9 +193,9 @@ class InventoryEngineTest extends TestCase
         }
 
         // Must rollback both
-        $this->assertDatabaseMissing('stock_movements', ['reference_id' => 1]);
-        $this->assertDatabaseMissing('stock_movements', ['reference_id' => 2]);
-        $this->assertDatabaseMissing('inventory_balances', ['quantity' => '10.0000']);
+        $this->assertDatabaseMissing('stock_movements', ['reference_type' => 'test', 'reference_id' => $refId1]);
+        $this->assertDatabaseMissing('stock_movements', ['reference_type' => 'test', 'reference_id' => $refId2]);
+        $this->assertDatabaseMissing('inventory_balances', ['location_id' => $location->id, 'product_id' => $product->id, 'quantity' => '10.0000']);
     }
 
     public function test_concurrency_report()
