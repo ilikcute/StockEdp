@@ -145,9 +145,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ? $exception->getStatusCode()
                 : 500;
 
-            $message = $status === 429
-                ? 'Terlalu banyak permintaan. Silakan coba kembali nanti.'
-                : ($exception->getMessage() ?: ($status >= 500 ? 'Terjadi kesalahan pada server.' : 'Permintaan tidak dapat diproses.'));
+            $message = match (true) {
+                $status === 429 => 'Terlalu banyak permintaan. Silakan coba kembali nanti.',
+                $status >= 500 => 'Terjadi kesalahan pada server.',
+                $exception->getMessage() !== '' => $exception->getMessage(),
+                default => 'Permintaan tidak dapat diproses.',
+            };
 
             return ApiResponse::error(
                 message: $message,

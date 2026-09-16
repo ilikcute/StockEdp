@@ -26,12 +26,12 @@ apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         // Jika status 401 dan bukan request inisialisasi auth/me, alihkan ke login
-        if (error.response && error.response.status === 401) {
-            const isAuthMeRequest = error.config.url.endsWith('/auth/me');
-            if (!isAuthMeRequest) {
-                // Hapus data session di level memory jika diperlukan, alihkan
-                window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
-            }
+        const isAuthMeRequest = error.config?.url?.endsWith('/auth/me');
+        const isLoginPage = window.location.pathname === '/login';
+        if (error.response && error.response.status === 401 && !isAuthMeRequest && !isLoginPage) {
+            // Pertahankan path + query + hash agar dapat kembali setelah login.
+            const currentPath = window.location.pathname + window.location.search + window.location.hash;
+            window.location.href = '/login?redirect=' + encodeURIComponent(currentPath);
         }
         return Promise.reject(error);
     }
