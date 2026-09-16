@@ -1,10 +1,10 @@
 <template>
-  <div class="space-y-3.5">
+  <div class="space-y-3">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
       <div>
-        <h1 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <span class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black shadow-2xs">
+        <h1 class="text-base font-bold text-gray-900 flex items-center gap-2">
+          <span class="w-5 h-5 rounded bg-blue-600 text-white flex items-center justify-center text-[10px] font-black shadow-2xs">
             EDP
           </span>
           Dashboard Operasional Persediaan
@@ -92,8 +92,8 @@
         :location-id="filters.location_id"
       />
 
-      <!-- 2. Replenishment Action Center Ribbon -->
-      <ReplenishmentActionCard :location-id="filters.location_id" />
+      <!-- 2. Quick Action & Replenishment Toolbar -->
+      <DashboardQuickActionBar :location-id="filters.location_id" />
 
       <!-- 3. Operational Queue & Period Activity Grid (Side by side) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch">
@@ -127,7 +127,7 @@ import { onMounted, watch } from 'vue';
 import { useDashboard } from '../composables/use_dashboard';
 import DashboardFilterBar from '../components/DashboardFilterBar.vue';
 import InventoryHealthCards from '../components/InventoryHealthCards.vue';
-import ReplenishmentActionCard from '../components/ReplenishmentActionCard.vue';
+import DashboardQuickActionBar from '../components/DashboardQuickActionBar.vue';
 import InventoryIntelligenceCards from '../components/InventoryIntelligenceCards.vue';
 import OperationalQueueCards from '../components/OperationalQueueCards.vue';
 import PeriodActivityCards from '../components/PeriodActivityCards.vue';

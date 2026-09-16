@@ -1,19 +1,19 @@
 <template>
-  <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-3 transition-all duration-200">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5">
-      <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+  <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-2.5 sm:px-3.5 transition-all duration-200">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full md:w-auto">
         <!-- Location Dropdown -->
-        <div class="w-full sm:w-60">
+        <div class="w-full sm:w-56">
           <label
             for="dashboard-location-filter"
-            class="block text-[11px] font-semibold text-gray-500 mb-0.5 uppercase tracking-wider"
+            class="block text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider"
           >
             Lokasi Persediaan
           </label>
           <select
             id="dashboard-location-filter"
             :value="locationId"
-            class="w-full rounded-lg border border-gray-300 bg-white text-gray-900 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            class="w-full rounded-lg border border-gray-200 bg-white text-gray-900 text-xs px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             @change="handleLocationChange"
           >
             <option value="">
@@ -31,10 +31,10 @@
 
         <!-- Period Preset Selector -->
         <div>
-          <label class="block text-[11px] font-semibold text-gray-500 mb-0.5 uppercase tracking-wider">
+          <label class="block text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">
             Periode
           </label>
-          <div class="inline-flex rounded-lg border border-gray-300 p-0.5 bg-gray-50">
+          <div class="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
             <button
               v-for="p in periods"
               :id="'period-preset-' + p.value"
