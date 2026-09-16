@@ -2,6 +2,8 @@
 
 namespace App\Features\StoreAllocation\Actions;
 
+use App\Features\Auth\Enums\PermissionCode;
+use App\Features\Auth\Enums\RoleCode;
 use App\Features\Auth\Models\User;
 use App\Features\Inventory\DTOs\StockChangeDTO;
 use App\Features\Inventory\Enums\MovementType;
@@ -58,6 +60,36 @@ class CreateStoreAllocationAction
 
                     if ($location->type === LocationType::FIELD_PERSONNEL->value && (int) $location->user_id !== (int) $technician->id) {
                         throw new DomainException('Lokasi stok teknisi harus terdaftar sebagai lokasi milik teknisi bersangkutan.', 422);
+                    }
+
+                    // Verifikasi Otorisasi Level-Objek (Pertahanan Berlapis / Defense-in-Depth)
+                    if ($userId) {
+                        /** @var User|null $actingUser */
+                        $actingUser = User::query()->find($userId);
+                        if ($actingUser instanceof User) {
+                            $isOwn = (int) $data['technician_user_id'] === (int) $actingUser->id;
+
+                            if (! $isOwn) {
+                                $canCreateForOthers = $actingUser->hasRole(RoleCode::ADMIN)
+                                    || $actingUser->hasRole(RoleCode::INVENTORY_SUPERVISOR)
+                                    || $actingUser->hasPermissionTo(PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS);
+
+                                if (! $canCreateForOthers) {
+                                    throw new DomainException('Anda tidak memiliki hak akses untuk membuat alokasi toko atas nama teknisi lain.', 403);
+                                }
+                            }
+
+                            // Jika lokasi bertipe FIELD_PERSONNEL, pastikan lokasi tersebut adalah lokasi milik pengguna sendiri (kecuali berwenang create_for_others)
+                            if ($location->type === LocationType::FIELD_PERSONNEL->value && (int) $location->user_id !== (int) $actingUser->id) {
+                                $canCreateForOthers = $actingUser->hasRole(RoleCode::ADMIN)
+                                    || $actingUser->hasRole(RoleCode::INVENTORY_SUPERVISOR)
+                                    || $actingUser->hasPermissionTo(PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS);
+
+                                if (! $canCreateForOthers) {
+                                    throw new DomainException('Lokasi stok teknisi bukan merupakan lokasi milik akun Anda.', 403);
+                                }
+                            }
+                        }
                     }
 
                     $allocationNumber = $this->repository->getNextAllocationNumber();

@@ -45,6 +45,8 @@ enum PermissionCode: string
 
     case STORE_ALLOCATIONS_VIEW = 'store_allocations.view';
     case STORE_ALLOCATIONS_CREATE = 'store_allocations.create';
+    case STORE_ALLOCATIONS_CREATE_OWN = 'store_allocations.create_own';
+    case STORE_ALLOCATIONS_CREATE_FOR_OTHERS = 'store_allocations.create_for_others';
     case STORE_ALLOCATIONS_POST = 'store_allocations.post';
     case STORE_ALLOCATIONS_CANCEL = 'store_allocations.cancel';
 

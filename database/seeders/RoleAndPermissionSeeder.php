@@ -75,6 +75,8 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::INVENTORY_MOVEMENTS_VIEW->value => 'Melihat Pergerakan Stok',
             PermissionCode::STORE_ALLOCATIONS_VIEW->value => 'Melihat Alokasi Toko',
             PermissionCode::STORE_ALLOCATIONS_CREATE->value => 'Membuat Alokasi Toko',
+            PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value => 'Membuat Alokasi Toko Sendiri (Teknisi)',
+            PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value => 'Membuat Alokasi Toko atas Nama Teknisi Lain (Admin/SPV)',
             PermissionCode::STORE_ALLOCATIONS_POST->value => 'Memposting Alokasi Toko',
             PermissionCode::STORE_ALLOCATIONS_CANCEL->value => 'Membatalkan Alokasi Toko',
             PermissionCode::STOCK_RECEIPTS_VIEW->value => 'Melihat Penerimaan Stok',
@@ -226,6 +228,10 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::STORES_VIEW->value,
             PermissionCode::DEPARTMENTS_VIEW->value,
             PermissionCode::STORE_ALLOCATIONS_VIEW->value,
+            PermissionCode::STORE_ALLOCATIONS_CREATE->value,
+            PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value,
+            PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value,
+            PermissionCode::STORE_ALLOCATIONS_POST->value,
             PermissionCode::INVENTORY_BALANCES_VIEW->value,
             PermissionCode::INVENTORY_MOVEMENTS_VIEW->value,
             PermissionCode::STOCK_RECEIPTS_VIEW->value,
@@ -277,6 +283,7 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::STOCK_TRANSFERS_CANCEL->value,
             PermissionCode::STORE_ALLOCATIONS_VIEW->value,
             PermissionCode::STORE_ALLOCATIONS_CREATE->value,
+            PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value,
             PermissionCode::STORE_ALLOCATIONS_POST->value,
         ];
         $technicianRole->permissions()->sync(
