@@ -2,6 +2,7 @@
 
 namespace App\Features\MonthEnd\Actions;
 
+use App\Features\Audit\Services\ActivityLogger;
 use App\Features\MonthEnd\Enums\PeriodStatus;
 use App\Features\MonthEnd\Models\InventoryPeriod;
 use App\Shared\Exceptions\DomainException;
@@ -42,6 +43,18 @@ class ReopenInventoryPeriodAction
             $period->reopened_by = $userId;
             $period->reopen_reason = $trimmedReason;
             $period->save();
+
+            app(ActivityLogger::class)->record(
+                module: 'month_end',
+                action: 'reopen',
+                description: "Membuka kembali periode persediaan {$period->period_key} dengan alasan: {$trimmedReason}",
+                subject: $period,
+                properties: [
+                    'period_key' => $period->period_key,
+                    'reason' => $trimmedReason,
+                ],
+                userId: $userId
+            );
 
             return $period->load(['closedByUser', 'reopenedByUser']);
         });

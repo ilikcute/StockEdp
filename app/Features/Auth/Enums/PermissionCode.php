@@ -112,6 +112,9 @@ enum PermissionCode: string
     case MONTH_END_CLOSE = 'month_end.close';
     case MONTH_END_REOPEN = 'month_end.reopen';
 
+    // Audit Log (Log Aktivitas Sistem)
+    case AUDIT_LOGS_VIEW = 'audit_logs.view';
+
     public function group(): string
     {
         return explode('.', $this->value)[0];

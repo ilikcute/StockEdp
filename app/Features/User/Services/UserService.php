@@ -81,6 +81,18 @@ class UserService
                 $user->locations()->sync($data['location_ids']);
             }
 
+            app(\App\Features\Audit\Services\ActivityLogger::class)->record(
+                module: 'users',
+                action: 'create',
+                description: "Membuat pengguna baru: {$user->name} ({$user->username})",
+                subject: $user,
+                properties: [
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'is_active' => $user->is_active,
+                ]
+            );
+
             return $user->load(['roles', 'locations']);
         });
     }
@@ -129,6 +141,19 @@ class UserService
                 $user->locations()->sync($data['location_ids']);
             }
 
+            app(\App\Features\Audit\Services\ActivityLogger::class)->record(
+                module: 'users',
+                action: 'update',
+                description: "Memperbarui data pengguna: {$user->name} ({$user->username})",
+                subject: $user,
+                properties: [
+                    'username' => $user->username,
+                    'is_active' => $user->is_active,
+                    'updated_fields' => array_keys($data),
+                ],
+                userId: $currentUser->id
+            );
+
             return $user->load(['roles', 'locations']);
         });
     }
@@ -144,6 +169,18 @@ class UserService
         }
 
         $user->update(['is_active' => $isActive]);
+
+        app(\App\Features\Audit\Services\ActivityLogger::class)->record(
+            module: 'users',
+            action: 'change_status',
+            description: "Mengubah status pengguna {$user->name} ({$user->username}) menjadi ".($isActive ? 'Aktif' : 'Nonaktif'),
+            subject: $user,
+            properties: [
+                'username' => $user->username,
+                'is_active' => $isActive,
+            ],
+            userId: $currentUser->id
+        );
 
         return $user->load(['roles', 'locations']);
     }

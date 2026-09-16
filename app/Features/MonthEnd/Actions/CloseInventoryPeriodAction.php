@@ -2,6 +2,7 @@
 
 namespace App\Features\MonthEnd\Actions;
 
+use App\Features\Audit\Services\ActivityLogger;
 use App\Features\Inventory\Enums\AdjustmentStatus;
 use App\Features\Inventory\Enums\IssueStatus;
 use App\Features\Inventory\Enums\MovementType;
@@ -88,6 +89,20 @@ class CloseInventoryPeriodAction
 
             // 2. Kumpulkan snapshot per produk, lokasi, dan kondisi
             $this->generateSnapshots($period, $startDate, $endDate);
+
+            app(ActivityLogger::class)->record(
+                module: 'month_end',
+                action: 'close',
+                description: "Menutup buku periode persediaan {$period->period_key}".($notes ? " (Catatan: {$notes})" : ''),
+                subject: $period,
+                properties: [
+                    'period_key' => $period->period_key,
+                    'year' => $year,
+                    'month' => $month,
+                    'notes' => $notes,
+                ],
+                userId: $userId
+            );
 
             return $period->load(['snapshots.product', 'snapshots.location', 'closedByUser']);
         });

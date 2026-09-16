@@ -14,6 +14,7 @@ import { replenishmentRoutes } from '../features/replenishment/router/replenishm
 import { reportingRoutes } from '../features/reporting/routes/index.js';
 import { monthEndRoutes } from '../features/month_end/router/month_end_routes.js';
 import { userRoutes } from '../features/user_management/router/user_routes.js';
+import { auditLogRoutes } from '../features/audit_log/router/audit_log_routes.js';
 import { useAuthStore } from '../features/auth/stores/use_auth_store.js';
 const router = createRouter({
     history: createWebHistory(),
@@ -33,6 +34,7 @@ const router = createRouter({
         ...replenishmentRoutes,
         ...reportingRoutes,
         ...monthEndRoutes,
+        ...auditLogRoutes,
 
         {
             path: '/inventory/balances',

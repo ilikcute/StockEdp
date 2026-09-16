@@ -2,6 +2,7 @@
 
 namespace App\Features\StoreAllocation\Actions;
 
+use App\Features\Audit\Services\ActivityLogger;
 use App\Features\Auth\Enums\PermissionCode;
 use App\Features\Auth\Enums\RoleCode;
 use App\Features\Auth\Models\User;
@@ -191,6 +192,22 @@ class CreateStoreAllocationAction
 
                     // Record all inventory movements
                     $this->stockMovementService->recordMultipleMovements(array_values($consolidatedMovements));
+
+                    app(ActivityLogger::class)->record(
+                        module: 'store_allocations',
+                        action: 'create',
+                        description: "Memproses alokasi penggantian unit toko {$allocation->allocation_number} untuk {$store->code} - {$store->name}",
+                        subject: $allocation,
+                        properties: [
+                            'allocation_number' => $allocation->allocation_number,
+                            'store_id' => $store->id,
+                            'store_code' => $store->code,
+                            'store_name' => $store->name,
+                            'technician_user_id' => $data['technician_user_id'] ?? null,
+                            'items_count' => count($data['items'] ?? []),
+                        ],
+                        userId: $userId
+                    );
 
                     return $allocation->fresh([
                         'technician',

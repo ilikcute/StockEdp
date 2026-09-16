@@ -33,6 +33,7 @@ export const KNOWN_SUBGROUP_LABELS = {
 
     // 5. Pengaturan
     users: 'Pengelolaan Pengguna & Hak Akses',
+    audit_logs: 'Log Aktivitas Sistem (Audit Trail)',
 };
 
 export const SIDEBAR_MENU_SECTIONS = [
@@ -89,10 +90,10 @@ export const SIDEBAR_MENU_SECTIONS = [
     {
         id: 'user_management',
         title: 'Pengaturan & Pengguna',
-        description: 'Pengelolaan akun pengguna, peran otorisasi (RBAC), dan hak akses sistem',
+        description: 'Pengelolaan akun pengguna, peran otorisasi (RBAC), log aktivitas, dan hak akses sistem',
         icon: 'users',
         badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
-        groupKeys: ['users'],
+        groupKeys: ['users', 'audit_logs'],
     },
 ];
 

@@ -41,6 +41,14 @@ class AuthenticateUserAction
             'last_login_ip' => request()->ip(),
         ]);
 
+        app(\App\Features\Audit\Services\ActivityLogger::class)->record(
+            module: 'auth',
+            action: 'login',
+            description: "Pengguna {$user->name} ({$user->username}) berhasil login ke dalam sistem",
+            subject: $user,
+            userId: $user->id
+        );
+
         return $user;
     }
 }

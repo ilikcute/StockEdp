@@ -141,6 +141,9 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::MONTH_END_VIEW->value => 'Melihat Tutup Buku Bulanan',
             PermissionCode::MONTH_END_CLOSE->value => 'Menutup Buku Periode Bulanan',
             PermissionCode::MONTH_END_REOPEN->value => 'Membuka Kembali Periode Tutup Buku',
+
+            // Audit Log (Log Aktivitas Sistem)
+            PermissionCode::AUDIT_LOGS_VIEW->value => 'Melihat Log Aktivitas (Audit Trail)',
         ];
 
         $permissionModels = [];
