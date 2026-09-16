@@ -15,12 +15,12 @@ use App\Features\Inventory\Models\StockAdjustment;
 use App\Features\Inventory\Models\StockMovement;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class StockAdjustmentTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseTransactions;
 
     private User $admin;
 

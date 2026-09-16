@@ -21,48 +21,84 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:'.PermissionCode::INVENTORY_MOVEMENTS_VIEW->value);
 
     // Stock Receipts (Fase 4B)
-    Route::get('/stock-receipts', [StockReceiptController::class, 'index']);
-    Route::post('/stock-receipts', [StockReceiptController::class, 'store']);
-    Route::get('/stock-receipts/{stockReceipt}', [StockReceiptController::class, 'show']);
-    Route::patch('/stock-receipts/{stockReceipt}', [StockReceiptController::class, 'update']);
-    Route::post('/stock-receipts/{stockReceipt}/post', [StockReceiptController::class, 'post']);
-    Route::post('/stock-receipts/{stockReceipt}/cancel', [StockReceiptController::class, 'cancel']);
+    Route::get('/stock-receipts', [StockReceiptController::class, 'index'])
+        ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_VIEW->value);
+    Route::post('/stock-receipts', [StockReceiptController::class, 'store'])
+        ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_CREATE->value);
+    Route::get('/stock-receipts/{stockReceipt}', [StockReceiptController::class, 'show'])
+        ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_VIEW->value);
+    Route::patch('/stock-receipts/{stockReceipt}', [StockReceiptController::class, 'update'])
+        ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_UPDATE->value);
+    Route::post('/stock-receipts/{stockReceipt}/post', [StockReceiptController::class, 'post'])
+        ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_POST->value);
+    Route::post('/stock-receipts/{stockReceipt}/cancel', [StockReceiptController::class, 'cancel'])
+        ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_CANCEL->value);
 
     // Stock Issues (Fase 4C)
-    Route::get('/stock-issues', [StockIssueController::class, 'index']);
-    Route::post('/stock-issues', [StockIssueController::class, 'store']);
-    Route::get('/stock-issues/{stockIssue}', [StockIssueController::class, 'show']);
-    Route::patch('/stock-issues/{stockIssue}', [StockIssueController::class, 'update']);
-    Route::post('/stock-issues/{stockIssue}/post', [StockIssueController::class, 'post']);
-    Route::post('/stock-issues/{stockIssue}/cancel', [StockIssueController::class, 'cancel']);
+    Route::get('/stock-issues', [StockIssueController::class, 'index'])
+        ->middleware('permission:'.PermissionCode::STOCK_ISSUES_VIEW->value);
+    Route::post('/stock-issues', [StockIssueController::class, 'store'])
+        ->middleware('permission:'.PermissionCode::STOCK_ISSUES_CREATE->value);
+    Route::get('/stock-issues/{stockIssue}', [StockIssueController::class, 'show'])
+        ->middleware('permission:'.PermissionCode::STOCK_ISSUES_VIEW->value);
+    Route::patch('/stock-issues/{stockIssue}', [StockIssueController::class, 'update'])
+        ->middleware('permission:'.PermissionCode::STOCK_ISSUES_UPDATE->value);
+    Route::post('/stock-issues/{stockIssue}/post', [StockIssueController::class, 'post'])
+        ->middleware('permission:'.PermissionCode::STOCK_ISSUES_POST->value);
+    Route::post('/stock-issues/{stockIssue}/cancel', [StockIssueController::class, 'cancel'])
+        ->middleware('permission:'.PermissionCode::STOCK_ISSUES_CANCEL->value);
 
     // Stock Transfers (Fase 5)
-    Route::get('/stock-transfers', [StockTransferController::class, 'index']);
-    Route::post('/stock-transfers', [StockTransferController::class, 'store']);
-    Route::get('/stock-transfers/{stockTransfer}', [StockTransferController::class, 'show']);
-    Route::patch('/stock-transfers/{stockTransfer}', [StockTransferController::class, 'update']);
-    Route::post('/stock-transfers/{stockTransfer}/send', [StockTransferController::class, 'send']);
-    Route::post('/stock-transfers/{stockTransfer}/receive', [StockTransferController::class, 'receive']);
-    Route::post('/stock-transfers/{stockTransfer}/cancel', [StockTransferController::class, 'cancel']);
+    Route::get('/stock-transfers', [StockTransferController::class, 'index'])
+        ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_VIEW->value);
+    Route::post('/stock-transfers', [StockTransferController::class, 'store'])
+        ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_CREATE->value);
+    Route::get('/stock-transfers/{stockTransfer}', [StockTransferController::class, 'show'])
+        ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_VIEW->value);
+    Route::patch('/stock-transfers/{stockTransfer}', [StockTransferController::class, 'update'])
+        ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_UPDATE->value);
+    Route::post('/stock-transfers/{stockTransfer}/send', [StockTransferController::class, 'send'])
+        ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_SEND->value);
+    Route::post('/stock-transfers/{stockTransfer}/receive', [StockTransferController::class, 'receive'])
+        ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_RECEIVE->value);
+    Route::post('/stock-transfers/{stockTransfer}/cancel', [StockTransferController::class, 'cancel'])
+        ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_CANCEL->value);
 
     // Stock Adjustments (Fase 6A)
-    Route::get('/stock-adjustments', [StockAdjustmentController::class, 'index']);
-    Route::post('/stock-adjustments', [StockAdjustmentController::class, 'store']);
-    Route::get('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'show']);
-    Route::patch('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'update']);
-    Route::post('/stock-adjustments/{stockAdjustment}/post', [StockAdjustmentController::class, 'post']);
-    Route::post('/stock-adjustments/{stockAdjustment}/cancel', [StockAdjustmentController::class, 'cancel']);
+    Route::get('/stock-adjustments', [StockAdjustmentController::class, 'index'])
+        ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_VIEW->value);
+    Route::post('/stock-adjustments', [StockAdjustmentController::class, 'store'])
+        ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_CREATE->value);
+    Route::get('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'show'])
+        ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_VIEW->value);
+    Route::patch('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'update'])
+        ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_UPDATE->value);
+    Route::post('/stock-adjustments/{stockAdjustment}/post', [StockAdjustmentController::class, 'post'])
+        ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_POST->value);
+    Route::post('/stock-adjustments/{stockAdjustment}/cancel', [StockAdjustmentController::class, 'cancel'])
+        ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_CANCEL->value);
 
     // Stock Opnames (Fase 7B)
-    Route::get('/stock-opnames', [StockOpnameController::class, 'index']);
-    Route::post('/stock-opnames', [StockOpnameController::class, 'store']);
-    Route::get('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'show']);
-    Route::patch('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'update']);
-    Route::post('/stock-opnames/{stockOpname}/start', [StockOpnameController::class, 'start']);
-    Route::patch('/stock-opnames/{stockOpname}/items/{itemId}/count', [StockOpnameController::class, 'count']);
-    Route::post('/stock-opnames/{stockOpname}/items', [StockOpnameController::class, 'addUnexpected']);
-    Route::post('/stock-opnames/{stockOpname}/complete', [StockOpnameController::class, 'complete']);
-    Route::post('/stock-opnames/{stockOpname}/reopen', [StockOpnameController::class, 'reopen']);
-    Route::post('/stock-opnames/{stockOpname}/post', [StockOpnameController::class, 'post']);
-    Route::post('/stock-opnames/{stockOpname}/cancel', [StockOpnameController::class, 'cancel']);
+    Route::get('/stock-opnames', [StockOpnameController::class, 'index'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_VIEW->value);
+    Route::post('/stock-opnames', [StockOpnameController::class, 'store'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_CREATE->value);
+    Route::get('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'show'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_VIEW->value);
+    Route::patch('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'update'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_UPDATE->value);
+    Route::post('/stock-opnames/{stockOpname}/start', [StockOpnameController::class, 'start'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_START->value);
+    Route::patch('/stock-opnames/{stockOpname}/items/{itemId}/count', [StockOpnameController::class, 'count'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_COUNT->value);
+    Route::post('/stock-opnames/{stockOpname}/items', [StockOpnameController::class, 'addUnexpected'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_COUNT->value);
+    Route::post('/stock-opnames/{stockOpname}/complete', [StockOpnameController::class, 'complete'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_COMPLETE->value);
+    Route::post('/stock-opnames/{stockOpname}/reopen', [StockOpnameController::class, 'reopen'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_REOPEN->value);
+    Route::post('/stock-opnames/{stockOpname}/post', [StockOpnameController::class, 'post'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_POST->value);
+    Route::post('/stock-opnames/{stockOpname}/cancel', [StockOpnameController::class, 'cancel'])
+        ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_CANCEL->value);
 });

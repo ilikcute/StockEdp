@@ -11,12 +11,12 @@ use App\Features\Inventory\Models\StockOpname;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class StockOpnameTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseTransactions;
 
     private User $officer1;
 

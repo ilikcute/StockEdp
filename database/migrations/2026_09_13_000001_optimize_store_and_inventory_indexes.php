@@ -45,6 +45,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('store_allocations', function (Blueprint $table) {
+            if (! Schema::hasIndex('store_allocations', 'store_allocations_store_id_index')) {
+                $table->index('store_id', 'store_allocations_store_id_index');
+            }
             if (Schema::hasIndex('store_allocations', 'idx_store_alloc_store_date')) {
                 $table->dropIndex('idx_store_alloc_store_date');
             }

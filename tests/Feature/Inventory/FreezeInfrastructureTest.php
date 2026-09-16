@@ -26,13 +26,13 @@ use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use App\Features\Supplier\Models\Supplier;
 use App\Shared\Exceptions\DomainException;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class FreezeInfrastructureTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseTransactions;
 
     private InventoryFreezeService $freezeService;
 
