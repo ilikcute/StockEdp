@@ -11,11 +11,14 @@ use App\Features\Inventory\Repositories\Contracts\StockReceiptRepositoryInterfac
 use App\Features\Inventory\Requests\StockReceiptRequest;
 use App\Features\Inventory\Resources\StockReceiptResource;
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StockReceiptController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(
         private readonly StockReceiptRepositoryInterface $repository,
         private readonly CreateStockReceiptAction $createAction,
@@ -26,6 +29,8 @@ class StockReceiptController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', StockReceipt::class);
+
         $filters = $request->only(['status', 'supplier_id', 'start_date', 'end_date', 'search']);
         $sortField = $request->input('sort_by', 'created_at');
         $sortDirection = $request->input('sort_order', 'desc');
@@ -45,6 +50,8 @@ class StockReceiptController extends Controller
 
     public function store(StockReceiptRequest $request): JsonResponse
     {
+        $this->authorize('create', StockReceipt::class);
+
         $receipt = $this->createAction->execute($request->validated(), $request->user()->id);
 
         return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')), 'Success', 201);
@@ -52,6 +59,8 @@ class StockReceiptController extends Controller
 
     public function show(StockReceipt $stockReceipt): JsonResponse
     {
+        $this->authorize('view', $stockReceipt);
+
         $stockReceipt->load(['items.product.unit', 'items.location', 'supplier', 'creator']);
 
         return response()->api(new StockReceiptResource($stockReceipt));
@@ -59,6 +68,8 @@ class StockReceiptController extends Controller
 
     public function update(StockReceiptRequest $request, StockReceipt $stockReceipt): JsonResponse
     {
+        $this->authorize('update', $stockReceipt);
+
         $receipt = $this->updateAction->execute($stockReceipt, $request->validated());
 
         return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')));
@@ -66,6 +77,8 @@ class StockReceiptController extends Controller
 
     public function post(Request $request, StockReceipt $stockReceipt): JsonResponse
     {
+        $this->authorize('post', $stockReceipt);
+
         $receipt = $this->postAction->execute($stockReceipt, $request->user()->id);
 
         return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')));
@@ -73,6 +86,8 @@ class StockReceiptController extends Controller
 
     public function cancel(Request $request, StockReceipt $stockReceipt): JsonResponse
     {
+        $this->authorize('cancel', $stockReceipt);
+
         $receipt = $this->cancelAction->execute($stockReceipt, $request->user()->id);
 
         return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')));
