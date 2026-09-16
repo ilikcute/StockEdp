@@ -18,6 +18,7 @@ export const inventoryNavLinks = [
     { to: '/inventory/replenishment', label: 'Rekomendasi Reorder', permission: 'replenishment.view' },
     { to: '/inventory/adjustments', label: 'Penyesuaian Stok', permission: 'stock_adjustments.view' },
     { to: '/inventory/opnames', label: 'Stock Opname', permission: 'stock_opnames.view' },
+    { to: '/inventory/reconciliation', label: 'Rekonsiliasi Saldo Stok', permission: 'inventory.reconcile' },
     { to: '/inventory/month-end', label: 'Tutup Buku Bulanan', permission: 'month_end.view' },
 ];
 

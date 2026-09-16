@@ -28,8 +28,13 @@ class CreateStoreAllocationAction
 
     public function execute(array $data, ?int $userId = null): StoreAllocation
     {
+        // Tanggal pemasangan SELALU mengikuti tanggal sistem server (hari ini).
+        // Nilai dari klien sengaja diabaikan agar alokasi tidak bisa di-backdate
+        // ke periode yang sudah ditutup buku (menghindari kesalahan data stok).
+        $data['allocated_at'] = now()->toDateString();
+
         app(\App\Features\MonthEnd\Services\PeriodLockService::class)->ensureDateIsOpen(
-            $data['allocated_at'] ?? now()->toDateString(),
+            $data['allocated_at'],
             'membuat Alokasi Toko (Store Allocation)'
         );
 
@@ -99,7 +104,7 @@ class CreateStoreAllocationAction
                         'technician_user_id' => $data['technician_user_id'],
                         'technician_location_id' => $data['technician_location_id'],
                         'store_id' => $data['store_id'],
-                        'allocated_at' => $data['allocated_at'] ?? now()->toDateString(),
+                        'allocated_at' => $data['allocated_at'],
                         'notes' => $data['notes'] ?? null,
                         'created_by' => $userId ?? $data['technician_user_id'],
                     ]);

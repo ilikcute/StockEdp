@@ -115,6 +115,7 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::STOCK_OPNAMES_CANCEL->value => 'Membatalkan Stock Opname',
 
             PermissionCode::INVENTORY_OPNAME->value => 'Stock Opname',
+            PermissionCode::INVENTORY_RECONCILE->value => 'Rekonsiliasi & Hitung Ulang Saldo Stok',
 
             // Dashboard & Replenishment
             PermissionCode::DASHBOARD_VIEW->value => 'Melihat Dashboard Operasional',

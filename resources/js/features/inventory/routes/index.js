@@ -250,5 +250,16 @@ export const inventoryRoutes = [
             requiresAuth: true,
             permission: 'stock_opnames.update'
         }
+    },
+    // ── Rekonsiliasi Saldo Stok (Admin) ────────────────────────
+    {
+        path: '/inventory/reconciliation',
+        name: 'inventory.reconciliation',
+        component: () => import('../pages/InventoryReconciliationPage.vue'),
+        meta: {
+            title: 'Rekonsiliasi Saldo Stok',
+            requiresAuth: true,
+            permission: 'inventory.reconcile'
+        }
     }
 ];

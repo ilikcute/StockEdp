@@ -42,6 +42,7 @@ class StockCardReportQueryService
             $startDateTime
         );
 
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $movementsPaginator */
         $movementsPaginator = $this->repository->getPaginatedStockCardMovements(
             $productId,
             $locationId,
@@ -50,7 +51,7 @@ class StockCardReportQueryService
             $perPage
         );
 
-        $this->enrichMovementContext($movementsPaginator->getCollection());
+        $this->enrichMovementContext(collect($movementsPaginator->items()));
 
         $summary = $this->repository->getStockCardSummary(
             $productId,

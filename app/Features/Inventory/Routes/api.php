@@ -101,4 +101,10 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_POST->value);
     Route::post('/stock-opnames/{stockOpname}/cancel', [StockOpnameController::class, 'cancel'])
         ->middleware('permission:'.PermissionCode::STOCK_OPNAMES_CANCEL->value);
+
+    // Inventory Balance Reconciliation (Admin only)
+    Route::get('/inventory/reconciliation/scan', [\App\Features\Inventory\Controllers\InventoryReconciliationController::class, 'scan'])
+        ->middleware('permission:'.PermissionCode::INVENTORY_RECONCILE->value);
+    Route::post('/inventory/reconciliation/apply', [\App\Features\Inventory\Controllers\InventoryReconciliationController::class, 'apply'])
+        ->middleware('permission:'.PermissionCode::INVENTORY_RECONCILE->value);
 });

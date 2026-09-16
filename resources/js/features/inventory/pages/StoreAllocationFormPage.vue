@@ -211,23 +211,6 @@
             </div>
           </div>
 
-          <!-- Tanggal Alokasi -->
-          <div>
-            <label
-              for="allocated_at"
-              class="block text-[11px] font-semibold text-gray-600 mb-1"
-            >
-              Tanggal Pemasangan *
-            </label>
-            <input
-              id="allocated_at"
-              v-model="form.allocated_at"
-              type="date"
-              class="block w-full rounded-lg border-gray-300 py-1.5 px-2.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            >
-          </div>
-
           <!-- Catatan -->
           <div>
             <label
@@ -576,7 +559,6 @@ const form = ref({
     store_id: '',
     technician_user_id: '',
     technician_location_id: '',
-    allocated_at: new Date().toISOString().slice(0, 10),
     notes: '',
     items: [
         {
@@ -835,7 +817,6 @@ const submitAllocation = async () => {
             ? (form.value.technician_user_id || authStore.user?.id)
             : authStore.user?.id,
         technician_location_id: form.value.technician_location_id,
-        allocated_at: form.value.allocated_at,
         notes: form.value.notes || null,
         items: form.value.items.map((i) => ({
             product_id: i.product_id,

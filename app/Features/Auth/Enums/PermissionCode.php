@@ -85,6 +85,7 @@ enum PermissionCode: string
     case STOCK_OPNAMES_CANCEL = 'stock_opnames.cancel';
 
     case INVENTORY_OPNAME = 'inventory.opname';
+    case INVENTORY_RECONCILE = 'inventory.reconcile';
 
     // Dashboard & Replenishment
     case DASHBOARD_VIEW = 'dashboard.view';

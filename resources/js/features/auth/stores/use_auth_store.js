@@ -93,6 +93,66 @@ export const useAuthStore = defineStore('auth', {
         },
 
         /**
+         * Memperbarui identitas profil (nama & email) milik pengguna yang sedang login.
+         *
+         * @param {{ name: string, email: string }} data
+         * @returns {Promise<boolean>}
+         */
+        async updateProfile(data) {
+            this.isLoading = true;
+            this.error = null;
+            this.validationErrors = {};
+
+            try {
+                const response = await authApi.updateProfile(data);
+
+                if (response.data?.success) {
+                    this.setUser(response.data.data);
+                    return true;
+                }
+            } catch (err) {
+                const normalized = normalizeApiError(err);
+                if (normalized.status === 422) {
+                    this.validationErrors = normalized.errors;
+                }
+                this.error = normalized.message;
+                throw err;
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        /**
+         * Memperbarui kata sandi pengguna yang sedang login.
+         *
+         * @param {{ current_password: string, password: string, password_confirmation: string }} data
+         * @returns {Promise<boolean>}
+         */
+        async updatePassword(data) {
+            this.isLoading = true;
+            this.error = null;
+            this.validationErrors = {};
+
+            try {
+                const response = await authApi.updatePassword(data);
+
+                if (response.data?.success) {
+                    this.setUser(response.data.data);
+                    return true;
+                }
+            } catch (err) {
+                const normalized = normalizeApiError(err);
+                if (normalized.status === 422) {
+                    this.validationErrors = normalized.errors;
+                }
+                this.error = normalized.message;
+                throw err;
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        /**
          * Melakukan logout.
          */
         async logout() {

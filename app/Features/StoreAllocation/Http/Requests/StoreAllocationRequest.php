@@ -40,7 +40,10 @@ class StoreAllocationRequest extends FormRequest
             'store_id' => ['required', 'integer', 'exists:stores,id'],
             'technician_user_id' => ['required', 'integer', 'exists:users,id'],
             'technician_location_id' => ['required', 'integer', 'exists:locations,id'],
-            'allocated_at' => ['required', 'date'],
+            // Catatan: allocated_at bersifat opsional dan diabaikan oleh CreateStoreAllocationAction.
+            // Tanggal pemasangan selalu ditentukan server (now()) untuk mencegah backdating ke
+            // periode tutup buku yang dapat merusak data stok.
+            'allocated_at' => ['sometimes', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],

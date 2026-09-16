@@ -211,7 +211,7 @@ class PeriodLockingTest extends TestCase
         $this->assertStringContainsString('telah ditutup buku (CLOSED)', $response->json('message'));
     }
 
-    public function test_it_rejects_store_allocation_in_closed_period(): void
+    public function test_store_allocation_ignores_client_backdated_date_and_uses_server_date(): void
     {
         $store = Store::create([
             'code' => 'STR-LOCK-'.uniqid(),
@@ -219,11 +219,12 @@ class PeriodLockingTest extends TestCase
             'is_active' => true,
         ]);
 
+        // Klien mencoba backdate ke periode CLOSED (2026-07-10), tetapi nilai ini diabaikan.
         $payload = [
             'store_id' => $store->id,
             'technician_user_id' => $this->admin->id,
             'technician_location_id' => $this->warehouse->id,
-            'allocated_at' => '2026-07-10', // CLOSED
+            'allocated_at' => '2026-07-10', // CLOSED — sengaja diabaikan
             'items' => [
                 [
                     'product_id' => $this->product->id,
@@ -234,9 +235,13 @@ class PeriodLockingTest extends TestCase
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/store-allocations', $payload);
 
-        $response->assertStatus(422)
-            ->assertJsonPath('success', false);
+        $response->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.allocated_at', now()->toDateString());
 
-        $this->assertStringContainsString('telah ditutup buku (CLOSED)', $response->json('message'));
+        $this->assertDatabaseHas('store_allocations', [
+            'store_id' => $store->id,
+            'allocated_at' => now()->toDateString(),
+        ]);
     }
 }

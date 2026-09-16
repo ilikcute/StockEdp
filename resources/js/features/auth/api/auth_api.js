@@ -27,6 +27,29 @@ export const authApi = {
     },
 
     /**
+     * Memperbarui identitas profil (nama & email).
+     *
+     * @param {Object} data
+     * @param {string} data.name
+     * @param {string} data.email
+     */
+    updateProfile(data) {
+        return apiClient.patch('/auth/profile', data);
+    },
+
+    /**
+     * Memperbarui kata sandi pengguna.
+     *
+     * @param {Object} data
+     * @param {string} data.current_password
+     * @param {string} data.password
+     * @param {string} data.password_confirmation
+     */
+    updatePassword(data) {
+        return apiClient.patch('/auth/profile/password', data);
+    },
+
+    /**
      * Keluar dari sistem (invalidate session).
      */
     logout() {
