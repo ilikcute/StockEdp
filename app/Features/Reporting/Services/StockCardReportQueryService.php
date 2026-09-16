@@ -2,10 +2,13 @@
 
 namespace App\Features\Reporting\Services;
 
+use App\Features\Inventory\Enums\MovementType;
+use App\Features\Inventory\Models\StockTransfer;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use App\Features\Reporting\Repositories\Contracts\ReportingRepositoryInterface;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
 class StockCardReportQueryService
 {
@@ -46,6 +49,8 @@ class StockCardReportQueryService
             $endNextDayDateTime,
             $perPage
         );
+
+        $this->enrichMovementContext($movementsPaginator->getCollection());
 
         $summary = $this->repository->getStockCardSummary(
             $productId,
@@ -89,5 +94,59 @@ class StockCardReportQueryService
             ],
             'movements' => $movementsPaginator,
         ];
+    }
+
+    private function enrichMovementContext(Collection $movements): void
+    {
+        if ($movements->isEmpty()) {
+            return;
+        }
+
+        $transferIds = $movements
+            ->filter(fn ($m) => in_array($m->movement_type, [
+                MovementType::TRANSFER_IN->value,
+                MovementType::TRANSFER_OUT->value,
+            ], true))
+            ->pluck('reference_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($transferIds->isNotEmpty()) {
+            $transfers = StockTransfer::with(['originLocation', 'destinationLocation'])
+                ->whereIn('id', $transferIds)
+                ->get()
+                ->keyBy('id');
+        } else {
+            $transfers = collect();
+        }
+
+        foreach ($movements as $movement) {
+            $counterpartLocation = null;
+            $counterpartLabel = null;
+
+            if ($movement->movement_type === MovementType::TRANSFER_IN->value) {
+                $transfer = $transfers->get((int) $movement->reference_id);
+                if ($transfer) {
+                    $counterpartLocation = $transfer->originLocation;
+                    $counterpartLabel = 'Dari: '.($transfer->originLocation?->name ?? '-');
+                }
+            } elseif ($movement->movement_type === MovementType::TRANSFER_OUT->value) {
+                $transfer = $transfers->get((int) $movement->reference_id);
+                if ($transfer) {
+                    $counterpartLocation = $transfer->destinationLocation;
+                    $counterpartLabel = 'Ke: '.($transfer->destinationLocation?->name ?? '-');
+                }
+            }
+
+            if ($counterpartLocation) {
+                $movement->setAttribute('counterpart_location_name', $counterpartLocation->name);
+                $movement->setAttribute('counterpart_location_code', $counterpartLocation->code);
+            } else {
+                $movement->setAttribute('counterpart_location_name', null);
+                $movement->setAttribute('counterpart_location_code', null);
+            }
+            $movement->setAttribute('counterpart_label', $counterpartLabel);
+        }
     }
 }

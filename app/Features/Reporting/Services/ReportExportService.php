@@ -3,6 +3,7 @@
 namespace App\Features\Reporting\Services;
 
 use App\Features\Inventory\Enums\AdjustmentReason;
+use App\Features\Inventory\Enums\MovementType;
 use App\Features\Reporting\Exports\CsvStreamWriter;
 use App\Features\Reporting\Helpers\DecimalQuantity;
 use App\Features\Reporting\Queries\InventoryMovementIntelligenceQuery;
@@ -105,7 +106,7 @@ class ReportExportService
         $headers = [
             'Tanggal Dokumen', 'Waktu Posting', 'Jenis Movement', 'Nomor Referensi',
             'SKU', 'Nama Produk', 'Kode Lokasi', 'Nama Lokasi',
-            'Quantity Sebelum', 'Quantity Masuk', 'Quantity Keluar', 'Quantity Sesudah',
+            'Dari / Ke (Transfer)', 'Quantity Sebelum', 'Quantity Masuk', 'Quantity Keluar', 'Quantity Sesudah',
             'Pengguna', 'Catatan',
         ];
 
@@ -130,15 +131,30 @@ class ReportExportService
                 $postedAt = $m->created_at ? CarbonImmutable::parse($m->created_at, 'Asia/Jakarta')->format('Y-m-d H:i:s') : '-';
                 $refNumber = ! empty($m->reference_number) ? $m->reference_number : ($m->movement_id ?? '');
 
+                $movementTypeLabel = MovementType::tryFrom((string) $m->movement_type)?->label() ?? (string) $m->movement_type;
+
+                if ($m->movement_type === MovementType::TRANSFER_IN->value) {
+                    $counterpart = ! empty($m->transfer_origin_name)
+                        ? 'Dari: '.($m->transfer_origin_code ? $m->transfer_origin_code.' - ' : '').$m->transfer_origin_name
+                        : '';
+                } elseif ($m->movement_type === MovementType::TRANSFER_OUT->value) {
+                    $counterpart = ! empty($m->transfer_destination_name)
+                        ? 'Ke: '.($m->transfer_destination_code ? $m->transfer_destination_code.' - ' : '').$m->transfer_destination_name
+                        : '';
+                } else {
+                    $counterpart = '';
+                }
+
                 yield [
                     $m->occurred_at ? CarbonImmutable::parse($m->occurred_at, 'Asia/Jakarta')->format('Y-m-d') : '-',
                     $postedAt,
-                    $m->movement_type,
+                    $movementTypeLabel,
                     $refNumber,
                     $m->sku ?? '',
                     $m->product_name ?? '',
                     $m->location_code ?? '',
                     $m->location_name ?? '',
+                    $counterpart,
                     DecimalQuantity::formatForExport($quantityBefore),
                     DecimalQuantity::formatForExport($quantityIn),
                     DecimalQuantity::formatForExport($quantityOut),

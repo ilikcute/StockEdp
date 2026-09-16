@@ -12,6 +12,7 @@ use App\Features\Inventory\Models\StockMovement;
 use App\Features\Inventory\Models\StockOpnameItem;
 use App\Features\Inventory\Models\StockReceipt;
 use App\Features\Inventory\Models\StockReceiptItem;
+use App\Features\Inventory\Models\StockTransfer;
 use App\Features\Inventory\Models\StockTransferItem;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
@@ -67,7 +68,7 @@ class ReportingRepository implements ReportingRepositoryInterface
             })
             ->orderBy('name')
             ->limit($perPage)
-            ->get(['id', 'name', 'sku']);
+            ->get(['id', 'name', 'sku', 'barcode']);
     }
 
     public function searchSupplierOptions(?string $search, int $perPage = 20): Collection
@@ -1066,6 +1067,12 @@ class ReportingRepository implements ReportingRepositoryInterface
             ->join('products', 'products.id', '=', 'stock_movements.product_id')
             ->join('locations', 'locations.id', '=', 'stock_movements.location_id')
             ->leftJoin('users as creators', 'creators.id', '=', 'stock_movements.created_by')
+            ->leftJoin('stock_transfers', function ($join) {
+                $join->on('stock_transfers.id', '=', 'stock_movements.reference_id')
+                    ->where('stock_movements.reference_type', '=', StockTransfer::class);
+            })
+            ->leftJoin('locations as transfer_origins', 'transfer_origins.id', '=', 'stock_transfers.origin_location_id')
+            ->leftJoin('locations as transfer_destinations', 'transfer_destinations.id', '=', 'stock_transfers.destination_location_id')
             ->select([
                 'stock_movements.id',
                 'stock_movements.occurred_at',
@@ -1077,6 +1084,10 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'products.name as product_name',
                 'locations.code as location_code',
                 'locations.name as location_name',
+                'transfer_origins.code as transfer_origin_code',
+                'transfer_origins.name as transfer_origin_name',
+                'transfer_destinations.code as transfer_destination_code',
+                'transfer_destinations.name as transfer_destination_name',
                 'stock_movements.quantity_before',
                 'stock_movements.quantity',
                 'stock_movements.quantity_after',

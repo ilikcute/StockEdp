@@ -2,6 +2,7 @@
 
 namespace App\Features\Reporting\Resources;
 
+use App\Features\Inventory\Enums\MovementType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,6 +28,9 @@ class StockCardReportResource extends JsonResource
             $quantityOut = '0.0000';
         }
 
+        $movementTypeLabel = MovementType::tryFrom((string) $this->movement_type)?->label()
+            ?? (string) $this->movement_type;
+
         return [
             'id' => $this->id,
             'movement_sequence' => $this->id,
@@ -36,10 +40,14 @@ class StockCardReportResource extends JsonResource
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'posted_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'movement_type' => $this->movement_type,
+            'movement_type_label' => $movementTypeLabel,
             'direction' => $direction,
             'reference_type' => $this->reference_type,
             'reference_id' => $this->reference_id,
             'reference_number' => $this->reference_number,
+            'counterpart_label' => $this->counterpart_label,
+            'counterpart_location_name' => $this->counterpart_location_name,
+            'counterpart_location_code' => $this->counterpart_location_code,
             'quantity_in' => $quantityIn,
             'quantity_out' => $quantityOut,
             'quantity_before' => $quantityBefore,

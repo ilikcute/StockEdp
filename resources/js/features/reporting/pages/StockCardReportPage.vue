@@ -30,14 +30,18 @@
         <!-- Controls (Product Search, Location, Date toggle, Submit, Export) -->
         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <!-- Product Selector Compact -->
-          <div class="w-full sm:w-56 relative">
+          <div
+            ref="productSearchBox"
+            class="w-full sm:w-64 relative"
+          >
             <input
               v-model="productSearch"
               type="text"
               class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Pilih Produk *..."
+              :placeholder="searchPlaceholder"
               @input="onProductSearch"
-              @focus="showProductDropdown = true"
+              @focus="onProductFocus"
+              @keydown.esc="showProductDropdown = false"
             >
             <div
               v-if="selectedProduct"
@@ -53,22 +57,56 @@
             </div>
             <!-- Dropdown Results -->
             <div
-              v-if="showProductDropdown && masterStore.products.length > 0"
+              v-if="showProductDropdown"
               class="absolute z-20 mt-1 w-full bg-white shadow-lg max-h-52 rounded-lg py-1 text-xs border border-gray-200 overflow-auto custom-scrollbar"
             >
               <div
-                v-for="prod in masterStore.products"
-                :key="prod.id"
-                class="cursor-pointer select-none py-1.5 px-2.5 hover:bg-indigo-50 transition-colors"
-                @click="selectProduct(prod)"
+                v-if="masterStore.loadingProducts"
+                class="px-3 py-2.5 text-gray-500 flex items-center gap-2"
               >
-                <div class="font-medium text-gray-900 truncate">
-                  {{ prod.name }}
-                </div>
-                <div class="text-[10px] text-gray-500 font-mono">
-                  {{ prod.sku }}
-                </div>
+                <svg
+                  class="animate-spin w-3.5 h-3.5 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  ></path>
+                </svg>
+                Mencari produk...
               </div>
+              <div
+                v-else-if="masterStore.products.length === 0"
+                class="px-3 py-2.5 text-gray-400"
+              >
+                Tidak ada produk yang cocok.
+              </div>
+              <template v-else>
+                <div
+                  v-for="prod in masterStore.products"
+                  :key="prod.id"
+                  class="cursor-pointer select-none py-1.5 px-2.5 hover:bg-indigo-50 transition-colors"
+                  @click="selectProduct(prod)"
+                >
+                  <div class="font-medium text-gray-900 truncate">
+                    {{ prod.name }}
+                  </div>
+                  <div class="text-[10px] text-gray-500 font-mono flex items-center gap-1.5">
+                    <span class="font-semibold text-indigo-600">{{ prod.sku }}</span>
+                    <span v-if="prod.barcode">· {{ prod.barcode }}</span>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
 
@@ -379,7 +417,20 @@
                   {{ item.reference_number || item.movement_id }}
                 </div>
                 <div class="text-[10px] text-gray-400">
-                  {{ item.movement_type }}
+                  {{ item.movement_type_label || item.movement_type }}
+                </div>
+                <div
+                  v-if="item.counterpart_label"
+                  class="text-[10px] mt-0.5 font-medium"
+                  :class="item.movement_type === 'TRANSFER_IN' ? 'text-emerald-700' : 'text-rose-700'"
+                >
+                  {{ item.counterpart_label }}
+                </div>
+                <div
+                  v-if="item.counterpart_location_name && !item.counterpart_label"
+                  class="text-[10px] mt-0.5 text-gray-500"
+                >
+                  {{ item.direction === 'IN' ? 'Dari' : 'Ke' }}: {{ item.counterpart_location_name }}
                 </div>
               </td>
               <td class="py-1.5 px-2 text-[11px] text-right font-mono text-gray-500 whitespace-nowrap">
@@ -410,7 +461,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useStockCardReportStore } from '../stores/useStockCardReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
@@ -430,6 +481,7 @@ const selectedProduct = ref(null);
 const localValidationError = ref('');
 const hasFetchedData = ref(false);
 const showDateRow = ref(false);
+const productSearchBox = ref(null);
 
 const filters = reactive({
     product_id: '',
@@ -453,17 +505,46 @@ filters.start_date = toLocalDateInputValue(firstDayOfMonth);
 let productSearchTimer = null;
 const onProductSearch = () => {
     clearTimeout(productSearchTimer);
+    if (selectedProduct.value) {
+        selectedProduct.value = null;
+        filters.product_id = '';
+    }
     productSearchTimer = setTimeout(() => {
-        if (productSearch.value.trim().length >= 2) {
-            masterStore.searchProducts(productSearch.value);
+        const query = productSearch.value.trim();
+        if (query.length >= 1) {
+            masterStore.searchProducts(query);
+        } else {
+            masterStore.resetProducts();
         }
     }, 300);
+};
+
+const onProductFocus = () => {
+    showProductDropdown.value = true;
+    const query = productSearch.value.trim();
+    if (query.length >= 1) {
+        masterStore.searchProducts(query);
+    }
+};
+
+const searchPlaceholder = computed(() => {
+    if (selectedProduct.value) {
+        const sku = selectedProduct.value.sku ?? '';
+        return `${sku} — ${selectedProduct.value.name}`;
+    }
+    return 'Pilih Produk (SKU / nama)...';
+});
+
+const onDocumentClick = (event) => {
+    if (productSearchBox.value && !productSearchBox.value.contains(event.target)) {
+        showProductDropdown.value = false;
+    }
 };
 
 const selectProduct = (prod) => {
     selectedProduct.value = prod;
     filters.product_id = prod.id;
-    productSearch.value = prod.name;
+    productSearch.value = prod.sku ? `${prod.sku} — ${prod.name}` : prod.name;
     showProductDropdown.value = false;
 };
 
@@ -541,6 +622,11 @@ const changePage = (page) => {
 
 onMounted(async () => {
     await masterStore.fetchOptions();
+    document.addEventListener('click', onDocumentClick);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onDocumentClick);
 });
 </script>
 
