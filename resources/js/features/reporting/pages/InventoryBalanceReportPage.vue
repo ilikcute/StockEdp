@@ -355,12 +355,18 @@
             >
               Total Nilai
             </th>
+            <th
+              scope="col"
+              class="py-1.5 px-2 text-center whitespace-nowrap w-24"
+            >
+              Aksi
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 bg-white">
           <tr v-if="!store.loading && store.data.length === 0">
             <td
-              colspan="8"
+              colspan="9"
               class="py-8 text-center text-xs text-gray-400"
             >
               Tidak ada data saldo stok yang ditemukan.
@@ -375,12 +381,39 @@
               {{ rowNumber(store.meta, index) }}
             </td>
             <td class="py-1.5 px-2 text-[11px] whitespace-nowrap">
-              <div class="font-medium text-gray-900">
-                {{ item.product_name || item.product?.name }}
-              </div>
-              <div class="text-[10px] text-gray-400 font-mono">
-                SKU: {{ item.product_sku || item.product?.sku }}
-              </div>
+              <router-link
+                :to="{
+                  path: '/reports/stock-card',
+                  query: {
+                    product_id: item.product_id || item.product?.id,
+                    location_id: item.location_id || item.location?.id,
+                    sku: item.product_sku || item.product?.sku,
+                    name: item.product_name || item.product?.name
+                  }
+                }"
+                class="group block hover:text-indigo-600 transition-colors"
+                title="Klik untuk melihat Detail Histori Transaksi di Kartu Stok"
+              >
+                <div class="font-medium text-gray-900 group-hover:text-indigo-600 flex items-center gap-1.5">
+                  <span class="group-hover:underline underline-offset-2">{{ item.product_name || item.product?.name }}</span>
+                  <svg
+                    class="w-3 h-3 text-indigo-500 opacity-60 group-hover:opacity-100 transition-opacity shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </div>
+                <div class="text-[10px] text-gray-400 group-hover:text-indigo-500 font-mono">
+                  SKU: {{ item.product_sku || item.product?.sku }}
+                </div>
+              </router-link>
             </td>
             <td class="py-1.5 px-2 text-[11px] text-gray-600 whitespace-nowrap">
               <div>{{ item.category_name || item.product?.category?.name || '-' }}</div>
@@ -409,10 +442,55 @@
               {{ formatRupiah(item.unit_price || item.product?.unit_price || 0) }}
             </td>
             <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-gray-900 whitespace-nowrap">
-              {{ formatQuantity(item.on_hand_quantity ?? item.quantity) }}
+              <router-link
+                :to="{
+                  path: '/reports/stock-card',
+                  query: {
+                    product_id: item.product_id || item.product?.id,
+                    location_id: item.location_id || item.location?.id,
+                    sku: item.product_sku || item.product?.sku,
+                    name: item.product_name || item.product?.name
+                  }
+                }"
+                class="hover:text-indigo-600 hover:underline underline-offset-2 transition-colors cursor-pointer"
+                title="Lihat Kartu Stok"
+              >
+                {{ formatQuantity(item.on_hand_quantity ?? item.quantity) }}
+              </router-link>
             </td>
             <td class="py-1.5 px-2 text-[11px] font-mono text-right font-semibold text-indigo-700 whitespace-nowrap">
               {{ formatRupiah(item.total_value || (Number(item.on_hand_quantity ?? item.quantity ?? 0) * (item.unit_price || item.product?.unit_price || 0))) }}
+            </td>
+            <!-- Action Column -->
+            <td class="py-1.5 px-2 text-center whitespace-nowrap">
+              <router-link
+                :to="{
+                  path: '/reports/stock-card',
+                  query: {
+                    product_id: item.product_id || item.product?.id,
+                    location_id: item.location_id || item.location?.id,
+                    sku: item.product_sku || item.product?.sku,
+                    name: item.product_name || item.product?.name
+                  }
+                }"
+                class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 transition-colors shadow-2xs border border-indigo-100/80 cursor-pointer"
+                title="Buka Kartu Stok item ini"
+              >
+                <svg
+                  class="w-3 h-3 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span>Kartu Stok</span>
+              </router-link>
             </td>
           </tr>
         </tbody>

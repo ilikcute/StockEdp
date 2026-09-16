@@ -462,6 +462,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useStockCardReportStore } from '../stores/useStockCardReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
@@ -470,6 +471,7 @@ import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
+const route = useRoute();
 const store = useStockCardReportStore();
 const masterStore = useReportFilterOptionsStore();
 const exportStore = useReportCsvExportStore();
@@ -620,9 +622,64 @@ const changePage = (page) => {
     fetchData(page);
 };
 
+const initFromRouteQuery = async () => {
+    const q = route.query;
+    if (!q || (!q.product_id && !q.location_id)) return;
+
+    if (q.location_id) {
+        filters.location_id = Number(q.location_id) || q.location_id;
+    }
+    if (q.start_date) {
+        filters.start_date = q.start_date;
+    }
+    if (q.end_date) {
+        filters.end_date = q.end_date;
+    }
+
+    if (q.product_id) {
+        filters.product_id = Number(q.product_id) || q.product_id;
+
+        const sku = q.sku ? String(q.sku) : '';
+        const name = q.name || q.product_name ? String(q.name || q.product_name) : '';
+
+        if (sku || name) {
+            selectedProduct.value = {
+                id: filters.product_id,
+                sku: sku,
+                name: name || sku,
+            };
+            productSearch.value = sku && name ? `${sku} — ${name}` : (name || sku);
+        } else {
+            try {
+                await masterStore.searchProducts(String(filters.product_id));
+                const found = masterStore.products.find(p => Number(p.id) === Number(filters.product_id));
+                if (found) {
+                    selectProduct(found);
+                }
+            } catch {
+                // ignore
+            }
+        }
+    }
+
+    if (canFetch.value) {
+        await fetchData(1);
+    }
+};
+
+watch(
+    () => route.query,
+    async (newQuery) => {
+        if (newQuery?.product_id && Number(newQuery.product_id) !== Number(filters.product_id)) {
+            await initFromRouteQuery();
+        }
+    }
+);
+
 onMounted(async () => {
     await masterStore.fetchOptions();
     document.addEventListener('click', onDocumentClick);
+    await initFromRouteQuery();
 });
 
 onBeforeUnmount(() => {
