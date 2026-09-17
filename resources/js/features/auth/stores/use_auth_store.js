@@ -30,13 +30,23 @@ export const useAuthStore = defineStore('auth', {
 
         /**
          * Pengecekan permission client-side (bukan keamanan utama).
+         * Mendukung string tunggal, string dengan pemisah pipa '|', atau array string.
          *
-         * @param {string} permission
+         * @param {string | string[]} permission
          * @returns {boolean}
          */
         hasPermission(permission) {
             if (this.isAdmin) {
                 return true;
+            }
+            if (!permission) {
+                return false;
+            }
+            if (Array.isArray(permission)) {
+                return permission.some((p) => this.user?.permissions?.includes(p));
+            }
+            if (typeof permission === 'string' && permission.includes('|')) {
+                return permission.split('|').some((p) => this.user?.permissions?.includes(p.trim()));
             }
             return this.user?.permissions?.includes(permission) ?? false;
         },

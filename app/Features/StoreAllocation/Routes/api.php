@@ -9,7 +9,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->middleware('permission:'.PermissionCode::STORE_ALLOCATIONS_VIEW->value);
 
     Route::post('store-allocations', [StoreAllocationController::class, 'store'])
-        ->middleware('permission:'.PermissionCode::STORE_ALLOCATIONS_CREATE->value.'|'.PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value.'|'.PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value);
+        ->middleware('permission:'.PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value.'|'.PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value);
 
     Route::get('store-allocations/{storeAllocation}', [StoreAllocationController::class, 'show'])
         ->middleware('permission:'.PermissionCode::STORE_ALLOCATIONS_VIEW->value);

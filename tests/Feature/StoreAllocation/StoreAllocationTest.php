@@ -60,8 +60,8 @@ class StoreAllocationTest extends TestCase
         );
 
         $permission = Permission::firstOrCreate(
-            ['code' => PermissionCode::STORE_ALLOCATIONS_CREATE->value],
-            ['name' => 'Membuat Alokasi Toko', 'group' => 'store_allocations']
+            ['code' => PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value],
+            ['name' => 'Membuat Alokasi Toko Sendiri (Teknisi)', 'group' => 'store_allocations']
         );
 
         $technicianRole->permissions()->syncWithoutDetaching([$permission->id]);

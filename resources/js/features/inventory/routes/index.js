@@ -26,7 +26,7 @@ export const inventoryRoutes = [
         meta: {
             title: 'Catat Alokasi Toko',
             requiresAuth: true,
-            permission: 'store_allocations.create',
+            permission: 'store_allocations.create_own|store_allocations.create_for_others',
         },
     },
     {

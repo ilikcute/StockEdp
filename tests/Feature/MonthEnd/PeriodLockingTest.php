@@ -55,7 +55,7 @@ class PeriodLockingTest extends TestCase
             PermissionCode::STOCK_ADJUSTMENTS_VIEW->value,
             PermissionCode::STOCK_ADJUSTMENTS_CREATE->value,
             PermissionCode::STORE_ALLOCATIONS_VIEW->value,
-            PermissionCode::STORE_ALLOCATIONS_CREATE->value,
+            PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value,
             PermissionCode::MONTH_END_VIEW->value,
             PermissionCode::MONTH_END_CLOSE->value,
             PermissionCode::MONTH_END_REOPEN->value,

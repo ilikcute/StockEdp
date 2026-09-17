@@ -195,7 +195,7 @@ const canCreateReceipt = computed(() => authStore.hasPermission('stock_receipts.
 const canCreateIssue = computed(() => authStore.hasPermission('stock_issues.create'));
 const canCreateTransfer = computed(() => authStore.hasPermission('stock_transfers.create'));
 const canCreateOpname = computed(() => authStore.hasPermission('stock_opnames.create'));
-const canCreateAllocation = computed(() => authStore.hasPermission('store_allocations.create'));
+const canCreateAllocation = computed(() => authStore.hasPermission('store_allocations.create_own|store_allocations.create_for_others'));
 const canViewReplenishment = computed(() => authStore.hasPermission('replenishment.view'));
 
 const hasAnyAction = computed(() => {

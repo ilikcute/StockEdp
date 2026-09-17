@@ -116,8 +116,8 @@
             Reset
           </button>
 
-          <!-- Export CSV Control -->
-          <ReportCsvExportControl
+          <!-- Export Control -->
+          <ReportExportControl
             size="sm"
             :loading="exportStore.isExporting(reportKey)"
             :disabled="false"
@@ -512,7 +512,7 @@ import { useRoute } from 'vue-router';
 import { useInventoryBalanceReportStore } from '../stores/useInventoryBalanceReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
-import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import ReportExportControl from '../components/ReportExportControl.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import { cleanReportExportFilters } from '../utils/reportHelpers';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';

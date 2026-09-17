@@ -135,7 +135,7 @@
           </button>
 
           <!-- Ekspor Control -->
-          <ReportCsvExportControl
+          <ReportExportControl
             size="sm"
             :loading="exportStore.isExporting(reportKey)"
             :disabled="false"
@@ -741,7 +741,7 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reportingApi } from '../api/reportingApi';
-import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import ReportExportControl from '../components/ReportExportControl.vue';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import { formatTimestamp, formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';

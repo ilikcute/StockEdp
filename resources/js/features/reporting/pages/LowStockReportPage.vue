@@ -97,8 +97,8 @@
             Reset
           </button>
 
-          <!-- Export CSV Control -->
-          <ReportCsvExportControl
+          <!-- Export Control -->
+          <ReportExportControl
             size="sm"
             :loading="exportStore.isExporting(reportKey)"
             :disabled="!filters.location_id"
@@ -504,7 +504,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useLowStockReportStore } from '../stores/useLowStockReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
-import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import ReportExportControl from '../components/ReportExportControl.vue';
 import BaseCombobox from '@/shared/components/BaseCombobox.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import { cleanReportExportFilters } from '../utils/reportHelpers';

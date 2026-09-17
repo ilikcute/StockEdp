@@ -61,20 +61,19 @@ class StoreAllocationSecurityTest extends TestCase
 
         // Permissions
         $permView = Permission::firstOrCreate(['code' => PermissionCode::STORE_ALLOCATIONS_VIEW->value], ['name' => 'Melihat Alokasi Toko', 'group' => 'store_allocations']);
-        $permCreate = Permission::firstOrCreate(['code' => PermissionCode::STORE_ALLOCATIONS_CREATE->value], ['name' => 'Membuat Alokasi Toko', 'group' => 'store_allocations']);
         $permCreateOwn = Permission::firstOrCreate(['code' => PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value], ['name' => 'Membuat Alokasi Toko Sendiri', 'group' => 'store_allocations']);
         $permCreateOthers = Permission::firstOrCreate(['code' => PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value], ['name' => 'Membuat Alokasi Toko Orang Lain', 'group' => 'store_allocations']);
         $permPost = Permission::firstOrCreate(['code' => PermissionCode::STORE_ALLOCATIONS_POST->value], ['name' => 'Memposting Alokasi Toko', 'group' => 'store_allocations']);
 
         // Roles
         $techRole = Role::firstOrCreate(['code' => RoleCode::FIELD_TECHNICIAN->value], ['name' => 'Teknisi Lapangan']);
-        $techRole->permissions()->syncWithoutDetaching([$permView->id, $permCreate->id, $permCreateOwn->id, $permPost->id]);
+        $techRole->permissions()->syncWithoutDetaching([$permView->id, $permCreateOwn->id, $permPost->id]);
 
         $spvRole = Role::firstOrCreate(['code' => RoleCode::INVENTORY_SUPERVISOR->value], ['name' => 'Supervisor Inventory']);
-        $spvRole->permissions()->syncWithoutDetaching([$permView->id, $permCreate->id, $permCreateOwn->id, $permCreateOthers->id, $permPost->id]);
+        $spvRole->permissions()->syncWithoutDetaching([$permView->id, $permCreateOwn->id, $permCreateOthers->id, $permPost->id]);
 
         $adminRole = Role::firstOrCreate(['code' => RoleCode::ADMIN->value], ['name' => 'Administrator']);
-        $adminRole->permissions()->syncWithoutDetaching([$permView->id, $permCreate->id, $permCreateOwn->id, $permCreateOthers->id, $permPost->id]);
+        $adminRole->permissions()->syncWithoutDetaching([$permView->id, $permCreateOwn->id, $permCreateOthers->id, $permPost->id]);
 
         // Users & Locations
         $this->technicianA = User::factory()->create(['is_active' => true]);

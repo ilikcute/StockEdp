@@ -25,7 +25,7 @@
           </p>
         </div>
         <div class="flex items-center gap-2">
-          <ReportCsvExportControl
+          <ReportExportControl
             size="sm"
             :loading="exportStore.isExporting(reportKey)"
             :disabled="false"
@@ -188,7 +188,7 @@ import StockAdjustmentReportFilters from '../components/adjustment/StockAdjustme
 import StockAdjustmentReportTable from '../components/adjustment/StockAdjustmentReportTable.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import ReportFeedbackPanels from '../components/ReportFeedbackPanels.vue';
-import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import ReportExportControl from '../components/ReportExportControl.vue';
 
 const route = useRoute();
 const store = useStockAdjustmentReportStore();

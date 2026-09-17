@@ -19,16 +19,14 @@ class StoreAllocationRequest extends FormRequest
         // Jika technician_user_id tidak dikirim di request body, izinkan authorize lolos
         // agar validasi rules() yang menangani error 422 (field is required)
         if (empty($technicianUserId)) {
-            return $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE->value)
-                || $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value)
+            return $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value)
                 || $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value);
         }
 
         $isOwn = (int) $technicianUserId === (int) $user->id;
 
         if ($isOwn) {
-            return $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value)
-                || $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE->value);
+            return $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value);
         }
 
         return $user->can(PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value);

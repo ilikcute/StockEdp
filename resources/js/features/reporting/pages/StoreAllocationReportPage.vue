@@ -103,8 +103,8 @@
             Reset
           </button>
 
-          <!-- Export CSV Control (Compact size="sm") -->
-          <ReportCsvExportControl
+          <!-- Export Control (Compact size="sm") -->
+          <ReportExportControl
             size="sm"
             :loading="exportStore.isExporting('store-allocations')"
             :disabled="false"
@@ -440,7 +440,7 @@ import { useStoreAllocationReportStore } from '../stores/useStoreAllocationRepor
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { storeApi } from '@/features/store/api/store_api';
 import { formatQuantity, formatRupiah } from '@/shared/utils/formatters';
-import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import ReportExportControl from '../components/ReportExportControl.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 
 const store = useStoreAllocationReportStore();

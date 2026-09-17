@@ -97,8 +97,8 @@
             Reset
           </button>
 
-          <!-- Export CSV Control -->
-          <ReportCsvExportControl
+          <!-- Export Control -->
+          <ReportExportControl
             size="sm"
             :loading="exportStore.isExporting('field-balances')"
             :disabled="false"
@@ -369,7 +369,7 @@ import { useFieldBalanceReportStore } from '../stores/useFieldBalanceReportStore
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { locationApi } from '@/features/location/api/location_api';
 import { reportingApi } from '../api/reportingApi';
-import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import ReportExportControl from '../components/ReportExportControl.vue';
 import BaseCombobox from '@/shared/components/BaseCombobox.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import { formatRupiah, formatQuantity, rowNumber as calcRowNumber } from '@/shared/utils/formatters';

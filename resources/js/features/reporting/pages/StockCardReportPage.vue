@@ -167,8 +167,8 @@
             <span v-else>Tampilkan</span>
           </button>
 
-          <!-- Export CSV Control -->
-          <ReportCsvExportControl
+          <!-- Export Control -->
+          <ReportExportControl
             size="sm"
             :loading="exportStore.isExporting(reportKey)"
             :disabled="!canFetch"
@@ -512,7 +512,7 @@ import { useStockCardReportStore } from '../stores/useStockCardReportStore';
 import { useReportFilterOptionsStore } from '../stores/useReportFilterOptionsStore';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { toLocalDateInputValue, cleanReportExportFilters } from '../utils/reportHelpers';
-import ReportCsvExportControl from '../components/ReportCsvExportControl.vue';
+import ReportExportControl from '../components/ReportExportControl.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
