@@ -19,6 +19,4 @@ interface DepartmentRepositoryInterface
     public function create(array $data): Department;
 
     public function update(Department $department, array $data): Department;
-
-    public function delete(Department $department): bool;
 }

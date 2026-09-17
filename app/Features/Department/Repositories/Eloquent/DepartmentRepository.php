@@ -69,9 +69,4 @@ class DepartmentRepository implements DepartmentRepositoryInterface
 
         return $department->fresh(['createdBy', 'updatedBy']);
     }
-
-    public function delete(Department $department): bool
-    {
-        return $department->delete();
-    }
 }

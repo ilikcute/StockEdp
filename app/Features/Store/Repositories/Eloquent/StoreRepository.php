@@ -62,9 +62,4 @@ class StoreRepository implements StoreRepositoryInterface
 
         return $store->fresh(['createdBy', 'updatedBy']);
     }
-
-    public function delete(Store $store): bool
-    {
-        return $store->delete();
-    }
 }
