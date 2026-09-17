@@ -170,6 +170,174 @@ class ReportingRepository implements ReportingRepositoryInterface
         return $query->orderBy($sortField, $sortDirection)->paginate($perPage);
     }
 
+    public function getPaginatedGroupedBalances(
+        array $allowedLocationIds,
+        array $filters,
+        int $perPage = 15
+    ): array {
+        if (empty($allowedLocationIds)) {
+            return [
+                'data' => [],
+                'meta' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => $perPage,
+                    'total' => 0,
+                    'from' => null,
+                    'to' => null,
+                ],
+            ];
+        }
+
+        $query = DB::table('inventory_balances as b')
+            ->join('products as p', 'p.id', '=', 'b.product_id')
+            ->leftJoin('categories as c', 'c.id', '=', 'p.category_id')
+            ->leftJoin('units as u', 'u.id', '=', 'p.unit_id')
+            ->whereIn('b.location_id', $allowedLocationIds)
+            ->select([
+                'b.product_id',
+                'b.condition',
+                'p.sku as product_sku',
+                'p.barcode as product_barcode',
+                'p.name as product_name',
+                'p.unit_price',
+                'p.minimum_stock',
+                'p.is_active as is_product_active',
+                'c.name as category_name',
+                'u.name as unit_name',
+                'u.symbol as unit_symbol',
+                DB::raw('SUM(b.quantity) as total_quantity'),
+                DB::raw('COUNT(DISTINCT CASE WHEN b.quantity > 0 THEN b.location_id END) as locations_count'),
+            ])
+            ->groupBy([
+                'b.product_id',
+                'b.condition',
+                'p.sku',
+                'p.barcode',
+                'p.name',
+                'p.unit_price',
+                'p.minimum_stock',
+                'p.is_active',
+                'c.name',
+                'u.name',
+                'u.symbol',
+            ]);
+
+        if (! empty($filters['search'])) {
+            $search = trim($filters['search']);
+            $query->where(function ($q) use ($search) {
+                $q->where('p.name', 'like', "%{$search}%")
+                    ->orWhere('p.sku', 'like', "%{$search}%")
+                    ->orWhere('p.barcode', 'like', "%{$search}%")
+                    ->orWhere('c.name', 'like', "%{$search}%");
+            });
+        }
+
+        if (! empty($filters['condition'])) {
+            $query->where('b.condition', $filters['condition']);
+        }
+
+        if (! empty($filters['category_id'])) {
+            $query->where('p.category_id', $filters['category_id']);
+        }
+
+        if (isset($filters['is_active']) && $filters['is_active'] !== '') {
+            $query->where('p.is_active', (bool) $filters['is_active']);
+        }
+
+        if (! empty($filters['positive_stock'])) {
+            $query->havingRaw('SUM(b.quantity) > 0');
+        } elseif (isset($filters['zero_stock']) && $filters['zero_stock'] === '1') {
+            $query->havingRaw('SUM(b.quantity) = 0');
+        }
+
+        $query->orderBy('p.name', 'asc')->orderBy('b.condition', 'asc');
+
+        $paginated = $query->paginate($perPage);
+
+        $productIds = collect($paginated->items())->pluck('product_id')->unique()->filter()->values()->all();
+
+        $locationBalances = collect();
+        if (! empty($productIds)) {
+            $locationBalances = InventoryBalance::with(['location.user', 'location.operationLock'])
+                ->whereIn('location_id', $allowedLocationIds)
+                ->whereIn('product_id', $productIds)
+                ->where('quantity', '>', 0)
+                ->orderBy('quantity', 'desc')
+                ->get()
+                ->groupBy(function ($b) {
+                    $cond = $b->condition instanceof \BackedEnum ? $b->condition->value : (string) $b->condition;
+                    return $b->product_id . '_' . $cond;
+                });
+        }
+
+        $items = collect($paginated->items())->map(function ($row) use ($locationBalances) {
+            $key = $row->product_id.'_'.$row->condition;
+            $matchingBalances = $locationBalances->get($key, collect());
+
+            $locations = $matchingBalances->map(function ($bal) use ($row) {
+                $loc = $bal->location;
+                $locType = $loc?->type;
+                $typeEnum = \App\Features\Location\Enums\LocationType::tryFrom($locType ?? '');
+                $typeLabel = $typeEnum ? $typeEnum->label() : ($locType ?? 'Gudang');
+                $isField = ($typeEnum && $typeEnum->isFieldPersonnel()) || $locType === \App\Features\Location\Enums\LocationType::FIELD_PERSONNEL->value;
+
+                return [
+                    'balance_id' => $bal->id,
+                    'location_id' => $loc->id,
+                    'location_code' => $loc->code,
+                    'location_name' => $loc->name,
+                    'location_type' => $loc->type,
+                    'location_type_label' => $typeLabel,
+                    'is_field_personnel' => $isField,
+                    'personnel_name' => $loc->user?->name,
+                    'personnel_username' => $loc->user?->username,
+                    'quantity' => DecimalQuantity::normalize($bal->quantity),
+                    'total_value' => (float) bcmul((string) $bal->quantity, (string) ($row->unit_price ?? '0'), 2),
+                    'is_frozen' => (bool) ($loc->operationLock?->is_frozen ?? false),
+                ];
+            })->values()->all();
+
+            $minStockRaw = $row->minimum_stock !== null ? (string) $row->minimum_stock : '0';
+            $minStockFormatted = DecimalQuantity::normalize($minStockRaw);
+            $totalQtyFormatted = DecimalQuantity::normalize($row->total_quantity);
+
+            $isBelowMin = bccomp($minStockFormatted, '0.0000', 4) > 0 && bccomp($totalQtyFormatted, $minStockFormatted, 4) < 0;
+
+            return [
+                'product_id' => (int) $row->product_id,
+                'product_sku' => $row->product_sku ?? '-',
+                'product_barcode' => $row->product_barcode,
+                'product_name' => $row->product_name ?? '-',
+                'category_name' => $row->category_name ?? '-',
+                'unit_name' => $row->unit_name ?? $row->unit_symbol ?? '-',
+                'unit_price' => (float) ($row->unit_price ?? 0),
+                'condition' => $row->condition,
+                'condition_label' => $row->condition === 'DEFECTIVE' ? 'Rusak (DEFECTIVE)' : 'Bagus (GOOD)',
+                'total_quantity' => $totalQtyFormatted,
+                'on_hand_quantity' => $totalQtyFormatted,
+                'total_value' => (float) bcmul((string) $row->total_quantity, (string) ($row->unit_price ?? '0'), 2),
+                'minimum_stock' => $minStockFormatted,
+                'is_below_minimum' => $isBelowMin,
+                'is_product_active' => (bool) $row->is_product_active,
+                'locations_count' => count($locations),
+                'locations' => $locations,
+            ];
+        })->all();
+
+        return [
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'from' => $paginated->firstItem(),
+                'to' => $paginated->lastItem(),
+            ],
+        ];
+    }
+
     public function getPaginatedLowStock(
         array $allowedLocationIds,
         array $filters,

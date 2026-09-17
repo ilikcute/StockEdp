@@ -25,4 +25,15 @@ class InventoryBalanceReportQueryService
             $perPage
         );
     }
+
+    public function getGroupedReport(array $allowedLocationIds, array $filters): array
+    {
+        $perPage = (int) ($filters['per_page'] ?? 15);
+
+        return $this->repository->getPaginatedGroupedBalances(
+            $allowedLocationIds,
+            $filters,
+            $perPage
+        );
+    }
 }

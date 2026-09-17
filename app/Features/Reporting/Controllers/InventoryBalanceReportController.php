@@ -17,6 +17,13 @@ class InventoryBalanceReportController extends Controller
     public function index(InventoryBalanceReportRequest $request): JsonResponse
     {
         $allowedLocationIds = $request->user() ? $request->user()->getAllowedLocationIds() : [];
+
+        if ($request->input('view_mode') === 'grouped' || $request->boolean('grouped')) {
+            $grouped = $this->service->getGroupedReport($allowedLocationIds, $request->validated());
+
+            return response()->api($grouped);
+        }
+
         $balances = $this->service->getReport($allowedLocationIds, $request->validated());
 
         return response()->api(

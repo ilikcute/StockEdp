@@ -26,6 +26,12 @@ interface ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator;
 
+    public function getPaginatedGroupedBalances(
+        array $allowedLocationIds,
+        array $filters,
+        int $perPage = 15
+    ): array;
+
     public function getCursorBalances(
         array $allowedLocationIds,
         array $filters,
