@@ -13,6 +13,11 @@ export const monthEndApi = {
     getSummary: (params = {}) => apiClient.get('/month-end/summary', { params }),
 
     /**
+     * Mengambil peringatan H-3 periode aktif mendekati batas penutupan buku
+     */
+    getApproachingAlert: () => apiClient.get('/month-end/approaching-alert'),
+
+    /**
      * Mengambil rincian snapshot saldo per produk & lokasi
      * @param {number|string} periodId
      * @param {{ location_id?: number, condition?: string, search?: string, per_page?: number, page?: number }} params

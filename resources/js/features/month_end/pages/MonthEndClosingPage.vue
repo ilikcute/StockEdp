@@ -73,6 +73,41 @@
       </div>
     </div>
 
+    <!-- Approaching Period Close Warning Banner (H-3) -->
+    <div
+      v-if="approachingAlert"
+      class="rounded-xl p-3.5 border transition-all flex items-start justify-between gap-3 shadow-2xs"
+      :class="approachingAlert.is_imminent ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-amber-50 border-amber-200 text-amber-900'"
+    >
+      <div class="flex items-start gap-2.5">
+        <span
+          class="p-1 rounded-lg shrink-0 mt-0.5"
+          :class="approachingAlert.is_imminent ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </span>
+        <div>
+          <h3 class="font-bold text-xs">
+            Peringatan: Periode {{ approachingAlert.month_name }} Mendekati Batas Akhir Penutupan (Sisa {{ approachingAlert.days_remaining }} Hari)
+          </h3>
+          <p class="text-[11px] mt-0.5" :class="approachingAlert.is_imminent ? 'text-rose-800' : 'text-amber-800'">
+            {{ approachingAlert.message }}
+          </p>
+        </div>
+      </div>
+      <button
+        v-if="canClosePeriod"
+        type="button"
+        class="shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
+        :class="approachingAlert.is_imminent ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white'"
+        @click="openCloseModal()"
+      >
+        Tutup Buku Sekarang
+      </button>
+    </div>
+
     <!-- Alert / Toast Messages -->
     <div
       v-if="feedbackMessage"
@@ -1148,6 +1183,7 @@ const feedbackMessage = ref('');
 const feedbackType = ref('success');
 
 // Pre-closing checks
+const approachingAlert = ref(null);
 const pendingDraftsCount = ref(0);
 const pendingDraftsSummary = ref('');
 const modalPendingDocs = ref([]);
@@ -1496,8 +1532,18 @@ function showFeedback(msg, type = 'success') {
   }, 6000);
 }
 
+async function fetchApproachingAlert() {
+  try {
+    const res = await monthEndApi.getApproachingAlert();
+    approachingAlert.value = res.data.data;
+  } catch (err) {
+    console.error('Gagal memuat alert approaching period close:', err);
+  }
+}
+
 onMounted(() => {
   fetchPeriods();
   fetchCurrentMonthSummary();
+  fetchApproachingAlert();
 });
 </script>

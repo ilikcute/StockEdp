@@ -13,6 +13,7 @@ export const masterNavLinks = [
 export const inventoryNavLinks = [
     { to: '/inventory/movements', label: 'Riwayat Pergerakan', permission: 'inventory.movements.view' },
     { to: '/inventory/store-allocations', label: 'Alokasi Toko', permission: 'store_allocations.view' },
+    { to: '/inventory/product-serials', label: 'Pelacakan Serial Number', permission: 'product_serials.view' },
     { to: '/inventory/receipts', label: 'Penerimaan Stok', permission: 'stock_receipts.view' },
     { to: '/inventory/issues', label: 'Pengeluaran Stok', permission: 'stock_issues.view' },
     { to: '/inventory/transfers', label: 'Transfer Stok', permission: 'stock_transfers.view' },

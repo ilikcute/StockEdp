@@ -17,6 +17,7 @@ enum MovementType: string
     case OPNAME_IN = 'OPNAME_IN';
     case OPNAME_OUT = 'OPNAME_OUT';
     case REVERSAL = 'REVERSAL';
+    case RMA_DISPATCH = 'RMA_DISPATCH';
 
     public function label(): string
     {
@@ -34,6 +35,7 @@ enum MovementType: string
             self::OPNAME_IN => 'Opname Masuk',
             self::OPNAME_OUT => 'Opname Keluar',
             self::REVERSAL => 'Pembatalan',
+            self::RMA_DISPATCH => 'Klaim RMA Vendor',
         };
     }
 

@@ -53,4 +53,31 @@ class StoreAllocationRequest extends FormRequest
             'items.*.defective_reason' => ['nullable', 'string', 'max:255'],
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $items = $this->input('items', []);
+            $installedSns = [];
+            $pulledSns = [];
+
+            foreach ($items as $idx => $item) {
+                if (! empty($item['serial_number'])) {
+                    $sn = trim($item['serial_number']);
+                    if (in_array($sn, $installedSns, true)) {
+                        $validator->errors()->add("items.{$idx}.serial_number", "Serial number '{$sn}' diinput lebih dari satu kali dalam dokumen ini.");
+                    }
+                    $installedSns[] = $sn;
+                }
+
+                if (! empty($item['pulled_serial_number'])) {
+                    $pulledSn = trim($item['pulled_serial_number']);
+                    if (in_array($pulledSn, $pulledSns, true)) {
+                        $validator->errors()->add("items.{$idx}.pulled_serial_number", "Serial number unit tarik '{$pulledSn}' diinput lebih dari satu kali dalam dokumen ini.");
+                    }
+                    $pulledSns[] = $pulledSn;
+                }
+            }
+        });
+    }
 }

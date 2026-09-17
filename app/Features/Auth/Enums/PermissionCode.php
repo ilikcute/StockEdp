@@ -42,6 +42,8 @@ enum PermissionCode: string
     // Transactions
     case INVENTORY_BALANCES_VIEW = 'inventory.balances.view';
     case INVENTORY_MOVEMENTS_VIEW = 'inventory.movements.view';
+    case PRODUCT_SERIALS_VIEW = 'product_serials.view';
+    case PRODUCT_SERIALS_MANAGE = 'product_serials.manage';
 
     case STORE_ALLOCATIONS_VIEW = 'store_allocations.view';
     /** @deprecated Pensiun - gunakan STORE_ALLOCATIONS_CREATE_OWN. Dipertahankan di enum agar database lama tidak melempar ValueError saat hidrasi */
@@ -115,6 +117,10 @@ enum PermissionCode: string
 
     // Audit Log (Log Aktivitas Sistem)
     case AUDIT_LOGS_VIEW = 'audit_logs.view';
+
+    // Vendor RMA (Klaim Servis & Garansi Vendor)
+    case VENDOR_RMAS_VIEW = 'vendor_rmas.view';
+    case VENDOR_RMAS_MANAGE = 'vendor_rmas.manage';
 
     public function group(): string
     {

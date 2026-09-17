@@ -20,6 +20,7 @@ export const KNOWN_SUBGROUP_LABELS = {
     // 3. Transaksi Persediaan
     inventory: 'Saldo & Riwayat Pergerakan',
     store_allocations: 'Alokasi Penggantian Toko',
+    product_serials: 'Pelacakan Serial Number',
     stock_receipts: 'Penerimaan Stok (Inbound)',
     stock_issues: 'Pengeluaran Stok (Outbound)',
     stock_transfers: 'Transfer Stok Antar Gudang',
@@ -70,6 +71,7 @@ export const SIDEBAR_MENU_SECTIONS = [
         groupKeys: [
             'inventory',
             'store_allocations',
+            'product_serials',
             'stock_receipts',
             'stock_issues',
             'stock_transfers',

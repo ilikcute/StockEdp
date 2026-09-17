@@ -111,6 +111,21 @@ class MonthEndController extends Controller
     }
 
     /**
+     * Peringatan H-3 periode aktif yang mendekati batas waktu tutup buku bulanan.
+     */
+    public function approachingAlert(\App\Features\MonthEnd\Services\PeriodLockService $periodLockService): JsonResponse
+    {
+        $this->authorize(PermissionCode::MONTH_END_VIEW->value);
+
+        $alert = $periodLockService->getApproachingClosingAlert(3);
+
+        return ApiResponse::success(
+            data: $alert,
+            message: $alert ? 'Terdapat peringatan batas waktu periode aktif.' : 'Tidak ada periode yang mendekati batas waktu penutupan.'
+        );
+    }
+
+    /**
      * Dapatkan snapshot saldo per produk & lokasi untuk periode tertentu.
      */
     public function snapshots(Request $request, int $id): JsonResponse

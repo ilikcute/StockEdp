@@ -167,6 +167,25 @@ class OperationalDashboardService
             ];
         }
 
+        // 8. WARNING/CRITICAL: Approaching Period Close (H-3)
+        try {
+            $periodLockService = app(\App\Features\MonthEnd\Services\PeriodLockService::class);
+            $periodAlert = $periodLockService->getApproachingClosingAlert(3);
+            if ($periodAlert) {
+                $alerts[] = [
+                    'type' => 'PERIOD_CLOSING_APPROACHING',
+                    'severity' => $periodAlert['is_imminent'] ? 'CRITICAL' : 'WARNING',
+                    'title' => 'Mendekati Batas Tutup Buku Bulanan',
+                    'message' => $periodAlert['message'],
+                    'count' => $periodAlert['days_remaining'],
+                    'route_name' => 'inventory.month-end',
+                    'permission' => PermissionCode::MONTH_END_VIEW->value,
+                ];
+            }
+        } catch (\Throwable) {
+            // Fail-safe: Jangan biarkan gagal mengecek periode menghentikan dashboard
+        }
+
         return $alerts;
     }
 }

@@ -17,6 +17,7 @@ use App\Features\Store\Models\Store;
 use App\Features\StoreAllocation\Models\StoreAllocation;
 use App\Features\StoreAllocation\Repositories\Contracts\StoreAllocationRepositoryInterface;
 use App\Shared\Exceptions\DomainException;
+use App\Features\ProductSerial\Services\ProductSerialService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +25,8 @@ class CreateStoreAllocationAction
 {
     public function __construct(
         private readonly StoreAllocationRepositoryInterface $repository,
-        private readonly StockMovementService $stockMovementService
+        private readonly StockMovementService $stockMovementService,
+        private readonly ProductSerialService $productSerialService
     ) {}
 
     public function execute(array $data, ?int $userId = null): StoreAllocation
@@ -163,6 +165,37 @@ class CreateStoreAllocationAction
                                 userId: $userId ?? $allocation->created_by,
                                 occurredAt: $allocation->allocated_at->toDateTimeString(),
                                 condition: StockCondition::DEFECTIVE
+                            );
+                        }
+
+                        // 3. Pelacakan Siklus Hidup Serial Number
+                        if (! empty($item['serial_number'])) {
+                            $this->productSerialService->recordInstallation(
+                                serialNumber: $item['serial_number'],
+                                productId: (int) $item['product_id'],
+                                storeId: (int) $allocation->store_id,
+                                technicianLocationId: (int) $allocation->technician_location_id,
+                                referenceType: StoreAllocation::class,
+                                referenceId: $allocation->id,
+                                referenceNumber: $allocation->allocation_number,
+                                userId: $userId ?? $allocation->created_by,
+                                occurredAt: $allocation->allocated_at,
+                                notes: "Pemasangan unit di toko {$store->code} - {$store->name}"
+                            );
+                        }
+
+                        if (! empty($item['pulled_serial_number']) && ! empty($item['pulled_product_id'])) {
+                            $this->productSerialService->recordPull(
+                                pulledSerialNumber: $item['pulled_serial_number'],
+                                pulledProductId: (int) $item['pulled_product_id'],
+                                storeId: (int) $allocation->store_id,
+                                technicianLocationId: (int) $allocation->technician_location_id,
+                                defectiveReason: $item['defective_reason'] ?? null,
+                                referenceType: StoreAllocation::class,
+                                referenceId: $allocation->id,
+                                referenceNumber: $allocation->allocation_number,
+                                userId: $userId ?? $allocation->created_by,
+                                occurredAt: $allocation->allocated_at
                             );
                         }
                     }

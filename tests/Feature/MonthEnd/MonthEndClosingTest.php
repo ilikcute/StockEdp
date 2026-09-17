@@ -156,4 +156,24 @@ class MonthEndClosingTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.period.period_key', '2026-06');
     }
+
+    public function test_it_returns_approaching_period_closing_alert(): void
+    {
+        $today = \Carbon\Carbon::today();
+
+        InventoryPeriod::create([
+            'period_key' => $today->format('Y-m'),
+            'year' => $today->year,
+            'month' => $today->month,
+            'start_date' => $today->copy()->startOfMonth()->toDateString(),
+            'end_date' => $today->copy()->addDays(2)->toDateString(),
+            'status' => PeriodStatus::OPEN,
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/month-end/approaching-alert');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.days_remaining', 2);
+    }
 }

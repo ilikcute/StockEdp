@@ -85,4 +85,46 @@ class PeriodLockService
             ->where('end_date', '>=', $dateStr)
             ->first();
     }
+
+    /**
+     * Dapatkan informasi peringatan jika periode aktif mendekati batas akhir penutupan (H-3).
+     *
+     * @param int $daysThreshold Default 3 hari
+     * @return array|null Info periode mendekati closing atau null jika tidak ada
+     */
+    public function getApproachingClosingAlert(int $daysThreshold = 3): ?array
+    {
+        $today = Carbon::today();
+
+        $openPeriod = InventoryPeriod::query()
+            ->where('status', PeriodStatus::OPEN->value)
+            ->where('end_date', '>=', $today->toDateString())
+            ->orderBy('end_date', 'asc')
+            ->first();
+
+        if (! $openPeriod) {
+            return null;
+        }
+
+        $endDate = Carbon::parse($openPeriod->end_date);
+        $diffInDays = (int) $today->diffInDays($endDate, false);
+
+        if ($diffInDays >= 0 && $diffInDays <= $daysThreshold) {
+            $formattedEndDate = $openPeriod->end_date instanceof Carbon ? $openPeriod->end_date->format('d/m/Y') : Carbon::parse($openPeriod->end_date)->format('d/m/Y');
+            return [
+                'period_id' => $openPeriod->id,
+                'period_key' => $openPeriod->period_key,
+                'month_name' => $openPeriod->month_name,
+                'start_date' => $openPeriod->start_date instanceof Carbon ? $openPeriod->start_date->toDateString() : (string) $openPeriod->start_date,
+                'end_date' => $openPeriod->end_date instanceof Carbon ? $openPeriod->end_date->toDateString() : (string) $openPeriod->end_date,
+                'days_remaining' => $diffInDays,
+                'is_imminent' => $diffInDays <= 1,
+                'message' => $diffInDays === 0
+                    ? "Hari ini adalah hari terakhir periode persediaan {$openPeriod->month_name}. Segera lakukan tutup buku bulanan."
+                    : "Periode persediaan {$openPeriod->month_name} akan berakhir dalam {$diffInDays} hari (tanggal {$formattedEndDate}). Segera selesaikan transaksi dan persiapan tutup buku.",
+            ];
+        }
+
+        return null;
+    }
 }
