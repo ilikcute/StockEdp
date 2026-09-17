@@ -336,14 +336,12 @@
               Memuat data histori alokasi...
             </td>
           </tr>
-          <tr v-else-if="!store.loading && store.data.length === 0">
-            <td
-              colspan="13"
-              class="py-8 text-center text-xs text-gray-400"
-            >
-              Tidak ada data alokasi yang sesuai filter.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.loading && store.data.length === 0"
+            :colspan="13"
+            message="Tidak ada data alokasi yang sesuai filter."
+            :hint="isAnyFilterActive ? 'Silakan sesuaikan parameter pencarian atau filter yang dipilih.' : 'Belum ada data histori alokasi toko yang tercatat.'"
+          />
           <tr
             v-for="(row, idx) in store.data"
             :key="row.id"
@@ -442,6 +440,7 @@ import { storeApi } from '@/features/store/api/store_api';
 import { formatQuantity, formatRupiah } from '@/shared/utils/formatters';
 import ReportExportControl from '../components/ReportExportControl.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 const store = useStoreAllocationReportStore();
 const exportStore = useReportCsvExportStore();

@@ -22,8 +22,15 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-rose-100 bg-white">
+          <BaseTableEmpty
+            v-if="errors.length === 0"
+            :colspan="4"
+            message="Tidak ada error validasi data"
+            hint="Semua baris data import telah tervalidasi dengan benar."
+          />
           <tr
             v-for="(err, idx) in errors"
+            v-else
             :key="idx"
             class="hover:bg-rose-50/40 transition-colors"
           >
@@ -47,6 +54,8 @@
 </template>
 
 <script setup>
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
+
 defineProps({
   errors: {
     type: Array,

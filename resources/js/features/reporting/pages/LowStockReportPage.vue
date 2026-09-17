@@ -439,14 +439,12 @@
               Memuat data stok minimum...
             </td>
           </tr>
-          <tr v-else-if="!store.loading && store.data.length === 0">
-            <td
-              colspan="8"
-              class="py-8 text-center text-xs text-gray-400"
-            >
-              Tidak ada produk di bawah stok minimum pada lokasi ini.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.loading && store.data.length === 0"
+            :colspan="8"
+            message="Tidak ada produk di bawah stok minimum pada lokasi ini."
+            :hint="isAnyFilterActive ? 'Silakan sesuaikan parameter filter atau pencarian Anda.' : 'Semua produk pada lokasi ini memiliki stok yang aman dan mencukupi.'"
+          />
           <tr
             v-for="(item, index) in store.data"
             :key="item.id"
@@ -507,6 +505,7 @@ import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import ReportExportControl from '../components/ReportExportControl.vue';
 import BaseCombobox from '@/shared/components/BaseCombobox.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import { cleanReportExportFilters } from '../utils/reportHelpers';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 

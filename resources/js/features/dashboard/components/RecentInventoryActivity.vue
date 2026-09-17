@@ -24,19 +24,8 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div
-      v-if="!activities || activities.length === 0"
-      class="text-center py-6 text-gray-400 text-xs"
-    >
-      Belum ada aktivitas pergerakan stok pada lokasi terjangkau.
-    </div>
-
     <!-- Table with No. Sequence Column -->
-    <div
-      v-else
-      class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar"
-    >
+    <div class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar">
       <table class="w-full text-left text-xs border-collapse">
         <thead class="sticky top-0 bg-gray-50 z-10">
           <tr class="text-gray-600 font-semibold border-b border-gray-200">
@@ -73,8 +62,15 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
+          <BaseTableEmpty
+            v-if="!activities || activities.length === 0"
+            :colspan="10"
+            message="Belum ada aktivitas pergerakan stok"
+            hint="Aktivitas pergerakan stok fisik pada lokasi terjangkau akan muncul di sini."
+          />
           <tr
             v-for="(item, index) in activities"
+            v-else
             :key="item.id || index"
             class="hover:bg-gray-50/80 transition-colors"
           >
@@ -124,6 +120,7 @@
 
 <script setup>
 import { formatTimestamp, formatQuantity, formatRupiah } from '@/shared/utils/formatters.js';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 defineProps({
   activities: {

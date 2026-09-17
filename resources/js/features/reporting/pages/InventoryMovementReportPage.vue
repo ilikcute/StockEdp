@@ -571,35 +571,14 @@
               Memuat data pergerakan persediaan...
             </td>
           </tr>
-          <tr v-else-if="!loading && items.length === 0">
-            <td
-              :colspan="filters.type === 'slow-moving' ? 11 : 13"
-              class="py-12 text-center text-xs text-gray-400"
-            >
-              <svg
-                class="w-10 h-10 text-gray-300 mx-auto mb-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.5"
-                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                />
-              </svg>
-              <div class="text-xs font-semibold text-gray-700">
-                Tidak ada data pergerakan ditemukan
-              </div>
-              <p class="text-[11px] text-gray-500 mt-0.5 max-w-sm mx-auto">
-                {{ filters.type === 'slow-moving'
-                  ? 'Seluruh produk memiliki pergerakan transaksi dalam periode yang dipilih.'
-                  : 'Tidak ada produk dengan transaksi pengeluaran (Issue) pada periode yang dipilih.'
-                }}
-              </p>
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!loading && items.length === 0"
+            :colspan="filters.type === 'slow-moving' ? 11 : 13"
+            message="Tidak ada data pergerakan ditemukan"
+            :hint="filters.type === 'slow-moving'
+              ? 'Seluruh produk memiliki pergerakan transaksi dalam periode yang dipilih.'
+              : 'Tidak ada produk dengan transaksi pengeluaran (Issue) pada periode yang dipilih.'"
+          />
           <template v-else-if="filters.type === 'slow-moving'">
             <tr
               v-for="(row, idx) in items"
@@ -744,6 +723,7 @@ import { reportingApi } from '../api/reportingApi';
 import ReportExportControl from '../components/ReportExportControl.vue';
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import { formatTimestamp, formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
 const route = useRoute();

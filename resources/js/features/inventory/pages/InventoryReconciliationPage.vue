@@ -463,8 +463,15 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 bg-white">
+            <BaseTableEmpty
+              v-if="store.filteredDiscrepancies.length === 0"
+              :colspan="9"
+              message="Tidak ada selisih yang cocok dengan filter pencarian"
+              hint="Coba sesuaikan kata kunci pencarian atau lokasi yang dipilih."
+            />
             <tr
               v-for="item in store.filteredDiscrepancies"
+              v-else
               :key="item.key"
               class="hover:bg-indigo-50/30 transition-colors"
             >
@@ -576,6 +583,7 @@ import { useInventoryReconciliationStore } from '../stores/useInventoryReconcili
 import { locationApi } from '@features/location/api/location_api.js';
 import { formatQuantity, formatTimestamp } from '@/shared/utils/formatters';
 import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 const store = useInventoryReconciliationStore();
 

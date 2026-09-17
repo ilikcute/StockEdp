@@ -84,8 +84,15 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100 bg-white">
+        <BaseTableEmpty
+          v-if="items.length === 0"
+          :colspan="13"
+          message="Tidak ada data stock opname"
+          hint="Silakan sesuaikan parameter filter atau periode laporan."
+        />
         <tr
           v-for="(item, index) in items"
+          v-else
           :key="item.item_id"
           class="hover:bg-gray-50/80 transition-colors"
         >
@@ -163,6 +170,7 @@
 <script setup>
 import { getMovementDirectionLabel } from '../../utils/reportHelpers';
 import { formatRupiah, formatQuantity, rowNumber, formatTimestamp } from '@/shared/utils/formatters.js';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 defineProps({
   items: { type: Array, required: true },

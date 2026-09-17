@@ -240,33 +240,12 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 bg-white">
-          <tr v-if="!store.loading && store.data.length === 0">
-            <td
-              colspan="9"
-              class="py-12 text-center text-xs text-gray-400"
-            >
-              <div class="flex flex-col items-center justify-center gap-1.5">
-                <svg
-                  class="w-8 h-8 text-gray-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                  />
-                </svg>
-                <span class="font-medium text-gray-500">Tidak ada data saldo stok ditemukan.</span>
-                <span
-                  v-if="filters.search"
-                  class="text-[11px] text-gray-400"
-                >Coba ubah kata kunci pencarian "{{ filters.search }}".</span>
-              </div>
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-if="!store.loading && store.data.length === 0"
+            :colspan="9"
+            message="Tidak ada data saldo stok ditemukan."
+            :hint="filters.search ? `Coba ubah kata kunci pencarian &quot;${filters.search}&quot;.` : 'Belum ada data saldo stok pada filter yang dipilih.'"
+          />
 
           <tr
             v-for="(item, index) in store.data"
@@ -504,17 +483,7 @@
 
         <!-- Modal Table Content -->
         <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          <div
-            v-if="!selectedItem?.locations || selectedItem.locations.length === 0"
-            class="py-10 text-center text-xs text-gray-400"
-          >
-            Item ini saat ini belum tercatat memiliki saldo fisik di lokasi mana pun.
-          </div>
-
-          <table
-            v-else
-            class="min-w-full divide-y divide-gray-200 text-xs"
-          >
+          <table class="min-w-full divide-y divide-gray-200 text-xs">
             <thead class="bg-gray-50 text-gray-600 font-semibold sticky top-0 shadow-2xs text-[11px]">
               <tr>
                 <th
@@ -562,8 +531,14 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white">
+              <BaseTableEmpty
+                v-if="!selectedItem?.locations || selectedItem.locations.length === 0"
+                :colspan="7"
+                message="Item ini saat ini belum tercatat memiliki saldo fisik di lokasi mana pun."
+              />
               <tr
                 v-for="(loc, lIdx) in selectedItem.locations"
+                v-else
                 :key="loc.location_id"
                 class="hover:bg-gray-50 transition-colors"
               >
@@ -721,6 +696,7 @@ import { useInventoryBalanceReportStore } from '../stores/useInventoryBalanceRep
 import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import ReportExportControl from '../components/ReportExportControl.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
 const store = useInventoryBalanceReportStore();

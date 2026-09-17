@@ -284,14 +284,12 @@
               Memuat saldo persediaan teknisi...
             </td>
           </tr>
-          <tr v-else-if="!store.loading && store.data.length === 0">
-            <td
-              colspan="10"
-              class="py-8 text-center text-xs text-gray-400"
-            >
-              Tidak ada data saldo lapangan yang sesuai filter.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.loading && store.data.length === 0"
+            :colspan="10"
+            message="Tidak ada data saldo lapangan yang sesuai filter."
+            :hint="isAnyFilterActive ? 'Silakan sesuaikan parameter pencarian atau filter lokasi teknisi.' : 'Belum ada data saldo persediaan di lapangan.'"
+          />
           <tr
             v-for="(row, idx) in store.data"
             :key="row.id"
@@ -372,6 +370,7 @@ import { reportingApi } from '../api/reportingApi';
 import ReportExportControl from '../components/ReportExportControl.vue';
 import BaseCombobox from '@/shared/components/BaseCombobox.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import { formatRupiah, formatQuantity, rowNumber as calcRowNumber } from '@/shared/utils/formatters';
 
 const store = useFieldBalanceReportStore();

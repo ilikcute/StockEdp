@@ -77,33 +77,12 @@
             </td>
           </tr>
 
-          <tr
+          <BaseTableEmpty
             v-else-if="users.length === 0"
-            class="text-center"
-          >
-            <td
-              colspan="6"
-              class="py-8 text-gray-500 text-xs"
-            >
-              <div class="flex flex-col items-center justify-center space-y-1">
-                <svg
-                  class="w-7 h-7 text-gray-400 mb-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span class="font-medium text-gray-700 text-xs">Tidak ada data pengguna</span>
-                <span class="text-[11px] text-gray-400">Silakan sesuaikan filter pencarian atau tambahkan pengguna baru.</span>
-              </div>
-            </td>
-          </tr>
+            :colspan="6"
+            message="Tidak ada data pengguna"
+            hint="Silakan sesuaikan filter pencarian atau tambahkan pengguna baru."
+          />
 
           <tr
             v-for="user in users"
@@ -239,6 +218,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuthStore } from '@features/auth/stores/use_auth_store.js';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 defineProps({
   users: {

@@ -402,14 +402,12 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 bg-white">
-            <tr v-if="store.data.length === 0">
-              <td
-                colspan="10"
-                class="py-8 text-center text-xs text-gray-400"
-              >
-                Tidak ada pergerakan stok pada periode ini.
-              </td>
-            </tr>
+            <BaseTableEmpty
+              v-if="store.data.length === 0"
+              :colspan="10"
+              message="Tidak ada pergerakan stok pada periode ini."
+              hint="Tidak ditemukan mutasi fisik untuk produk dan lokasi ini dalam rentang tanggal yang dipilih."
+            />
             <tr
               v-for="(item, index) in store.data"
               :key="item.id"
@@ -514,6 +512,7 @@ import { useReportCsvExportStore } from '../stores/useReportCsvExportStore';
 import { toLocalDateInputValue, cleanReportExportFilters } from '../utils/reportHelpers';
 import ReportExportControl from '../components/ReportExportControl.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import { formatRupiah, formatQuantity, rowNumber } from '@/shared/utils/formatters.js';
 
 const route = useRoute();

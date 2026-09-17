@@ -25,19 +25,8 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div
-        v-if="!products || products.length === 0"
-        class="text-center py-4 text-gray-400 text-xs"
-      >
-        Tidak ada data penerimaan barang pada periode ini.
-      </div>
-
       <!-- Table -->
-      <div
-        v-else
-        class="overflow-x-auto max-h-[250px] overflow-y-auto custom-scrollbar"
-      >
+      <div class="overflow-x-auto max-h-[250px] overflow-y-auto custom-scrollbar">
         <table class="w-full text-left text-xs border-collapse">
           <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10">
             <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
@@ -62,8 +51,15 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
+            <BaseTableEmpty
+              v-if="!products || products.length === 0"
+              :colspan="6"
+              message="Tidak ada data penerimaan barang"
+              hint="Belum ada transaksi penerimaan barang tercatat pada periode ini."
+            />
             <tr
               v-for="(item, index) in products"
+              v-else
               :key="item.product_id || index"
               class="hover:bg-gray-50/80 transition-colors"
             >
@@ -100,6 +96,7 @@
 
 <script setup>
 import { formatQuantity, formatRupiah } from '@/shared/utils/formatters.js';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 defineProps({
   products: {

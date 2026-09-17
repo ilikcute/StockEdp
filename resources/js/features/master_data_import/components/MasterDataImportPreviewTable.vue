@@ -27,8 +27,15 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 bg-white">
+          <BaseTableEmpty
+            v-if="previewRows.length === 0"
+            :colspan="2 + (columns?.length || 0)"
+            message="Tidak ada data preview import"
+            hint="Silakan unggah file Excel/CSV untuk melihat preview data."
+          />
           <tr
             v-for="row in previewRows"
+            v-else
             :key="row.row_number"
             :class="row.is_valid ? 'hover:bg-gray-50/80 transition-colors' : 'bg-red-50/30 hover:bg-red-50/60 transition-colors'"
           >
@@ -59,6 +66,8 @@
 </template>
 
 <script setup>
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
+
 defineProps({
   previewRows: {
     type: Array,
