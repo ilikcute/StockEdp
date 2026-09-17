@@ -264,19 +264,38 @@
           <tr v-if="store.isLoading && store.items.length === 0">
             <td
               colspan="8"
-              class="py-8 text-center text-xs text-gray-500"
+              class="py-12 text-center text-xs text-gray-400"
             >
-              Memuat data...
+              <div class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Memuat data produk...</span>
+              </div>
             </td>
           </tr>
-          <tr v-else-if="store.items.length === 0">
-            <td
-              colspan="8"
-              class="py-8 text-center text-xs text-gray-500"
-            >
-              Tidak ada data produk yang ditemukan.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="store.items.length === 0"
+            :colspan="8"
+            message="Tidak ada data produk yang cocok."
+            :hint="isAnyFilterActive ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
           <tr
             v-for="(product, index) in store.items"
             :key="product.id"
@@ -394,6 +413,7 @@ import ProductFormModal from '../components/ProductFormModal.vue';
 import ProductStatusModal from '../components/ProductStatusModal.vue';
 import MasterDataImportModal from '../../master_data_import/components/MasterDataImportModal.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import apiClient from '@/shared/api/api_client';
 import { formatQuantity, formatRupiah, rowNumber } from '@/shared/utils/formatters';
 

@@ -175,19 +175,38 @@
           <tr v-if="store.isLoading && store.items.length === 0">
             <td
               colspan="7"
-              class="py-8 text-center text-xs text-gray-500"
+              class="py-12 text-center text-xs text-gray-400"
             >
-              Memuat data...
+              <div class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Memuat data lokasi...</span>
+              </div>
             </td>
           </tr>
-          <tr v-else-if="store.items.length === 0">
-            <td
-              colspan="7"
-              class="py-8 text-center text-xs text-gray-500"
-            >
-              Tidak ada data lokasi yang ditemukan.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="store.items.length === 0"
+            :colspan="7"
+            message="Tidak ada data lokasi yang cocok."
+            :hint="hasActiveFilters ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
           <tr
             v-for="(location, index) in store.items"
             :key="location.id"
@@ -287,12 +306,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useLocationStore } from '../stores/use_location_store';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import BaseButton from '@/shared/components/BaseButton.vue';
 import BaseSearchInput from '@/shared/components/BaseSearchInput.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import { rowNumber } from '@/shared/utils/formatters';
 import LocationFormModal from '../components/LocationFormModal.vue';
 import LocationStatusModal from '../components/LocationStatusModal.vue';
@@ -305,6 +325,10 @@ const authStore = useAuthStore();
 const searchQuery = ref('');
 const statusFilter = ref('');
 const sortBy = ref('created_at');
+
+const hasActiveFilters = computed(() => {
+    return Boolean(searchQuery.value || statusFilter.value);
+});
 
 const isFormModalOpen = ref(false);
 const isStatusModalOpen = ref(false);

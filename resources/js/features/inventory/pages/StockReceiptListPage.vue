@@ -157,14 +157,12 @@
               </div>
             </td>
           </tr>
-          <tr v-else-if="!store.receipts?.data || store.receipts.data.length === 0">
-            <td
-              colspan="6"
-              class="py-8 text-center text-xs text-gray-400"
-            >
-              Tidak ada data penerimaan yang cocok.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.receipts?.data || store.receipts.data.length === 0"
+            :colspan="6"
+            message="Tidak ada data penerimaan yang cocok."
+            :hint="hasActiveFilters ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
           <tr
             v-for="(item, index) in (store.receipts?.data || [])"
             :key="item.id"
@@ -216,11 +214,13 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useStockReceiptStore } from '../stores/useStockReceiptStore';
 import { useDocumentList } from '../composables/use_document_list';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import DocumentStatusBadge from '../components/DocumentStatusBadge.vue';
 
 const store = useStockReceiptStore();
@@ -229,6 +229,10 @@ const { searchQuery, statusFilter, onSearch, changePage, hasPermission } = useDo
     store,
     fetch: (params) => store.fetchList(params),
     collection: 'receipts',
+});
+
+const hasActiveFilters = computed(() => {
+    return Boolean(searchQuery.value || statusFilter.value);
 });
 
 let searchTimer = null;

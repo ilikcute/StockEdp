@@ -183,15 +183,12 @@
               </div>
             </td>
           </tr>
-          <tr v-else-if="!store.transfers.data || store.transfers.data.length === 0">
-            <td
-              colspan="8"
-              class="py-8 text-center text-xs text-gray-400"
-            >
-              <span v-if="statusFilter || searchQuery">Filter tidak menemukan data.</span>
-              <span v-else>Belum ada data transfer stok.</span>
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.transfers.data || store.transfers.data.length === 0"
+            :colspan="8"
+            message="Tidak ada data transfer stok yang cocok."
+            :hint="hasActiveFilters ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
           <tr
             v-for="(item, index) in (store.transfers.data || [])"
             :key="item.id"
@@ -253,17 +250,22 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useStockTransferStore } from '../stores/useStockTransferStore';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 const store = useStockTransferStore();
 const authStore = useAuthStore();
 
 const searchQuery = ref('');
 const statusFilter = ref('');
+
+const hasActiveFilters = computed(() => {
+  return Boolean(searchQuery.value || statusFilter.value);
+});
 
 let debounceTimer = null;
 const handleSearch = () => {

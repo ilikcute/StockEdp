@@ -234,33 +234,12 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 bg-white">
-          <tr v-if="!store.loading && (!store.serials?.data || store.serials.data.length === 0)">
-            <td
-              colspan="8"
-              class="py-12 text-center text-xs text-gray-400"
-            >
-              <div class="flex flex-col items-center justify-center gap-1.5">
-                <svg
-                  class="w-8 h-8 text-gray-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                  />
-                </svg>
-                <span class="font-medium text-gray-500">Tidak ada data serial number yang cocok.</span>
-                <span
-                  v-if="hasActiveFilters"
-                  class="text-[11px] text-gray-400"
-                >Silakan sesuaikan filter pencarian atau scan serial number lain.</span>
-              </div>
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-if="!store.loading && (!store.serials?.data || store.serials.data.length === 0)"
+            :colspan="8"
+            message="Tidak ada data serial number yang cocok."
+            :hint="hasActiveFilters ? 'Silakan sesuaikan filter pencarian atau scan serial number lain.' : ''"
+          />
 
           <tr
             v-for="(item, index) in store.serials?.data"
@@ -433,6 +412,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useProductSerialStore } from '../stores/useProductSerialStore';
 import ProductSerialDetailModal from '../components/ProductSerialDetailModal.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import { rowNumber } from '@/shared/utils/formatters.js';
 
 const store = useProductSerialStore();

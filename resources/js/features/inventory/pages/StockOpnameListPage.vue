@@ -185,19 +185,38 @@
           <tr v-if="store.loadingList && (!store.opnames?.data || store.opnames.data.length === 0)">
             <td
               colspan="7"
-              class="py-8 text-center text-xs text-gray-500"
+              class="py-12 text-center text-xs text-gray-400"
             >
-              Memuat data...
+              <div class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Memuat data stock opname...</span>
+              </div>
             </td>
           </tr>
-          <tr v-else-if="!store.opnames?.data || store.opnames.data.length === 0">
-            <td
-              colspan="7"
-              class="py-8 text-center text-xs text-gray-500"
-            >
-              Tidak ada data stock opname.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.opnames?.data || store.opnames.data.length === 0"
+            :colspan="7"
+            message="Tidak ada data stock opname yang cocok."
+            :hint="hasActiveFilters ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
           <tr
             v-for="(row, index) in (store.opnames?.data || [])"
             :key="row.id"
@@ -245,12 +264,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useStockOpnameStore } from '../stores/useStockOpnameStore';
 import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { rowNumber } from '@/shared/utils/formatters';
 import StockOpnameStatusBadge from '../components/StockOpnameStatusBadge.vue';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import apiClient from '@/shared/api/api_client';
 
 const store = useStockOpnameStore();
@@ -262,6 +282,10 @@ const searchQuery = ref('');
 const statusFilter = ref('');
 const locationFilter = ref('');
 let searchTimer = null;
+
+const hasActiveFilters = computed(() => {
+    return Boolean(searchQuery.value || statusFilter.value || locationFilter.value);
+});
 
 function hasPermission(permission) {
     return authStore.hasPermission(permission);

@@ -209,14 +209,12 @@
           </tr>
 
           <!-- Empty State -->
-          <tr v-else-if="inventoryStore.movements.data.length === 0">
-            <td
-              colspan="11"
-              class="py-8 text-center text-xs text-gray-400"
-            >
-              Tidak ada data pergerakan stok yang cocok dengan kriteria pencarian.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="inventoryStore.movements.data.length === 0"
+            :colspan="11"
+            message="Tidak ada data pergerakan stok yang cocok."
+            :hint="hasActiveFilters ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
 
           <!-- Data Rows -->
           <tr
@@ -315,9 +313,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, computed } from "vue";
 import { useInventoryStore } from "../stores/useInventoryStore";
 import BasePagination from "@/shared/components/BasePagination.vue";
+import BaseTableEmpty from "@/shared/components/BaseTableEmpty.vue";
 import StockMovementDetailModal from "../components/StockMovementDetailModal.vue";
 import {
     formatRupiah,
@@ -331,6 +330,10 @@ const inventoryStore = useInventoryStore();
 const searchQuery = ref("");
 const movementTypeFilter = ref("");
 const showDetailModal = ref(false);
+
+const hasActiveFilters = computed(() => {
+    return Boolean(searchQuery.value || movementTypeFilter.value);
+});
 
 const openDetail = async (item) => {
     showDetailModal.value = true;

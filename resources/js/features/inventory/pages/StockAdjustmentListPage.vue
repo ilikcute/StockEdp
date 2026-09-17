@@ -267,20 +267,38 @@
           <tr v-if="store.loadingList && (!store.adjustments.data || store.adjustments.data.length === 0)">
             <td
               colspan="9"
-              class="py-8 text-center text-xs text-gray-500"
+              class="py-12 text-center text-xs text-gray-400"
             >
-              Memuat data penyesuaian stok...
+              <div class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Memuat data penyesuaian stok...</span>
+              </div>
             </td>
           </tr>
-          <tr v-else-if="!store.adjustments.data || store.adjustments.data.length === 0">
-            <td
-              colspan="9"
-              class="py-8 text-center text-xs text-gray-500"
-            >
-              <span v-if="hasActiveFilter">Filter tidak menemukan data adjustment.</span>
-              <span v-else>Belum ada data penyesuaian stok.</span>
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.adjustments.data || store.adjustments.data.length === 0"
+            :colspan="9"
+            message="Tidak ada data penyesuaian stok yang cocok."
+            :hint="hasActiveFilter ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
           <tr
             v-for="(item, index) in (store.adjustments.data || [])"
             :key="item.id"
@@ -354,6 +372,7 @@ import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { locationApi } from '@features/location/api/location_api.js';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 const store = useStockAdjustmentStore();
 const authStore = useAuthStore();

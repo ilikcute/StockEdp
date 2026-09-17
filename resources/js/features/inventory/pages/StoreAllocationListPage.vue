@@ -154,19 +154,38 @@
           <tr v-if="store.loading && (!store.allocations?.data || store.allocations.data.length === 0)">
             <td
               colspan="8"
-              class="py-8 text-center text-xs text-gray-500"
+              class="py-12 text-center text-xs text-gray-400"
             >
-              Memuat data alokasi...
+              <div class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                <span>Memuat data alokasi...</span>
+              </div>
             </td>
           </tr>
-          <tr v-else-if="!store.allocations?.data || store.allocations.data.length === 0">
-            <td
-              colspan="8"
-              class="py-8 text-center text-xs text-gray-400"
-            >
-              Belum ada riwayat alokasi toko.
-            </td>
-          </tr>
+          <BaseTableEmpty
+            v-else-if="!store.allocations?.data || store.allocations.data.length === 0"
+            :colspan="8"
+            message="Tidak ada data alokasi toko yang cocok."
+            :hint="hasActiveFilters ? 'Silakan sesuaikan filter pencarian Anda.' : ''"
+          />
           <tr
             v-for="(item, index) in (store.allocations?.data || [])"
             :key="item.id"
@@ -240,11 +259,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useStoreAllocationStore } from '../stores/useStoreAllocationStore';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import { storeApi } from '@/features/store/api/store_api';
 import BasePagination from '@/shared/components/BasePagination.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 const store = useStoreAllocationStore();
 const authStore = useAuthStore();
@@ -253,6 +273,10 @@ const searchQuery = ref('');
 const selectedStoreId = ref('');
 const stores = ref([]);
 let searchTimer = null;
+
+const hasActiveFilters = computed(() => {
+    return Boolean(searchQuery.value || selectedStoreId.value);
+});
 
 const hasPermission = (perm) => authStore.hasPermission(perm);
 
