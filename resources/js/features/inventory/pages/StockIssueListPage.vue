@@ -154,7 +154,7 @@
           <tr v-if="store.loading && (!store.issues?.data || store.issues.data.length === 0)">
             <td
               colspan="7"
-              class="py-8 text-center text-xs text-gray-500"
+              class="py-12 text-center text-xs text-gray-400"
             >
               <div class="flex items-center justify-center gap-2">
                 <svg
@@ -183,9 +183,28 @@
           <tr v-else-if="!store.issues?.data || store.issues.data.length === 0">
             <td
               colspan="7"
-              class="py-8 text-center text-xs text-gray-400"
+              class="py-12 text-center text-xs text-gray-400"
             >
-              Tidak ada data pengeluaran yang cocok.
+              <div class="flex flex-col items-center justify-center gap-1.5">
+                <svg
+                  class="w-8 h-8 text-gray-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                  />
+                </svg>
+                <span class="font-medium text-gray-500">Tidak ada data pengeluaran yang cocok.</span>
+                <span
+                  v-if="hasActiveFilters"
+                  class="text-[11px] text-gray-400"
+                >Silakan sesuaikan filter pencarian Anda.</span>
+              </div>
             </td>
           </tr>
           <tr
@@ -274,6 +293,10 @@ const { searchQuery, statusFilter, onSearch, changePage, hasPermission } = useDo
     fetch: (params) => store.fetchList(params),
     collection: 'issues',
     extraFilters,
+});
+
+const hasActiveFilters = computed(() => {
+    return Boolean(searchQuery.value || statusFilter.value || departmentFilter.value);
 });
 
 let searchTimer = null;
