@@ -44,6 +44,8 @@ enum PermissionCode: string
     case INVENTORY_MOVEMENTS_VIEW = 'inventory.movements.view';
 
     case STORE_ALLOCATIONS_VIEW = 'store_allocations.view';
+    /** @deprecated Pensiun - gunakan STORE_ALLOCATIONS_CREATE_OWN. Dipertahankan di enum agar database lama tidak melempar ValueError saat hidrasi */
+    case STORE_ALLOCATIONS_CREATE = 'store_allocations.create';
     case STORE_ALLOCATIONS_CREATE_OWN = 'store_allocations.create_own';
     case STORE_ALLOCATIONS_CREATE_FOR_OTHERS = 'store_allocations.create_for_others';
     case STORE_ALLOCATIONS_POST = 'store_allocations.post';

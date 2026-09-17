@@ -6,6 +6,7 @@ use App\Features\Audit\Models\ActivityLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ActivityLogger
@@ -30,21 +31,29 @@ class ActivityLogger
         ?int $userId = null,
         ?Request $request = null,
     ): ActivityLog {
-        $request = $request ?? request();
-        $userId = $userId ?? Auth::id();
+        try {
+            $request = $request ?? request();
+            $userId = $userId ?? Auth::id();
 
-        return ActivityLog::create([
-            'user_id' => $userId,
-            'module' => $module,
-            'action' => $action,
-            'description' => $description,
-            'subject_type' => $subject ? get_class($subject) : null,
-            'subject_id' => $subject?->getKey(),
-            'properties' => $properties ?: null,
-            'ip_address' => $request?->ip(),
-            'user_agent' => $request ? Str::limit((string) $request->userAgent(), 500, '') : null,
-            'created_at' => now(),
-        ]);
+            return ActivityLog::create([
+                'user_id' => $userId,
+                'module' => $module,
+                'action' => $action,
+                'description' => $description,
+                'subject_type' => $subject ? get_class($subject) : null,
+                'subject_id' => $subject?->getKey(),
+                'properties' => $properties ?: null,
+                'ip_address' => $request?->ip(),
+                'user_agent' => $request ? Str::limit((string) $request->userAgent(), 500, '') : null,
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error("Gagal mencatat ActivityLog [{$module}.{$action}]: {$e->getMessage()}", [
+                'exception' => $e,
+            ]);
+
+            return new ActivityLog();
+        }
     }
 
     /**
