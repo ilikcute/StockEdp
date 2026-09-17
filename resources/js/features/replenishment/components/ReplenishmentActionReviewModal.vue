@@ -138,6 +138,11 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white">
+              <BaseTableEmpty
+                v-if="localItems.length === 0"
+                :colspan="5"
+                message="Tidak ada item transfer yang dipilih."
+              />
               <tr
                 v-for="item in localItems"
                 :key="`${item.product_id}-${item.source_location_id}`"
@@ -284,6 +289,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 import {
   isValidDecimal4String,
   compareDecimal4Strings,

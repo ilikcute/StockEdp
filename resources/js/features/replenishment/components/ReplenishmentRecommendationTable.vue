@@ -122,33 +122,12 @@
             </td>
           </tr>
 
-          <tr
+          <BaseTableEmpty
             v-else-if="items.length === 0"
-            class="text-center"
-          >
-            <td
-              colspan="9"
-              class="py-8 text-gray-500"
-            >
-              <div class="flex flex-col items-center justify-center space-y-1">
-                <svg
-                  class="w-6 h-6 text-emerald-500 mb-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span class="font-medium text-gray-700 text-xs">Tidak ada produk kekurangan stok</span>
-                <span class="text-[10px] text-gray-400">Semua produk berada di atas batas minimum stok atau filter tidak cocok.</span>
-              </div>
-            </td>
-          </tr>
+            :colspan="9"
+            message="Tidak ada produk kekurangan stok."
+            hint="Semua produk berada di atas batas minimum stok atau tidak ada data yang cocok dengan filter."
+          />
 
           <tr
             v-for="item in items"
@@ -282,6 +261,7 @@
 import { ref, computed } from 'vue';
 import ReplenishmentStatusBadge from './ReplenishmentStatusBadge.vue';
 import SourceAllocationList from './SourceAllocationList.vue';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 const props = defineProps({
   items: {
