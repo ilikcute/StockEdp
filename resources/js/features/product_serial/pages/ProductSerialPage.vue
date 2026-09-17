@@ -1,238 +1,408 @@
 <template>
-  <div class="space-y-4">
-    <!-- Top Barcode / Quick Lookup Box -->
-    <div class="bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-md border border-slate-800">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-400/30">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-              </svg>
-            </span>
-            <h1 class="text-lg font-bold tracking-tight text-white">
-              Pelacakan Siklus Hidup Serial Number
-            </h1>
-          </div>
-          <p class="text-xs text-slate-300 mt-1 max-w-xl">
-            Lacak riwayat lengkap unit fisik, keberadaan unit (gudang/teknisi/toko), kondisi operasional, dan mutasi dari awal registrasi hingga servis vendor.
-          </p>
-        </div>
-
-        <!-- Quick Scan / Search Input -->
-        <form class="flex items-center gap-2 w-full lg:w-auto" @submit.prevent="handleQuickLookup">
-          <div class="relative flex-1 sm:w-80">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-              </svg>
-            </div>
-            <input
-              v-model="quickSnInput"
-              type="text"
-              placeholder="Scan Barcode / Ketik No. Seri..."
-              class="w-full pl-9 pr-3 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
-            >
-          </div>
-          <button
-            type="submit"
-            :disabled="!quickSnInput.trim() || store.detailLoading"
-            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+  <div class="space-y-3">
+    <!-- Top Header & Integrated Filter Toolbar (Compact & Konsisten dengan StoreAllocationFormPage/ListPage) -->
+    <div class="bg-white rounded-xl border border-gray-200 px-3.5 py-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <!-- Left: Title & Subtitle -->
+      <div>
+        <h1 class="text-base font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+          <svg
+            class="w-4 h-4 text-indigo-600 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <span v-if="store.detailLoading" class="inline-block animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-            <span v-else>Cari Unit</span>
-          </button>
-        </form>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+            />
+          </svg>
+          <span>Pelacakan Serial Number</span>
+        </h1>
+        <p class="text-[11px] text-gray-500 mt-0.5">
+          Pelacakan siklus hidup unit fisik, lokasi penyimpanan/toko, kondisi operasional, dan riwayat mutasi per-SN.
+        </p>
       </div>
 
-      <!-- Quick lookup feedback error -->
-      <div v-if="store.lookupError" class="mt-3 p-2.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-200 text-xs flex items-center justify-between">
-        <span>{{ store.lookupError }}</span>
-        <button type="button" class="text-rose-300 hover:text-white text-xs underline cursor-pointer" @click="store.lookupError = null">
-          Tutup
+      <!-- Right: Search Input & Filters (Unified in Header) -->
+      <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <!-- Live Search Input with Debounce 300ms -->
+        <div class="relative w-full sm:w-64">
+          <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            id="search-serials"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari / Scan No. Seri, SKU, Produk..."
+            class="block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-8 pr-7 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+            @input="handleSearch"
+            @keydown.enter.prevent="handleDirectLookup"
+          >
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer text-sm"
+            title="Hapus pencarian"
+            @click="clearSearch"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Quick Status Filter -->
+        <select
+          v-model="selectedStatus"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer text-gray-700"
+          @change="loadData(1)"
+        >
+          <option value="">
+            Semua Status
+          </option>
+          <option value="IN_STOCK">
+            Tersedia di Gudang (IN_STOCK)
+          </option>
+          <option value="INSTALLED">
+            Terpasang di Toko (INSTALLED)
+          </option>
+          <option value="DEFECTIVE">
+            Rusak / Afkir (DEFECTIVE)
+          </option>
+          <option value="RETURNED_TO_VENDOR">
+            Servis Vendor (RMA)
+          </option>
+          <option value="DISPOSED">
+            Musnah / Dihapus (DISPOSED)
+          </option>
+        </select>
+
+        <!-- Quick Condition Filter -->
+        <select
+          v-model="selectedCondition"
+          class="block rounded-lg border border-gray-300 bg-white py-1.5 pl-2.5 pr-8 text-xs shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer text-gray-700"
+          @change="loadData(1)"
+        >
+          <option value="">
+            Semua Kondisi
+          </option>
+          <option value="GOOD">
+            Bagus (GOOD)
+          </option>
+          <option value="DEFECTIVE">
+            Rusak (DEFECTIVE)
+          </option>
+        </select>
+
+        <!-- Reset Button -->
+        <button
+          v-if="hasActiveFilters"
+          type="button"
+          class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-2xs cursor-pointer whitespace-nowrap"
+          title="Reset Filter"
+          @click="resetFilters"
+        >
+          Reset
         </button>
       </div>
     </div>
 
-    <!-- Filter Toolbar & Statistics -->
-    <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs space-y-3">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <!-- Search Query -->
-        <div class="relative flex-1 max-w-sm">
-          <input
-            v-model="filters.search"
-            type="text"
-            placeholder="Cari No. Seri / SKU / Nama Produk..."
-            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            @input="debouncedSearch"
-          >
-          <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-        </div>
-
-        <!-- Filter Selects -->
-        <div class="flex items-center gap-2 flex-wrap">
-          <!-- Status Filter -->
-          <select
-            v-model="filters.status"
-            class="text-xs rounded-lg border border-slate-300 py-1.5 px-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            @change="loadData(1)"
-          >
-            <option value="">Semua Status</option>
-            <option value="IN_STOCK">Tersedia di Gudang (IN_STOCK)</option>
-            <option value="INSTALLED">Terpasang di Toko (INSTALLED)</option>
-            <option value="DEFECTIVE">Rusak / Afkir (DEFECTIVE)</option>
-            <option value="RETURNED_TO_VENDOR">Klaim Servis Vendor (RMA)</option>
-            <option value="DISPOSED">Musnah / Dihapus (DISPOSED)</option>
-          </select>
-
-          <!-- Condition Filter -->
-          <select
-            v-model="filters.condition"
-            class="text-xs rounded-lg border border-slate-300 py-1.5 px-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            @change="loadData(1)"
-          >
-            <option value="">Semua Kondisi</option>
-            <option value="GOOD">Bagus (GOOD)</option>
-            <option value="DEFECTIVE">Rusak (DEFECTIVE)</option>
-          </select>
-
-          <!-- Reset Filter Button -->
-          <button
-            v-if="hasActiveFilters"
-            type="button"
-            class="px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-            @click="resetFilters"
-          >
-            Reset
-          </button>
-        </div>
+    <!-- Error / Lookup Banner -->
+    <div
+      v-if="store.error || store.lookupError"
+      class="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-center justify-between shadow-2xs"
+    >
+      <div class="flex items-center gap-1.5">
+        <svg
+          class="w-4 h-4 text-rose-500 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{{ store.error || store.lookupError }}</span>
       </div>
+      <button
+        type="button"
+        class="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer"
+        @click="clearErrors"
+      >
+        Tutup
+      </button>
     </div>
 
-    <!-- Main Table -->
-    <div class="overflow-x-auto shadow-2xs border border-slate-200 rounded-xl bg-white custom-scrollbar">
+    <!-- Main Data Table -->
+    <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar relative">
+      <div
+        v-if="store.loading"
+        class="absolute inset-0 bg-white/60 backdrop-blur-2xs z-20 flex items-center justify-center"
+      >
+        <div class="inline-flex items-center gap-2 text-indigo-600 font-semibold bg-white px-3.5 py-2 rounded-lg shadow-sm text-xs border border-gray-100">
+          <svg
+            class="w-4 h-4 animate-spin"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8H4z"
+            />
+          </svg>
+          <span>Memuat data serial number...</span>
+        </div>
+      </div>
+
       <table class="w-full text-left text-xs border-collapse">
-        <thead class="bg-slate-50/80 text-slate-700 font-semibold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+        <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-xs z-10 text-gray-600 font-semibold border-b border-gray-200 text-[11px]">
           <tr>
-            <th class="py-3 px-4">Serial Number</th>
-            <th class="py-3 px-4">Produk</th>
-            <th class="py-3 px-4 text-center">Status Unit</th>
-            <th class="py-3 px-4 text-center">Kondisi</th>
-            <th class="py-3 px-4">Posisi Saat Ini</th>
-            <th class="py-3 px-4">Terakhir Diperbarui</th>
-            <th class="py-3 px-4 text-right">Aksi</th>
+            <th
+              scope="col"
+              class="py-2 px-2 w-8 text-center whitespace-nowrap"
+            >
+              No.
+            </th>
+            <th
+              scope="col"
+              class="py-2 px-3 whitespace-nowrap"
+            >
+              Serial Number
+            </th>
+            <th
+              scope="col"
+              class="py-2 px-3 whitespace-nowrap"
+            >
+              Produk & SKU
+            </th>
+            <th
+              scope="col"
+              class="py-2 px-2.5 text-center whitespace-nowrap"
+            >
+              Status Unit
+            </th>
+            <th
+              scope="col"
+              class="py-2 px-2.5 text-center whitespace-nowrap"
+            >
+              Kondisi
+            </th>
+            <th
+              scope="col"
+              class="py-2 px-3 whitespace-nowrap"
+            >
+              Posisi Saat Ini
+            </th>
+            <th
+              scope="col"
+              class="py-2 px-3 whitespace-nowrap"
+            >
+              Terakhir Diperbarui
+            </th>
+            <th
+              scope="col"
+              class="py-2 px-2.5 text-center whitespace-nowrap w-20"
+            >
+              Aksi
+            </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
-          <tr v-if="store.loading">
-            <td colspan="7" class="py-12 text-center text-slate-400">
-              <div class="flex items-center justify-center gap-2">
-                <span class="inline-block animate-spin h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full" />
-                <span>Memuat data serial number...</span>
+        <tbody class="divide-y divide-gray-100 bg-white">
+          <tr v-if="!store.loading && (!store.serials?.data || store.serials.data.length === 0)">
+            <td
+              colspan="8"
+              class="py-12 text-center text-xs text-gray-400"
+            >
+              <div class="flex flex-col items-center justify-center gap-1.5">
+                <svg
+                  class="w-8 h-8 text-gray-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                  />
+                </svg>
+                <span class="font-medium text-gray-500">Tidak ada data serial number yang cocok.</span>
+                <span
+                  v-if="hasActiveFilters"
+                  class="text-[11px] text-gray-400"
+                >Silakan sesuaikan filter pencarian atau scan serial number lain.</span>
               </div>
             </td>
           </tr>
 
-          <tr v-else-if="!store.serials?.data || store.serials.data.length === 0">
-            <td colspan="7" class="py-12 text-center text-slate-400">
-              <p class="font-medium text-slate-600">Tidak ada data serial number yang cocok.</p>
-              <p class="text-[11px] text-slate-400 mt-0.5">Silakan sesuaikan filter pencarian Anda atau scan serial number lain.</p>
-            </td>
-          </tr>
-
           <tr
-            v-for="item in store.serials.data"
-            v-else
+            v-for="(item, index) in store.serials?.data"
             :key="item.id"
-            class="hover:bg-indigo-50/30 transition-colors group cursor-pointer"
+            class="hover:bg-gray-50/80 transition-colors cursor-pointer group"
             @click="openDetail(item)"
           >
-            <!-- Serial Number -->
-            <td class="py-3 px-4">
+            <!-- 1. Nomor Baris -->
+            <td class="py-2 px-2 text-center text-gray-400 font-mono text-[11px] whitespace-nowrap">
+              {{ rowNumber(store.serials?.meta, index) }}
+            </td>
+
+            <!-- 2. Serial Number -->
+            <td class="py-2 px-3 text-[11px] whitespace-nowrap">
               <div class="flex items-center gap-1.5">
-                <span class="font-mono font-bold text-slate-900 group-hover:text-indigo-600">
+                <span class="font-mono font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
                   {{ item.serial_number }}
                 </span>
                 <button
                   type="button"
                   title="Salin Serial Number"
-                  class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-700 p-0.5 rounded transition-opacity"
+                  class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-700 p-0.5 rounded transition-opacity cursor-pointer"
                   @click.stop="copyText(item.serial_number)"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  <svg
+                    class="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
                   </svg>
                 </button>
               </div>
             </td>
 
-            <!-- Product -->
-            <td class="py-3 px-4">
-              <div class="font-medium text-slate-900">{{ item.product?.name || '—' }}</div>
-              <div class="text-[10px] text-slate-400 font-mono">{{ item.product?.sku }}</div>
+            <!-- 3. Produk & SKU -->
+            <td class="py-2 px-3 text-[11px] whitespace-nowrap">
+              <div class="font-medium text-gray-900">
+                {{ item.product?.name || '—' }}
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono">
+                {{ item.product?.sku }}
+              </div>
             </td>
 
-            <!-- Status -->
-            <td class="py-3 px-4 text-center">
+            <!-- 4. Status Unit -->
+            <td class="py-2 px-2.5 text-[11px] text-center whitespace-nowrap">
               <span
-                class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold"
+                class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold"
                 :class="statusBadgeClass(item.status)"
               >
                 {{ item.status_label || item.status }}
               </span>
             </td>
 
-            <!-- Condition -->
-            <td class="py-3 px-4 text-center">
+            <!-- 5. Kondisi -->
+            <td class="py-2 px-2.5 text-[11px] text-center whitespace-nowrap">
               <span
-                class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium"
-                :class="item.current_condition === 'GOOD' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center"
+                :class="item.current_condition === 'DEFECTIVE' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20' : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20'"
               >
-                {{ item.current_condition === 'GOOD' ? 'Bagus' : 'Rusak' }}
+                {{ item.current_condition === 'DEFECTIVE' ? 'RUSAK' : 'BAGUS' }}
               </span>
             </td>
 
-            <!-- Position -->
-            <td class="py-3 px-4">
+            <!-- 6. Posisi Saat Ini -->
+            <td class="py-2 px-3 text-[11px] whitespace-nowrap">
               <template v-if="item.current_store">
                 <div class="font-medium text-blue-700 flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  <svg
+                    class="w-3.5 h-3.5 text-blue-500 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
                   </svg>
-                  <span>{{ item.current_store.name }}</span>
+                  <span>Toko: {{ item.current_store.name }}</span>
                 </div>
               </template>
               <template v-else-if="item.current_location">
-                <div class="font-medium text-slate-700 flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <div class="font-medium text-gray-700 flex items-center gap-1">
+                  <svg
+                    class="w-3.5 h-3.5 text-gray-400 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                    />
                   </svg>
                   <span>{{ item.current_location.name }}</span>
                 </div>
               </template>
               <template v-else>
-                <span class="text-slate-400 italic">Di luar lokasi internal</span>
+                <span class="text-gray-400 italic">Di luar lokasi internal</span>
               </template>
             </td>
 
-            <!-- Updated At -->
-            <td class="py-3 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+            <!-- 7. Terakhir Diperbarui -->
+            <td class="py-2 px-3 text-gray-500 text-[11px] whitespace-nowrap">
               {{ formatDateTime(item.updated_at) }}
             </td>
 
-            <!-- Action -->
-            <td class="py-3 px-4 text-right">
+            <!-- 8. Aksi -->
+            <td
+              class="py-2 px-2.5 text-center whitespace-nowrap"
+              @click.stop
+            >
               <button
                 type="button"
-                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[11px] transition-colors cursor-pointer"
-                @click.stop="openDetail(item)"
+                class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 transition-colors shadow-2xs border border-indigo-100/80 cursor-pointer"
+                title="Buka riwayat pergerakan unit"
+                @click="openDetail(item)"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  class="w-3 h-3 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <span>Timeline</span>
               </button>
@@ -240,41 +410,14 @@
           </tr>
         </tbody>
       </table>
-
-      <!-- Table Footer / Pagination -->
-      <div
-        v-if="store.serials?.meta && store.serials.meta.total > 0"
-        class="bg-slate-50/80 px-4 py-2.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500"
-      >
-        <div>
-          Menampilkan <span class="font-semibold text-slate-700">{{ store.serials.meta.from || 1 }}</span>
-          sampai <span class="font-semibold text-slate-700">{{ store.serials.meta.to || store.serials.data.length }}</span>
-          dari <span class="font-semibold text-slate-700">{{ store.serials.meta.total }}</span> unit serial number
-        </div>
-
-        <div class="flex items-center gap-1.5">
-          <button
-            type="button"
-            :disabled="store.serials.meta.current_page <= 1"
-            class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            @click="loadData(store.serials.meta.current_page - 1)"
-          >
-            Sebelumnya
-          </button>
-          <span class="px-2 py-1 font-semibold text-slate-700">
-            Hal {{ store.serials.meta.current_page }} dari {{ store.serials.meta.last_page }}
-          </span>
-          <button
-            type="button"
-            :disabled="store.serials.meta.current_page >= store.serials.meta.last_page"
-            class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            @click="loadData(store.serials.meta.current_page + 1)"
-          >
-            Selanjutnya
-          </button>
-        </div>
-      </div>
     </div>
+
+    <!-- Pagination (Standard BasePagination Component) -->
+    <BasePagination
+      :pagination="store.serials?.meta"
+      :loading="store.loading"
+      @change="changePage"
+    />
 
     <!-- Timeline Detail Modal -->
     <ProductSerialDetailModal
@@ -286,25 +429,23 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useProductSerialStore } from '../stores/useProductSerialStore';
 import ProductSerialDetailModal from '../components/ProductSerialDetailModal.vue';
+import BasePagination from '@/shared/components/BasePagination.vue';
+import { rowNumber } from '@/shared/utils/formatters.js';
 
 const store = useProductSerialStore();
 
-const quickSnInput = ref('');
+const searchQuery = ref('');
+const selectedStatus = ref('');
+const selectedCondition = ref('');
 const isModalOpen = ref(false);
 
-const filters = reactive({
-    search: '',
-    status: '',
-    condition: '',
-});
-
-let searchDebounceTimeout = null;
+let searchTimer = null;
 
 const hasActiveFilters = computed(() => {
-    return Boolean(filters.search || filters.status || filters.condition);
+    return Boolean(searchQuery.value || selectedStatus.value || selectedCondition.value);
 });
 
 onMounted(() => {
@@ -316,39 +457,60 @@ async function loadData(page = 1) {
         page,
         per_page: 15,
     };
-    if (filters.search) params.search = filters.search;
-    if (filters.status) params.status = filters.status;
-    if (filters.condition) params.condition = filters.condition;
+    if (searchQuery.value) params.search = searchQuery.value.trim();
+    if (selectedStatus.value) params.status = selectedStatus.value;
+    if (selectedCondition.value) params.condition = selectedCondition.value;
 
     await store.fetchSerials(params);
 }
 
-function debouncedSearch() {
-    clearTimeout(searchDebounceTimeout);
-    searchDebounceTimeout = setTimeout(() => {
+// Live search with standard 300ms debounce (consistent with StoreAllocationListPage and others)
+function handleSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
         loadData(1);
-    }, 350);
+    }, 300);
 }
 
-function resetFilters() {
-    filters.search = '';
-    filters.status = '';
-    filters.condition = '';
+// Direct scan / barcode / Enter trigger
+async function handleDirectLookup() {
+    const query = searchQuery.value.trim();
+    if (!query) return;
+
+    try {
+        await store.lookupSerial(query);
+        if (store.selectedSerial) {
+            isModalOpen.value = true;
+            return;
+        }
+    } catch {
+        // Fallback to table search
+    }
+    clearTimeout(searchTimer);
     loadData(1);
 }
 
-async function handleQuickLookup() {
-    const sn = quickSnInput.value.trim();
-    if (!sn) return;
+function clearSearch() {
+    searchQuery.value = '';
+    clearTimeout(searchTimer);
+    loadData(1);
+}
 
-    try {
-        await store.lookupSerial(sn);
-        if (store.selectedSerial) {
-            isModalOpen.value = true;
-        }
-    } catch {
-        // Error handled in store.lookupError
-    }
+function resetFilters() {
+    searchQuery.value = '';
+    selectedStatus.value = '';
+    selectedCondition.value = '';
+    clearTimeout(searchTimer);
+    loadData(1);
+}
+
+function changePage(page) {
+    loadData(page);
+}
+
+function clearErrors() {
+    store.error = null;
+    store.lookupError = null;
 }
 
 async function openDetail(serialItem) {
@@ -389,17 +551,34 @@ function formatDateTime(dateStr) {
 function statusBadgeClass(status) {
     switch (status) {
         case 'IN_STOCK':
-            return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+            return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20';
         case 'INSTALLED':
-            return 'bg-blue-100 text-blue-800 border border-blue-200';
+            return 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20';
         case 'DEFECTIVE':
-            return 'bg-rose-100 text-rose-800 border border-rose-200';
+            return 'bg-rose-50 text-rose-700 ring-1 ring-rose-600/20';
         case 'RETURNED_TO_VENDOR':
-            return 'bg-purple-100 text-purple-800 border border-purple-200';
+            return 'bg-purple-50 text-purple-700 ring-1 ring-purple-600/20';
         case 'DISPOSED':
-            return 'bg-slate-200 text-slate-800 border border-slate-300';
+            return 'bg-gray-100 text-gray-700 ring-1 ring-gray-600/20';
         default:
-            return 'bg-slate-100 text-slate-700';
+            return 'bg-gray-100 text-gray-700';
     }
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
