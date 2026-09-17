@@ -349,17 +349,12 @@
               </td>
             </tr>
 
-            <tr
+            <BaseTableEmpty
               v-else-if="filteredPeriods.length === 0"
-              class="text-center"
-            >
-              <td
-                colspan="8"
-                class="py-8 text-gray-400"
-              >
-                Belum ada data periode yang cocok. Silakan lakukan tutup buku pertama.
-              </td>
-            </tr>
+              :colspan="8"
+              message="Belum ada data periode yang cocok."
+              :hint="searchQuery ? 'Silakan sesuaikan kata kunci pencarian Anda.' : 'Silakan lakukan tutup buku pertama untuk membekukan periode.'"
+            />
 
             <tr
               v-for="item in filteredPeriods"
@@ -1059,17 +1054,12 @@
                 </td>
               </tr>
 
-              <tr
+              <BaseTableEmpty
                 v-else-if="snapshotList.length === 0"
-                class="text-center"
-              >
-                <td
-                  colspan="11"
-                  class="py-8 text-gray-400"
-                >
-                  Tidak ada data snapshot untuk filter yang dipilih.
-                </td>
-              </tr>
+                :colspan="11"
+                message="Tidak ada data snapshot untuk filter yang dipilih."
+                :hint="snapshotFilter.search || snapshotFilter.condition ? 'Silakan sesuaikan kata kunci atau filter kondisi barang.' : ''"
+              />
 
               <tr
                 v-for="(row, idx) in snapshotList"
@@ -1167,6 +1157,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import { monthEndApi } from '../api/month_end_api';
 import { formatRupiah, formatQuantity, formatTimestamp } from '@/shared/utils/formatters';
+import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
 
 const authStore = useAuthStore();
 
