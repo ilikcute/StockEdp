@@ -174,6 +174,22 @@ export const useStockTransferStore = defineStore('stockTransfer', {
             } finally {
                 this.loadingAction = false;
             }
+        },
+
+        async deleteTransfer(id) {
+            this.loadingAction = true;
+            this.error = null;
+            try {
+                const response = await inventoryApi.deleteTransfer(id);
+                return response.data;
+            } catch (error) {
+                const normalized = normalizeApiError(error);
+                this.error = normalized.message;
+                this.status = normalized.status;
+                throw error;
+            } finally {
+                this.loadingAction = false;
+            }
         }
     }
 });

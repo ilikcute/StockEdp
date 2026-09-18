@@ -120,6 +120,7 @@ class ReleaseDatasetIntegrityTest extends TestCase
                 'STORE_ALLOCATION',
                 'REPLACEMENT_PULL',
                 'RETURN_TO_WAREHOUSE',
+                'RMA_DISPATCH',
             ], true))
             ->sort()
             ->values();

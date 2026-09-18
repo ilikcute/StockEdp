@@ -134,6 +134,20 @@ export function createDocumentStore(storeId, config) {
                     this.loading = false;
                 }
             },
+
+            async deleteDocument(id) {
+                this.loading = true;
+                this.error = null;
+                try {
+                    const response = await api.delete(id);
+                    return response.data;
+                } catch (error) {
+                    this.error = error.response?.data?.message || messages.deleteError || 'Gagal menghapus dokumen';
+                    throw error;
+                } finally {
+                    this.loading = false;
+                }
+            },
         },
     });
 }

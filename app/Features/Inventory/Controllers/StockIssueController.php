@@ -11,6 +11,7 @@ use App\Features\Inventory\Repositories\Contracts\StockIssueRepositoryInterface;
 use App\Features\Inventory\Requests\StockIssueRequest;
 use App\Features\Inventory\Resources\StockIssueResource;
 use App\Http\Controllers\Controller;
+use App\Shared\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -36,7 +37,9 @@ class StockIssueController extends Controller
 
         $issues = $this->repository->getPaginatedIssues($filters, $sortField, $sortDirection, $perPage);
 
-        return response()->api(StockIssueResource::collection($issues));
+        return ApiResponse::success(
+            StockIssueResource::collection($issues)->response()->getData(true)
+        );
     }
 
     public function store(StockIssueRequest $request): JsonResponse
@@ -45,7 +48,11 @@ class StockIssueController extends Controller
 
         $issue = $this->createAction->execute($request->validated(), $request->user()->id);
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')), 'Success', 201);
+        return ApiResponse::success(
+            new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')),
+            'Success',
+            201
+        );
     }
 
     public function show(StockIssue $stockIssue): JsonResponse
@@ -54,7 +61,7 @@ class StockIssueController extends Controller
 
         $issue = $this->repository->findById($stockIssue->id);
 
-        return response()->api(new StockIssueResource($issue));
+        return ApiResponse::success(new StockIssueResource($issue));
     }
 
     public function update(StockIssueRequest $request, StockIssue $stockIssue): JsonResponse
@@ -63,7 +70,9 @@ class StockIssueController extends Controller
 
         $issue = $this->updateAction->execute($stockIssue, $request->validated());
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')));
+        return ApiResponse::success(
+            new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department'))
+        );
     }
 
     public function post(Request $request, StockIssue $stockIssue): JsonResponse
@@ -72,7 +81,9 @@ class StockIssueController extends Controller
 
         $issue = $this->postAction->execute($stockIssue, $request->user()->id);
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')));
+        return ApiResponse::success(
+            new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department'))
+        );
     }
 
     public function cancel(Request $request, StockIssue $stockIssue): JsonResponse
@@ -81,6 +92,23 @@ class StockIssueController extends Controller
 
         $issue = $this->cancelAction->execute($stockIssue, $request->user()->id);
 
-        return response()->api(new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department')));
+        return ApiResponse::success(
+            new StockIssueResource($issue->load('items.product.unit', 'items.location', 'creator', 'department'))
+        );
+    }
+
+    public function destroy(Request $request, StockIssue $stockIssue, \App\Features\Inventory\Actions\DeleteStockIssueAction $action): JsonResponse
+    {
+        $user = $request->user();
+        if (! $user || ! $user->hasRole(\App\Features\Auth\Enums\RoleCode::ADMIN)) {
+            abort(403, 'Hanya Administrator yang memiliki akses untuk menghapus dokumen pengeluaran barang.');
+        }
+
+        $action->execute($stockIssue, $user->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen pengeluaran barang berhasil dihapus dan saldo fisik telah dikembalikan.',
+        ]);
     }
 }

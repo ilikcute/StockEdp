@@ -12,6 +12,7 @@ use App\Features\Inventory\Requests\CreateStockAdjustmentRequest;
 use App\Features\Inventory\Requests\UpdateStockAdjustmentRequest;
 use App\Features\Inventory\Resources\StockAdjustmentResource;
 use App\Http\Controllers\Controller;
+use App\Shared\Http\Responses\ApiResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class StockAdjustmentController extends Controller
             (int) $request->input('per_page', 15)
         );
 
-        return response()->api(
+        return ApiResponse::success(
             StockAdjustmentResource::collection($adjustments)->response()->getData(true)
         );
     }
@@ -61,7 +62,7 @@ class StockAdjustmentController extends Controller
 
         $adjustment = $action->execute($request->validated(), $request->user()->id);
 
-        return response()->api(new StockAdjustmentResource($adjustment), 'Stock adjustment berhasil dibuat.', 201);
+        return ApiResponse::success(new StockAdjustmentResource($adjustment), 'Stock adjustment berhasil dibuat.', 201);
     }
 
     public function show(int $id): JsonResponse
@@ -69,12 +70,12 @@ class StockAdjustmentController extends Controller
         $adjustment = $this->repository->findById($id);
 
         if (! $adjustment) {
-            return response()->api(null, 'Stock adjustment tidak ditemukan.', 404);
+            return ApiResponse::error('Stock adjustment tidak ditemukan.', 404);
         }
 
         $this->authorize('view', $adjustment);
 
-        return response()->api(new StockAdjustmentResource($adjustment));
+        return ApiResponse::success(new StockAdjustmentResource($adjustment));
     }
 
     public function update(
@@ -85,14 +86,14 @@ class StockAdjustmentController extends Controller
         $adjustment = $this->repository->findById($id);
 
         if (! $adjustment) {
-            return response()->api(null, 'Stock adjustment tidak ditemukan.', 404);
+            return ApiResponse::error('Stock adjustment tidak ditemukan.', 404);
         }
 
         $this->authorize('update', $adjustment);
 
         $updatedAdjustment = $action->execute($adjustment, $request->validated(), $request->user()->id);
 
-        return response()->api(new StockAdjustmentResource($updatedAdjustment), 'Stock adjustment berhasil diperbarui.');
+        return ApiResponse::success(new StockAdjustmentResource($updatedAdjustment), 'Stock adjustment berhasil diperbarui.');
     }
 
     public function post(
@@ -103,14 +104,14 @@ class StockAdjustmentController extends Controller
         $adjustment = $this->repository->findById($id);
 
         if (! $adjustment) {
-            return response()->api(null, 'Stock adjustment tidak ditemukan.', 404);
+            return ApiResponse::error('Stock adjustment tidak ditemukan.', 404);
         }
 
         $this->authorize('post', $adjustment);
 
         $postedAdjustment = $action->execute($adjustment, $request->user()->id);
 
-        return response()->api(new StockAdjustmentResource($postedAdjustment), 'Stock adjustment berhasil diposting.');
+        return ApiResponse::success(new StockAdjustmentResource($postedAdjustment), 'Stock adjustment berhasil diposting.');
     }
 
     public function cancel(
@@ -121,13 +122,36 @@ class StockAdjustmentController extends Controller
         $adjustment = $this->repository->findById($id);
 
         if (! $adjustment) {
-            return response()->api(null, 'Stock adjustment tidak ditemukan.', 404);
+            return ApiResponse::error('Stock adjustment tidak ditemukan.', 404);
         }
 
         $this->authorize('cancel', $adjustment);
 
         $canceledAdjustment = $action->execute($adjustment, $request->user()->id);
 
-        return response()->api(new StockAdjustmentResource($canceledAdjustment), 'Stock adjustment berhasil dibatalkan.');
+        return ApiResponse::success(new StockAdjustmentResource($canceledAdjustment), 'Stock adjustment berhasil dibatalkan.');
+    }
+
+    public function destroy(
+        int $id,
+        \App\Features\Inventory\Actions\DeleteStockAdjustmentAction $action,
+        Request $request
+    ): JsonResponse {
+        $user = $request->user();
+        if (! $user || ! $user->hasRole(\App\Features\Auth\Enums\RoleCode::ADMIN)) {
+            abort(403, 'Hanya Administrator yang memiliki akses untuk menghapus dokumen penyesuaian stok.');
+        }
+
+        $adjustment = $this->repository->findById($id);
+        if (! $adjustment) {
+            return ApiResponse::error('Stock adjustment tidak ditemukan.', 404);
+        }
+
+        $action->execute($adjustment, $user->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen penyesuaian stok berhasil dihapus dan saldo fisik telah disesuaikan.',
+        ]);
     }
 }

@@ -11,6 +11,7 @@ export const useStockReceiptStore = createDocumentStore('stockReceipt', {
         update: (id, data) => inventoryApi.updateReceipt(id, data),
         post: (id) => inventoryApi.postReceipt(id),
         cancel: (id) => inventoryApi.cancelReceipt(id),
+        delete: (id) => inventoryApi.deleteReceipt(id),
     },
     messages: {
         listError: 'Gagal memuat daftar dokumen penerimaan',
@@ -19,5 +20,6 @@ export const useStockReceiptStore = createDocumentStore('stockReceipt', {
         updateError: 'Gagal mengubah draft penerimaan',
         postError: 'Gagal memposting dokumen',
         cancelError: 'Gagal membatalkan dokumen',
+        deleteError: 'Gagal menghapus dokumen penerimaan',
     },
 });

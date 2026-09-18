@@ -52,6 +52,20 @@ export const useStoreAllocationStore = defineStore('storeAllocation', () => {
         }
     }
 
+    async function deleteAllocation(id) {
+        loading.value = true;
+        error.value = null;
+        try {
+            const response = await storeAllocationApi.delete(id);
+            return response.data;
+        } catch (err) {
+            error.value = err.response?.data?.message || 'Gagal menghapus alokasi toko';
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    }
+
     return {
         allocations,
         currentAllocation,
@@ -60,5 +74,6 @@ export const useStoreAllocationStore = defineStore('storeAllocation', () => {
         fetchAllocations,
         fetchAllocationById,
         createAllocation,
+        deleteAllocation,
     };
 });

@@ -7,6 +7,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class StockReceiptResource extends JsonResource
 {
+    /**
+     * Create a new resource instance.
+     *
+     * @param  mixed  $resource
+     */
+    public function __construct($resource = null)
+    {
+        parent::__construct($resource);
+    }
+
     public function toArray(Request $request): array
     {
         return [

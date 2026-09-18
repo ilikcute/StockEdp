@@ -13,4 +13,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('store-allocations/{storeAllocation}', [StoreAllocationController::class, 'show'])
         ->middleware('permission:'.PermissionCode::STORE_ALLOCATIONS_VIEW->value);
+
+    Route::delete('store-allocations/{storeAllocation}', [StoreAllocationController::class, 'destroy']);
 });

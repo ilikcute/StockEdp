@@ -236,13 +236,21 @@
                 class="text-[11px] text-gray-400"
               >-</span>
             </td>
-            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px]">
+            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px] space-x-2">
               <router-link
                 :to="`/inventory/store-allocations/${item.id}`"
                 class="font-semibold text-indigo-600 hover:text-indigo-900 hover:underline"
               >
                 Detail
               </router-link>
+              <button
+                v-if="authStore.isAdmin"
+                type="button"
+                class="font-semibold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer"
+                @click="openDeleteModal(item)"
+              >
+                Hapus
+              </button>
             </td>
           </tr>
         </tbody>
@@ -255,6 +263,20 @@
       :loading="store.loading"
       @change="changePage"
     />
+
+    <!-- Modal Konfirmasi Hapus (Khusus Admin) -->
+    <BaseConfirmation
+      v-model="showDeleteModal"
+      :danger="true"
+      variant="danger"
+      title="Hapus Dokumen Alokasi Toko"
+      :description="deleteModalMessage"
+      confirm-label="Ya, Hapus Dokumen"
+      cancel-label="Batal"
+      :loading="isDeleting"
+      @confirm="handleConfirmDelete"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
@@ -265,6 +287,8 @@ import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import { storeApi } from '@/features/store/api/store_api';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
+import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import { showToast } from '@/shared/utils/use_toast.js';
 
 const store = useStoreAllocationStore();
 const authStore = useAuthStore();
@@ -273,6 +297,36 @@ const searchQuery = ref('');
 const selectedStoreId = ref('');
 const stores = ref([]);
 let searchTimer = null;
+
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+const isDeleting = ref(false);
+
+const deleteModalMessage = computed(() => {
+    if (!itemToDelete.value) return '';
+    return `Apakah Anda yakin ingin menghapus alokasi ${itemToDelete.value.allocation_number} untuk ${itemToDelete.value.store_name}? Saldo unit bagus akan dikembalikan ke teknisi dan status serial number akan dipulihkan.`;
+});
+
+const openDeleteModal = (item) => {
+    itemToDelete.value = item;
+    showDeleteModal.value = true;
+};
+
+const handleConfirmDelete = async () => {
+    if (!itemToDelete.value) return;
+    isDeleting.value = true;
+    try {
+        await store.deleteAllocation(itemToDelete.value.id);
+        showToast(`Alokasi toko ${itemToDelete.value.allocation_number} berhasil dihapus.`, { type: 'success' });
+        showDeleteModal.value = false;
+        itemToDelete.value = null;
+        loadData(store.allocations?.meta?.current_page || 1);
+    } catch (err) {
+        showToast(err.response?.data?.message || 'Gagal menghapus dokumen alokasi.', { type: 'error' });
+    } finally {
+        isDeleting.value = false;
+    }
+};
 
 const hasActiveFilters = computed(() => {
     return Boolean(searchQuery.value || selectedStoreId.value);

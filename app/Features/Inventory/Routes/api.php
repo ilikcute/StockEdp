@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_POST->value);
     Route::post('/stock-receipts/{stockReceipt}/cancel', [StockReceiptController::class, 'cancel'])
         ->middleware('permission:'.PermissionCode::STOCK_RECEIPTS_CANCEL->value);
+    Route::delete('/stock-receipts/{stockReceipt}', [StockReceiptController::class, 'destroy']);
 
     // Stock Issues (Fase 4C)
     Route::get('/stock-issues', [StockIssueController::class, 'index'])
@@ -47,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:'.PermissionCode::STOCK_ISSUES_POST->value);
     Route::post('/stock-issues/{stockIssue}/cancel', [StockIssueController::class, 'cancel'])
         ->middleware('permission:'.PermissionCode::STOCK_ISSUES_CANCEL->value);
+    Route::delete('/stock-issues/{stockIssue}', [StockIssueController::class, 'destroy']);
 
     // Stock Transfers (Fase 5)
     Route::get('/stock-transfers', [StockTransferController::class, 'index'])
@@ -63,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_RECEIVE->value);
     Route::post('/stock-transfers/{stockTransfer}/cancel', [StockTransferController::class, 'cancel'])
         ->middleware('permission:'.PermissionCode::STOCK_TRANSFERS_CANCEL->value);
+    Route::delete('/stock-transfers/{stockTransfer}', [StockTransferController::class, 'destroy']);
 
     // Stock Adjustments (Fase 6A)
     Route::get('/stock-adjustments', [StockAdjustmentController::class, 'index'])
@@ -77,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_POST->value);
     Route::post('/stock-adjustments/{stockAdjustment}/cancel', [StockAdjustmentController::class, 'cancel'])
         ->middleware('permission:'.PermissionCode::STOCK_ADJUSTMENTS_CANCEL->value);
+    Route::delete('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'destroy']);
 
     // Stock Opnames (Fase 7B)
     Route::get('/stock-opnames', [StockOpnameController::class, 'index'])

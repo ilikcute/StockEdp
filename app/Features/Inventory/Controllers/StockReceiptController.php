@@ -11,6 +11,7 @@ use App\Features\Inventory\Repositories\Contracts\StockReceiptRepositoryInterfac
 use App\Features\Inventory\Requests\StockReceiptRequest;
 use App\Features\Inventory\Resources\StockReceiptResource;
 use App\Http\Controllers\Controller;
+use App\Shared\Http\Responses\ApiResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ class StockReceiptController extends Controller
             (int) $perPage
         );
 
-        return response()->api(
+        return ApiResponse::success(
             StockReceiptResource::collection($receipts)->response()->getData(true)
         );
     }
@@ -54,7 +55,11 @@ class StockReceiptController extends Controller
 
         $receipt = $this->createAction->execute($request->validated(), $request->user()->id);
 
-        return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')), 'Success', 201);
+        return ApiResponse::success(
+            new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')),
+            'Success',
+            201
+        );
     }
 
     public function show(StockReceipt $stockReceipt): JsonResponse
@@ -63,7 +68,7 @@ class StockReceiptController extends Controller
 
         $stockReceipt->load(['items.product.unit', 'items.location', 'supplier', 'creator']);
 
-        return response()->api(new StockReceiptResource($stockReceipt));
+        return ApiResponse::success(new StockReceiptResource($stockReceipt));
     }
 
     public function update(StockReceiptRequest $request, StockReceipt $stockReceipt): JsonResponse
@@ -72,7 +77,9 @@ class StockReceiptController extends Controller
 
         $receipt = $this->updateAction->execute($stockReceipt, $request->validated());
 
-        return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')));
+        return ApiResponse::success(
+            new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator'))
+        );
     }
 
     public function post(Request $request, StockReceipt $stockReceipt): JsonResponse
@@ -81,7 +88,9 @@ class StockReceiptController extends Controller
 
         $receipt = $this->postAction->execute($stockReceipt, $request->user()->id);
 
-        return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')));
+        return ApiResponse::success(
+            new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator'))
+        );
     }
 
     public function cancel(Request $request, StockReceipt $stockReceipt): JsonResponse
@@ -90,6 +99,23 @@ class StockReceiptController extends Controller
 
         $receipt = $this->cancelAction->execute($stockReceipt, $request->user()->id);
 
-        return response()->api(new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator')));
+        return ApiResponse::success(
+            new StockReceiptResource($receipt->load('items.product.unit', 'items.location', 'supplier', 'creator'))
+        );
+    }
+
+    public function destroy(Request $request, StockReceipt $stockReceipt, \App\Features\Inventory\Actions\DeleteStockReceiptAction $action): JsonResponse
+    {
+        $user = $request->user();
+        if (! $user || ! $user->hasRole(\App\Features\Auth\Enums\RoleCode::ADMIN)) {
+            abort(403, 'Hanya Administrator yang memiliki akses untuk menghapus dokumen penerimaan barang.');
+        }
+
+        $action->execute($stockReceipt, $user->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen penerimaan barang berhasil dihapus dan saldo fisik telah disesuaikan.',
+        ]);
     }
 }

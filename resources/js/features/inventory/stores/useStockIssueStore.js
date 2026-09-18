@@ -11,6 +11,7 @@ export const useStockIssueStore = createDocumentStore('stockIssue', {
         update: (id, data) => inventoryApi.updateIssue(id, data),
         post: (id) => inventoryApi.postIssue(id),
         cancel: (id) => inventoryApi.cancelIssue(id),
+        delete: (id) => inventoryApi.deleteIssue(id),
     },
     messages: {
         listError: 'Gagal memuat daftar dokumen pengeluaran',
@@ -19,5 +20,6 @@ export const useStockIssueStore = createDocumentStore('stockIssue', {
         updateError: 'Gagal mengubah draft pengeluaran',
         postError: 'Gagal memposting dokumen, stok mungkin tidak mencukupi.',
         cancelError: 'Gagal membatalkan dokumen',
+        deleteError: 'Gagal menghapus dokumen pengeluaran',
     },
 });

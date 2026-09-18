@@ -10,4 +10,7 @@ export const storeAllocationApi = {
     create(data) {
         return apiClient.post('/store-allocations', data);
     },
+    delete(id) {
+        return apiClient.delete(`/store-allocations/${id}`);
+    },
 };

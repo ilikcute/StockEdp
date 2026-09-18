@@ -24,4 +24,8 @@ export const stockAdjustmentApi = {
     cancelAdjustment(id) {
         return apiClient.post(`/stock-adjustments/${id}/cancel`);
     },
+
+    deleteAdjustment(id) {
+        return apiClient.delete(`/stock-adjustments/${id}`);
+    },
 };

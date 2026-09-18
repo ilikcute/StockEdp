@@ -14,6 +14,7 @@ use App\Features\Inventory\Requests\ReceiveStockTransferRequest;
 use App\Features\Inventory\Requests\UpdateStockTransferRequest;
 use App\Features\Inventory\Resources\StockTransferResource;
 use App\Http\Controllers\Controller;
+use App\Shared\Http\Responses\ApiResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class StockTransferController extends Controller
             $request->input('per_page', 15)
         );
 
-        return response()->api(
+        return ApiResponse::success(
             StockTransferResource::collection($transfers)->response()->getData(true)
         );
     }
@@ -51,7 +52,7 @@ class StockTransferController extends Controller
 
         $transfer = $action->execute($request->validated(), $request->user()->id);
 
-        return response()->api(new StockTransferResource($transfer), 'Transfer stok berhasil dibuat.', 201);
+        return ApiResponse::success(new StockTransferResource($transfer), 'Transfer stok berhasil dibuat.', 201);
     }
 
     public function show(int $id): JsonResponse
@@ -59,12 +60,12 @@ class StockTransferController extends Controller
         $transfer = $this->transferRepository->findById($id);
 
         if (! $transfer) {
-            return response()->api(null, 'Transfer stok tidak ditemukan.', 404);
+            return ApiResponse::error('Transfer stok tidak ditemukan.', 404);
         }
 
         $this->authorize('view', $transfer);
 
-        return response()->api(new StockTransferResource($transfer));
+        return ApiResponse::success(new StockTransferResource($transfer));
     }
 
     public function update(
@@ -75,14 +76,14 @@ class StockTransferController extends Controller
         $transfer = $this->transferRepository->findById($id);
 
         if (! $transfer) {
-            return response()->api(null, 'Transfer stok tidak ditemukan.', 404);
+            return ApiResponse::error('Transfer stok tidak ditemukan.', 404);
         }
 
         $this->authorize('update', $transfer);
 
         $updatedTransfer = $action->execute($transfer, $request->validated(), $request->user()->id);
 
-        return response()->api(new StockTransferResource($updatedTransfer), 'Transfer stok berhasil diperbarui.');
+        return ApiResponse::success(new StockTransferResource($updatedTransfer), 'Transfer stok berhasil diperbarui.');
     }
 
     public function send(
@@ -93,14 +94,14 @@ class StockTransferController extends Controller
         $transfer = $this->transferRepository->findById($id);
 
         if (! $transfer) {
-            return response()->api(null, 'Transfer stok tidak ditemukan.', 404);
+            return ApiResponse::error('Transfer stok tidak ditemukan.', 404);
         }
 
         $this->authorize('send', $transfer);
 
         $sentTransfer = $action->execute($transfer, $request->user()->id);
 
-        return response()->api(new StockTransferResource($sentTransfer), 'Transfer stok berhasil dikirim.');
+        return ApiResponse::success(new StockTransferResource($sentTransfer), 'Transfer stok berhasil dikirim.');
     }
 
     public function receive(
@@ -111,14 +112,14 @@ class StockTransferController extends Controller
         $transfer = $this->transferRepository->findById($id);
 
         if (! $transfer) {
-            return response()->api(null, 'Transfer stok tidak ditemukan.', 404);
+            return ApiResponse::error('Transfer stok tidak ditemukan.', 404);
         }
 
         $this->authorize('receive', $transfer);
 
         $receivedTransfer = $action->execute($transfer, $request->user()->id, $request->receivedQuantities());
 
-        return response()->api(new StockTransferResource($receivedTransfer), 'Transfer stok berhasil diterima.');
+        return ApiResponse::success(new StockTransferResource($receivedTransfer), 'Transfer stok berhasil diterima.');
     }
 
     public function cancel(
@@ -129,13 +130,36 @@ class StockTransferController extends Controller
         $transfer = $this->transferRepository->findById($id);
 
         if (! $transfer) {
-            return response()->api(null, 'Transfer stok tidak ditemukan.', 404);
+            return ApiResponse::error('Transfer stok tidak ditemukan.', 404);
         }
 
         $this->authorize('cancel', $transfer);
 
         $canceledTransfer = $action->execute($transfer, $request->user()->id);
 
-        return response()->api(new StockTransferResource($canceledTransfer), 'Transfer stok berhasil dibatalkan.');
+        return ApiResponse::success(new StockTransferResource($canceledTransfer), 'Transfer stok berhasil dibatalkan.');
+    }
+
+    public function destroy(
+        int $id,
+        \App\Features\Inventory\Actions\DeleteStockTransferAction $action,
+        Request $request
+    ): JsonResponse {
+        $user = $request->user();
+        if (! $user || ! $user->hasRole(\App\Features\Auth\Enums\RoleCode::ADMIN)) {
+            abort(403, 'Hanya Administrator yang memiliki akses untuk menghapus dokumen transfer stok.');
+        }
+
+        $transfer = $this->transferRepository->findById($id);
+        if (! $transfer) {
+            return response()->api(null, 'Transfer stok tidak ditemukan.', 404);
+        }
+
+        $action->execute($transfer, $user->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen transfer stok berhasil dihapus dan saldo fisik telah disesuaikan.',
+        ]);
     }
 }

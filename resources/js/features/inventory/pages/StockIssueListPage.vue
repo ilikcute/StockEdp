@@ -218,7 +218,7 @@
             <td class="py-1.5 px-2 whitespace-nowrap">
               <DocumentStatusBadge :status="item.status" />
             </td>
-            <td class="py-1.5 px-2 text-center whitespace-nowrap">
+            <td class="py-1.5 px-2 text-center whitespace-nowrap space-x-2">
               <router-link
                 v-if="hasPermission('stock_issues.view')"
                 :to="`/inventory/issues/${item.id}`"
@@ -226,6 +226,14 @@
               >
                 Detail
               </router-link>
+              <button
+                v-if="authStore.isAdmin"
+                type="button"
+                class="text-[11px] font-semibold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer"
+                @click="openDeleteModal(item)"
+              >
+                Hapus
+              </button>
             </td>
           </tr>
         </tbody>
@@ -237,23 +245,71 @@
       :loading="store.loading"
       @change="changePage"
     />
+
+    <!-- Modal Konfirmasi Hapus (Khusus Admin) -->
+    <BaseConfirmation
+      v-model="showDeleteModal"
+      :danger="true"
+      variant="danger"
+      title="Hapus Dokumen Pengeluaran Barang"
+      :description="deleteModalMessage"
+      confirm-label="Ya, Hapus Dokumen"
+      cancel-label="Batal"
+      :loading="isDeleting"
+      @confirm="handleConfirmDelete"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useStockIssueStore } from '../stores/useStockIssueStore';
+import { useAuthStore } from '@/features/auth/stores/use_auth_store';
 import { useDocumentList } from '../composables/use_document_list';
 import { departmentApi } from '@/features/department/api/department_api.js';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import BaseAlert from '@/shared/components/BaseAlert.vue';
 import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
+import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
 import DocumentStatusBadge from '../components/DocumentStatusBadge.vue';
+import { showToast } from '@/shared/utils/use_toast.js';
 
 const store = useStockIssueStore();
+const authStore = useAuthStore();
 const departments = ref([]);
 const departmentFilter = ref('');
+
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+const isDeleting = ref(false);
+
+const deleteModalMessage = computed(() => {
+    if (!itemToDelete.value) return '';
+    return `Apakah Anda yakin ingin menghapus pengeluaran barang ${itemToDelete.value.issue_number}? Jika dokumen sudah diposting, saldo fisik di gudang/lokasi akan otomatis dikembalikan.`;
+});
+
+const openDeleteModal = (item) => {
+    itemToDelete.value = item;
+    showDeleteModal.value = true;
+};
+
+const handleConfirmDelete = async () => {
+    if (!itemToDelete.value) return;
+    isDeleting.value = true;
+    try {
+        await store.deleteDocument(itemToDelete.value.id);
+        showToast(`Dokumen pengeluaran ${itemToDelete.value.issue_number} berhasil dihapus.`, { type: 'success' });
+        showDeleteModal.value = false;
+        itemToDelete.value = null;
+        store.fetchList({ page: store.issues?.meta?.current_page || 1 });
+    } catch (err) {
+        showToast(err.response?.data?.message || 'Gagal menghapus dokumen pengeluaran.', { type: 'error' });
+    } finally {
+        isDeleting.value = false;
+    }
+};
 
 onMounted(async () => {
     try {

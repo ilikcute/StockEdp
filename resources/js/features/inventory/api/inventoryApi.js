@@ -37,6 +37,10 @@ export const inventoryApi = {
         return apiClient.post(`/stock-receipts/${id}/cancel`);
     },
 
+    deleteReceipt(id) {
+        return apiClient.delete(`/stock-receipts/${id}`);
+    },
+
     getIssues(params) {
         return apiClient.get('/stock-issues', { params });
     },
@@ -59,6 +63,10 @@ export const inventoryApi = {
 
     cancelIssue(id) {
         return apiClient.post(`/stock-issues/${id}/cancel`);
+    },
+
+    deleteIssue(id) {
+        return apiClient.delete(`/stock-issues/${id}`);
     },
 
     getTransfers(params) {
@@ -87,5 +95,9 @@ export const inventoryApi = {
 
     cancelTransfer(id) {
         return apiClient.post(`/stock-transfers/${id}/cancel`);
+    },
+
+    deleteTransfer(id) {
+        return apiClient.delete(`/stock-transfers/${id}`);
     }
 };

@@ -82,4 +82,19 @@ class StoreAllocationController extends Controller
             'data' => new StoreAllocationResource($storeAllocation),
         ]);
     }
+
+    public function destroy(Request $request, StoreAllocation $storeAllocation, \App\Features\StoreAllocation\Actions\DeleteStoreAllocationAction $action): JsonResponse
+    {
+        $user = $request->user();
+        if (! $user || ! $user->hasRole(\App\Features\Auth\Enums\RoleCode::ADMIN)) {
+            abort(403, 'Hanya Administrator yang memiliki akses untuk menghapus dokumen transaksi alokasi toko.');
+        }
+
+        $action->execute($storeAllocation, $user->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen alokasi toko berhasil dihapus dan saldo fisik telah dikembalikan.',
+        ]);
+    }
 }

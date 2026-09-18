@@ -342,7 +342,7 @@
             <td class="py-1.5 px-2 text-[11px] text-gray-500 whitespace-nowrap">
               {{ item.created_by || '-' }}
             </td>
-            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px]">
+            <td class="py-1.5 px-2 text-right whitespace-nowrap text-[11px] space-x-2">
               <router-link
                 v-if="hasPermission('stock_adjustments.view')"
                 :to="`/inventory/adjustments/${item.id}`"
@@ -350,6 +350,14 @@
               >
                 Detail
               </router-link>
+              <button
+                v-if="authStore.isAdmin"
+                type="button"
+                class="font-semibold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer"
+                @click="openDeleteModal(item)"
+              >
+                Hapus
+              </button>
             </td>
           </tr>
         </tbody>
@@ -362,6 +370,20 @@
       :loading="store.isLoading"
       @change="changePage"
     />
+
+    <!-- Modal Konfirmasi Hapus (Khusus Admin) -->
+    <BaseConfirmation
+      v-model="showDeleteModal"
+      :danger="true"
+      variant="danger"
+      title="Hapus Dokumen Penyesuaian Stok"
+      :description="deleteModalMessage"
+      confirm-label="Ya, Hapus Dokumen"
+      cancel-label="Batal"
+      :loading="isDeleting"
+      @confirm="handleConfirmDelete"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
@@ -373,6 +395,8 @@ import { locationApi } from '@features/location/api/location_api.js';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
+import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import { showToast } from '@/shared/utils/use_toast.js';
 
 const store = useStockAdjustmentStore();
 const authStore = useAuthStore();
@@ -383,6 +407,36 @@ const directionFilter = ref('');
 const reasonFilter = ref('');
 const locationFilter = ref('');
 const activeTab = ref('ALL');
+
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+const isDeleting = ref(false);
+
+const deleteModalMessage = computed(() => {
+    if (!itemToDelete.value) return '';
+    return `Apakah Anda yakin ingin menghapus penyesuaian stok ${itemToDelete.value.adjustment_number}? Jika dokumen sudah diposting, saldo fisik akan disesuaikan kembali.`;
+});
+
+const openDeleteModal = (item) => {
+    itemToDelete.value = item;
+    showDeleteModal.value = true;
+};
+
+const handleConfirmDelete = async () => {
+    if (!itemToDelete.value) return;
+    isDeleting.value = true;
+    try {
+        await store.deleteAdjustment(itemToDelete.value.id);
+        showToast(`Dokumen penyesuaian stok ${itemToDelete.value.adjustment_number} berhasil dihapus.`, { type: 'success' });
+        showDeleteModal.value = false;
+        itemToDelete.value = null;
+        fetchData(store.adjustments.meta?.current_page || 1);
+    } catch (err) {
+        showToast(err.response?.data?.message || 'Gagal menghapus dokumen penyesuaian stok.', { type: 'error' });
+    } finally {
+        isDeleting.value = false;
+    }
+};
 
 const locations = ref([]);
 

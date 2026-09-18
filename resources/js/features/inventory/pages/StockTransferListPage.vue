@@ -226,7 +226,7 @@
             <td class="py-1.5 px-2 text-gray-500 whitespace-nowrap text-[11px]">
               {{ item.created_by || '-' }}
             </td>
-            <td class="py-1.5 px-2 text-center whitespace-nowrap">
+            <td class="py-1.5 px-2 text-center whitespace-nowrap space-x-2">
               <router-link
                 v-if="hasPermission('stock_transfers.view')"
                 :to="`/inventory/transfers/${item.id}`"
@@ -234,6 +234,14 @@
               >
                 Detail
               </router-link>
+              <button
+                v-if="authStore.isAdmin"
+                type="button"
+                class="text-[11px] font-semibold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer"
+                @click="openDeleteModal(item)"
+              >
+                Hapus
+              </button>
             </td>
           </tr>
         </tbody>
@@ -243,8 +251,22 @@
     <!-- Pagination -->
     <BasePagination
       :pagination="store.transfers.meta"
-      :loading="store.isLoading"
+      :loading="store.loadingList"
       @change="changePage"
+    />
+
+    <!-- Modal Konfirmasi Hapus (Khusus Admin) -->
+    <BaseConfirmation
+      v-model="showDeleteModal"
+      :danger="true"
+      variant="danger"
+      title="Hapus Dokumen Transfer Stok"
+      :description="deleteModalMessage"
+      confirm-label="Ya, Hapus Dokumen"
+      cancel-label="Batal"
+      :loading="isDeleting"
+      @confirm="handleConfirmDelete"
+      @cancel="showDeleteModal = false"
     />
   </div>
 </template>
@@ -256,12 +278,44 @@ import { useAuthStore } from '@features/auth/stores/use_auth_store';
 import { rowNumber } from '@/shared/utils/formatters';
 import BasePagination from '@/shared/components/BasePagination.vue';
 import BaseTableEmpty from '@/shared/components/BaseTableEmpty.vue';
+import BaseConfirmation from '@/shared/components/BaseConfirmation.vue';
+import { showToast } from '@/shared/utils/use_toast.js';
 
 const store = useStockTransferStore();
 const authStore = useAuthStore();
 
 const searchQuery = ref('');
 const statusFilter = ref('');
+
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+const isDeleting = ref(false);
+
+const deleteModalMessage = computed(() => {
+    if (!itemToDelete.value) return '';
+    return `Apakah Anda yakin ingin menghapus transfer stok ${itemToDelete.value.transfer_number}? Saldo fisik akan disesuaikan kembali ke lokasi asal.`;
+});
+
+const openDeleteModal = (item) => {
+    itemToDelete.value = item;
+    showDeleteModal.value = true;
+};
+
+const handleConfirmDelete = async () => {
+    if (!itemToDelete.value) return;
+    isDeleting.value = true;
+    try {
+        await store.deleteTransfer(itemToDelete.value.id);
+        showToast(`Dokumen transfer ${itemToDelete.value.transfer_number} berhasil dihapus.`, { type: 'success' });
+        showDeleteModal.value = false;
+        itemToDelete.value = null;
+        fetchData(store.transfers?.meta?.current_page || 1);
+    } catch (err) {
+        showToast(err.response?.data?.message || 'Gagal menghapus dokumen transfer.', { type: 'error' });
+    } finally {
+        isDeleting.value = false;
+    }
+};
 
 const hasActiveFilters = computed(() => {
   return Boolean(searchQuery.value || statusFilter.value);

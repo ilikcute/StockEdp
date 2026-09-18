@@ -166,6 +166,23 @@ export const useStockAdjustmentStore = defineStore('stockAdjustment', {
             }
         },
 
+        async deleteAdjustment(id) {
+            if (this.loadingAction) return;
+            this.loadingAction = true;
+            this.error = null;
+            try {
+                const response = await stockAdjustmentApi.deleteAdjustment(id);
+                return response.data;
+            } catch (error) {
+                const normalized = normalizeApiError(error);
+                this.error = normalized.message;
+                this.status = normalized.status;
+                throw error;
+            } finally {
+                this.loadingAction = false;
+            }
+        },
+
         resetFormErrors() {
             this.error = null;
             this.validationErrors = {};

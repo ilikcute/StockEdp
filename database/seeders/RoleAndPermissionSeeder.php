@@ -76,6 +76,7 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionCode::PRODUCT_SERIALS_VIEW->value => 'Melihat Data Serial Number',
             PermissionCode::PRODUCT_SERIALS_MANAGE->value => 'Mengelola Data Serial Number',
             PermissionCode::STORE_ALLOCATIONS_VIEW->value => 'Melihat Alokasi Toko',
+            PermissionCode::STORE_ALLOCATIONS_CREATE->value => 'Membuat Alokasi Toko (Legacy)',
             PermissionCode::STORE_ALLOCATIONS_CREATE_OWN->value => 'Membuat Alokasi Toko Sendiri (Teknisi)',
             PermissionCode::STORE_ALLOCATIONS_CREATE_FOR_OTHERS->value => 'Membuat Alokasi Toko atas Nama Teknisi Lain (Admin/SPV)',
             PermissionCode::STORE_ALLOCATIONS_POST->value => 'Memposting Alokasi Toko',
@@ -145,6 +146,10 @@ class RoleAndPermissionSeeder extends Seeder
 
             // Audit Log (Log Aktivitas Sistem)
             PermissionCode::AUDIT_LOGS_VIEW->value => 'Melihat Log Aktivitas (Audit Trail)',
+
+            // Vendor RMA (Klaim Servis & Garansi Vendor)
+            PermissionCode::VENDOR_RMAS_VIEW->value => 'Melihat Klaim RMA Vendor',
+            PermissionCode::VENDOR_RMAS_MANAGE->value => 'Mengelola Klaim RMA Vendor',
         ];
 
         $permissionModels = [];
