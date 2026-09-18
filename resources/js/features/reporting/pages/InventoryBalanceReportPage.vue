@@ -150,6 +150,152 @@
       </div>
     </div>
 
+    <!-- Summary Metrics Cards (Rekap Kategori & Item, Total Qty, Total Rupiah) -->
+    <div
+      v-if="store.summary"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
+    >
+      <!-- 1. Card Rekap Kategori & Item -->
+      <div class="bg-gradient-to-br from-slate-50 to-indigo-50/40 p-3 rounded-xl border border-indigo-100 shadow-2xs relative overflow-hidden flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+              <svg
+                class="w-3.5 h-3.5 text-indigo-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+              <span>Kategori & Produk</span>
+            </span>
+            <button
+              v-if="store.summary?.by_category?.length > 0"
+              type="button"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all shadow-2xs cursor-pointer"
+              title="Buka rincian lengkap per kategori"
+              @click="showCategoryModal = true"
+            >
+              <span>Rincian</span>
+              <svg
+                class="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="mt-1.5 flex items-baseline gap-2">
+            <span class="text-xl font-bold font-mono text-gray-900 tracking-tight">
+              {{ store.summary?.total_categories ?? 0 }}
+            </span>
+            <span class="text-xs font-semibold text-gray-500">Kategori Aktif</span>
+          </div>
+        </div>
+        <div class="mt-2 pt-2 border-t border-indigo-100/60 flex items-center justify-between text-[11px]">
+          <span class="text-gray-600 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+            Total Terdaftar:
+          </span>
+          <span class="font-bold font-mono text-gray-900 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
+            {{ store.summary?.total_products ?? 0 }} SKU
+          </span>
+        </div>
+      </div>
+
+      <!-- 2. Card Total Kuantitas (Total Qty) -->
+      <div class="bg-gradient-to-br from-emerald-50/60 to-teal-50/30 p-3 rounded-xl border border-emerald-200 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+            <svg
+              class="w-3.5 h-3.5 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+            <span>Total Kuantitas Fisik</span>
+          </div>
+          <div class="mt-1.5 flex items-baseline gap-1.5">
+            <span class="text-xl font-bold font-mono text-emerald-950 tracking-tight">
+              {{ formatQuantity(store.summary?.total_quantity ?? 0) }}
+            </span>
+            <span class="text-xs font-semibold text-emerald-700">Total Unit</span>
+          </div>
+        </div>
+        <div class="mt-2 pt-2 border-t border-emerald-100 flex items-center justify-between gap-1 text-[11px]">
+          <div class="flex items-center gap-1">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold font-mono text-[10px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+              {{ formatQuantity(store.summary?.good_quantity ?? 0) }} BAGUS
+            </span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span
+              class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-semibold font-mono text-[10px]"
+              :class="Number(store.summary?.defective_quantity) > 0 ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-400' : 'bg-gray-100 text-gray-500'"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full"
+                :class="Number(store.summary?.defective_quantity) > 0 ? 'bg-amber-600' : 'bg-gray-400'"
+              />
+              {{ formatQuantity(store.summary?.defective_quantity ?? 0) }} RUSAK
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Card Total Rupiah (Total Nilai Persediaan) -->
+      <div class="bg-gradient-to-br from-indigo-50/70 to-blue-50/40 p-3 rounded-xl border border-indigo-200 shadow-2xs flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+        <div>
+          <div class="text-[10px] font-bold text-indigo-800 uppercase tracking-wider flex items-center gap-1.5">
+            <svg
+              class="w-3.5 h-3.5 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>Total Nilai Persediaan</span>
+          </div>
+          <div class="mt-1.5 text-xl font-bold font-mono text-indigo-950 tracking-tight">
+            {{ formatRupiah(store.summary?.total_value ?? 0) }}
+          </div>
+        </div>
+        <div class="mt-2 pt-2 border-t border-indigo-100 flex items-center justify-between text-[11px] text-gray-500">
+          <span>Nilai Saldo Fisik Aktif</span>
+          <span class="text-[10px] font-mono text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-100">
+            Per Satuan Real-Time
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Data Table: Global Total per SKU, Kategori, Kondisi -->
     <div class="overflow-x-auto shadow-2xs border border-gray-200 rounded-xl bg-white custom-scrollbar relative">
       <div
@@ -687,6 +833,182 @@
         </div>
       </div>
     </div>
+
+    <!-- MODAL REKAPITULASI RINCIAN PER KATEGORI -->
+    <div
+      v-if="showCategoryModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/60 backdrop-blur-xs"
+      @click.self="showCategoryModal = false"
+    >
+      <div class="bg-white rounded-2xl shadow-2xl border border-gray-200 max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-150">
+        <!-- Modal Header -->
+        <div class="px-5 py-3.5 border-b border-gray-200 flex items-start justify-between bg-gradient-to-r from-gray-50 to-indigo-50/40">
+          <div>
+            <div class="text-xs font-semibold text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+              <svg
+                class="w-4 h-4 text-indigo-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+              <span>Rekapitulasi Persediaan per Kategori</span>
+            </div>
+            <p class="text-xs text-gray-600 mt-0.5">
+              Rincian kuantitas fisik, jumlah SKU, dan nilai persediaan untuk setiap kategori barang.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            title="Tutup"
+            @click="showCategoryModal = false"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body (Table) -->
+        <div class="overflow-y-auto p-4 custom-scrollbar">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="text-gray-600 font-semibold border-b border-gray-200 text-[11px] bg-gray-50/80">
+                <th class="py-2 px-2.5 text-center w-10">
+                  No.
+                </th>
+                <th class="py-2 px-3">
+                  Nama Kategori
+                </th>
+                <th class="py-2 px-3 text-center">
+                  Jumlah Item (SKU)
+                </th>
+                <th class="py-2 px-3 text-right">
+                  Total Kuantitas
+                </th>
+                <th class="py-2 px-3 text-right">
+                  Total Nilai (Rp)
+                </th>
+                <th class="py-2 px-3 text-center w-24">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr
+                v-for="(cat, idx) in store.summary?.by_category || []"
+                :key="cat.category_id || idx"
+                class="hover:bg-indigo-50/30 transition-colors"
+              >
+                <td class="py-2.5 px-2.5 text-center font-mono text-gray-400 text-[11px]">
+                  {{ idx + 1 }}
+                </td>
+                <td class="py-2.5 px-3 font-semibold text-gray-900">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500" />
+                    <span>{{ cat.category_name }}</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono font-bold text-gray-800">
+                  {{ cat.item_count }} SKU
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono">
+                  <div class="font-bold text-gray-900">
+                    {{ formatQuantity(cat.total_quantity) }}
+                  </div>
+                  <div class="text-[10px] text-gray-400">
+                    {{ formatQuantity(cat.good_quantity) }} Bagus &bull; {{ formatQuantity(cat.defective_quantity) }} Rusak
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-indigo-700">
+                  {{ formatRupiah(cat.total_value) }}
+                  <div
+                    v-if="store.summary?.total_value > 0"
+                    class="text-[10px] font-normal text-gray-400"
+                  >
+                    {{ ((cat.total_value / store.summary.total_value) * 100).toFixed(1) }}% aset
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white font-semibold text-[10px] transition-colors shadow-2xs border border-indigo-200/80 cursor-pointer"
+                    title="Filter tabel berdasarkan kategori ini"
+                    @click="filterByCategory(cat.category_name)"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                      />
+                    </svg>
+                    <span>Filter</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="border-t-2 border-gray-200 bg-gray-50/90 font-semibold text-gray-900 text-xs">
+              <tr>
+                <td
+                  colspan="2"
+                  class="py-2.5 px-3 text-right"
+                >
+                  Total Keseluruhan:
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono font-bold">
+                  {{ store.summary?.total_products ?? 0 }} SKU
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-800">
+                  {{ formatQuantity(store.summary?.total_quantity ?? 0) }}
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-indigo-900">
+                  {{ formatRupiah(store.summary?.total_value ?? 0) }}
+                </td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-5 py-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+          <span class="text-[11px] text-gray-500">
+            Klik tombol <strong>Filter</strong> pada baris kategori untuk menampilkan item dari kategori tersebut.
+          </span>
+          <button
+            type="button"
+            class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors cursor-pointer"
+            @click="showCategoryModal = false"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -710,6 +1032,15 @@ const selectedItem = ref(null);
 function openLocationDetail(item) {
     selectedItem.value = item;
     showDetailModal.value = true;
+}
+
+// Modal Category Summary State
+const showCategoryModal = ref(false);
+
+function filterByCategory(categoryName) {
+    if (!categoryName || categoryName === 'Tanpa Kategori') return;
+    filters.search = categoryName;
+    showCategoryModal.value = false;
 }
 
 // Filter State: Clean, focused on Search & Per Page (Tanpa filter di halaman depan)

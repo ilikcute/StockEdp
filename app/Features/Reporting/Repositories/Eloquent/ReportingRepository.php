@@ -185,6 +185,15 @@ class ReportingRepository implements ReportingRepositoryInterface
                     'total' => 0,
                     'from' => null,
                     'to' => null,
+                    'summary' => [
+                        'total_products' => 0,
+                        'total_categories' => 0,
+                        'total_quantity' => '0.0000',
+                        'good_quantity' => '0.0000',
+                        'defective_quantity' => '0.0000',
+                        'total_value' => 0.0,
+                        'by_category' => [],
+                    ],
                 ],
             ];
         }
@@ -325,6 +334,71 @@ class ReportingRepository implements ReportingRepositoryInterface
             ];
         })->all();
 
+        // Global Summary Calculations across all pages
+        $summaryQuery = DB::table('inventory_balances as b')
+            ->join('products as p', 'p.id', '=', 'b.product_id')
+            ->leftJoin('categories as c', 'c.id', '=', 'p.category_id')
+            ->whereIn('b.location_id', $allowedLocationIds);
+
+        if (! empty($filters['search'])) {
+            $search = trim($filters['search']);
+            $summaryQuery->where(function ($q) use ($search) {
+                $q->where('p.name', 'like', "%{$search}%")
+                    ->orWhere('p.sku', 'like', "%{$search}%")
+                    ->orWhere('p.barcode', 'like', "%{$search}%")
+                    ->orWhere('c.name', 'like', "%{$search}%");
+            });
+        }
+
+        if (! empty($filters['condition'])) {
+            $summaryQuery->where('b.condition', $filters['condition']);
+        }
+
+        if (! empty($filters['category_id'])) {
+            $summaryQuery->where('p.category_id', $filters['category_id']);
+        }
+
+        if (isset($filters['is_active']) && $filters['is_active'] !== '') {
+            $summaryQuery->where('p.is_active', (bool) $filters['is_active']);
+        }
+
+        if (! empty($filters['positive_stock'])) {
+            $summaryQuery->where('b.quantity', '>', 0);
+        } elseif (isset($filters['zero_stock']) && $filters['zero_stock'] === '1') {
+            $summaryQuery->where('b.quantity', '=', 0);
+        }
+
+        $overall = (clone $summaryQuery)->select([
+            DB::raw('COUNT(DISTINCT p.id) as total_products'),
+            DB::raw('COUNT(DISTINCT p.category_id) as total_categories'),
+            DB::raw('SUM(b.quantity) as total_quantity'),
+            DB::raw("SUM(CASE WHEN b.condition = 'GOOD' THEN b.quantity ELSE 0 END) as good_quantity"),
+            DB::raw("SUM(CASE WHEN b.condition = 'DEFECTIVE' THEN b.quantity ELSE 0 END) as defective_quantity"),
+            DB::raw('SUM(b.quantity * COALESCE(p.unit_price, 0)) as total_value'),
+        ])->first();
+
+        $categoriesBreakdown = (clone $summaryQuery)->select([
+            DB::raw('COALESCE(c.id, 0) as category_id'),
+            DB::raw("COALESCE(c.name, 'Tanpa Kategori') as category_name"),
+            DB::raw('COUNT(DISTINCT p.id) as item_count'),
+            DB::raw('SUM(b.quantity) as total_quantity'),
+            DB::raw("SUM(CASE WHEN b.condition = 'GOOD' THEN b.quantity ELSE 0 END) as good_quantity"),
+            DB::raw("SUM(CASE WHEN b.condition = 'DEFECTIVE' THEN b.quantity ELSE 0 END) as defective_quantity"),
+            DB::raw('SUM(b.quantity * COALESCE(p.unit_price, 0)) as total_value'),
+        ])
+        ->groupBy(DB::raw('COALESCE(c.id, 0)'), DB::raw("COALESCE(c.name, 'Tanpa Kategori')"))
+        ->orderByDesc('total_quantity')
+        ->get()
+        ->map(fn ($cat) => [
+            'category_id' => (int) $cat->category_id,
+            'category_name' => $cat->category_name,
+            'item_count' => (int) $cat->item_count,
+            'total_quantity' => DecimalQuantity::normalize((string) ($cat->total_quantity ?? '0')),
+            'good_quantity' => DecimalQuantity::normalize((string) ($cat->good_quantity ?? '0')),
+            'defective_quantity' => DecimalQuantity::normalize((string) ($cat->defective_quantity ?? '0')),
+            'total_value' => (float) ($cat->total_value ?? 0),
+        ])->all();
+
         return [
             'data' => $items,
             'meta' => [
@@ -334,6 +408,15 @@ class ReportingRepository implements ReportingRepositoryInterface
                 'total' => $paginated->total(),
                 'from' => $paginated->firstItem(),
                 'to' => $paginated->lastItem(),
+                'summary' => [
+                    'total_products' => (int) ($overall->total_products ?? 0),
+                    'total_categories' => (int) ($overall->total_categories ?? 0),
+                    'total_quantity' => DecimalQuantity::normalize((string) ($overall->total_quantity ?? '0')),
+                    'good_quantity' => DecimalQuantity::normalize((string) ($overall->good_quantity ?? '0')),
+                    'defective_quantity' => DecimalQuantity::normalize((string) ($overall->defective_quantity ?? '0')),
+                    'total_value' => (float) ($overall->total_value ?? 0),
+                    'by_category' => $categoriesBreakdown,
+                ],
             ],
         ];
     }

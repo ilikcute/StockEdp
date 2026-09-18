@@ -145,6 +145,24 @@ class GroupedInventoryBalanceReportTest extends TestCase
         $this->assertEquals(1, $defectiveRow['locations_count']);
         $this->assertCount(1, $defectiveRow['locations']);
         $this->assertEquals($this->damagedStorage->id, $defectiveRow['locations'][0]['location_id']);
+
+        // Verify Summary Meta
+        $summary = $response->json('data.meta.summary');
+        $this->assertNotNull($summary);
+        $this->assertEquals(1, $summary['total_products']);
+        $this->assertEquals(1, $summary['total_categories']);
+        $this->assertEquals('15.0000', $summary['total_quantity']);
+        $this->assertEquals('13.0000', $summary['good_quantity']);
+        $this->assertEquals('2.0000', $summary['defective_quantity']);
+        $this->assertEquals(37500000, $summary['total_value']);
+
+        // Verify By Category Breakdown
+        $this->assertCount(1, $summary['by_category']);
+        $catSummary = $summary['by_category'][0];
+        $this->assertEquals('Terminal EDC POS', $catSummary['category_name']);
+        $this->assertEquals(1, $catSummary['item_count']);
+        $this->assertEquals('15.0000', $catSummary['total_quantity']);
+        $this->assertEquals(37500000, $catSummary['total_value']);
     }
 
     public function test_can_search_in_grouped_mode(): void
