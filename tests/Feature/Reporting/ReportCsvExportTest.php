@@ -976,4 +976,24 @@ class ReportCsvExportTest extends TestCase
             ->get('/api/v1/reports/low-stock/export?'.$query)
             ->assertStatus(422);
     }
+
+    public function test_inventory_balance_export_with_category_search_returns_data(): void
+    {
+        InventoryBalance::create([
+            'product_id' => $this->product->id,
+            'location_id' => $this->loc1->id,
+            'quantity' => 15.0000,
+        ]);
+
+        $query = http_build_query([
+            'search' => $this->category->name,
+            'format' => 'xlsx',
+        ]);
+
+        $response = $this->actingAs($this->admin, 'sanctum')
+            ->get('/api/v1/reports/inventory-balances/export?'.$query);
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
 }

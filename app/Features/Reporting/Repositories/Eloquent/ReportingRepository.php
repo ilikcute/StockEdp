@@ -14,6 +14,7 @@ use App\Features\Inventory\Models\StockReceipt;
 use App\Features\Inventory\Models\StockReceiptItem;
 use App\Features\Inventory\Models\StockTransfer;
 use App\Features\Inventory\Models\StockTransferItem;
+use App\Features\Location\Enums\LocationType;
 use App\Features\Location\Models\Location;
 use App\Features\Product\Models\Product;
 use App\Features\Reporting\Helpers\DecimalQuantity;
@@ -24,6 +25,7 @@ use App\Features\Supplier\Models\Supplier;
 use App\Features\Unit\Models\Unit;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator as ConcretePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -159,7 +161,10 @@ class ReportingRepository implements ReportingRepositoryInterface
             $query->whereHas('product', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhere('barcode', 'like', "%{$search}%");
+                    ->orWhere('barcode', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($catQ) use ($search) {
+                        $catQ->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -276,7 +281,8 @@ class ReportingRepository implements ReportingRepositoryInterface
                 ->get()
                 ->groupBy(function ($b) {
                     $cond = $b->condition instanceof \BackedEnum ? $b->condition->value : (string) $b->condition;
-                    return $b->product_id . '_' . $cond;
+
+                    return $b->product_id.'_'.$cond;
                 });
         }
 
@@ -287,9 +293,9 @@ class ReportingRepository implements ReportingRepositoryInterface
             $locations = $matchingBalances->map(function ($bal) use ($row) {
                 $loc = $bal->location;
                 $locType = $loc?->type;
-                $typeEnum = \App\Features\Location\Enums\LocationType::tryFrom($locType ?? '');
+                $typeEnum = LocationType::tryFrom($locType ?? '');
                 $typeLabel = $typeEnum ? $typeEnum->label() : ($locType ?? 'Gudang');
-                $isField = ($typeEnum && $typeEnum->isFieldPersonnel()) || $locType === \App\Features\Location\Enums\LocationType::FIELD_PERSONNEL->value;
+                $isField = ($typeEnum && $typeEnum->isFieldPersonnel()) || $locType === LocationType::FIELD_PERSONNEL->value;
 
                 return [
                     'balance_id' => $bal->id,
@@ -386,18 +392,18 @@ class ReportingRepository implements ReportingRepositoryInterface
             DB::raw("SUM(CASE WHEN b.condition = 'DEFECTIVE' THEN b.quantity ELSE 0 END) as defective_quantity"),
             DB::raw('SUM(b.quantity * COALESCE(p.unit_price, 0)) as total_value'),
         ])
-        ->groupBy(DB::raw('COALESCE(c.id, 0)'), DB::raw("COALESCE(c.name, 'Tanpa Kategori')"))
-        ->orderByDesc('total_quantity')
-        ->get()
-        ->map(fn ($cat) => [
-            'category_id' => (int) $cat->category_id,
-            'category_name' => $cat->category_name,
-            'item_count' => (int) $cat->item_count,
-            'total_quantity' => DecimalQuantity::normalize((string) ($cat->total_quantity ?? '0')),
-            'good_quantity' => DecimalQuantity::normalize((string) ($cat->good_quantity ?? '0')),
-            'defective_quantity' => DecimalQuantity::normalize((string) ($cat->defective_quantity ?? '0')),
-            'total_value' => (float) ($cat->total_value ?? 0),
-        ])->all();
+            ->groupBy(DB::raw('COALESCE(c.id, 0)'), DB::raw("COALESCE(c.name, 'Tanpa Kategori')"))
+            ->orderByDesc('total_quantity')
+            ->get()
+            ->map(fn ($cat) => [
+                'category_id' => (int) $cat->category_id,
+                'category_name' => $cat->category_name,
+                'item_count' => (int) $cat->item_count,
+                'total_quantity' => DecimalQuantity::normalize((string) ($cat->total_quantity ?? '0')),
+                'good_quantity' => DecimalQuantity::normalize((string) ($cat->good_quantity ?? '0')),
+                'defective_quantity' => DecimalQuantity::normalize((string) ($cat->defective_quantity ?? '0')),
+                'total_value' => (float) ($cat->total_value ?? 0),
+            ])->all();
 
         return [
             'data' => $items,
@@ -527,7 +533,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator {
         if (empty($allowedLocationIds)) {
-            return new LengthAwarePaginator([], 0, $perPage);
+            return new ConcretePaginator([], 0, $perPage, 1);
         }
 
         $query = StockReceiptItem::query()
@@ -614,7 +620,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         ];
     }
 
-    private function applyReceiptFilters($query, array $filters): void
+    private function applyReceiptFilters(Builder|\Illuminate\Database\Query\Builder $query, array $filters): void
     {
         if (! empty($filters['supplier_id'])) {
             $query->where('stock_receipts.supplier_id', $filters['supplier_id']);
@@ -661,7 +667,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator {
         if (empty($allowedLocationIds)) {
-            return new LengthAwarePaginator([], 0, $perPage);
+            return new ConcretePaginator([], 0, $perPage, 1);
         }
 
         $query = StockIssueItem::query()
@@ -740,7 +746,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         ];
     }
 
-    private function applyIssueFilters($query, array $filters): void
+    private function applyIssueFilters(Builder|\Illuminate\Database\Query\Builder $query, array $filters): void
     {
         if (! empty($filters['location_id'])) {
             $query->where('stock_issue_items.location_id', $filters['location_id']);
@@ -785,7 +791,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator {
         if (empty($allowedLocationIds)) {
-            return new LengthAwarePaginator([], 0, $perPage);
+            return new ConcretePaginator([], 0, $perPage, 1);
         }
 
         $dateBasis = strtoupper($filters['date_basis'] ?? 'SENT_AT');
@@ -895,7 +901,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         ];
     }
 
-    private function applyTransferFilters($query, array $filters, string $dateColumn): void
+    private function applyTransferFilters(Builder|\Illuminate\Database\Query\Builder $query, array $filters, string $dateColumn): void
     {
         if (! empty($filters['status'])) {
             $query->where('stock_transfers.status', $filters['status']);
@@ -944,7 +950,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator {
         if (empty($allowedLocationIds)) {
-            return new LengthAwarePaginator([], 0, $perPage);
+            return new ConcretePaginator([], 0, $perPage, 1);
         }
 
         $query = StockAdjustmentItem::query()
@@ -1026,7 +1032,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         ];
     }
 
-    private function applyAdjustmentFilters($query, array $filters): void
+    private function applyAdjustmentFilters(Builder|\Illuminate\Database\Query\Builder $query, array $filters): void
     {
         if (! empty($filters['location_id'])) {
             $query->where('stock_adjustments.location_id', $filters['location_id']);
@@ -1076,7 +1082,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         int $perPage = 15
     ): LengthAwarePaginator {
         if (empty($allowedLocationIds)) {
-            return new LengthAwarePaginator([], 0, $perPage);
+            return new ConcretePaginator([], 0, $perPage, 1);
         }
 
         $query = StockOpnameItem::query()
@@ -1151,7 +1157,7 @@ class ReportingRepository implements ReportingRepositoryInterface
         ];
     }
 
-    private function applyOpnameFilters($query, array $filters): void
+    private function applyOpnameFilters(Builder|\Illuminate\Database\Query\Builder $query, array $filters): void
     {
         if (! empty($filters['location_id'])) {
             $query->where('stock_opnames.location_id', $filters['location_id']);
@@ -1269,7 +1275,8 @@ class ReportingRepository implements ReportingRepositoryInterface
             $query->where(function ($q) use ($search) {
                 $q->where('products.name', 'like', "%{$search}%")
                     ->orWhere('products.sku', 'like', "%{$search}%")
-                    ->orWhere('products.barcode', 'like', "%{$search}%");
+                    ->orWhere('products.barcode', 'like', "%{$search}%")
+                    ->orWhere('categories.name', 'like', "%{$search}%");
             });
         }
 

@@ -233,13 +233,13 @@
                 d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
               />
             </svg>
-            <span>Total Kuantitas Fisik</span>
+            <span>Total Kuantitas Stok (GOOD)</span>
           </div>
           <div class="mt-1.5 flex items-baseline gap-1.5">
             <span class="text-xl font-bold font-mono text-emerald-950 tracking-tight">
-              {{ formatQuantity(store.summary?.total_quantity ?? 0) }}
+              {{ formatQuantity(store.summary?.good_quantity ?? 0) }}
             </span>
-            <span class="text-xs font-semibold text-emerald-700">Total Unit</span>
+            <span class="text-xs font-semibold text-emerald-700">Total Unit (Bagus)</span>
           </div>
         </div>
         <div class="mt-2 pt-2 border-t border-emerald-100 flex items-center justify-between gap-1 text-[11px]">
@@ -931,10 +931,10 @@
                 </td>
                 <td class="py-2.5 px-3 text-right font-mono">
                   <div class="font-bold text-gray-900">
-                    {{ formatQuantity(cat.total_quantity) }}
+                    {{ formatQuantity(cat.good_quantity ?? 0) }}
                   </div>
                   <div class="text-[10px] text-gray-400">
-                    {{ formatQuantity(cat.good_quantity) }} Bagus &bull; {{ formatQuantity(cat.defective_quantity) }} Rusak
+                    {{ formatQuantity(cat.good_quantity ?? 0) }} Bagus &bull; {{ formatQuantity(cat.defective_quantity ?? 0) }} Rusak
                   </div>
                 </td>
                 <td class="py-2.5 px-3 text-right font-mono font-bold text-indigo-700">
@@ -983,7 +983,7 @@
                   {{ store.summary?.total_products ?? 0 }} SKU
                 </td>
                 <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-800">
-                  {{ formatQuantity(store.summary?.total_quantity ?? 0) }}
+                  {{ formatQuantity(store.summary?.good_quantity ?? 0) }}
                 </td>
                 <td class="py-2.5 px-3 text-right font-mono font-bold text-indigo-900">
                   {{ formatRupiah(store.summary?.total_value ?? 0) }}
