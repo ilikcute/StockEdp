@@ -153,6 +153,20 @@ class MonthEndController extends Controller
             $query->where('condition', $request->input('condition'));
         }
 
+        // Filter kategori
+        if ($request->filled('category_id')) {
+            $categoryId = $request->input('category_id');
+            if ($categoryId === 'uncategorized' || $categoryId === '0') {
+                $query->whereHas('product', function ($q) {
+                    $q->whereNull('category_id');
+                });
+            } else {
+                $query->whereHas('product', function ($q) use ($categoryId) {
+                    $q->where('category_id', $categoryId);
+                });
+            }
+        }
+
         // Search SKU / Nama Produk
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -162,6 +176,42 @@ class MonthEndController extends Controller
                     ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
+
+        // Rekapitulasi per kategori produk (dihitung untuk periode ini)
+        $catQuery = InventoryPeriodSnapshot::query()
+            ->where('inventory_period_id', $period->id)
+            ->join('products', 'inventory_period_snapshots.product_id', '=', 'products.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id');
+
+        if ($request->filled('location_id')) {
+            $catQuery->where('inventory_period_snapshots.location_id', $request->input('location_id'));
+        }
+        if ($request->filled('condition')) {
+            $catQuery->where('inventory_period_snapshots.condition', $request->input('condition'));
+        }
+
+        $categoryBreakdown = $catQuery
+            ->selectRaw('
+                products.category_id,
+                COALESCE(categories.name, \'Tanpa Kategori\') as category_name,
+                COUNT(DISTINCT inventory_period_snapshots.product_id) as total_products,
+                COUNT(inventory_period_snapshots.id) as total_items,
+                COALESCE(SUM(inventory_period_snapshots.closing_balance), 0) as total_closing_qty,
+                COALESCE(SUM(inventory_period_snapshots.total_value), 0) as total_valuation
+            ')
+            ->groupBy('products.category_id', 'categories.name')
+            ->orderBy('categories.name', 'asc')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'category_id' => $row->category_id !== null ? (int) $row->category_id : null,
+                    'category_name' => $row->category_name,
+                    'total_products' => (int) $row->total_products,
+                    'total_items' => (int) $row->total_items,
+                    'total_closing_qty' => (float) $row->total_closing_qty,
+                    'total_valuation' => (float) $row->total_valuation,
+                ];
+            });
 
         // Total ringkasan sebelum pagination
         $summary = (clone $query)->selectRaw('
@@ -198,6 +248,7 @@ class MonthEndController extends Controller
                 'total_in_qty' => (float) ($summary->total_in_qty ?? 0),
                 'total_out_qty' => (float) ($summary->total_out_qty ?? 0),
             ],
+            'category_breakdown' => $categoryBreakdown,
             'snapshots' => $snapshots->items(),
             'pagination' => [
                 'current_page' => $snapshots->currentPage(),

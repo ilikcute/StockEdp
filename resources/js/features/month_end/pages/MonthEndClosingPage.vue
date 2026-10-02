@@ -212,8 +212,30 @@
 
       <!-- Card 3: Valuasi Persediaan Terakhir -->
       <div class="bg-white rounded-xl border border-gray-200 p-3.5 shadow-2xs flex flex-col justify-between">
-        <div class="text-xs text-gray-500">
-          Total Valuasi Terakhir Dibekukan
+        <div class="flex items-center justify-between text-xs text-gray-500">
+          <span>Total Valuasi Terakhir Dibekukan</span>
+          <button
+            v-if="lastClosedPeriod"
+            type="button"
+            class="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer flex items-center gap-0.5"
+            title="Buka rincian valuasi per kategori"
+            @click="openSnapshotModal(lastClosedPeriod)"
+          >
+            <span>Rincian Kategori</span>
+            <svg
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
         </div>
         <div class="mt-2">
           <div class="text-base font-extrabold text-emerald-600">
@@ -929,8 +951,77 @@
             </div>
           </div>
 
+          <!-- Rekapitulasi per Kategori Produk -->
+          <div
+            v-if="snapshotCategoryBreakdown.length > 0"
+            class="space-y-1.5 pt-1 border-t border-gray-100"
+          >
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="font-bold text-gray-700 flex items-center gap-1.5">
+                <svg
+                  class="w-3.5 h-3.5 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                  />
+                </svg>
+                <span>Rincian Valuasi per Kategori Produk</span>
+              </span>
+              <span class="text-gray-400 text-[10px]">
+                Pilih kategori untuk menyaring
+              </span>
+            </div>
+
+            <!-- Category Pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+              <button
+                type="button"
+                class="shrink-0 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+                :class="!snapshotFilter.category_id ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs' : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'"
+                @click="selectCategoryFilter('')"
+              >
+                <span>Semua Kategori</span>
+                <span
+                  class="px-1.5 py-0.2 rounded-full text-[10px] font-bold"
+                  :class="!snapshotFilter.category_id ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'"
+                >
+                  {{ snapshotCategoryBreakdown.length }}
+                </span>
+              </button>
+
+              <button
+                v-for="cat in snapshotCategoryBreakdown"
+                :key="cat.category_id ?? 'uncat'"
+                type="button"
+                class="shrink-0 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+                :class="isCategoryActive(cat.category_id) ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                @click="selectCategoryFilter(cat.category_id)"
+              >
+                <span>{{ cat.category_name }}</span>
+                <span
+                  class="font-mono text-[11px]"
+                  :class="isCategoryActive(cat.category_id) ? 'text-indigo-100 font-bold' : 'text-emerald-700 font-semibold'"
+                >
+                  {{ formatRupiah(cat.total_valuation) }}
+                </span>
+                <span
+                  class="px-1.5 py-0.2 rounded-full text-[10px]"
+                  :class="isCategoryActive(cat.category_id) ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-500'"
+                >
+                  {{ cat.total_products }} SKU
+                </span>
+              </button>
+            </div>
+          </div>
+
           <!-- Search & Filter Controls -->
-          <div class="flex flex-col sm:flex-row items-center gap-2">
+          <div class="flex flex-col sm:flex-row items-center gap-2 pt-1 border-t border-gray-100">
             <div class="flex-1 w-full">
               <input
                 v-model="snapshotFilter.search"
@@ -940,7 +1031,29 @@
                 @input="debounceSnapshotFetch"
               >
             </div>
-            <div class="w-full sm:w-48">
+
+            <!-- Dropdown Filter Kategori -->
+            <div class="w-full sm:w-56">
+              <select
+                v-model="snapshotFilter.category_id"
+                class="w-full text-xs rounded-lg border border-gray-200 px-3 py-1.5 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                @change="fetchSnapshots(1)"
+              >
+                <option value="">
+                  Semua Kategori (Global)
+                </option>
+                <option
+                  v-for="cat in snapshotCategoryBreakdown"
+                  :key="cat.category_id ?? 'uncat'"
+                  :value="cat.category_id !== null ? cat.category_id : 'uncategorized'"
+                >
+                  {{ cat.category_name }} ({{ cat.total_products }} SKU)
+                </option>
+              </select>
+            </div>
+
+            <!-- Filter Kondisi -->
+            <div class="w-full sm:w-40">
               <select
                 v-model="snapshotFilter.condition"
                 class="w-full text-xs rounded-lg border border-gray-200 px-3 py-1.5 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
@@ -956,6 +1069,54 @@
                   Kondisi Rusak (DEFECTIVE)
                 </option>
               </select>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div class="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50 shrink-0">
+              <button
+                type="button"
+                class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer flex items-center gap-1"
+                :class="snapshotViewMode === 'grouped' ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-500 hover:text-gray-900'"
+                title="Tampilkan Berdasarkan Kategori"
+                @click="snapshotViewMode = 'grouped'"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                  />
+                </svg>
+                <span>Per Kategori</span>
+              </button>
+              <button
+                type="button"
+                class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer flex items-center gap-1"
+                :class="snapshotViewMode === 'flat' ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-500 hover:text-gray-900'"
+                title="Tampilkan Daftar Rata"
+                @click="snapshotViewMode = 'flat'"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                <span>Daftar Rata</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1071,67 +1232,193 @@
                 v-else-if="snapshotList.length === 0"
                 :colspan="11"
                 message="Tidak ada data snapshot untuk filter yang dipilih."
-                :hint="snapshotFilter.search || snapshotFilter.condition ? 'Silakan sesuaikan kata kunci atau filter kondisi barang.' : ''"
+                :hint="snapshotFilter.search || snapshotFilter.condition || snapshotFilter.category_id ? 'Silakan sesuaikan kata kunci atau filter kategori/kondisi barang.' : ''"
               />
 
-              <tr
-                v-for="(row, idx) in snapshotList"
-                :key="row.id"
-                class="hover:bg-gray-50/80 transition-colors"
-              >
-                <td class="py-2 px-2.5 text-gray-400 font-mono text-[10px]">
-                  {{ (snapshotPagination.current_page - 1) * snapshotPagination.per_page + idx + 1 }}
-                </td>
-                <td class="py-2 px-2.5">
-                  <div class="font-bold text-gray-900">
-                    {{ row.product?.name || 'Item' }}
-                  </div>
-                  <div class="text-[10px] text-gray-400 font-mono flex items-center gap-1">
-                    <span>{{ row.product?.sku }}</span>
-                    <span v-if="row.product?.barcode">&bull; {{ row.product?.barcode }}</span>
-                  </div>
-                </td>
-                <td class="py-2 px-2.5 text-gray-700">
-                  <div class="font-medium">
-                    {{ row.location?.name }}
-                  </div>
-                  <div class="text-[10px] text-gray-400">
-                    {{ row.location?.type }}
-                  </div>
-                </td>
-                <td class="py-2 px-2.5 text-center whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
-                    :class="row.condition === 'GOOD' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
-                  >
-                    {{ row.condition === 'GOOD' ? 'BAIK' : 'RUSAK' }}
-                  </span>
-                </td>
-                <td class="py-2 px-2.5 text-right font-mono text-gray-600">
-                  {{ formatQuantity(row.opening_balance) }}
-                </td>
-                <td class="py-2 px-2.5 text-right font-mono text-emerald-600">
-                  +{{ formatQuantity(row.total_in) }}
-                </td>
-                <td class="py-2 px-2.5 text-right font-mono text-rose-600">
-                  -{{ formatQuantity(row.total_out) }}
-                </td>
-                <td
-                  class="py-2 px-2.5 text-right font-mono"
-                  :class="row.total_adjustment >= 0 ? 'text-gray-600' : 'text-amber-600'"
+              <!-- TAMPILAN PER KATEGORI (GROUPED) -->
+              <template v-else-if="snapshotViewMode === 'grouped'">
+                <template
+                  v-for="group in groupedSnapshots"
+                  :key="group.category_name"
                 >
-                  {{ row.total_adjustment > 0 ? '+' : '' }}{{ formatQuantity(row.total_adjustment) }}
-                </td>
-                <td class="py-2 px-2.5 text-right font-mono font-bold text-gray-900 bg-gray-50/50">
-                  {{ formatQuantity(row.closing_balance) }}
-                </td>
-                <td class="py-2 px-2.5 text-right text-gray-600">
-                  {{ formatRupiah(row.unit_price) }}
-                </td>
-                <td class="py-2 px-2.5 text-right font-bold text-emerald-700">
-                  {{ formatRupiah(row.total_value) }}
-                </td>
-              </tr>
+                  <!-- Category Header Bar -->
+                  <tr class="bg-gray-100/90 border-y border-gray-200">
+                    <td
+                      colspan="11"
+                      class="py-2 px-3"
+                    >
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0"></span>
+                          <span class="font-bold text-gray-900 text-xs uppercase tracking-wide">
+                            Kategori: {{ group.category_name }}
+                          </span>
+                          <span class="px-2 py-0.5 rounded-full text-[10px] bg-white border border-gray-200 text-gray-700 font-semibold shadow-2xs">
+                            {{ group.items.length }} Item di halaman ini
+                          </span>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px] text-gray-600 font-medium">
+                          <span>Subtotal Fisik: <strong class="text-gray-900 font-mono">{{ formatQuantity(group.total_closing_qty) }}</strong> unit</span>
+                          <span>Subtotal Valuasi: <strong class="text-emerald-700 font-mono font-bold">{{ formatRupiah(group.total_value) }}</strong></span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Items in this Category -->
+                  <tr
+                    v-for="(row, idx) in group.items"
+                    :key="row.id"
+                    class="hover:bg-gray-50/80 transition-colors"
+                  >
+                    <td class="py-2 px-2.5 text-gray-400 font-mono text-[10px]">
+                      {{ (snapshotPagination.current_page - 1) * snapshotPagination.per_page + idx + 1 }}
+                    </td>
+                    <td class="py-2 px-2.5">
+                      <div class="font-bold text-gray-900">
+                        {{ row.product?.name || 'Item' }}
+                      </div>
+                      <div class="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 mt-0.5">
+                        <span>{{ row.product?.sku }}</span>
+                        <span v-if="row.product?.barcode">&bull; {{ row.product?.barcode }}</span>
+                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-gray-100 text-gray-600">
+                          {{ row.product?.category?.name || 'Tanpa Kategori' }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-2.5 text-gray-700">
+                      <div class="font-medium">
+                        {{ row.location?.name }}
+                      </div>
+                      <div class="text-[10px] text-gray-400">
+                        {{ row.location?.type }}
+                      </div>
+                    </td>
+                    <td class="py-2 px-2.5 text-center whitespace-nowrap">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                        :class="row.condition === 'GOOD' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                      >
+                        {{ row.condition === 'GOOD' ? 'BAIK' : 'RUSAK' }}
+                      </span>
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-mono text-gray-600">
+                      {{ formatQuantity(row.opening_balance) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-mono text-emerald-600">
+                      +{{ formatQuantity(row.total_in) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-mono text-rose-600">
+                      -{{ formatQuantity(row.total_out) }}
+                    </td>
+                    <td
+                      class="py-2 px-2.5 text-right font-mono"
+                      :class="row.total_adjustment >= 0 ? 'text-gray-600' : 'text-amber-600'"
+                    >
+                      {{ row.total_adjustment > 0 ? '+' : '' }}{{ formatQuantity(row.total_adjustment) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-mono font-bold text-gray-900 bg-gray-50/50">
+                      {{ formatQuantity(row.closing_balance) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right text-gray-600">
+                      {{ formatRupiah(row.unit_price) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-bold text-emerald-700">
+                      {{ formatRupiah(row.total_value) }}
+                    </td>
+                  </tr>
+
+                  <!-- Category Subtotal Row -->
+                  <tr class="bg-gray-50/80 text-[11px] font-semibold text-gray-700 border-b-2 border-gray-200">
+                    <td
+                      colspan="4"
+                      class="py-2 px-3 text-right text-gray-500 font-medium"
+                    >
+                      Subtotal {{ group.category_name }}:
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-mono text-gray-400">-</td>
+                    <td class="py-2 px-2.5 text-right font-mono text-emerald-600">
+                      +{{ formatQuantity(group.total_in) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-mono text-rose-600">
+                      -{{ formatQuantity(group.total_out) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right font-mono text-gray-400">-</td>
+                    <td class="py-2 px-2.5 text-right font-mono font-bold text-gray-900 bg-gray-100/60">
+                      {{ formatQuantity(group.total_closing_qty) }}
+                    </td>
+                    <td class="py-2 px-2.5 text-right text-gray-400">-</td>
+                    <td class="py-2 px-2.5 text-right font-bold text-emerald-700">
+                      {{ formatRupiah(group.total_value) }}
+                    </td>
+                  </tr>
+                </template>
+              </template>
+
+              <!-- TAMPILAN FLAT (DAFTAR RATA) -->
+              <template v-else>
+                <tr
+                  v-for="(row, idx) in snapshotList"
+                  :key="row.id"
+                  class="hover:bg-gray-50/80 transition-colors"
+                >
+                  <td class="py-2 px-2.5 text-gray-400 font-mono text-[10px]">
+                    {{ (snapshotPagination.current_page - 1) * snapshotPagination.per_page + idx + 1 }}
+                  </td>
+                  <td class="py-2 px-2.5">
+                    <div class="font-bold text-gray-900">
+                      {{ row.product?.name || 'Item' }}
+                    </div>
+                    <div class="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 mt-0.5">
+                      <span>{{ row.product?.sku }}</span>
+                      <span v-if="row.product?.barcode">&bull; {{ row.product?.barcode }}</span>
+                      <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-gray-100 text-gray-600">
+                        {{ row.product?.category?.name || 'Tanpa Kategori' }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="py-2 px-2.5 text-gray-700">
+                    <div class="font-medium">
+                      {{ row.location?.name }}
+                    </div>
+                    <div class="text-[10px] text-gray-400">
+                      {{ row.location?.type }}
+                    </div>
+                  </td>
+                  <td class="py-2 px-2.5 text-center whitespace-nowrap">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      :class="row.condition === 'GOOD' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                    >
+                      {{ row.condition === 'GOOD' ? 'BAIK' : 'RUSAK' }}
+                    </span>
+                  </td>
+                  <td class="py-2 px-2.5 text-right font-mono text-gray-600">
+                    {{ formatQuantity(row.opening_balance) }}
+                  </td>
+                  <td class="py-2 px-2.5 text-right font-mono text-emerald-600">
+                    +{{ formatQuantity(row.total_in) }}
+                  </td>
+                  <td class="py-2 px-2.5 text-right font-mono text-rose-600">
+                    -{{ formatQuantity(row.total_out) }}
+                  </td>
+                  <td
+                    class="py-2 px-2.5 text-right font-mono"
+                    :class="row.total_adjustment >= 0 ? 'text-gray-600' : 'text-amber-600'"
+                  >
+                    {{ row.total_adjustment > 0 ? '+' : '' }}{{ formatQuantity(row.total_adjustment) }}
+                  </td>
+                  <td class="py-2 px-2.5 text-right font-mono font-bold text-gray-900 bg-gray-50/50">
+                    {{ formatQuantity(row.closing_balance) }}
+                  </td>
+                  <td class="py-2 px-2.5 text-right text-gray-600">
+                    {{ formatRupiah(row.unit_price) }}
+                  </td>
+                  <td class="py-2 px-2.5 text-right font-bold text-emerald-700">
+                    {{ formatRupiah(row.total_value) }}
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -1201,6 +1488,8 @@ const selectedPeriod = ref(null);
 const snapshotPeriod = ref(null);
 const snapshotList = ref([]);
 const snapshotLoading = ref(false);
+const snapshotCategoryBreakdown = ref([]);
+const snapshotViewMode = ref('grouped');
 const snapshotSummary = ref({
   total_items: 0,
   total_closing_qty: 0,
@@ -1217,6 +1506,7 @@ const snapshotPagination = ref({
 const snapshotFilter = ref({
   search: '',
   condition: '',
+  category_id: '',
 });
 
 // Close Form
@@ -1367,10 +1657,57 @@ async function submitReopenPeriod() {
   }
 }
 
+// Category grouping & helpers
+const groupedSnapshots = computed(() => {
+  if (!snapshotList.value || snapshotList.value.length === 0) return [];
+  const groups = {};
+  for (const item of snapshotList.value) {
+    const catName = item.product?.category?.name || 'Tanpa Kategori';
+    const catId = item.product?.category_id || 0;
+    if (!groups[catName]) {
+      groups[catName] = {
+        category_id: catId,
+        category_name: catName,
+        items: [],
+        total_closing_qty: 0,
+        total_value: 0,
+        total_in: 0,
+        total_out: 0,
+      };
+    }
+    groups[catName].items.push(item);
+    groups[catName].total_closing_qty += Number(item.closing_balance || 0);
+    groups[catName].total_value += Number(item.total_value || 0);
+    groups[catName].total_in += Number(item.total_in || 0);
+    groups[catName].total_out += Number(item.total_out || 0);
+  }
+  return Object.values(groups);
+});
+
+function isCategoryActive(catId) {
+  if (catId === null || catId === undefined) {
+    return snapshotFilter.value.category_id === 'uncategorized';
+  }
+  return String(snapshotFilter.value.category_id) === String(catId);
+}
+
+function selectCategoryFilter(catId) {
+  if (catId === '') {
+    snapshotFilter.value.category_id = '';
+  } else if (catId === null || catId === undefined) {
+    snapshotFilter.value.category_id = snapshotFilter.value.category_id === 'uncategorized' ? '' : 'uncategorized';
+  } else {
+    snapshotFilter.value.category_id = String(snapshotFilter.value.category_id) === String(catId) ? '' : catId;
+  }
+  fetchSnapshots(1);
+}
+
 // Snapshot modal logic
 function openSnapshotModal(period) {
   snapshotPeriod.value = period;
-  snapshotFilter.value = { search: '', condition: '' };
+  snapshotFilter.value = { search: '', condition: '', category_id: '' };
+  snapshotCategoryBreakdown.value = [];
+  snapshotViewMode.value = 'grouped';
   showSnapshotModal.value = true;
   fetchSnapshots(1);
 }
@@ -1392,12 +1729,14 @@ async function fetchSnapshots(page = 1) {
       per_page: snapshotPagination.value.per_page,
       search: snapshotFilter.value.search || undefined,
       condition: snapshotFilter.value.condition || undefined,
+      category_id: snapshotFilter.value.category_id || undefined,
     };
     const res = await monthEndApi.getSnapshots(snapshotPeriod.value.id, params);
     if (res.data?.success) {
       const payload = res.data.data;
       snapshotList.value = payload.snapshots || [];
       snapshotSummary.value = payload.summary || {};
+      snapshotCategoryBreakdown.value = payload.category_breakdown || [];
       snapshotPagination.value = payload.pagination || snapshotPagination.value;
     }
   } catch (err) {
@@ -1416,23 +1755,78 @@ function printBeritaAcara() {
     return;
   }
 
-  const rowsHtml = snapshotList.value.map((r, i) => `
+  // Rekap per kategori HTML
+  const catBreakdownRows = (snapshotCategoryBreakdown.value || []).map((cat, idx) => `
     <tr>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">${i + 1}</td>
-      <td style="border:1px solid #ccc;padding:4px 6px;">
-        <strong>${r.product?.name || '-'}</strong><br/>
-        <small style="color:#666;">SKU: ${r.product?.sku || '-'}</small>
-      </td>
-      <td style="border:1px solid #ccc;padding:4px 6px;">${r.location?.name || '-'}</td>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">${r.condition === 'GOOD' ? 'BAIK' : 'RUSAK'}</td>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:right;">${formatQuantity(r.opening_balance)}</td>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:right;">+${formatQuantity(r.total_in)}</td>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:right;">-${formatQuantity(r.total_out)}</td>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:right;"><strong>${formatQuantity(r.closing_balance)}</strong></td>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:right;">${formatRupiah(r.unit_price)}</td>
-      <td style="border:1px solid #ccc;padding:4px 6px;text-align:right;"><strong>${formatRupiah(r.total_value)}</strong></td>
+      <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;">${idx + 1}</td>
+      <td style="border:1px solid #cbd5e1;padding:5px 8px;font-weight:600;color:#0f172a;">${cat.category_name}</td>
+      <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;">${cat.total_products} SKU</td>
+      <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:right;font-family:monospace;">${formatQuantity(cat.total_closing_qty)} unit</td>
+      <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:right;font-weight:bold;color:#047857;">${formatRupiah(cat.total_valuation)}</td>
     </tr>
   `).join('');
+
+  // Grouped items
+  const groups = {};
+  for (const item of snapshotList.value) {
+    const cName = item.product?.category?.name || 'Tanpa Kategori';
+    if (!groups[cName]) groups[cName] = [];
+    groups[cName].push(item);
+  }
+
+  let itemCounter = 0;
+  let rowsHtml = '';
+  for (const [catName, items] of Object.entries(groups)) {
+    const subtotalQty = items.reduce((sum, r) => sum + Number(r.closing_balance || 0), 0);
+    const subtotalVal = items.reduce((sum, r) => sum + Number(r.total_value || 0), 0);
+    const subtotalIn = items.reduce((sum, r) => sum + Number(r.total_in || 0), 0);
+    const subtotalOut = items.reduce((sum, r) => sum + Number(r.total_out || 0), 0);
+
+    // Group header row
+    rowsHtml += `
+      <tr style="background-color:#e2e8f0;font-weight:bold;">
+        <td colspan="10" style="border:1px solid #94a3b8;padding:6px 8px;font-size:11px;color:#0f172a;text-transform:uppercase;">
+          KATEGORI: ${catName} (${items.length} SKU)
+        </td>
+      </tr>
+    `;
+
+    items.forEach((r) => {
+      itemCounter++;
+      rowsHtml += `
+        <tr>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:center;">${itemCounter}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;">
+            <strong>${r.product?.name || '-'}</strong><br/>
+            <small style="color:#64748b;">SKU: ${r.product?.sku || '-'}</small>
+          </td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;">${r.location?.name || '-'}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:center;">${r.condition === 'GOOD' ? 'BAIK' : 'RUSAK'}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:right;font-family:monospace;">${formatQuantity(r.opening_balance)}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:right;color:#059669;font-family:monospace;">+${formatQuantity(r.total_in)}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:right;color:#e11d48;font-family:monospace;">-${formatQuantity(r.total_out)}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:right;font-weight:bold;font-family:monospace;">${formatQuantity(r.closing_balance)}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:right;">${formatRupiah(r.unit_price)}</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 6px;text-align:right;font-weight:bold;color:#047857;">${formatRupiah(r.total_value)}</td>
+        </tr>
+      `;
+    });
+
+    // Subtotal row
+    rowsHtml += `
+      <tr style="background-color:#f1f5f9;font-weight:bold;border-bottom:2px solid #94a3b8;">
+        <td colspan="4" style="border:1px solid #cbd5e1;padding:5px 6px;text-align:right;color:#334155;">
+          Subtotal Kategori ${catName}:
+        </td>
+        <td style="border:1px solid #cbd5e1;padding:5px 6px;text-align:right;">-</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 6px;text-align:right;color:#059669;font-family:monospace;">+${formatQuantity(subtotalIn)}</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 6px;text-align:right;color:#e11d48;font-family:monospace;">-${formatQuantity(subtotalOut)}</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 6px;text-align:right;font-family:monospace;color:#0f172a;">${formatQuantity(subtotalQty)}</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 6px;text-align:right;">-</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 6px;text-align:right;color:#047857;">${formatRupiah(subtotalVal)}</td>
+      </tr>
+    `;
+  }
 
   printWindow.document.write(`
     <!DOCTYPE html>
@@ -1440,16 +1834,17 @@ function printBeritaAcara() {
       <head>
         <title>Berita Acara Tutup Buku - ${p.month_name}</title>
         <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #111; margin: 20px; }
-          .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
-          .title { font-size: 16px; font-weight: bold; text-transform: uppercase; margin: 0; }
-          .subtitle { font-size: 12px; color: #555; margin-top: 4px; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; color: #111; margin: 20px; }
+          .header { text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 15px; }
+          .title { font-size: 15px; font-weight: bold; text-transform: uppercase; margin: 0; }
+          .subtitle { font-size: 11px; color: #475569; margin-top: 4px; }
           .meta-grid { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 11px; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
-          th { background: #f0f0f0; border: 1px solid #999; padding: 6px; }
-          .summary-box { display: flex; justify-content: space-between; background: #fafafa; border: 1px solid #ddd; padding: 10px; margin-bottom: 25px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10.5px; }
+          th { background: #f1f5f9; border: 1px solid #94a3b8; padding: 6px; }
+          .summary-box { display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; margin-bottom: 15px; border-radius: 6px; }
+          .section-title { font-size: 12px; font-weight: bold; margin: 15px 0 6px 0; color: #1e293b; text-transform: uppercase; }
           .signature-grid { display: flex; justify-content: space-around; margin-top: 40px; text-align: center; }
-          .sig-line { margin-top: 60px; border-top: 1px solid #333; width: 180px; }
+          .sig-line { margin-top: 55px; border-top: 1px solid #333; width: 180px; }
         </style>
       </head>
       <body>
@@ -1475,6 +1870,25 @@ function printBeritaAcara() {
           <div><strong>Total Nilai Persediaan:</strong> ${formatRupiah(snapshotSummary.value.total_valuation)}</div>
         </div>
 
+        ${catBreakdownRows ? `
+          <div class="section-title">Rekapitulasi Nilai Persediaan per Kategori Produk</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:30px;">No</th>
+                <th style="text-align:left;">Kategori Produk</th>
+                <th style="width:100px;">Jumlah SKU</th>
+                <th style="text-align:right;width:130px;">Total Saldo Fisik</th>
+                <th style="text-align:right;width:150px;">Total Nilai Valuasi</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${catBreakdownRows}
+            </tbody>
+          </table>
+        ` : ''}
+
+        <div class="section-title">Rincian Fisik & Valuasi per Item Barang (Dikelompokkan per Kategori)</div>
         <table>
           <thead>
             <tr>
@@ -1486,7 +1900,7 @@ function printBeritaAcara() {
               <th>Masuk</th>
               <th>Keluar</th>
               <th>Saldo Akhir</th>
-              <th>Harga</th>
+              <th>Harga Satuan</th>
               <th>Total Nilai</th>
             </tr>
           </thead>

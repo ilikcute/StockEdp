@@ -20,7 +20,7 @@ export const monthEndApi = {
     /**
      * Mengambil rincian snapshot saldo per produk & lokasi
      * @param {number|string} periodId
-     * @param {{ location_id?: number, condition?: string, search?: string, per_page?: number, page?: number }} params
+     * @param {{ location_id?: number, condition?: string, category_id?: number|string, search?: string, per_page?: number, page?: number }} params
      */
     getSnapshots: (periodId, params = {}) => apiClient.get(`/month-end/periods/${periodId}/snapshots`, { params }),
 

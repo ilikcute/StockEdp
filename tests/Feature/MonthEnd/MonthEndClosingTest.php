@@ -154,7 +154,12 @@ class MonthEndClosingTest extends TestCase
         $snapshotRes = $this->actingAs($this->admin)->getJson("/api/v1/month-end/periods/{$period->id}/snapshots");
         $snapshotRes->assertStatus(200)
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.period.period_key', '2026-06');
+            ->assertJsonPath('data.period.period_key', '2026-06')
+            ->assertJsonStructure([
+                'data' => [
+                    'category_breakdown',
+                ],
+            ]);
     }
 
     public function test_it_returns_approaching_period_closing_alert(): void
